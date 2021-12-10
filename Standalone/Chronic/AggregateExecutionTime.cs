@@ -154,7 +154,6 @@ namespace BrandonUtils.Standalone.Chronic {
                 Second = (second.nickname ?? nameof(Second), second.duration);
             }
 
-
             public override string ToString() {
                 return new Dictionary<object, object>() {
                         [First.nickname]     = First.duration,
