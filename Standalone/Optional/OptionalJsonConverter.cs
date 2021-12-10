@@ -12,9 +12,9 @@ namespace BrandonUtils.Standalone.Optional {
     /// A custom <see cref="JsonConverter"/> for <see cref="Optional{T}"/>.
     /// </summary>
     public class OptionalJsonConverter : JsonConverter {
-        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer) {
+        public override void WriteJson(JsonWriter writer, object? value, JsonSerializer serializer) {
             serializer.TraceWriter?.Trace(TraceLevel.Info, $"[{GetType().Prettify()}] serializing {value}", default);
-            var enumerable = (IEnumerable)value;
+            var enumerable = value as IEnumerable;
             /*
              * We create a new JsonSerializer here so that it doesn't get upset about self-referencing loops when we try to serialize
              * this optional as an IEnumerable.
@@ -25,7 +25,7 @@ namespace BrandonUtils.Standalone.Optional {
              * The call to .Cast<object>().ToList() is necessary because that's what _actually_ prevents this from being an infinite loop,
              * because it returns a NEW list (for some reason, just .Cast<object>() wasn't enough)
              */
-            JsonSerializer.Create().Serialize(writer, enumerable.Cast<object>().ToList());
+            JsonSerializer.Create().Serialize(writer, enumerable?.Cast<object>().ToList());
         }
 
 
