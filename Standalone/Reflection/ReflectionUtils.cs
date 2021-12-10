@@ -470,14 +470,6 @@ namespace BrandonUtils.Standalone.Reflection {
 
         #region Generics
 
-        /// <param name="type">a <see cref="Type"/> that might be generic</param>
-        /// <returns><see cref="Type.IsGenericType"/> || <see cref="Type.IsGenericTypeDefinition"/></returns>
-        [Obsolete("This is redundant, because if IsGenericTypeDefinition is true, then IsGenericType must also be true")]
-        [ContractAnnotation("null => false")]
-        public static bool IsGenericTypeOrDefinition(this Type? type) {
-            return type?.IsGenericType == true;
-        }
-
         #region Type.Implements(Type)
 
         /// <summary>
@@ -566,7 +558,7 @@ namespace BrandonUtils.Standalone.Reflection {
         /// <param name="type">a <see cref="Type"/></param>
         /// <returns>true if the given <see cref="Type"/> is one of the <see cref="Tuple{T}"/> or <see cref="ValueTuple{T1}"/> types</returns>
         public static bool IsTupleType(this Type type) {
-            return type.IsGenericTypeOrDefinition() && TupleTypes.Any(it => type.GetGenericTypeDefinition().IsAssignableFrom(it));
+            return type.IsGenericType && TupleTypes.Any(it => type.GetGenericTypeDefinition().IsAssignableFrom(it));
         }
 
         #endregion
@@ -594,7 +586,7 @@ namespace BrandonUtils.Standalone.Reflection {
         }
 
         internal static Type CommonBaseClass(IEnumerable<Type> types) {
-            Type mostCommonType = default;
+            Type? mostCommonType = default;
 
             foreach (var t in types) {
                 mostCommonType = CommonBaseClass(mostCommonType, t);

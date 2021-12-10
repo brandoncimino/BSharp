@@ -3,7 +3,6 @@ using System.Collections;
 using System.Diagnostics;
 using System.Linq;
 
-using BrandonUtils.Standalone.Reflection;
 using BrandonUtils.Standalone.Strings;
 
 using Newtonsoft.Json;
@@ -38,7 +37,7 @@ namespace BrandonUtils.Standalone.Optional {
         }
 
         public override bool CanConvert(Type objectType) {
-            return objectType.IsGenericTypeOrDefinition()
+            return objectType.IsGenericType
                    && typeof(Optional<>).IsAssignableFrom(objectType.GetGenericTypeDefinition());
         }
     }

@@ -7,7 +7,7 @@ using BrandonUtils.Standalone.Strings.Prettifiers;
 
 namespace BrandonUtils.Standalone.Strings {
     public class Prettifier<T> : IPrettifier<T> {
-        private Func<T, PrettificationSettings, string> PrettificationFunction { get; }
+        private Func<T?, PrettificationSettings?, string> PrettificationFunction { get; }
 
         public Type PrettifierType { get; }
 
@@ -15,9 +15,9 @@ namespace BrandonUtils.Standalone.Strings {
 
         #region Constructors
 
-        public Prettifier(Func<T, string> prettifierFunc) : this((it, settings) => prettifierFunc.Invoke(it)) { }
+        public Prettifier(Func<T?, string> prettifierFunc) : this((it, settings) => prettifierFunc.Invoke(it)) { }
 
-        public Prettifier(Func<T, PrettificationSettings, string> prettifierFunc) {
+        public Prettifier(Func<T?, PrettificationSettings?, string> prettifierFunc) {
             PrettificationFunction = prettifierFunc;
             PrettifierType         = PrettificationTypeSimplifier.SimplifyType(typeof(T), new PrettificationSettings());
         }
@@ -26,23 +26,23 @@ namespace BrandonUtils.Standalone.Strings {
 
         #region Prettifier Implementation
 
-        public string Prettify(T cinderella, PrettificationSettings settings = default) {
+        public string Prettify(T? cinderella, PrettificationSettings? settings = default) {
             return PrettificationFunction.Invoke(cinderella, settings);
         }
 
-        public string PrettifySafely(T cinderella, PrettificationSettings settings = default) {
-            return PrettifySafely((object)cinderella, settings);
+        public string PrettifySafely(T? cinderella, PrettificationSettings? settings = default) {
+            return PrettifySafely(cinderella as object, settings);
         }
 
-        public string Prettify(object cinderella, PrettificationSettings settings = default) {
+        public string Prettify(object? cinderella, PrettificationSettings? settings = default) {
             settings ??= Prettification.DefaultPrettificationSettings;
 
             settings.TraceWriter.Verbose(() => $"⚠ DANGEROUSLY prettifying [{cinderella?.GetType().Name}]");
 
             if (cinderella == null) {
-                return settings.NullPlaceholder;
+                return settings.NullPlaceholder.Value;
             }
-            else if (PrettifierType.IsGenericTypeOrDefinition()) {
+            else if (PrettifierType.IsGenericType) {
                 return PrettifyGeneric(cinderella, settings);
             }
             else {
@@ -50,7 +50,7 @@ namespace BrandonUtils.Standalone.Strings {
             }
         }
 
-        public string PrettifySafely(object cinderella, PrettificationSettings settings = default) {
+        public string PrettifySafely(object? cinderella, PrettificationSettings? settings = default) {
             settings ??= Prettification.DefaultPrettificationSettings;
 
             settings.TraceWriter.Verbose(() => $"🦺 SAFELY prettifying [{cinderella?.GetType().Name}]");
@@ -104,7 +104,7 @@ namespace BrandonUtils.Standalone.Strings {
 
             settings.TraceWriter.Verbose(() => $"🕵️ Using generic prettification for [{cinderella?.GetType()}");
 
-            if (cinderella?.GetType().IsGenericTypeOrDefinition() != true) {
+            if (cinderella?.GetType().IsGenericType != true) {
                 throw new ArgumentException($"Can't use generic prettification for type [{cinderella?.GetType()}] because it isn't a generic type!");
             }
 

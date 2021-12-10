@@ -32,7 +32,7 @@ namespace BrandonUtils.Standalone.Strings.Prettifiers {
             }
 
             // if the type is generic, we need to trim the `n and replace it with the generic type arguments
-            return type.IsGenericTypeOrDefinition() ? PrettifyGenericType(type, settings) : type.NameOrKeyword();
+            return type.IsGenericType ? PrettifyGenericType(type, settings) : type.NameOrKeyword();
         }
 
 
