@@ -1,0 +1,282 @@
+= Enum Tips
+:icons: font
+:json-net: https://github.com/jilleJr/Newtonsoft.Json-for-Unity[Json.NET]
+:source-linenums-option:
+
+//links
+:naming-convention: https://en.wikipedia.org/wiki/Naming_convention_(programming)
+:naming-strategy: https://www.newtonsoft.com/json/help/html/T_Newtonsoft_Json_Serialization_NamingStrategy.htm[`NamingStrategy`]
+:json: https://en.wikipedia.org/wiki/JSON[JSON]
+:douglas-crockford: https://en.wikipedia.org/wiki/Douglas_Crockford[Douglas Crockford]
+
+// longer footnotes
+:fn-json: https://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf[ECMA standard 404] and http://www.iso.org/cms/render/live/en/sites/isoorg/contents/data/standard/07/16/71616.html[ISO/IEC 21778:2017] say that the name is pronounced The creator of {json}, https://en.wikipedia.org/wiki/Douglas_Crockford[Douglas Crockford], said that "There's a lot of argument about how you pronounce that, but I strictly don't care.
+:fn-dumb-linux-book: pass:n[Nemeth, Evi; Snyder, Garth; Hein, Trent R.; Whaley, Ben; Mackin, Dan (2017). https://books.google.com/books?id=f7M1DwAAQBAJ&pg=PT1125["19: Web Hosting"]. _UNIX and Linux System Administration Handbook_ (5th ed.). Addison-Wesley Professional. https://en.wikipedia.org/wiki/ISBN_(identifier)[ISBN] https://en.wikipedia.org/wiki/Special:BookSources/9780134278292[9780134278292]. Retrieved 29 October 2019.]
+
+== Enum Dictionary Keys with {json-net}
+
+See also: https://stackoverflow.com/a/19768223[Can't get enum to convert to json properly using Json.NET]
+
+=== The "Usual" Problem
+
+WARNING: I wound up writing a bunch of stuff about the <<_google_json_style_guide>> instead of the actual stuff regarding the solution to the problem.
+
+{json}{wj}footnote:[https://en.wikipedia.org/wiki/JSON#cite_note-9] is often used to https://en.wikipedia.org/wiki/Serialization[serialize] data for transfer between
+
+.Pronunciation
+[sidebar]
+--
+https://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf[ECMA standard 404] and http://www.iso.org/cms/render/live/en/sites/isoorg/contents/data/standard/07/16/71616.html[ISO/IEC 21778:2017] say "Pronounced https://en.wikipedia.org/wiki/Help:IPA/English[/ˈdʒeɪ.sən/], as in 'https://en.wikipedia.org/wiki/Jason[Jason] and The https://en.wikipedia.org/wiki/Argonauts[Argonauts]'".
+
+The _UNIX and Linux System Administration Handbook_ says "{douglas-crockford}...says it's pronounced like the name Jason.
+But somehow, 'JAY-sawn' seems to have become more common in the technical community."{wj}footnote:[{fn-dumb-linux-book}]
+
+https://en.wikipedia.org/wiki/The_Real_Slim_Shady[The real] {douglas-crockford} said in 2011, "There's a lot of argument about how you pronounce that, but I strictly don't care."{wj}footnote:[http://transcriptvids.com/v/-C-JoyNuQJs.html["Douglas Crockford: The JSON Saga - Transcript Vids"]. _transcriptvids.com_. Retrieved 29 October 2019.]
+
+WARNING: They are all https://en.wiktionary.org/wiki/patently[patently] wrong.
+It is `JAY-SAHN`, and this _matters_.
+--
+
+<<_real_world_json_based_rest_apis>>, like <<api-scryfall, Scryfall>> and <<api-github, Github>>, almost exclusively use `snake_case` as their {naming-convention}[naming convention].
+
+C#'s standard is https://www.newtonsoft.com/json/help/html/T_Newtonsoft_Json_Serialization_NamingStrategy.htm[`PascalCase`]{sp}footnote:[Unity suggests using `camelCase` in confusing cases (CITATION NEEDED),{sp}which is annoying.].
+
+[#_google_json_style_guide]
+=== https://google.github.io/styleguide/jsoncstyleguide.xml[Google JSON Style Guide]
+
+It turns out that the JSON specification does _not_ prescribe a naming strategy.
+
+The "most official" specification I could find is the https://google.github.io/styleguide/jsoncstyleguide.xml?showone=Property_Name_Format#Property_Name_Format[Google JSON Style Guide].
+
+==== Naming Strategy
+
+Google's prescribed https://google.github.io/styleguide/jsoncstyleguide.xml?showone=Property_Name_Format#Property_Name_Format[property name format] (aka "naming strategy") is `camelCase`, _not_ `snake_case`:
+
+.https://google.github.io/styleguide/jsoncstyleguide.xml?showone=Property_Name_Format#Property_Name_Format[Property Name Format]
+[source,json]
+----
+{
+  "thisPropertyIsAnIdentifier": "identifier value"
+}
+----
+
+NOTE: This goes against the conventions of basically all of the <<_real_world_json_based_rest_apis>>, like <<api-scryfall, Scryfall>> and <<api-github, Github>>
+
+Google specifically revokes this restriction when using https://google.github.io/styleguide/jsoncstyleguide.xml?showone=Key_Names_in_JSON_Maps#Key_Names_in_JSON_Maps[maps] _(a synonym for dictionaries)_:
+
+.https://google.github.io/styleguide/jsoncstyleguide.xml?showone=Key_Names_in_JSON_Maps#Key_Names_in_JSON_Maps[Key Names in JSON Maps]
+[source,json]
+----
+{
+  // The "address" property is a sub-object <.>
+  // holding the parts of an address.
+  "address": {
+    "addressLine1": "123 Anystreet",
+    "city": "Anytown",
+    "state": "XX",
+    "zip": "00000"
+  },
+  // The "thumbnails" property is a map that maps
+  // a pixel size to the thumbnail url of that size.
+  "thumbnails": {
+    "72": "http://url.to.72px.thumbnail", // <.>
+    "144": "http://url.to.144px.thumbnail"
+  }
+}
+----
+
+<.> I find it funny that Google includes comments in their examples, despite https://google.github.io/styleguide/jsoncstyleguide.xml?showone=Comments#Comments[specifically prohibiting them].{wj}footnote:[When I grabbed that link I saw that they actually do have a disclaimer regarding the comments: _"Some of the examples in this style guide include comments. However this is only to clarify the examples."_]
+<.> Their example starts with a number, which is normally not allowed.
+
+Their reasoning for allowing non-standard names in maps is:
+
+. In most programming languages, properties are accessed as variables:
++
+[source,c#]
+----
+GameObject.name; // <.>
+GameObject.7; // <.>
+----
+
+<.> Allowed
+<.> Not allowed
+
+. In most programming languages, map / dictionary values are accessed using an https://en.wikipedia.org/wiki/Indexer_(programming)[indexer]{wj}footnote:[Google's explanation: _"Clients can access these properties using the square bracket notation familiar for maps (for example,{sp}``result.thumbnails["72"\]``)."_]:
++
+[source,c#]
+----
+defenses["fire"]; // <.>
+defenses["%99"]; // <.>
+----
+
+<.> Legal
+<.> Also legal
+
+==== https://google.github.io/styleguide/jsoncstyleguide.xml?showone=Flattened_data_vs_Structured_Hierarchy#Flattened_data_vs_Structured_Hierarchy[Flattened data vs Structured Hierarchy]{wj}footnote:[Google did not put a period after "vs.", which sort of invalidates the rest of the style guide.]
+
+Google prescribes that _"Data elements should be 'flattened' in the JSON representation.
+Data should not be arbitrarily grouped for convenience."_
+
+They then provide an example of when data _should_ be grouped:
+
+.Flattened Address
+[source,json]
+--
+{
+  "company": "Google",
+  "website": "https://www.google.com/",
+  "addressLine1": "111 8th Ave",
+  "addressLine2": "4th Floor",
+  "state": "NY",
+  "city": "New York",
+  "zip": "10011"
+}
+--
+
+.Structured Address
+[source,json]
+--
+{
+  "company": "Google",
+  "website": "https://www.google.com/",
+  "address": {
+    "line1": "111 8th Ave",
+    "line2": "4th Floor",
+    "state": "NY",
+    "city": "New York",
+    "zip": "10011"
+  }
+}
+--
+
+However, Google does *not* provide an example of a "bad", "arbitrary" grouping.
+I think their intention is that you if you are in doubt, you should flatten things.
+
+CAUTION: I disagree with this *wholeheartedly*.
+
+I _think_ I see where they are coming from - for example, at work we have 2 _slightly_ different JSON structures that we could combine into one:
+
+[source,json]
+--
+{
+  "standard_features": {
+    "feature": {
+      "enabled": true
+    }
+  },
+
+  "optional_features": {
+    "feature": {
+      "enabled": true,
+      "optional:": false
+    }
+  }
+}
+--
+
+And there is definitely something to be said for flattening that structure.
+
+However, a counter-example from work{wj}footnote:[The names of variables have been anonymized to protect their identities.] is a record we have that combines a bunch of different types of values _and_ values added by https://aws.amazon.com/dynamodb/[Amazon DynamoDB]:
+
+[source,json,caption="a"]
+--
+{
+  "amazon#junk": "8177e0e7-ff1f-4a80-b545-38c36bed6379", // <.> <.>
+  "ttl": 9999, // <.>
+  "TOTAL_DISTANCE" : "5:00", // <.>
+  "TOTAL_FAST_DISTANCE" : 1, // <.>
+  "day": "Monday",
+  "speed": "5:00", // <.>
+  "SPEED_2": "9", // <.>
+  "SPEED_4": "g",
+  "SPEED_6": "purple",
+  "SPEED_8": "U+9001" // <.>
+}
+--
+
+<.> This stuff was added by https://aws.amazon.com/dynamodb/[Amazon DynamoDB], but is mixed in with the "real" information
+<.> _And_ it has a `#` in it (which DynamoDB is _obsessed_ with), which goes against basically every standard ever!
+<.> This _might_ have been added by us and not DynamoDB, but it's a variable that only matters to DynamoDB - and is again mixed in with the "real" data!
+<.> What data type is this?It looks like time, but then why is it called `_DISTANCE`?
+<.> Is this value related to `TOTAL_DISTANCE`? 'cus it sure looks like it is!
+<.> Is this related to the `SPEED_\{X}` variables?
+<.> Are the `SPEED_\{X}` variables related to each other?
+<.> I may be exaggerating _slightly_{wj}footnote:[I should go to bed]
+
+[#_real_world_json_based_rest_apis]
+=== Real-World JSON-based REST APIs
+
+[cols="a,a,a",opts="autowidth"]
+|===
+|API |{naming-convention}[Naming Convention] |Example JSON
+
+|
+[#api-scryfall]
+https://scryfall.com/docs/api/cards[Scryfall]
+|`snake_case`
+|
+.GET request to http://api.scryfall.com/sets/rtr
+[source,powershell]
+--
+Invoke-RestMethod http://api.scryfall.com/sets/rtr
+--
+
+[source,json]
+--
+{
+  "object": "set",
+  "id": "80b2374d-c5f1-403e-9772-f6c806fd275e",
+  "code": "rtr",
+  "mtgo_code": "rtr",
+  "arena_code": "rtr",
+  "tcgplayer_id": 370,
+  "name": "Return to Ravnica",
+  "uri": "https://api.scryfall.com/sets/80b2374d-c5f1-403e-9772-f6c806fd275e",
+  "scryfall_uri": "https://scryfall.com/sets/rtr",
+  "search_uri": "https://api.scryfall.com/cards/search?order=set&q=e%3Artr&unique=prints",
+  "released_at": "2012-10-05",
+  "set_type": "expansion",
+  "card_count": 274,
+  "printed_size": 274,
+  "digital": false,
+  "nonfoil_only": false,
+  "foil_only": false,
+  "block_code": "rtr",
+  "block": "Return to Ravnica",
+  "icon_svg_uri": "https://c2.scryfall.com/file/scryfall-symbols/sets/rtr.svg?1615780800"
+}
+--
+
+|
+[#api-github]
+https://docs.github.com/en/rest/reference/pulls#list-pull-requests--code-samples[Github]
+|`snake_case`
+|
+.Truncated user object from https://docs.github.com/en/rest/reference/pulls#list-pull-requests--code-samples[https://api.github.com/repos/octocat/hello-world/pulls]
+[source,json]
+--
+{
+  "user": {
+      "login": "octocat",
+      "id": 1,
+      "node_id": "MDQ6VXNlcjE=",
+      "avatar_url": "https://github.com/images/error/octocat_happy.gif",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/octocat",
+      "html_url": "https://github.com/octocat",
+      "followers_url": "https://api.github.com/users/octocat/followers",
+      "following_url": "https://api.github.com/users/octocat/following{/other_user}",
+      "gists_url": "https://api.github.com/users/octocat/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/octocat/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/octocat/subscriptions",
+      "organizations_url": "https://api.github.com/users/octocat/orgs",
+      "repos_url": "https://api.github.com/users/octocat/repos",
+      "events_url": "https://api.github.com/users/octocat/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/octocat/received_events",
+      "type": "User",
+      "site_admin": false
+  }
+}
+--
+
+|===
