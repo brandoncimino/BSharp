@@ -48,6 +48,6 @@ namespace BrandonUtils.Standalone.Optional {
         /// <remarks>
         /// Retrieving this value while <see cref="HasValue"/> is false should throw an <see cref="IndexOutOfRangeException"/>.
         /// </remarks>
-        T? Value { get; }
+        T Value { get; }
     }
 }

@@ -26,7 +26,7 @@ namespace BrandonUtils.Standalone.Optional {
         /// <param name="value"></param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public static Optional<T?> Of<T>(T? value) {
+        public static Optional<T> Of<T>(T value) {
             return new Optional<T>(value);
         }
 
@@ -79,7 +79,7 @@ namespace BrandonUtils.Standalone.Optional {
         /// <param name="optional">this <see cref="IOptional{T}"/></param>
         /// <typeparam name="T">the type of the underlying value in <paramref name="optional"/></typeparam>
         /// <returns>a new <see cref="Optional{T}"/> containing the same <see cref="IOptional{T}.Value"/> as <paramref name="optional"/>; or an empty <see cref="Optional{T}"/> if <paramref name="optional"/> was null</returns>
-        public static Optional<T?> ToOptional<T>(this IOptional<T?>? optional) {
+        public static Optional<T> ToOptional<T>(this IOptional<T> optional) {
             return optional switch {
                 null => default,
                 _    => optional.Select(Of).OrElse(default)
@@ -127,35 +127,35 @@ namespace BrandonUtils.Standalone.Optional {
         /// <typeparam name="T">the "most reduced" type of the <see cref="Optional{T}"/></typeparam>
         /// <returns>a single-tier <see cref="Optional{T}"/></returns>
         [Pure]
-        public static Optional<T?> Flatten<T>(this Optional<Optional<T>> optional) => optional.OrDefault();
+        public static Optional<T?> Flatten<T>(this Optional<Optional<T?>> optional) => optional.OrDefault();
 
         /**
          * <inheritdoc cref="Flatten{T}(BrandonUtils.Standalone.Optional.Optional{BrandonUtils.Standalone.Optional.Optional{T}})"/>
          */
         [Pure]
-        public static Optional<T?> Flatten<T>(this Optional<Optional<Optional<T>>> optional) => optional.OrDefault().Flatten();
+        public static Optional<T?> Flatten<T>(this Optional<Optional<Optional<T?>>> optional) => optional.OrDefault().Flatten();
 
         /**
          * <inheritdoc cref="Flatten{T}(BrandonUtils.Standalone.Optional.Optional{BrandonUtils.Standalone.Optional.Optional{T}})"/>
          */
         [Pure]
-        public static Optional<T?> Flatten<T>(this Optional<Optional<Optional<Optional<T>>>> optional) => optional.OrDefault().Flatten();
+        public static Optional<T?> Flatten<T>(this Optional<Optional<Optional<Optional<T?>>>> optional) => optional.OrDefault().Flatten();
 
         /**
          * <inheritdoc cref="Flatten{T}(BrandonUtils.Standalone.Optional.Optional{BrandonUtils.Standalone.Optional.Optional{T}})"/>
          */
         [Pure]
-        public static Optional<T?> Flatten<T>(this Optional<Optional<Optional<Optional<Optional<T>>>>> optional) => optional.OrDefault().Flatten();
+        public static Optional<T?> Flatten<T>(this Optional<Optional<Optional<Optional<Optional<T?>>>>> optional) => optional.OrDefault().Flatten();
 
         #endregion
 
         [Pure]
         [LinqTunnel]
-        public static IOptional<TOut?>? Select<TIn, TOut>(
-            this IOptional<TIn?>? optional,
-            Func<TIn, TOut>       selector
+        public static IOptional<TOut> Select<TIn, TOut>(
+            this IOptional<TIn> optional,
+            Func<TIn, TOut>     selector
         ) {
-            return optional?.AsEnumerable().Select(selector).ToOptional();
+            return optional.AsEnumerable().Select(selector).ToOptional();
         }
 
         /// <summary>
@@ -415,7 +415,7 @@ namespace BrandonUtils.Standalone.Optional {
         /// <param name="optional">this <see cref="IOptional{T}"/></param>
         /// <param name="actionIfPresent">an action performed on <see cref="IOptional{T}.Value"/> if this <see cref="IOptional{T}.HasValue"/></param>
         /// <typeparam name="T">the underlying type of this <see cref="IOptional{T}"/></typeparam>
-        public static void IfPresent<T>(this IOptional<T?>? optional, Action<T> actionIfPresent) {
+        public static void IfPresent<T>(this IOptional<T>? optional, Action<T> actionIfPresent) {
             if (optional?.HasValue == true) {
                 actionIfPresent.Invoke(optional.Value);
             }
@@ -515,7 +515,7 @@ namespace BrandonUtils.Standalone.Optional {
         /// <typeparam name="T">the underlying type of the <see cref="IOptional{T}"/></typeparam>
         /// <returns>the <see cref="IOptional{T}.Value"/></returns>
         /// <exception cref="Exception">if the <see cref="IOptional{T}"/> is empty</exception>
-        public static T OrElseThrow<T>(this IOptional<T> optional, Func<Exception> exceptionProvider = default) {
+        public static T OrElseThrow<T>(this IOptional<T> optional, Func<Exception>? exceptionProvider = default) {
             return optional.HasValue ? optional.Value : throw (exceptionProvider?.Invoke() ?? NoCanHasValue(optional));
         }
 
@@ -533,13 +533,13 @@ namespace BrandonUtils.Standalone.Optional {
         /// <returns></returns>
         /// <exception cref="Exception">if the <see cref="Nullable{T}"/> is empty</exception>
         [ContractAnnotation("nullable:null => stop")]
-        public static T OrElseThrow<T>(this T? nullable, Func<Exception> exceptionProvider = default) where T : struct {
+        public static T OrElseThrow<T>(this T? nullable, Func<Exception>? exceptionProvider = default) where T : struct {
             return nullable ?? throw (exceptionProvider?.Invoke() ?? NoCanHasValue<T?>());
         }
 
         #endregion OrElseThrow
 
-        private static ArgumentNullException NoCanHasValue<T>(T emptyThing = default) {
+        private static ArgumentNullException NoCanHasValue<T>(T? emptyThing = default) {
             return new ArgumentNullException($"The {typeof(T).Name} was empty!");
         }
 
@@ -563,7 +563,7 @@ namespace BrandonUtils.Standalone.Optional {
         /// <param name="optionals">a sequence of <see cref="Optional{T}"/>s</param>
         /// <typeparam name="T">the underlying type of the <see cref="Optional{T}"/>s</typeparam>
         /// <returns>the first <see cref="Optional{T}"/> that <see cref="Optional{T}.HasValue"/>; or an empty <see cref="Optional{T}"/> if no values were found</returns>
-        public static Optional<T?> FirstWithValue<T>(
+        public static Optional<T> FirstWithValue<T>(
             this IEnumerable<Optional<T>> optionals
         ) {
             return optionals.FirstOrDefault(it => it.HasValue);
@@ -598,7 +598,7 @@ namespace BrandonUtils.Standalone.Optional {
         #region 1 arg (Func<TIn, TOut>)
 
         public static Optional<TOut> FirstWithValue<TIn, TOut>(
-            TIn? input,
+            TIn input,
             [InstantHandle]
             IEnumerable<Func<TIn, Optional<TOut>>> functions
         ) {
@@ -611,7 +611,7 @@ namespace BrandonUtils.Standalone.Optional {
         }
 
         public static Optional<TOut> FirstWithValue<TIn, TOut>(
-            TIn?                               input,
+            TIn                                input,
             params Func<TIn, Optional<TOut>>[] functions
         ) {
             if (functions == null) {
