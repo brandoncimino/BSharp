@@ -103,9 +103,9 @@ namespace BSharp.Tests {
 
         [Test]
         public void Coercively_Compute_Numeric(
-            [ValueSource(nameof(PrimitiveUtils.NumericTypes))]
+            [ValueSource(typeof(PrimitiveUtils), nameof(PrimitiveUtils.NumericTypes))]
             Type aType,
-            [ValueSource(nameof(PrimitiveUtils.NumericTypes))]
+            [ValueSource(typeof(PrimitiveUtils), nameof(PrimitiveUtils.NumericTypes))]
             Type bType,
             [Values] Coercive.Operation operation
         ) {
@@ -114,9 +114,9 @@ namespace BSharp.Tests {
 
         [Test]
         public void Coercively_Verb_Numeric(
-            [ValueSource(nameof(PrimitiveUtils.NumericTypes))]
+            [ValueSource(typeof(PrimitiveUtils), nameof(PrimitiveUtils.NumericTypes))]
             Type aType,
-            [ValueSource(nameof(PrimitiveUtils.NumericTypes))]
+            [ValueSource(typeof(PrimitiveUtils), nameof(PrimitiveUtils.NumericTypes))]
             Type bType,
             [Values] Coercive.Operation operation
         ) {
