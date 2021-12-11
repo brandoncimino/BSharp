@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Diagnostics.Contracts;
 
-using BrandonUtils.Standalone.Strings;
+using FowlFever.BSharp.Strings;
 
 using JetBrains.Annotations;
 
 using NUnit.Framework;
 using NUnit.Framework.Constraints;
 
+using System.Diagnostics.Contracts;
 using Pure = System.Diagnostics.Contracts.PureAttribute;
 
 namespace BrandonUtils.Testing {

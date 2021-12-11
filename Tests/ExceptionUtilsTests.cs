@@ -1,7 +1,8 @@
 ﻿using System;
 
-using BrandonUtils.Standalone.Exceptions;
 using BrandonUtils.Testing;
+
+using FowlFever.BSharp.Exceptions;
 
 using NUnit.Framework;
 

@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 
-using BrandonUtils.Standalone;
-using BrandonUtils.Standalone.Collections;
-using BrandonUtils.Standalone.Strings;
 using BrandonUtils.Testing;
+
+using FowlFever.BSharp;
+using FowlFever.BSharp.Collections;
+using FowlFever.BSharp.Strings;
 
 using NUnit.Framework;
 

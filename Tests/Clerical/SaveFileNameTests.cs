@@ -1,9 +1,9 @@
 ﻿using System;
 
-using BrandonUtils.Standalone.Strings;
 using BrandonUtils.Testing;
 
 using FowlFever.BSharp.Clerical.Saving;
+using FowlFever.BSharp.Strings;
 
 using NUnit.Framework;
 

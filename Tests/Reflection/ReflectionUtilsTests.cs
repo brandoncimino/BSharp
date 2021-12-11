@@ -5,12 +5,13 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reflection;
 
-using BrandonUtils.Standalone;
-using BrandonUtils.Standalone.Collections;
-using BrandonUtils.Standalone.Reflection;
-using BrandonUtils.Standalone.Strings;
-using BrandonUtils.Standalone.Strings.Prettifiers;
 using BrandonUtils.Testing;
+
+using FowlFever.BSharp;
+using FowlFever.BSharp.Collections;
+using FowlFever.BSharp.Reflection;
+using FowlFever.BSharp.Strings;
+using FowlFever.BSharp.Strings.Prettifiers;
 
 using NUnit.Framework;
 

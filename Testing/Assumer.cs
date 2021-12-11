@@ -1,6 +1,6 @@
 ﻿using System;
 
-using BrandonUtils.Standalone.Strings;
+using FowlFever.BSharp.Strings;
 
 using NUnit.Framework;
 using NUnit.Framework.Constraints;

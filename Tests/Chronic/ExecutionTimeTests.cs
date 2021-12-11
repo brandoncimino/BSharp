@@ -4,12 +4,13 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 
-using BrandonUtils.Standalone;
-using BrandonUtils.Standalone.Chronic;
-using BrandonUtils.Standalone.Collections;
-using BrandonUtils.Standalone.Exceptions;
-using BrandonUtils.Standalone.Randomization;
 using BrandonUtils.Testing;
+
+using FowlFever.BSharp;
+using FowlFever.BSharp.Chronic;
+using FowlFever.BSharp.Collections;
+using FowlFever.BSharp.Exceptions;
+using FowlFever.BSharp.Randomization;
 
 using NUnit.Framework;
 using NUnit.Framework.Constraints;

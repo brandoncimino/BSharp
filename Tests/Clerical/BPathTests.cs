@@ -1,13 +1,12 @@
 ﻿using System;
 using System.IO;
 
-using BrandonUtils.Standalone.Clerical;
-using BrandonUtils.Standalone.Collections;
-using BrandonUtils.Standalone.Optional;
-using BrandonUtils.Standalone.Strings;
 using BrandonUtils.Testing;
 
 using FowlFever.BSharp.Clerical;
+using FowlFever.BSharp.Collections;
+using FowlFever.BSharp.Optional;
+using FowlFever.BSharp.Strings;
 
 using NUnit.Framework;
 

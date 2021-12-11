@@ -1,6 +1,6 @@
 ﻿using System;
 
-using BrandonUtils.Standalone.Strings;
+using FowlFever.BSharp.Strings;
 
 namespace BrandonUtils.Testing {
     public interface IMultipleAsserter {

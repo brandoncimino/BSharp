@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 
-using BrandonUtils.Standalone;
-using BrandonUtils.Standalone.Collections;
-using BrandonUtils.Standalone.Optional;
-using BrandonUtils.Standalone.Strings;
+using FowlFever.BSharp;
+using FowlFever.BSharp.Collections;
+using FowlFever.BSharp.Optional;
+using FowlFever.BSharp.Strings;
 
 using JetBrains.Annotations;
 

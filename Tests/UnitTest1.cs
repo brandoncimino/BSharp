@@ -1,6 +1,6 @@
 using NUnit.Framework;
 
-namespace TestProject1 {
+namespace BrandonUtils.Tests.Standalone {
     public class Tests {
         [SetUp]
         public void Setup() { }

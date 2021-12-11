@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 
-using BrandonUtils.Standalone.Enums;
+using FowlFever.BSharp.Enums;
 
 using NUnit.Framework;
 using NUnit.Framework.Constraints;

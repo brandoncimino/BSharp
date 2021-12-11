@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 
-using BrandonUtils.Standalone;
-using BrandonUtils.Standalone.Enums;
-using BrandonUtils.Standalone.Strings;
+using FowlFever.BSharp;
+using FowlFever.BSharp.Enums;
+using FowlFever.BSharp.Strings;
 
 using JetBrains.Annotations;
 

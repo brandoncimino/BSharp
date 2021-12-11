@@ -1,5 +1,5 @@
-﻿using BrandonUtils.Standalone.Exceptions;
-using BrandonUtils.Standalone.Hierarchic;
+﻿using FowlFever.BSharp.Exceptions;
+using FowlFever.BSharp.Hierarchic;
 
 using NUnit.Framework;
 

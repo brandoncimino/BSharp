@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Standalone", "Standalone\Standalone.csproj", "{04B5D869-E502-4276-8F45-0C4E9C2581F0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BSharp", "BSharp\BSharp.csproj", "{04B5D869-E502-4276-8F45-0C4E9C2581F0}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Tests\Tests.csproj", "{2B4333E7-8B47-4D44-A87D-FE9C9C2970B9}"
 EndProject

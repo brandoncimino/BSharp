@@ -2,8 +2,8 @@ using System;
 using System.Collections;
 using System.Linq;
 
-using BrandonUtils.Standalone.Exceptions;
-using BrandonUtils.Standalone.Reflection;
+using FowlFever.BSharp.Exceptions;
+using FowlFever.BSharp.Reflection;
 
 using NUnit.Framework.Constraints;
 

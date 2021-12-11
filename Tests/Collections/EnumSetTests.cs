@@ -3,9 +3,10 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 
-using BrandonUtils.Standalone.Enums;
-using BrandonUtils.Standalone.Exceptions;
 using BrandonUtils.Testing;
+
+using FowlFever.BSharp.Enums;
+using FowlFever.BSharp.Exceptions;
 
 using NUnit.Framework;
 

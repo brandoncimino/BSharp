@@ -3,17 +3,18 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 
-using BrandonUtils.Standalone.Optional;
-using BrandonUtils.Standalone.Strings;
-using BrandonUtils.Standalone.Strings.Json;
 using BrandonUtils.Testing;
+
+using FowlFever.BSharp.Optional;
+using FowlFever.BSharp.Strings;
+using FowlFever.BSharp.Strings.Json;
 
 using Newtonsoft.Json;
 
 using NUnit.Framework;
 
 using Is = BrandonUtils.Testing.Is;
-using List = BrandonUtils.Standalone.Collections.List;
+using List = FowlFever.BSharp.Collections.List;
 
 namespace BrandonUtils.Tests.Standalone.Collections {
     [SuppressMessage("ReSharper", "AccessToStaticMemberViaDerivedType")]

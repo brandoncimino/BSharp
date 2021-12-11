@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Linq;
 
-using BrandonUtils.Standalone;
-using BrandonUtils.Standalone.Enums;
 using BrandonUtils.Testing;
+
+using FowlFever.BSharp;
+using FowlFever.BSharp.Enums;
 
 using NUnit.Framework;
 

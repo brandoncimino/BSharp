@@ -2,9 +2,10 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
-using BrandonUtils.Standalone;
-using BrandonUtils.Standalone.Enums;
 using BrandonUtils.Testing;
+
+using FowlFever.BSharp;
+using FowlFever.BSharp.Enums;
 
 using Newtonsoft.Json;
 

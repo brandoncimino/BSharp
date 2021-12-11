@@ -1,7 +1,8 @@
 ﻿using System;
 
-using BrandonUtils.Standalone.Chronic;
 using BrandonUtils.Testing;
+
+using FowlFever.BSharp.Chronic;
 
 using Newtonsoft.Json;
 

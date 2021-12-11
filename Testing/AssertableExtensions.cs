@@ -2,9 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 
-using BrandonUtils.Standalone.Optional;
-using BrandonUtils.Standalone.Strings;
-
+using FowlFever.BSharp.Optional;
+using FowlFever.BSharp.Strings;
 using FowlFever.Conjugal.Affixing;
 
 namespace BrandonUtils.Testing {

@@ -1,7 +1,7 @@
 ﻿using System;
 
-using BrandonUtils.Standalone.Collections;
-using BrandonUtils.Standalone.Optional;
+using FowlFever.BSharp.Collections;
+using FowlFever.BSharp.Optional;
 
 using JetBrains.Annotations;
 

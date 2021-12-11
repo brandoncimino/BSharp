@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Text.RegularExpressions;
 
-using BrandonUtils.Standalone.Strings;
 using BrandonUtils.Testing;
+
+using FowlFever.BSharp.Strings;
 
 using NUnit.Framework;
 

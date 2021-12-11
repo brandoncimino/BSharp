@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Threading;
 
-using BrandonUtils.Standalone;
-using BrandonUtils.Standalone.Refreshing;
+using FowlFever.BSharp;
+using FowlFever.BSharp.Refreshing;
 
 using NUnit.Framework;
 

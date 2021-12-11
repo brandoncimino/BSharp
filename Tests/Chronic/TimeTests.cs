@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-using BrandonUtils.Standalone.Chronic;
+using FowlFever.BSharp.Chronic;
 
 using NUnit.Framework;
 

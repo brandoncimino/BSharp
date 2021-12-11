@@ -1,3 +1,3 @@
-﻿namespace Testing {
+﻿namespace BrandonUtils.Testing {
     public class Class1 { }
 }

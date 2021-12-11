@@ -1,7 +1,8 @@
-﻿using BrandonUtils.Standalone.Optional;
-using BrandonUtils.Standalone.Strings;
-using BrandonUtils.Testing;
+﻿using BrandonUtils.Testing;
 using BrandonUtils.Tests.Standalone.Collections;
+
+using FowlFever.BSharp.Optional;
+using FowlFever.BSharp.Strings;
 
 namespace BrandonUtils.Tests.Standalone {
     public static class MultipleAsserterExtensions {

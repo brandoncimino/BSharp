@@ -2,10 +2,11 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
-using BrandonUtils.Standalone.Attributes;
-using BrandonUtils.Standalone.Reflection;
-using BrandonUtils.Standalone.Strings;
 using BrandonUtils.Testing;
+
+using FowlFever.BSharp.Attributes;
+using FowlFever.BSharp.Reflection;
+using FowlFever.BSharp.Strings;
 
 using NUnit.Framework;
 

@@ -6,21 +6,22 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 
-using BrandonUtils.Standalone;
-using BrandonUtils.Standalone.Chronic;
-using BrandonUtils.Standalone.Collections;
-using BrandonUtils.Standalone.Enums;
-using BrandonUtils.Standalone.Reflection;
-using BrandonUtils.Standalone.Strings;
-using BrandonUtils.Standalone.Strings.Json;
-using BrandonUtils.Standalone.Strings.Prettifiers;
 using BrandonUtils.Testing;
 using BrandonUtils.Tests.Standalone.Reflection;
+
+using FowlFever.BSharp;
+using FowlFever.BSharp.Chronic;
+using FowlFever.BSharp.Collections;
+using FowlFever.BSharp.Enums;
+using FowlFever.BSharp.Reflection;
+using FowlFever.BSharp.Strings;
+using FowlFever.BSharp.Strings.Json;
+using FowlFever.BSharp.Strings.Prettifiers;
 
 using NUnit.Framework;
 
 using Is = NUnit.Framework.Is;
-using List = BrandonUtils.Standalone.Collections.List;
+using List = FowlFever.BSharp.Collections.List;
 
 namespace BrandonUtils.Tests.Standalone.Strings {
     public class PrettificationTests {
@@ -131,8 +132,8 @@ three  Wednesday";
             var expected = @"
 IComparable IVehicle                                           
 ----------- ---------------------------------------------------
-1           BrandonUtils.Tests.Standalone.Reflection.TrainCar  
-two         BrandonUtils.Tests.Standalone.Reflection.Duckmobile";
+1           BrandonUtils.Tests.BSharp.Reflection.TrainCar  
+two         BrandonUtils.Tests.BSharp.Reflection.Duckmobile";
             Console.WriteLine(actual);
 
             Assert.That(actual.Trim(), Is.EqualTo(expected.Trim()));

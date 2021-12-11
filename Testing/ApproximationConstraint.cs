@@ -1,8 +1,8 @@
 ﻿using System;
 
-using BrandonUtils.Standalone;
-using BrandonUtils.Standalone.Collections;
-using BrandonUtils.Standalone.Enums;
+using FowlFever.BSharp;
+using FowlFever.BSharp.Collections;
+using FowlFever.BSharp.Enums;
 
 using NUnit.Framework.Constraints;
 

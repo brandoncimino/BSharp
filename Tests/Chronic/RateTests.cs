@@ -1,6 +1,6 @@
 ﻿using System;
 
-using BrandonUtils.Standalone.Chronic;
+using FowlFever.BSharp.Chronic;
 
 using NUnit.Framework;
 

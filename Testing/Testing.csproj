@@ -9,7 +9,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Standalone\Standalone.csproj"/>
+        <ProjectReference Include="..\BSharp\BSharp.csproj"/>
     </ItemGroup>
 
     <ItemGroup>

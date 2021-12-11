@@ -22,7 +22,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Standalone\Standalone.csproj"/>
+        <ProjectReference Include="..\BSharp\BSharp.csproj"/>
         <ProjectReference Include="..\Testing\Testing.csproj"/>
     </ItemGroup>
 

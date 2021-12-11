@@ -27,7 +27,7 @@ namespace BrandonUtils.Tests.Standalone.Mathb {
         [TestCase(Math.PI,                 0,                       -1)]
         [TestCase(-8,                      -12,                     .5)]
         public void DeltaRatio(double a, double b, double expectedDeltaRatio) {
-            Assert.That(BrandonUtils.Standalone.Mathb.DeltaRatio(a, b), Is.EqualTo(expectedDeltaRatio));
+            Assert.That(FowlFever.BSharp.Mathb.DeltaRatio(a, b), Is.EqualTo(expectedDeltaRatio));
         }
     }
 }
