@@ -2,7 +2,7 @@
 
 using JetBrains.Annotations;
 
-namespace BrandonUtils.Standalone.Clerical {
+namespace FowlFever.BSharp.Clerical {
     /// <summary>
     /// Indicates that the implementer contains a meaningful <see cref="DirectoryInfo"/> reference, stored in <see cref="Directory"/>.
     /// </summary>

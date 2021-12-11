@@ -2,7 +2,7 @@
 
 using BrandonUtils.Standalone.Enums;
 
-namespace BrandonUtils.Standalone.Clerical {
+namespace FowlFever.BSharp.Clerical {
     public enum DirectorySeparator {
         /// <summary>
         /// Aka "Unix".

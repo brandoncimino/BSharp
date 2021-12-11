@@ -2,7 +2,7 @@
 
 using BrandonUtils.Standalone.Strings;
 
-namespace BrandonUtils.Standalone.Clerical {
+namespace FowlFever.BSharp.Clerical {
     public static class ClericalErrors {
         #region Already Exists
 

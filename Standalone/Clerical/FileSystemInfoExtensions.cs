@@ -6,6 +6,8 @@ using System.IO;
 using BrandonUtils.Standalone.Strings;
 using BrandonUtils.Standalone.Strings.Prettifiers;
 
+using FowlFever.BSharp.Clerical;
+
 using JetBrains.Annotations;
 
 using Pure = System.Diagnostics.Contracts.PureAttribute;

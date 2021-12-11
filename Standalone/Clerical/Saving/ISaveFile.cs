@@ -1,7 +1,5 @@
 ﻿using System;
 
-using BrandonUtils.Standalone.Clerical;
-
 using JetBrains.Annotations;
 
 using Newtonsoft.Json;
@@ -33,7 +31,7 @@ namespace FowlFever.BSharp.Clerical.Saving {
         public ISaveFile<TData> Save(DuplicateFileResolution duplicateFileResolution, JsonSerializerSettings? jsonSettings = default);
 
         /**
-         * <inheritdoc cref="Save(BrandonUtils.Standalone.Clerical.DuplicateFileResolution,Newtonsoft.Json.JsonSerializerSettings)"/>
+         * <inheritdoc cref="Save(DuplicateFileResolution,Newtonsoft.Json.JsonSerializerSettings)"/>
          */
         public ISaveFile<TData> Save(SaveManagerSettings? saveSettings = default);
 

@@ -2,7 +2,7 @@
 using System.IO;
 using System.Security;
 
-namespace BrandonUtils.Standalone.Clerical {
+namespace FowlFever.BSharp.Clerical {
     /// <summary>
     /// A pass-through wrapper around <see cref="System.IO.DirectoryInfo"/> that essentially allows <see cref="System.IO.DirectoryInfo"/> to be inherited.
     /// </summary>

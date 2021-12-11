@@ -12,7 +12,7 @@ using FowlFever.Conjugal.Affixing;
 
 using JetBrains.Annotations;
 
-namespace BrandonUtils.Standalone.Clerical {
+namespace FowlFever.BSharp.Clerical {
     /// <summary>
     /// TODO: There is almost certainly a cross-platform library to use for this that I can get from Nuget
     /// </summary>

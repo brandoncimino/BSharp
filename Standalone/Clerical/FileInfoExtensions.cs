@@ -6,6 +6,8 @@ using System.Text;
 using BrandonUtils.Standalone.Enums;
 using BrandonUtils.Standalone.Strings;
 
+using FowlFever.BSharp.Clerical;
+
 using JetBrains.Annotations;
 
 using Newtonsoft.Json;

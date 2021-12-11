@@ -7,6 +7,8 @@ using BrandonUtils.Standalone.Optional;
 using BrandonUtils.Standalone.Strings;
 using BrandonUtils.Testing;
 
+using FowlFever.BSharp.Clerical;
+
 using NUnit.Framework;
 
 using static BrandonUtils.Testing.Should;

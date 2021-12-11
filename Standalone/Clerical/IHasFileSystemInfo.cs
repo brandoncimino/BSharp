@@ -1,6 +1,6 @@
 ﻿using System.IO;
 
-namespace BrandonUtils.Standalone.Clerical {
+namespace FowlFever.BSharp.Clerical {
     public interface IHasFileSystemInfo {
         public FileSystemInfo FileSystemInfo { get; }
     }

@@ -6,6 +6,7 @@ using System.Linq;
 using BrandonUtils.Standalone.Clerical;
 using BrandonUtils.Standalone.Collections;
 
+using FowlFever.BSharp.Clerical;
 using FowlFever.Conjugal.Affixing;
 
 using JetBrains.Annotations;
