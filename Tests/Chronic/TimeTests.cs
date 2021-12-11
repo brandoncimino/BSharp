@@ -2,9 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+using FowlFever.BSharp;
 using FowlFever.BSharp.Chronic;
-using FowlFever.BSharp.Optional;
-using FowlFever.BSharp.Strings;
 using FowlFever.Testing;
 
 using NUnit.Framework;
@@ -19,52 +18,12 @@ namespace BSharp.Tests.Chronic {
         [Test]
         [Combinatorial]
         public void TestDivision(
-            [ValueSource(nameof(ValuesInSeconds)), Values(0)]
-            double dividendSeconds,
-            [ValueSource(nameof(ValuesInSeconds))]
-            double divisorSeconds
+            [ValueSource(nameof(Spans))]
+            TimeSpan dividend,
+            [ValueSource(nameof(Spans))]
+            TimeSpan divisor
         ) {
-            dividendSeconds = TimeUtils.NormalizeSeconds(dividendSeconds);
-            divisorSeconds  = TimeUtils.NormalizeSeconds(divisorSeconds);
-
-            Assume.That(divisorSeconds, Is.Not.EqualTo(0), "Checking for division by zero is a different test!");
-
-            var dividend = TimeSpan.FromSeconds(dividendSeconds);
-            var divisor  = TimeSpan.FromSeconds(divisorSeconds);
-
-            var expectedDivisionResult = (double)dividend.Ticks / divisor.Ticks;
-
-            Assert.That(dividend.Divide(divisor), Is.EqualTo(expectedDivisionResult));
-        }
-
-        [Test]
-        public void TestDivisionByZero(
-            [ValueSource(nameof(ValuesInSeconds)), Values(0)]
-            double dividendSeconds
-        ) {
-            var dic = new Dictionary<object, Func<object>>() {
-                ["1s / 0s"]      = () => TimeSpan.FromSeconds(1) / TimeSpan.Zero,
-                ["1s.Div(0s)"]   = () => TimeSpan.FromSeconds(1).Divide(TimeSpan.Zero),
-                ["1s / 0 int"]   = () => TimeSpan.FromSeconds(1) / 0,
-                ["1s / 0d"]      = () => TimeSpan.FromSeconds(1) / 0d,
-                ["1s.Div(0int)"] = () => TimeSpan.FromSeconds(1).Divide(0),
-                ["1s.Div(0d)"]   = () => TimeSpan.FromSeconds(1).Divide(0d),
-            };
-
-            var failures = dic.ToDictionary(
-                it => it.Key,
-                it => {
-                    var failable = it.Value.Try();
-                    return failable.Failed ? failable.Excuse : failable.Value;
-                }
-            );
-
-            Console.WriteLine(failures.Prettify());
-
-            // Assert.That(() => TimeUtils.Divide(TimeSpan.FromSeconds(dividendSeconds), TimeSpan.Zero), Throws.InstanceOf<DivideByZeroException>());
-
-            var dividend = TimeSpan.FromSeconds(dividendSeconds);
-            Assert.That(TimeUtils.Divide(dividend, TimeSpan.Zero), Is.EqualTo(dividend / TimeSpan.Zero));
+            Assert.That(TimeUtils.Divide(dividend, divisor), Is.EqualTo(dividend / divisor));
         }
 
         [Test]
@@ -80,60 +39,21 @@ namespace BSharp.Tests.Chronic {
 
         [Test]
         [Combinatorial]
-        public void TestQuotient_old(
-            [ValueSource(nameof(ValuesInSeconds)), Values(0)]
-            double dividendSeconds,
-            [ValueSource(nameof(ValuesInSeconds))]
-            double divisorSeconds
+        public void TestModulus(
+            [ValueSource(nameof(Spans))]
+            TimeSpan dividend,
+            [ValueSource(nameof(Spans))]
+            TimeSpan divisor
         ) {
-            dividendSeconds = TimeUtils.NormalizeSeconds(dividendSeconds);
-            divisorSeconds  = TimeUtils.NormalizeSeconds(divisorSeconds);
+            TimeSpan ExpectedModulus() {
+                return (dividend - ((dividend / divisor).Floor() * divisor));
+            }
 
-            Assume.That(divisorSeconds, Is.Not.EqualTo(0), "Checking for division by zero is a different test!");
+            Console.WriteLine($"{dividend} % {divisor}");
 
-            var dividend = TimeSpan.FromSeconds(dividendSeconds);
-            var divisor  = TimeSpan.FromSeconds(divisorSeconds);
-
-            Assert.That(dividend.Quotient(divisor), Is.EqualTo(dividend.Ticks / divisor.Ticks));
-        }
-
-        [Test]
-        public void TestQuotientByZero(
-            [ValueSource(nameof(ValuesInSeconds)), Values(0)]
-            double dividendSeconds
-        ) {
-            Assert.Throws<DivideByZeroException>(() => TimeSpan.FromSeconds(dividendSeconds).Quotient(TimeSpan.Zero));
-        }
-
-        [Test]
-        [Combinatorial]
-        public void TestModulusCombinatorial(
-            [ValueSource(nameof(ValuesInSeconds)), Values(0)]
-            double dividendSeconds,
-            [ValueSource(nameof(ValuesInSeconds))]
-            double divisorSeconds
-        ) {
-            dividendSeconds = TimeUtils.NormalizeSeconds(dividendSeconds);
-            divisorSeconds  = TimeUtils.NormalizeSeconds(divisorSeconds);
-
-            Assume.That(divisorSeconds, Is.Not.EqualTo(0), "Checking for division by zero is a different test!");
-
-            var dividend         = TimeSpan.FromSeconds(dividendSeconds);
-            var divisor          = TimeSpan.FromSeconds(divisorSeconds);
-            var dividendTicks    = dividend.Ticks;
-            var divisorTicks     = divisor.Ticks;
-            var expectedModTicks = dividendTicks % divisorTicks;
-            var expectedModSpan  = TimeSpan.FromTicks(expectedModTicks);
-
-            Assert.That(dividend.Modulus(divisor), Is.EqualTo(expectedModSpan), $"The modulus of {dividend} % {divisor} = {expectedModSpan}\n\tIn Ticks: {dividendTicks} % {divisorTicks} = {expectedModTicks}");
-        }
-
-        [Test]
-        public void TestModulusByZero(
-            [ValueSource(nameof(ValuesInSeconds)), Values(0)]
-            double dividendSeconds
-        ) {
-            Assert.Throws<DivideByZeroException>(() => TimeSpan.FromSeconds(dividendSeconds).Modulus(TimeSpan.Zero));
+            Asserter.Against(() => TimeUtils.Modulus(dividend, divisor))
+                    .And(divisor == TimeSpan.Zero ? Throws.ArgumentException : Is.EqualTo(ExpectedModulus()))
+                    .Invoke();
         }
 
         [Test]

@@ -122,7 +122,10 @@ namespace FowlFever.BSharp.Chronic {
         /// <returns></returns>
         [Pure]
         public static TimeSpan Modulus(this TimeSpan dividend, TimeSpan divisor) {
-            ValidateDivisor(divisor);
+            if (divisor == TimeSpan.Zero) {
+                throw new ArgumentException($"Cannot calculate the {nameof(Modulus)} of {dividend} and {divisor} because the {nameof(divisor)} is 0, which would be really ambiguous!");
+            }
+
             return TimeSpan.FromTicks(dividend.Ticks % divisor.Ticks);
         }
 
