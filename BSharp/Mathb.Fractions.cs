@@ -43,8 +43,8 @@ namespace FowlFever.BSharp {
                 (double.PositiveInfinity, double.PositiveInfinity) => double.NaN,
                 (double.PositiveInfinity, _)                       => double.NegativeInfinity,
                 (double.NegativeInfinity, double.NegativeInfinity) => double.NaN,
-                (double.NegativeInfinity, _)                       => double.NegativeInfinity,
-                _                                                  => (initial - final) / initial
+                (double.NegativeInfinity, _)                       => double.PositiveInfinity,
+                _                                                  => (final - initial) / initial
             };
         }
 
