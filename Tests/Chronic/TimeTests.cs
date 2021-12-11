@@ -13,8 +13,8 @@ using Is = NUnit.Framework.Is;
 
 namespace BSharp.Tests.Chronic {
     public class TimeTests {
-        private static double[]   ValuesInSeconds = { 5d, 0.53, 2, 10, 264576.523, 7801.623, 15.623, 0.123, 234678.234, 345.4 * 645.2, Math.PI, 0.1, 0.01, 0.001, 0.00001, };
-        private static TimeSpan[] TimeSpans       = ValuesInSeconds.Select(TimeSpan.FromSeconds).ToArray();
+        private static double[]   ValuesInSeconds = { 5d, 0.53, 2, 10, 264576.523, 7801.623, 15.623, 0.123, 234678.234, 345.4 * 645.2, Math.PI, 0.1, 0.01, 0.001, 0.00001, 0 };
+        private static TimeSpan[] Spans           = ValuesInSeconds.Select(TimeSpan.FromSeconds).ToArray();
 
         [Test]
         [Combinatorial]
@@ -70,6 +70,17 @@ namespace BSharp.Tests.Chronic {
         [Test]
         [Combinatorial]
         public void TestQuotient(
+            [ValueSource(nameof(Spans))]
+            TimeSpan dividend,
+            [ValueSource(nameof(Spans))]
+            TimeSpan divisor
+        ) {
+            Assert.That(TimeUtils.Quotient(dividend, divisor), Is.EqualTo(Math.Floor(dividend / divisor)));
+        }
+
+        [Test]
+        [Combinatorial]
+        public void TestQuotient_old(
             [ValueSource(nameof(ValuesInSeconds)), Values(0)]
             double dividendSeconds,
             [ValueSource(nameof(ValuesInSeconds))]
@@ -127,7 +138,7 @@ namespace BSharp.Tests.Chronic {
 
         [Test]
         public void TestMultiply(
-            [ValueSource(nameof(TimeSpans))]
+            [ValueSource(nameof(Spans))]
             TimeSpan multiplicand,
             [ValueSource(nameof(ValuesInSeconds))]
             double multiplier

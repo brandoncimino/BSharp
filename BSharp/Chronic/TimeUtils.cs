@@ -75,8 +75,7 @@ namespace FowlFever.BSharp.Chronic {
         /// <exception cref="DivideByZeroException">if the <see cref="divisor"/> is <see cref="TimeSpan.Zero"/></exception>
         [Pure]
         public static double Divide(this TimeSpan dividend, TimeSpan divisor) {
-            ValidateDivisor(divisor);
-            return (double)dividend.Ticks / divisor.Ticks;
+            return dividend.Ticks / (double)divisor.Ticks;
         }
 
         /// <summary>
@@ -98,14 +97,20 @@ namespace FowlFever.BSharp.Chronic {
         }
 
         /// <summary>
-        ///     Divides <paramref name="dividend" /> by <paramref name="divisor" />, returning the integer quotient.
+        /// Divides <paramref name="dividend" /> by <paramref name="divisor" />, returning the integer quotient.
         /// </summary>
+        /// <remarks>
+        /// This returns a <see cref="double"/> in order to support return values such as <see cref="double.PositiveInfinity"/>.
+        ///
+        /// TODO: I am beginning to question the value of this method...
+        /// </remarks>
         /// <param name="dividend">The number to be divided (i.e. top of the fraction)</param>
         /// <param name="divisor">The number by which <paramref name="dividend" /> will be divided (i.e. the bottom of the fraction)</param>
-        /// <returns></returns>
+        /// <returns>The number of full spans of <paramref name="divisor"/> that can occur within <see cref="dividend"/></returns>
         [Pure]
+        [SuppressMessage("ReSharper", "PossibleLossOfFraction")]
         public static double Quotient(this TimeSpan dividend, TimeSpan divisor) {
-            ValidateDivisor(divisor);
+            // ValidateDivisor(divisor);
             return Math.Floor(Divide(dividend, divisor));
         }
 
@@ -216,6 +221,7 @@ namespace FowlFever.BSharp.Chronic {
         /// <example>
         ///     TODO: Add an example, because this is kinda hard to explain without one.
         ///     TODO: Future Brandon, on 8/16/2021, can confirm past Brandon's assessment from 9/22/2020.
+        ///     TODO: Future future Brandon, on 12/11/2021, has discovered that it may be more appropriate to use <see cref="Math.Round(decimal)"/>, which is what .NET Core does for its TimeSpan * and / operators.
         /// </example>
         /// <param name="value"></param>
         /// <param name="unit"></param>
