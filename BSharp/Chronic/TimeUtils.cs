@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 using FowlFever.BSharp.Enums;
@@ -133,12 +134,38 @@ namespace FowlFever.BSharp.Chronic {
         /// <summary>
         ///     Multiplies <paramref name="timeSpan" /> by <paramref name="factor" />, returning a new <see cref="TimeSpan" />.
         /// </summary>
+        /// <remarks>
+        /// This is taken as verbatim as possible from the source code of <a href="https://docs.microsoft.com/en-us/dotnet/api/system.timespan.op_multiply?view=net-6.0">TimeSpan.Multiply()</a>
+        /// </remarks>
         /// <param name="timeSpan"></param>
         /// <param name="factor"></param>
         /// <returns></returns>
         [Pure]
         public static TimeSpan Multiply(this TimeSpan timeSpan, double factor) {
-            return TimeSpan.FromTicks((long)(timeSpan.Ticks * factor));
+            if (double.IsNaN(factor)) {
+                throw new ArgumentException($"Cannot multiply a {nameof(TimeSpan)} by {double.NaN}", nameof(factor));
+            }
+
+            // (The following comment is taken from the .NET source code)
+            //
+            // Rounding to the nearest tick is as close to the result we would have with unlimited
+            // precision as possible, and so likely to have the least potential to surprise.
+            double ticks = Math.Round(timeSpan.Ticks * factor);
+            return IntervalFromDoubleTicks(ticks);
+        }
+
+        /// <remarks>
+        /// This is taken as verbatim as possible from the source code of <a href="https://docs.microsoft.com/en-us/dotnet/api/system.timespan.op_multiply?view=net-6.0">TimeSpan.Multiply()</a>.
+        ///
+        /// I do not know why they have an explicit check for <see cref="long.MaxValue"/>, but not <see cref="long.MinValue"/>...
+        /// </remarks>
+        [SuppressMessage("ReSharper", "All")]
+        internal static TimeSpan IntervalFromDoubleTicks(double ticks) {
+            if (ticks is > long.MaxValue or < long.MinValue or double.NaN)
+                throw new OverflowException($"Tick count [{ticks}] was out of bounds for a long, so it can't fit inside of a {nameof(TimeSpan)}!");
+            if (ticks == long.MaxValue)
+                return TimeSpan.MaxValue;
+            return new TimeSpan((long)ticks);
         }
 
         #endregion
@@ -201,7 +228,7 @@ namespace FowlFever.BSharp.Chronic {
                 TimeUnit.Minutes      => NormalizeMinutes(value),
                 TimeUnit.Hours        => NormalizeHours(value),
                 TimeUnit.Days         => NormalizeDays(value),
-                _                     => throw EnumUtils.InvalidEnumArgumentException(nameof(unit), unit)
+                _                     => throw BEnum.InvalidEnumArgumentException(nameof(unit), unit)
             };
         }
 

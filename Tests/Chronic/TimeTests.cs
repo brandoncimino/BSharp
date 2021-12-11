@@ -1,13 +1,20 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 
 using FowlFever.BSharp.Chronic;
+using FowlFever.BSharp.Optional;
+using FowlFever.BSharp.Strings;
+using FowlFever.Testing;
 
 using NUnit.Framework;
 
+using Is = NUnit.Framework.Is;
+
 namespace BSharp.Tests.Chronic {
     public class TimeTests {
-        private static double[] ValuesInSeconds = { 5d, 0.53, 2, 10, 264576.523, 7801.623, 15.623, 0.123, 234678.234, 345.4 * 645.2, Math.PI, 0.1, 0.01, 0.001, 0.00001, };
+        private static double[]   ValuesInSeconds = { 5d, 0.53, 2, 10, 264576.523, 7801.623, 15.623, 0.123, 234678.234, 345.4 * 645.2, Math.PI, 0.1, 0.01, 0.001, 0.00001, };
+        private static TimeSpan[] TimeSpans       = ValuesInSeconds.Select(TimeSpan.FromSeconds).ToArray();
 
         [Test]
         [Combinatorial]
@@ -35,7 +42,29 @@ namespace BSharp.Tests.Chronic {
             [ValueSource(nameof(ValuesInSeconds)), Values(0)]
             double dividendSeconds
         ) {
-            Assert.Throws<DivideByZeroException>(() => TimeSpan.FromSeconds(dividendSeconds).Divide(TimeSpan.Zero));
+            var dic = new Dictionary<object, Func<object>>() {
+                ["1s / 0s"]      = () => TimeSpan.FromSeconds(1) / TimeSpan.Zero,
+                ["1s.Div(0s)"]   = () => TimeSpan.FromSeconds(1).Divide(TimeSpan.Zero),
+                ["1s / 0 int"]   = () => TimeSpan.FromSeconds(1) / 0,
+                ["1s / 0d"]      = () => TimeSpan.FromSeconds(1) / 0d,
+                ["1s.Div(0int)"] = () => TimeSpan.FromSeconds(1).Divide(0),
+                ["1s.Div(0d)"]   = () => TimeSpan.FromSeconds(1).Divide(0d),
+            };
+
+            var failures = dic.ToDictionary(
+                it => it.Key,
+                it => {
+                    var failable = it.Value.Try();
+                    return failable.Failed ? failable.Excuse : failable.Value;
+                }
+            );
+
+            Console.WriteLine(failures.Prettify());
+
+            // Assert.That(() => TimeUtils.Divide(TimeSpan.FromSeconds(dividendSeconds), TimeSpan.Zero), Throws.InstanceOf<DivideByZeroException>());
+
+            var dividend = TimeSpan.FromSeconds(dividendSeconds);
+            Assert.That(TimeUtils.Divide(dividend, TimeSpan.Zero), Is.EqualTo(dividend / TimeSpan.Zero));
         }
 
         [Test]
@@ -98,17 +127,15 @@ namespace BSharp.Tests.Chronic {
 
         [Test]
         public void TestMultiply(
-            [ValueSource(nameof(ValuesInSeconds)), Values(0)]
-            double multiplicandInSeconds,
-            [ValueSource(nameof(ValuesInSeconds)), Values(0)]
+            [ValueSource(nameof(TimeSpans))]
+            TimeSpan multiplicand,
+            [ValueSource(nameof(ValuesInSeconds))]
             double multiplier
         ) {
-            var multiplicand                 = TimeSpan.FromSeconds(multiplicandInSeconds);
-            var multiplicandTicks            = multiplicand.Ticks;
-            var expectedProductTicks         = (long)(multiplicandTicks * multiplier);
-            var expectedProductSpanFromTicks = TimeSpan.FromTicks(expectedProductTicks);
-
-            Assert.That(multiplicand.Multiply(multiplier), Is.EqualTo(expectedProductSpanFromTicks));
+            Asserter.Against(() => TimeUtils.Multiply(multiplicand, multiplier))
+                    .And(Is.EqualTo(multiplicand * multiplier))
+                    .And(Is.EqualTo(multiplicand.Multiply(multiplier)))
+                    .Invoke();
         }
 
         [Test, Pairwise]
