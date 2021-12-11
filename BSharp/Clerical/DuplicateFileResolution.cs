@@ -1,4 +1,4 @@
-﻿namespace FowlFever.BSharp.Clerical {
+namespace FowlFever.BSharp.Clerical {
     public enum DuplicateFileResolution {
         Error = default,
         Overwrite,

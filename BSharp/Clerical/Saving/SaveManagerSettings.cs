@@ -1,4 +1,4 @@
-﻿using FowlFever.BSharp.Optional;
+using FowlFever.BSharp.Optional;
 
 using JetBrains.Annotations;
 

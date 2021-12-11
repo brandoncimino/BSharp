@@ -1,4 +1,4 @@
-﻿using BrandonUtils.Tests.Standalone.Collections;
+using BrandonUtils.Tests.Standalone.Collections;
 
 using FowlFever.BSharp.Optional;
 using FowlFever.BSharp.Strings;

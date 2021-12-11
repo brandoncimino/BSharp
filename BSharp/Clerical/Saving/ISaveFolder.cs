@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 
 namespace FowlFever.BSharp.Clerical.Saving {
     public interface ISaveFolder : IHasDirectoryInfo {

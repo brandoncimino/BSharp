@@ -1,4 +1,4 @@
-﻿using NUnit.Framework.Constraints;
+using NUnit.Framework.Constraints;
 
 namespace FowlFever.Testing {
     /// <summary>

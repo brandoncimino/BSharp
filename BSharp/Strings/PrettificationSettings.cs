@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 using FowlFever.BSharp.Optional;
 using FowlFever.BSharp.Strings.Json;

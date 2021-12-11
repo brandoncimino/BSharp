@@ -1,4 +1,4 @@
-﻿using System.Runtime.CompilerServices;
+using System.Runtime.CompilerServices;
 
 // This lets everything inside of another assembly access `internal` members.
 // This file should live in the same directory as an `.asmdef` file.

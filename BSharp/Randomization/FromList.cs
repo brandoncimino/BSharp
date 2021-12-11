@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using FowlFever.BSharp.Collections;
 
 namespace FowlFever.BSharp.Randomization {

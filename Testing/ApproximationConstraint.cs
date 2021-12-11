@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 using FowlFever.BSharp;
 using FowlFever.BSharp.Collections;

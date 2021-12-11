@@ -1,4 +1,4 @@
-﻿using JetBrains.Annotations;
+using JetBrains.Annotations;
 
 namespace FowlFever.BSharp.Collections {
     [PublicAPI]

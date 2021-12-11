@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 using FowlFever.BSharp.Chronic;
 using FowlFever.Testing;

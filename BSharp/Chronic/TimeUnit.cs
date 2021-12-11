@@ -1,4 +1,4 @@
-﻿namespace FowlFever.BSharp.Chronic {
+namespace FowlFever.BSharp.Chronic {
     /// <summary>
     /// An approximate knockoff of Java's <a href="https://docs.oracle.com/javase/8/docs/api/java/time/temporal/ChronoUnit.html">ChronoUnit</a>.
     /// </summary>

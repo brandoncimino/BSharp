@@ -1,4 +1,4 @@
-﻿using Pure = System.Diagnostics.Contracts.PureAttribute;
+using Pure = System.Diagnostics.Contracts.PureAttribute;
 
 namespace FowlFever.BSharp.Strings {
     /// <summary>

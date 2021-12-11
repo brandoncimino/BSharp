@@ -1,4 +1,4 @@
-﻿namespace FowlFever.BSharp.Strings {
+namespace FowlFever.BSharp.Strings {
     public enum HeaderStyle {
         TypeNames,
         None

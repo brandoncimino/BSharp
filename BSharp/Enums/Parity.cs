@@ -1,4 +1,4 @@
-﻿namespace FowlFever.BSharp.Enums {
+namespace FowlFever.BSharp.Enums {
     public enum Parity {
         Even,
         Odd

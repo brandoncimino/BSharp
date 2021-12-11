@@ -1,4 +1,4 @@
-﻿using FowlFever.BSharp.Enums;
+using FowlFever.BSharp.Enums;
 
 // ReSharper disable ConvertConditionalTernaryExpressionToSwitchExpression
 

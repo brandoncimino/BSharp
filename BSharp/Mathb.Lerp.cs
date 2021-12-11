@@ -1,4 +1,4 @@
-﻿// ReSharper disable UseDeconstructionOnParameter
+// ReSharper disable UseDeconstructionOnParameter
 
 using System;
 

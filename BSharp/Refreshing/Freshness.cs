@@ -1,4 +1,4 @@
-﻿namespace FowlFever.BSharp.Refreshing {
+namespace FowlFever.BSharp.Refreshing {
     /// <summary>
     /// Describes the state of a <see cref="Refreshing{TValue,TStaleness}"/> value.
     /// </summary>
