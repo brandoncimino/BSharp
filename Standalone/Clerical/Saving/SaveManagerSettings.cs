@@ -1,10 +1,11 @@
-﻿using BrandonUtils.Standalone.Optional;
+﻿using BrandonUtils.Standalone.Clerical;
+using BrandonUtils.Standalone.Optional;
 
 using JetBrains.Annotations;
 
 using Newtonsoft.Json;
 
-namespace BrandonUtils.Standalone.Clerical.Saving {
+namespace FowlFever.BSharp.Clerical.Saving {
     [PublicAPI]
     public class SaveManagerSettings {
         public Fallback<JsonSerializerSettings?> JsonSerializerSettings  { get; } = new Fallback<JsonSerializerSettings>(new JsonSerializerSettings());

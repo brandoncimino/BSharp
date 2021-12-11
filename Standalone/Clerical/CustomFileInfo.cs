@@ -2,6 +2,8 @@
 using System.Runtime.InteropServices;
 using System.Security;
 
+using FowlFever.BSharp.Clerical;
+
 namespace BrandonUtils.Standalone.Clerical {
     /// <summary>
     /// A pass-through wrapper for <see cref="System.IO.FileInfo"/> that essentially makes <see cref="System.IO.FileInfo"/> extensible.

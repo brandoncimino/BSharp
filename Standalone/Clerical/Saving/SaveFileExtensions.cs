@@ -3,7 +3,7 @@ using System.IO;
 
 using BrandonUtils.Standalone.Strings;
 
-namespace BrandonUtils.Standalone.Clerical.Saving {
+namespace FowlFever.BSharp.Clerical.Saving {
     public static class SaveFileExtensions {
         internal static void MustExist(this ISaveFile<ISaveData>? saveFile) {
             if (saveFile == null) {

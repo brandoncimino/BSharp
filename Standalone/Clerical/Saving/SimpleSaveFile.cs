@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-namespace BrandonUtils.Standalone.Clerical.Saving {
+namespace FowlFever.BSharp.Clerical.Saving {
     public class SimpleSaveFile<TData> : BaseSaveFile<TData> where TData : ISaveData {
         public override string   Nickname  { get; }
         public override DateTime TimeStamp => File.LastAccessTime;

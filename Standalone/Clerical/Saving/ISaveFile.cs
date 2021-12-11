@@ -1,10 +1,12 @@
 ﻿using System;
 
+using BrandonUtils.Standalone.Clerical;
+
 using JetBrains.Annotations;
 
 using Newtonsoft.Json;
 
-namespace BrandonUtils.Standalone.Clerical.Saving {
+namespace FowlFever.BSharp.Clerical.Saving {
     /// <summary>
     /// Joins together a <see cref="System.IO.FileInfo"/> with the <see cref="ISaveData"/> it contains.
     /// </summary>

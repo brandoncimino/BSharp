@@ -5,7 +5,7 @@ using BrandonUtils.Standalone.Strings;
 
 using JetBrains.Annotations;
 
-namespace BrandonUtils.Standalone.Clerical.Saving {
+namespace FowlFever.BSharp.Clerical.Saving {
     [PublicAPI]
     public class SaveFile<TData> : BaseSaveFile<TData> where TData : ISaveData {
         private readonly SaveFileName _saveFileName;

@@ -2,7 +2,7 @@
 
 using Newtonsoft.Json;
 
-namespace BrandonUtils.Standalone.Clerical.Saving {
+namespace FowlFever.BSharp.Clerical.Saving {
     public interface ISaveData {
         [JsonProperty]
         public DateTime LastSaveTime { get; }

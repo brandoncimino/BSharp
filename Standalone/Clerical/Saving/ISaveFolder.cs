@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 
-namespace BrandonUtils.Standalone.Clerical.Saving {
+using BrandonUtils.Standalone.Clerical;
+
+namespace FowlFever.BSharp.Clerical.Saving {
     public interface ISaveFolder : IHasDirectoryInfo {
         public string PersistentDataPath             { get; }
         public string RelativePathFromPersistentData { get; }

@@ -6,7 +6,7 @@ using BrandonUtils.Standalone.Strings;
 
 using JetBrains.Annotations;
 
-namespace BrandonUtils.Standalone.Clerical.Saving {
+namespace FowlFever.BSharp.Clerical.Saving {
     /// <summary>
     /// The most basic implementation of <see cref="ISaveSlot{TData}"/>:
     /// <ul>

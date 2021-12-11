@@ -3,12 +3,13 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 
+using BrandonUtils.Standalone.Clerical;
 using BrandonUtils.Standalone.Collections;
 using BrandonUtils.Standalone.Strings;
 
 using JetBrains.Annotations;
 
-namespace BrandonUtils.Standalone.Clerical.Saving {
+namespace FowlFever.BSharp.Clerical.Saving {
     /// <summary>
     /// A builder for names of <see cref="SaveFile{TData}"/>s.
     /// </summary>

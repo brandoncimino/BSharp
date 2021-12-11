@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 using JetBrains.Annotations;
 
-namespace BrandonUtils.Standalone.Clerical.Saving {
+namespace FowlFever.BSharp.Clerical.Saving {
     public interface ISaveSlot<TData> where TData : ISaveData {
         public string      Nickname   { get; }
         public ISaveFolder SaveFolder { get; }

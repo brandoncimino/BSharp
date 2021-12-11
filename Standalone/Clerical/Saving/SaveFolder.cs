@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
+using BrandonUtils.Standalone.Clerical;
+
 using JetBrains.Annotations;
 
-namespace BrandonUtils.Standalone.Clerical.Saving {
+namespace FowlFever.BSharp.Clerical.Saving {
     [PublicAPI]
     public readonly struct SaveFolder : ISaveFolder {
         public const string SaveFolderName = "SaveData";

@@ -2,9 +2,10 @@
 using System.IO;
 using System.Linq;
 
+using BrandonUtils.Standalone.Clerical;
 using BrandonUtils.Standalone.Strings;
 
-namespace BrandonUtils.Standalone.Clerical.Saving {
+namespace FowlFever.BSharp.Clerical.Saving {
     public class SaveManager<TData> where TData : ISaveData {
         private readonly SaveFolder          SaveFolder;
         public           SaveManagerSettings Settings;

@@ -1,6 +1,8 @@
 ﻿using System.IO;
 
-namespace BrandonUtils.Standalone.Clerical {
+using BrandonUtils.Standalone.Clerical;
+
+namespace FowlFever.BSharp.Clerical {
     /// <summary>
     /// Indicates that the implementer contains a meaningful <see cref="FileInfo"/> reference, stored in <see cref="File"/>.
     /// </summary>

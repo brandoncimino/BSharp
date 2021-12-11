@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-namespace BrandonUtils.Standalone.Clerical.Saving {
+using BrandonUtils.Standalone.Clerical;
+
+namespace FowlFever.BSharp.Clerical.Saving {
     public class SimplerSaveSlot<TData> : ISaveSlot<TData> where TData : ISaveData {
         public string              Nickname              { get; }
         public ISaveFolder         SaveFolder            { get; }

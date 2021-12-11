@@ -1,11 +1,12 @@
 ﻿using System;
 using System.IO;
 
+using BrandonUtils.Standalone.Clerical;
 using BrandonUtils.Standalone.Strings;
 
 using Newtonsoft.Json;
 
-namespace BrandonUtils.Standalone.Clerical.Saving {
+namespace FowlFever.BSharp.Clerical.Saving {
     public abstract class BaseSaveFile<TData> : ISaveFile<TData> where TData : ISaveData {
         public          FileSystemInfo FileSystemInfo => File;
         public          FileInfo       File           { get; }
