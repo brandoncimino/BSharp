@@ -41,7 +41,7 @@ namespace FowlFever.BSharp.Collections {
         /// <typeparam name="T">the type of the elements in the original <see cref="ICollection{T}"/></typeparam>
         /// <returns>a <see cref="Random{T}"/> entry from <paramref name="collection"/></returns>
         [ContractAnnotation("collection:null => stop")]
-        public static T? GrabRandom<T>(this ICollection<T?> collection, Random? generator = default) {
+        public static T GrabRandom<T>(this ICollection<T> collection, Random? generator = default) {
             if (collection == null) {
                 throw new ArgumentNullException(nameof(collection));
             }
@@ -62,7 +62,7 @@ namespace FowlFever.BSharp.Collections {
         /// <param name="toBeRandomized">the <see cref="ICollection{T}"/> that <i>will be modified</i></param>
         /// <typeparam name="T">the type of the entries in <paramref name="toBeRandomized"/></typeparam>
         [ContractAnnotation("toBeRandomized:null => stop")]
-        internal static void RandomizeEntries<T>(this ICollection<T?> toBeRandomized) {
+        internal static void RandomizeEntries<T>(this ICollection<T> toBeRandomized) {
             if (toBeRandomized == null) {
                 throw new ArgumentNullException(nameof(toBeRandomized));
             }
@@ -85,7 +85,7 @@ namespace FowlFever.BSharp.Collections {
         [ContractAnnotation("source:null => stop")]
         [Pure]
         [LinqTunnel]
-        public static IEnumerable<T?> Randomize<T>(this IEnumerable<T?> source, Random? randomizer = default) {
+        public static IEnumerable<T> Randomize<T>(this IEnumerable<T> source, Random? randomizer = default) {
             if (source == null) {
                 throw new ArgumentNullException(nameof(source));
             }
