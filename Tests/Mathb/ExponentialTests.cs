@@ -1,4 +1,4 @@
-﻿using FowlFever.BSharp;
+using FowlFever.BSharp;
 
 using NUnit.Framework;
 

@@ -1,4 +1,4 @@
-﻿using FowlFever.BSharp.Exceptions;
+using FowlFever.BSharp.Exceptions;
 using FowlFever.BSharp.Hierarchic;
 
 using NUnit.Framework;

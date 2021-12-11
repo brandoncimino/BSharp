@@ -111,7 +111,7 @@ namespace FowlFever.BSharp.Optional {
 
 
         public override string ToString() {
-            return Optional.ToString(this, new PrettificationSettings());
+            return Failed ? Excuse.ToString() : Value.Prettify();
         }
 
 

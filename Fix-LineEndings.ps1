@@ -5,6 +5,6 @@ function Fix-LineEndings(
     foreach($f in $files){
         $lines = $f | Get-Content
         $joined = $lines -join "`n"
-        Set-Content -Path $f -Value $joined -NoNewLine
+        Set-Content -Path $f -Value $joined -NoNewLine -Encoding 'UTF8NoBOM'
     }
 }

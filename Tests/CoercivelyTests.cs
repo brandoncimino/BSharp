@@ -66,7 +66,7 @@ namespace BSharp.Tests {
                         e_val = 4;
                         break;
                     default:
-                        throw EnumUtils.InvalidEnumArgumentException(nameof(operation), operation);
+                        throw BEnum.InvalidEnumArgumentException(nameof(operation), operation);
                 }
 
                 A = Convert.ChangeType(a_val, AType);
@@ -89,7 +89,7 @@ namespace BSharp.Tests {
                     Coercive.Operation.Minus     => Coercively.Subtract,
                     Coercive.Operation.Times     => Coercively.Multiply,
                     Coercive.Operation.DividedBy => Coercively.Divide,
-                    _                            => throw EnumUtils.InvalidEnumArgumentException(nameof(Operation), Operation)
+                    _                            => throw BEnum.InvalidEnumArgumentException(nameof(Operation), Operation)
                 };
 
                 AssertAll.Of(

@@ -140,7 +140,7 @@ namespace FowlFever.BSharp {
                 Coercive.Operation.Minus     => Subtraction,
                 Coercive.Operation.Times     => Multiplication,
                 Coercive.Operation.DividedBy => Division,
-                _                            => throw EnumUtils.InvalidEnumArgumentException(nameof(operation), operation)
+                _                            => throw BEnum.InvalidEnumArgumentException(nameof(operation), operation)
             };
         }
     }
