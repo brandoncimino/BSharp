@@ -3,10 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
-using BrandonUtils.Testing;
-
 using FowlFever.BSharp.Reflection;
 using FowlFever.BSharp.Strings;
+using FowlFever.Testing;
 
 using NUnit.Framework;
 

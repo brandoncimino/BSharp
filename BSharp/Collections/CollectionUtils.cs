@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics.Contracts;
 using System.Linq;
 
 using FowlFever.BSharp.Enums;
@@ -11,7 +12,6 @@ using FowlFever.BSharp.Strings;
 
 using JetBrains.Annotations;
 
-using System.Diagnostics.Contracts;
 using Pure = System.Diagnostics.Contracts.PureAttribute;
 
 namespace FowlFever.BSharp.Collections {

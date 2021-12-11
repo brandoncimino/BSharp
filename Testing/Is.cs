@@ -4,7 +4,7 @@ using FowlFever.BSharp.Enums;
 
 using NUnit.Framework.Constraints;
 
-namespace BrandonUtils.Testing {
+namespace FowlFever.Testing {
     /// <summary>
     /// This is an "extension" of NUnit's <see cref="NUnit.Framework.Is"/> entry point for <see cref="Constraint"/>s.
     /// </summary>

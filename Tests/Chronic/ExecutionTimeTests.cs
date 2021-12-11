@@ -4,18 +4,17 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 
-using BrandonUtils.Testing;
-
 using FowlFever.BSharp;
 using FowlFever.BSharp.Chronic;
 using FowlFever.BSharp.Collections;
 using FowlFever.BSharp.Exceptions;
 using FowlFever.BSharp.Randomization;
+using FowlFever.Testing;
 
 using NUnit.Framework;
 using NUnit.Framework.Constraints;
 
-using Is = BrandonUtils.Testing.Is;
+using Is = FowlFever.Testing.Is;
 
 // ReSharper disable AccessToStaticMemberViaDerivedType
 

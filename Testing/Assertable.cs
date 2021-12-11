@@ -7,7 +7,7 @@ using FowlFever.BSharp.Strings;
 using NUnit.Framework;
 using NUnit.Framework.Constraints;
 
-namespace BrandonUtils.Testing {
+namespace FowlFever.Testing {
     public interface IAssertable : IFailable {
         public Func<string> Nickname { get; }
     }

@@ -4,7 +4,7 @@ using FowlFever.BSharp.Chronic;
 
 using NUnit.Framework;
 
-using Is = BrandonUtils.Testing.Is;
+using Is = FowlFever.Testing.Is;
 
 namespace BrandonUtils.Tests.Standalone.Chronic {
     public class RateTests {

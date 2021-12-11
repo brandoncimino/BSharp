@@ -1,10 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 
 using NUnit.Framework.Constraints;
 
-namespace BrandonUtils.Testing {
+namespace FowlFever.Testing {
     /// <summary>
     /// A convenient shortcut for a <see cref="PropertyConstraint"/> with the <see cref="PropertyConstraint.name"/> "Value".
     /// </summary>

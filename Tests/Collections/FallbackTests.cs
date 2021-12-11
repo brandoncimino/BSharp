@@ -3,10 +3,9 @@ using System.Collections;
 using System.Diagnostics;
 using System.Reflection;
 
-using BrandonUtils.Testing;
-
 using FowlFever.BSharp.Optional;
 using FowlFever.BSharp.Strings.Json;
+using FowlFever.Testing;
 
 using JetBrains.Annotations;
 
@@ -14,7 +13,7 @@ using Newtonsoft.Json;
 
 using NUnit.Framework;
 
-using Is = BrandonUtils.Testing.Is;
+using Is = FowlFever.Testing.Is;
 
 namespace BrandonUtils.Tests.Standalone.Collections {
     public class FallbackTests {

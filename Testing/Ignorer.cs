@@ -3,7 +3,7 @@
 using NUnit.Framework;
 using NUnit.Framework.Constraints;
 
-namespace BrandonUtils.Testing {
+namespace FowlFever.Testing {
     public class Ignorer<T> : MultipleAsserter<Ignorer<T>, T> {
         public Ignorer() { }
 

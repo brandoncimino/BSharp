@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.Linq;
 
 using FowlFever.BSharp.Collections;
@@ -8,7 +9,6 @@ using FowlFever.BSharp.Strings;
 
 using JetBrains.Annotations;
 
-using System.Diagnostics.Contracts;
 using Pure = System.Diagnostics.Contracts.PureAttribute;
 
 namespace FowlFever.BSharp.Optional {

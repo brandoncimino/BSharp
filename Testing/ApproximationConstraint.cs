@@ -6,7 +6,7 @@ using FowlFever.BSharp.Enums;
 
 using NUnit.Framework.Constraints;
 
-namespace BrandonUtils.Testing {
+namespace FowlFever.Testing {
     /// <summary>
     /// Possible alternative adjectives to "Approximately", in order by silliness:
     /// <ul>

@@ -12,7 +12,7 @@ using Newtonsoft.Json;
 using NUnit.Framework;
 using NUnit.Framework.Constraints;
 
-namespace BrandonUtils.Testing {
+namespace FowlFever.Testing {
     [PublicAPI]
     public static class TestUtils {
         public const           double   ApproximationThreshold       = 0.001;

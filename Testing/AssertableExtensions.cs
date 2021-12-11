@@ -6,7 +6,7 @@ using FowlFever.BSharp.Optional;
 using FowlFever.BSharp.Strings;
 using FowlFever.Conjugal.Affixing;
 
-namespace BrandonUtils.Testing {
+namespace FowlFever.Testing {
     internal static class AssertableExtensions {
         private const string PassIcon   = "✅";
         private const string FailIcon   = "❌";

@@ -5,7 +5,7 @@ using FowlFever.BSharp.Enums;
 using NUnit.Framework;
 using NUnit.Framework.Constraints;
 
-namespace BrandonUtils.Testing {
+namespace FowlFever.Testing {
     /// <summary>
     /// Enum values that correspond to common NUnit <see cref="Constraint"/>s such as <see cref="NUnit.Framework.Is"/>.<see cref="NUnit.Framework.Is.Null"/>,
     /// enabling them to be referenced in <see cref="NUnit.Framework.TestCaseAttribute"/>s

@@ -1,12 +1,10 @@
 ﻿using System;
-
-using FowlFever.BSharp.Strings.Json;
-
-using JetBrains.Annotations;
-
 using System.Diagnostics.Contracts;
 
 using FowlFever.BSharp.Optional;
+using FowlFever.BSharp.Strings.Json;
+
+using JetBrains.Annotations;
 
 using Pure = System.Diagnostics.Contracts.PureAttribute;
 

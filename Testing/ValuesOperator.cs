@@ -1,6 +1,6 @@
 ﻿using NUnit.Framework.Constraints;
 
-namespace BrandonUtils.Testing {
+namespace FowlFever.Testing {
     /// <summary>
     /// <see cref="CollectionOperator"/> that applies the <see cref="AllValuesConstraint"/>.
     /// Analogous to <see cref="PropOperator"/>.

@@ -7,7 +7,7 @@ using FowlFever.BSharp.Reflection;
 
 using NUnit.Framework.Constraints;
 
-namespace BrandonUtils.Testing {
+namespace FowlFever.Testing {
     /// <summary>
     /// TODO: Add tests, after I refactor the project (again)!
     /// </summary>

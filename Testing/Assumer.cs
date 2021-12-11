@@ -5,7 +5,7 @@ using FowlFever.BSharp.Strings;
 using NUnit.Framework;
 using NUnit.Framework.Constraints;
 
-namespace BrandonUtils.Testing {
+namespace FowlFever.Testing {
     public class Assumer<T> : MultipleAsserter<Assumer<T>, T> {
         public Assumer() { }
         public Assumer(T actual) : base(actual) { }

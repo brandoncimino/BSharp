@@ -2,16 +2,15 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
-using BrandonUtils.Testing;
-
 using FowlFever.BSharp;
 using FowlFever.BSharp.Enums;
+using FowlFever.Testing;
 
 using Newtonsoft.Json;
 
 using NUnit.Framework;
 
-using Is = BrandonUtils.Testing.Is;
+using Is = FowlFever.Testing.Is;
 
 namespace BrandonUtils.Tests.Standalone.Testing {
     [SuppressMessage("ReSharper", "AccessToStaticMemberViaDerivedType")]

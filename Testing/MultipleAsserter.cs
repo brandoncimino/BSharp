@@ -12,7 +12,7 @@ using JetBrains.Annotations;
 using NUnit.Framework;
 using NUnit.Framework.Constraints;
 
-namespace BrandonUtils.Testing {
+namespace FowlFever.Testing {
     [PublicAPI]
     public abstract class MultipleAsserter<TSelf, TActual> : IMultipleAsserter where TSelf : MultipleAsserter<TSelf, TActual>, new() {
         private const string HeadingIcon = "🧪";

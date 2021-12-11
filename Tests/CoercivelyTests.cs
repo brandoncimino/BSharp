@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Linq;
 
-using BrandonUtils.Testing;
-
 using FowlFever.BSharp;
 using FowlFever.BSharp.Enums;
+using FowlFever.Testing;
 
 using NUnit.Framework;
 

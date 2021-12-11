@@ -8,7 +8,7 @@ using JetBrains.Annotations;
 using NUnit.Framework;
 using NUnit.Framework.Constraints;
 
-namespace BrandonUtils.Testing {
+namespace FowlFever.Testing {
     /// <summary>
     /// The equivalent to <see cref="AssertAll"/> and <see cref="AssumeAll"/>, but for <see cref="IgnoreException"/>s.
     ///

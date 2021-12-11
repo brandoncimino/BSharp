@@ -1,16 +1,15 @@
 ﻿using System;
 using System.IO;
 
-using BrandonUtils.Testing;
-
 using FowlFever.BSharp.Clerical;
 using FowlFever.BSharp.Collections;
 using FowlFever.BSharp.Optional;
 using FowlFever.BSharp.Strings;
+using FowlFever.Testing;
 
 using NUnit.Framework;
 
-using static BrandonUtils.Testing.Should;
+using static FowlFever.Testing.Should;
 
 using Is = NUnit.Framework.Is;
 

@@ -2,15 +2,14 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
-using BrandonUtils.Testing;
-
 using FowlFever.BSharp.Attributes;
 using FowlFever.BSharp.Reflection;
 using FowlFever.BSharp.Strings;
+using FowlFever.Testing;
 
 using NUnit.Framework;
 
-using Is = BrandonUtils.Testing.Is;
+using Is = FowlFever.Testing.Is;
 
 namespace BrandonUtils.Tests.Standalone.Reflection {
     /// <summary>

@@ -1,21 +1,19 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 
+using FowlFever.BSharp.Collections;
 using FowlFever.BSharp.Enums;
+using FowlFever.BSharp.Optional;
 using FowlFever.Conjugal.Affixing;
 
 using JetBrains.Annotations;
 
 using Newtonsoft.Json;
-
-using System.Diagnostics.Contracts;
-
-using FowlFever.BSharp.Collections;
-using FowlFever.BSharp.Optional;
 
 using Pure = System.Diagnostics.Contracts.PureAttribute;
 

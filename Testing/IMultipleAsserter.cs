@@ -2,7 +2,7 @@
 
 using FowlFever.BSharp.Strings;
 
-namespace BrandonUtils.Testing {
+namespace FowlFever.Testing {
     public interface IMultipleAsserter {
         void Invoke();
 

@@ -4,7 +4,7 @@ using JetBrains.Annotations;
 
 using NUnit.Framework.Constraints;
 
-namespace BrandonUtils.Testing {
+namespace FowlFever.Testing {
     [PublicAPI]
     public class AssumeAll {
         public static void Of(string heading, params Action[] assumptions) {

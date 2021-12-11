@@ -6,7 +6,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 
-using BrandonUtils.Testing;
 using BrandonUtils.Tests.Standalone.Reflection;
 
 using FowlFever.BSharp;
@@ -17,6 +16,7 @@ using FowlFever.BSharp.Reflection;
 using FowlFever.BSharp.Strings;
 using FowlFever.BSharp.Strings.Json;
 using FowlFever.BSharp.Strings.Prettifiers;
+using FowlFever.Testing;
 
 using NUnit.Framework;
 

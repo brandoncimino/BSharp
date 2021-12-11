@@ -1,17 +1,16 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-using BrandonUtils.Testing;
-
 using FowlFever.BSharp;
 using FowlFever.BSharp.Collections;
 using FowlFever.BSharp.Randomization;
+using FowlFever.Testing;
 
 using JetBrains.Annotations;
 
 using NUnit.Framework;
 
-using Is = BrandonUtils.Testing.Is;
+using Is = FowlFever.Testing.Is;
 
 namespace BrandonUtils.Tests.Standalone {
     public class BrandomTests {

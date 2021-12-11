@@ -1,3 +1,3 @@
-﻿namespace BrandonUtils.Testing {
+﻿namespace FowlFever.Testing {
     public class Class1 { }
 }

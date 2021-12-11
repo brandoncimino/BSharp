@@ -8,10 +8,9 @@ using JetBrains.Annotations;
 using NUnit.Framework;
 using NUnit.Framework.Constraints;
 
-using System.Diagnostics.Contracts;
 using Pure = System.Diagnostics.Contracts.PureAttribute;
 
-namespace BrandonUtils.Testing {
+namespace FowlFever.Testing {
     public class Asserter<T> : MultipleAsserter<Asserter<T>, T> {
         public override void ResolveFunc<T1>(
             ActualValueDelegate<T1> actual,

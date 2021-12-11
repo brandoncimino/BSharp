@@ -6,7 +6,7 @@ using JetBrains.Annotations;
 using NUnit.Framework;
 using NUnit.Framework.Constraints;
 
-namespace BrandonUtils.Testing {
+namespace FowlFever.Testing {
     /// <summary>
     /// Performs multiple assertions and returns all of the results.
     /// <p/>
