@@ -17,6 +17,24 @@ namespace FowlFever.BSharp {
         [Pure]
         public static float Reciprocal(this float value) => value.Inverse();
 
+        /// <summary>
+        /// Returns the difference between <paramref name="initial"/> and <paramref name="final"/> as a ratio of <paramref name="initial"/>.
+        /// <br/>
+        /// In other words, "how many <paramref name="initial"/>s does it take to get to <paramref name="final"/>?"
+        /// <br/>
+        /// In other other words, "by how much percent did <paramref name="initial"/> change?"
+        /// </summary>
+        /// <remarks>
+        /// This method can be thought of as "percent change", where a <see cref="double"/> of 1 is equivalent to 100%, i.e.:
+        /// <code><![CDATA[
+        /// var q1 = 4_000;                 // 4k in Q1
+        /// var q2 = 6_000;                 // 6k in Q2
+        /// var growth = q1.DeltaRaio(q2);  // => +2k => .5 change => 50% growth
+        /// ]]></code>
+        /// </remarks>
+        /// <param name="initial">the starting amount</param>
+        /// <param name="final">the ending amount</param>
+        /// <returns>how many <paramref name="initial"/>s we changed by</returns>
         [Pure]
         public static double DeltaRatio(double initial, double final) {
             return (initial, final) switch {
@@ -30,9 +48,11 @@ namespace FowlFever.BSharp {
             };
         }
 
+        /// <inheritdoc cref="DeltaRatio(double,double)"/>
         [Pure]
         public static double DeltaRatio(Rate initial, Rate final) => DeltaRatio(initial.Hertz, final.Hertz);
 
+        /// <inheritdoc cref="DeltaRatio(double,double)"/>
         [Pure]
         public static double DeltaRatio(TimeSpan initial, TimeSpan final) => DeltaRatio(initial.Ticks, final.Ticks);
 
