@@ -16,7 +16,7 @@ using Is = NUnit.Framework.Is;
 
 // ReSharper disable ReturnValueOfPureMethodIsNotUsed
 
-namespace BrandonUtils.Tests.Standalone.Collections {
+namespace BSharp.Tests.Collections {
     [TestOf(typeof(CollectionUtils))]
     public class CollectionUtilsTests {
         private static Dictionary<int, string> ValidDictionary => new Dictionary<int, string> {

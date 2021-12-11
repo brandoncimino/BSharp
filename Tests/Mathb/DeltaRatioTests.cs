@@ -4,7 +4,7 @@ using NUnit.Framework;
 
 using Is = FowlFever.Testing.Is;
 
-namespace BrandonUtils.Tests.Standalone.Mathb {
+namespace BSharp.Tests.Mathb {
     public class DeltaRatioTests {
         [Test]
         [TestCase(6,                       9,                       .5)]

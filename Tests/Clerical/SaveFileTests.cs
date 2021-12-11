@@ -7,7 +7,7 @@ using FowlFever.Testing;
 
 using NUnit.Framework;
 
-namespace BrandonUtils.Tests.Standalone.Clerical {
+namespace BSharp.Tests.Clerical {
     [SuppressMessage("ReSharper", "AccessToStaticMemberViaDerivedType")]
     public class SaveFileTests {
         private static readonly SaveFolder TestFolder = new SaveFolder(Path.GetTempPath(), nameof(SaveFileTests));

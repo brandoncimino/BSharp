@@ -8,7 +8,7 @@ using NUnit.Framework;
 
 using Is = NUnit.Framework.Is;
 
-namespace BrandonUtils.Tests.Standalone.Strings {
+namespace BSharp.Tests.Strings {
     public class SubstringTests {
         [Test]
         [TestCase("abc",              "b",        "a",    "c",     "a",    "c",               "a",               "c")]

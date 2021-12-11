@@ -11,7 +11,7 @@ using NUnit.Framework;
 
 using Is = FowlFever.Testing.Is;
 
-namespace BrandonUtils.Tests.Standalone.Reflection {
+namespace BSharp.Tests.Reflection {
     /// <summary>
     /// TODO: These tests need to be finished! It may be possible to organize them in a better way...
     /// </summary>

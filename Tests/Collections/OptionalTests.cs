@@ -15,7 +15,7 @@ using NUnit.Framework;
 using Is = FowlFever.Testing.Is;
 using List = FowlFever.BSharp.Collections.List;
 
-namespace BrandonUtils.Tests.Standalone.Collections {
+namespace BSharp.Tests.Collections {
     [SuppressMessage("ReSharper", "AccessToStaticMemberViaDerivedType")]
     public class OptionalTests {
         [Test]

@@ -10,7 +10,7 @@ using NUnit.Framework;
 
 using Is = NUnit.Framework.Is;
 
-namespace BrandonUtils.Tests.Standalone {
+namespace BSharp.Tests {
     /// <summary>
     /// Tests for <see cref="Bloop"/>s
     /// </summary>

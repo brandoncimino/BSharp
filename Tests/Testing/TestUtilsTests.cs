@@ -12,7 +12,7 @@ using NUnit.Framework;
 
 using Is = FowlFever.Testing.Is;
 
-namespace BrandonUtils.Tests.Standalone.Testing {
+namespace BSharp.Tests.Testing {
     [SuppressMessage("ReSharper", "AccessToStaticMemberViaDerivedType")]
     public class TestUtilsTests {
         private readonly struct ApproximationExpectation {

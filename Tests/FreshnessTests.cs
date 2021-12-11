@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Threading;
 
 using FowlFever.BSharp;
@@ -6,7 +6,7 @@ using FowlFever.BSharp.Refreshing;
 
 using NUnit.Framework;
 
-namespace BrandonUtils.Tests.Standalone {
+namespace BSharp.Tests {
     public class FreshnessTests {
         public CountedFunc<DateTime> GetTimekeeper() {
             return new CountedFunc<DateTime>(() => DateTime.Now);

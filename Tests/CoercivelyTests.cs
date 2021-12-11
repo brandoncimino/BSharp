@@ -9,7 +9,7 @@ using NUnit.Framework;
 
 using Is = NUnit.Framework.Is;
 
-namespace BrandonUtils.Tests.Standalone {
+namespace BSharp.Tests {
     public class CoercivelyTests {
         private static readonly Type[] OtherCoerciveTypes = {
             typeof(string),

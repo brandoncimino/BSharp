@@ -6,7 +6,7 @@ using NUnit.Framework;
 
 using Is = FowlFever.Testing.Is;
 
-namespace BrandonUtils.Tests.Standalone.Chronic {
+namespace BSharp.Tests.Chronic {
     public class RateTests {
         [Test]
         [TestCase(1,   1)]

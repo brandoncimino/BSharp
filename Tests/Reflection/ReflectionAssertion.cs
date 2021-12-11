@@ -11,7 +11,7 @@ using NUnit.Framework;
 
 using Is = NUnit.Framework.Is;
 
-namespace BrandonUtils.Tests.Standalone.Reflection {
+namespace BSharp.Tests.Reflection {
     internal static class Validate {
         public static void HasAutoProperty(this object testClass, string propertyName) {
             IsAutoProperty(testClass.GetType().GetProperty(propertyName, ReflectionUtils.VariablesBindingFlags));

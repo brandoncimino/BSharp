@@ -1,8 +1,8 @@
-using FowlFever.BSharp;
+﻿using FowlFever.BSharp;
 
 using NUnit.Framework;
 
-namespace BrandonUtils.Tests.Standalone.Mathb {
+namespace BSharp.Tests.Mathb {
     public class ExponentialTests {
         [Test]
         [TestCase(25,      4,   250_000)]

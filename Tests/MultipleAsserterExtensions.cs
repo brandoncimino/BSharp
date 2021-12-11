@@ -1,10 +1,10 @@
-using BrandonUtils.Tests.Standalone.Collections;
+using BSharp.Tests.Collections;
 
 using FowlFever.BSharp.Optional;
 using FowlFever.BSharp.Strings;
 using FowlFever.Testing;
 
-namespace BrandonUtils.Tests.Standalone {
+namespace BSharp.Tests {
     public static class MultipleAsserterExtensions {
         public static TSelf AndComparingFallbacks<TSelf, TActual, TFallback>(this MultipleAsserter<TSelf, TActual> asserter, Fallback<TFallback> actual, Fallback<TFallback> expected) where TSelf : MultipleAsserter<TSelf, TActual>, new() {
             return asserter.And(ComparingFallbacks(actual, expected, asserter.PrettificationSettings));

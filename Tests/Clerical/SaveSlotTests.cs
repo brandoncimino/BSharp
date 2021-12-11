@@ -9,7 +9,7 @@ using NUnit.Framework;
 
 using Is = NUnit.Framework.Is;
 
-namespace BrandonUtils.Tests.Standalone.Clerical {
+namespace BSharp.Tests.Clerical {
     public class SaveSlotTests {
         private static readonly SaveFolder TestFolder = new SaveFolder(Path.GetTempPath(), nameof(SaveSlotTests));
 

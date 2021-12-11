@@ -7,7 +7,7 @@ using NUnit.Framework;
 
 using Is = NUnit.Framework.Is;
 
-namespace BrandonUtils.Tests.Standalone {
+namespace BSharp.Tests {
     public class ExceptionUtilsTests {
         private const string Prepended = "PREPENDED";
         private const string Original  = "ORIGINAL";

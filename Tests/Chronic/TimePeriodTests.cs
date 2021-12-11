@@ -7,7 +7,7 @@ using Newtonsoft.Json;
 
 using NUnit.Framework;
 
-namespace BrandonUtils.Tests.Standalone.Chronic {
+namespace BSharp.Tests.Chronic {
     public class TimePeriodTests {
         [Test]
         public void SerializeTimePeriod() {

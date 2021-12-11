@@ -5,9 +5,9 @@
 
         <IsPackable>false</IsPackable>
 
-        <RootNamespace>BrandonUtils.Tests.Standalone</RootNamespace>
+        <RootNamespace>BSharp.Tests</RootNamespace>
 
-        <AssemblyName>BrandonUtils.Tests.Standalone</AssemblyName>
+        <AssemblyName>BSharp.Tests</AssemblyName>
 
         <Nullable>enable</Nullable>
     </PropertyGroup>

@@ -11,7 +11,7 @@ using NUnit.Framework;
 
 using Is = NUnit.Framework.Is;
 
-namespace BrandonUtils.Tests.Standalone.Collections {
+namespace BSharp.Tests.Collections {
     public class PrimaryKeyedListTests {
         private class NoInterface : IEquatable<NoInterface> {
             public DayOfWeek DayOfWeek;

@@ -12,7 +12,7 @@ using NUnit.Framework;
 
 using Is = NUnit.Framework.Is;
 
-namespace BrandonUtils.Tests.Standalone.Strings {
+namespace BSharp.Tests.Strings {
     public class StringUtilsTests {
         [Test]
         [TestCase(

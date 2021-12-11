@@ -6,7 +6,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 
-using BrandonUtils.Tests.Standalone.Reflection;
+using BSharp.Tests.Reflection;
 
 using FowlFever.BSharp;
 using FowlFever.BSharp.Chronic;
@@ -23,7 +23,7 @@ using NUnit.Framework;
 using Is = NUnit.Framework.Is;
 using List = FowlFever.BSharp.Collections.List;
 
-namespace BrandonUtils.Tests.Standalone.Strings {
+namespace BSharp.Tests.Strings {
     public class PrettificationTests {
         [SetUp]
         public void SetDefaultPrettificationSettings() {

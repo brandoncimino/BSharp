@@ -12,7 +12,7 @@ using NUnit.Framework;
 
 using Is = FowlFever.Testing.Is;
 
-namespace BrandonUtils.Tests.Standalone {
+namespace BSharp.Tests {
     public class BrandomTests {
         [Test]
         [TestCase(7, 1000)]

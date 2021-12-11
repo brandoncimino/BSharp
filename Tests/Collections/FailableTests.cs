@@ -8,7 +8,7 @@ using NUnit.Framework;
 
 using Is = NUnit.Framework.Is;
 
-namespace BrandonUtils.Tests.Standalone.Collections {
+namespace BSharp.Tests.Collections {
     public class FailableTests {
         #region Example methods
 

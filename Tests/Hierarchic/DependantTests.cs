@@ -1,9 +1,9 @@
-using FowlFever.BSharp.Exceptions;
+﻿using FowlFever.BSharp.Exceptions;
 using FowlFever.BSharp.Hierarchic;
 
 using NUnit.Framework;
 
-namespace BrandonUtils.Tests.Standalone.Hierarchic {
+namespace BSharp.Tests.Hierarchic {
     public class DependantTests {
         public class Parent : Guardian<Parent, Child> { }
 

@@ -8,7 +8,7 @@ using NUnit.Framework;
 
 using Is = NUnit.Framework.Is;
 
-namespace BrandonUtils.Tests.Standalone.Clerical {
+namespace BSharp.Tests.Clerical {
     [TestOf(nameof(SaveFileName))]
     public class SaveFileNameTests {
         public class SaveFileNameExpectation {

@@ -1,11 +1,11 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
 using FowlFever.BSharp.Collections;
 
-namespace BrandonUtils.Tests.Standalone.Reflection {
+namespace BSharp.Tests.Reflection {
     internal static class InterfaceExpectations {
         public static IEnumerable<Type> VehicleTypes  => new List<Type>() { typeof(IVehicle) };
         public static IEnumerable<Type> LandTypes     => new List<Type>() { typeof(ILand) };

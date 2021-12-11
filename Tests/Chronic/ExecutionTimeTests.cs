@@ -18,7 +18,7 @@ using Is = FowlFever.Testing.Is;
 
 // ReSharper disable AccessToStaticMemberViaDerivedType
 
-namespace BrandonUtils.Tests.Standalone.Chronic {
+namespace BSharp.Tests.Chronic {
     public class ExecutionTimeTests {
         [Test]
         public void SingleActionTime() {

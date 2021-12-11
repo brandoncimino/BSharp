@@ -1,10 +1,10 @@
-using System;
+﻿using System;
 
 using FowlFever.BSharp.Clerical.Saving;
 
 using Newtonsoft.Json;
 
-namespace BrandonUtils.Tests.Standalone.Clerical {
+namespace BSharp.Tests.Clerical {
     [JsonObject]
     public class TestSaveData : SaveData {
         [JsonProperty]

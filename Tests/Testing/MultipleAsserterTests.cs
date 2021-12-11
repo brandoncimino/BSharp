@@ -6,7 +6,7 @@ using NUnit.Framework;
 
 using Is = NUnit.Framework.Is;
 
-namespace BrandonUtils.Tests.Standalone.Testing {
+namespace BSharp.Tests.Testing {
     public class MultipleAsserterTests {
         [Test]
         public void MultipleAsserter_Asserter() {

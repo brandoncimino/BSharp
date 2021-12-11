@@ -13,7 +13,7 @@ using static FowlFever.Testing.Should;
 
 using Is = NUnit.Framework.Is;
 
-namespace BrandonUtils.Tests.Standalone.Clerical {
+namespace BSharp.Tests.Clerical {
     public class BPathTests {
         [Test]
         [TestCase(".json",            "",     ".json")]

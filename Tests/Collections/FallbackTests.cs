@@ -15,7 +15,7 @@ using NUnit.Framework;
 
 using Is = FowlFever.Testing.Is;
 
-namespace BrandonUtils.Tests.Standalone.Collections {
+namespace BSharp.Tests.Collections {
     public class FallbackTests {
         [SetUp]
         public void SetJsonSettings() {

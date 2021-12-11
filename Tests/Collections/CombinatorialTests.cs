@@ -1,11 +1,11 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 using FowlFever.BSharp.Collections;
 
 using NUnit.Framework;
 
-namespace BrandonUtils.Tests.Standalone.Collections {
+namespace BSharp.Tests.Collections {
     public class CombinatorialTests {
         public static List<string>    A => new List<string>() { "A1", "A2", "A3" };
         public static List<DayOfWeek> B => new List<DayOfWeek>() { (DayOfWeek.Monday), DayOfWeek.Friday };

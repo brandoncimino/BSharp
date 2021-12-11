@@ -1,11 +1,11 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 using FowlFever.BSharp.Chronic;
 
 using NUnit.Framework;
 
-namespace BrandonUtils.Tests.Standalone.Chronic {
+namespace BSharp.Tests.Chronic {
     public class TimeTests {
         private static double[] ValuesInSeconds = { 5d, 0.53, 2, 10, 264576.523, 7801.623, 15.623, 0.123, 234678.234, 345.4 * 645.2, Math.PI, 0.1, 0.01, 0.001, 0.00001, };
 

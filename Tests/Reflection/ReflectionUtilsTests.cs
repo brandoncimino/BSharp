@@ -20,7 +20,7 @@ using Is = NUnit.Framework.Is;
 // ReSharper disable UnusedAutoPropertyAccessor.Local
 // ReSharper disable AutoPropertyCanBeMadeGetOnly.Local
 
-namespace BrandonUtils.Tests.Standalone.Reflection {
+namespace BSharp.Tests.Reflection {
     public class ReflectionUtilsTests {
         private const int Prop_Static_Get_Only_Default_Value = 5;
 

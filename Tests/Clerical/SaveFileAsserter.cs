@@ -7,7 +7,7 @@ using FowlFever.Testing;
 using NUnit.Framework;
 using NUnit.Framework.Constraints;
 
-namespace BrandonUtils.Tests.Standalone.Clerical {
+namespace BSharp.Tests.Clerical {
     public static class SaveFileAsserter {
         public static Asserter<ISaveFile<T>> Exists<T>(this Asserter<ISaveFile<T>> self, bool expectedExistence = true) where T : ISaveData {
             ConstraintExpression constraint = Has.Property(nameof(SaveFile<T>.FileSystemInfo));
