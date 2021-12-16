@@ -28,7 +28,10 @@ namespace FowlFever.BSharp.Clerical {
         internal static readonly string     FileIcon                  = "📄";
 
         public static Failable ValidatePath(string? maybePath) {
-            Action action = () => _ = Path.GetFullPath(maybePath!);
+            Action action = () => {
+                ValidatePathCharacters(maybePath);
+                _ = Path.GetFullPath(maybePath!);
+            };
             return action.Try();
         }
 
@@ -38,6 +41,17 @@ namespace FowlFever.BSharp.Clerical {
                 _ = Path.GetFullPath(maybeFileName!);
             };
             return action.Try();
+        }
+
+        private static void ValidatePathCharacters(string? maybePath) {
+            if (maybePath == null) {
+                throw new ArgumentNullException($"The string [{maybePath.ToString(Prettification.DefaultNullPlaceholder)}] wasn't a valid path: it was blank!");
+            }
+
+            if (maybePath.ContainsAny(Path.GetInvalidPathChars())) {
+                var badCharacters = maybePath.Intersect(Path.GetInvalidPathChars());
+                throw new ArgumentException($"The string [{maybePath}] isn't a valid path: it contains the illegal characters {badCharacters.Prettify()}!");
+            }
         }
 
         [ContractAnnotation("null => stop")]

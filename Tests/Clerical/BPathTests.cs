@@ -41,33 +41,55 @@ namespace BSharp.Tests.Clerical {
 
         [TestCase("this is really really really really really really really really really really really really really really really really really really really really really really really really really really really really really really really really really really really really really really really really really really really really really really really really long", Fail, Fail)]
         [Test]
-        [TestCase("abc",          Pass, Pass)]
-        [TestCase(".ssh",         Pass, Pass)]
-        [TestCase("a|b",          Fail, Fail)]
-        [TestCase("%$@#%!@:$#%[", Fail, Fail)]
-        [TestCase(null,           Fail, Fail)]
-        [TestCase("",             Fail, Fail)]
-        [TestCase("\n",           Fail, Fail)]
-        [TestCase("C:/",          Pass, Fail)]
-        [TestCase("C:D:E",        Fail, Fail)]
-        // [TestCase("//yolo",       Should.Pass, Should.Fail)]
-        // [TestCase(@"\\yolo",      Should.Pass, Should.Fail)]
-        // [TestCase("a/b",          Should.Pass, Should.Fail)]
-        [TestCase(@"a\b",  Pass, Fail)]
-        [TestCase(@":\\c", Fail, Fail)]
-        public void IsValidFilename(string path, Should pathShould, Should fileNameShould) {
-            AssertAll.Of(
-                () => AssertAll.Of(
-                    "Path Validation",
-                    () => Assert.That(BPath.IsValidPath(path),  Is.EqualTo(pathShould                                    == Pass)),
-                    () => Assert.That(BPath.ValidatePath(path), Has.Property(nameof(Failable.Failed)).EqualTo(pathShould == Fail))
-                ),
-                () => AssertAll.Of(
-                    "FileName Validation",
-                    () => Assert.That(BPath.IsValidFileName(path),  Is.EqualTo(fileNameShould                                    == Pass)),
-                    () => Assert.That(BPath.ValidateFileName(path), Has.Property(nameof(Failable.Failed)).EqualTo(fileNameShould == Fail))
-                )
-            );
+        [TestCase("abc",          Pass,        Pass)]
+        [TestCase(".ssh",         Pass,        Pass)]
+        [TestCase("a|b",          Fail,        Fail)]
+        [TestCase("%$@#%!@:$#%[", Fail,        Fail)]
+        [TestCase(null,           Fail,        Fail)]
+        [TestCase("",             Fail,        Fail)]
+        [TestCase("\n",           Fail,        Fail)]
+        [TestCase("C:/",          Pass,        Fail)]
+        [TestCase("C:D:E",        Fail,        Fail)]
+        [TestCase("//yolo",       Should.Pass, Should.Fail)]
+        [TestCase(@"\\yolo",      Should.Pass, Should.Fail)]
+        [TestCase("a/b",          Should.Pass, Should.Fail)]
+        [TestCase(@"a\b",         Pass,        Fail)]
+        [TestCase(@":\\c",        Fail,        Fail)]
+        public void IsValidFilename(string? path, Should pathShould, Should fileNameShould) {
+            bool isPath;
+            bool isFile;
+            try {
+                var fullPath = Path.GetFullPath(path!);
+                isPath = !fullPath.ContainsAny(Path.GetInvalidPathChars());
+            }
+            catch {
+                isPath = false;
+            }
+
+            Console.WriteLine($"Contains invalid FILE chars: {path?.ContainsAny(Path.GetInvalidFileNameChars())}");
+            Console.WriteLine($"Contains invalid PATH chars: {path?.ContainsAny(Path.GetInvalidPathChars())}");
+
+            try {
+                if (isPath) {
+                    var fileInfo = new FileInfo(path!);
+                    Console.WriteLine($"got a file info...{fileInfo}");
+                    isFile = !path!.ContainsAny(Path.GetInvalidFileNameChars());
+                }
+                else {
+                    isFile = false;
+                }
+            }
+            catch {
+                isFile = false;
+            }
+
+            Asserter.Against(path)
+                    .WithHeading($"{nameof(IsValidFilename)}: {path}")
+                    .And(BPath.IsValidPath,      Is.EqualTo(isPath))
+                    .And(BPath.ValidatePath,     Has.Property(nameof(Failable.Failed)).EqualTo(!isPath))
+                    .And(BPath.IsValidFileName,  Is.EqualTo(isFile))
+                    .And(BPath.ValidateFileName, Has.Property(nameof(Failable.Failed)).EqualTo(!isFile))
+                    .Invoke();
         }
 
         [TestCase("a")]
