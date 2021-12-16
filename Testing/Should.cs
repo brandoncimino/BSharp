@@ -56,5 +56,15 @@ namespace FowlFever.Testing {
                 _                => throw BEnum.InvalidEnumArgumentException(nameof(should), should)
             };
         }
+
+        public static Should Inverse(this Should should) {
+            return should switch {
+                Should.Pass      => Should.Fail,
+                Should.Fail      => Should.Pass,
+                Should.BeNull    => Should.BeNotNull,
+                Should.BeNotNull => Should.BeNull,
+                _                => throw BEnum.InvalidEnumArgumentException(nameof(should), should)
+            };
+        }
     }
 }
