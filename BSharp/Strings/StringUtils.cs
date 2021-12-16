@@ -129,31 +129,25 @@ namespace FowlFever.BSharp.Strings {
         ///     <b>
         ///         <i>UNLESS</i>
         ///     </b>
-        ///     <paramref name="baseString" /> is <c>null</c>, in which case <paramref name="stringToJoin" /> is returned.
+        ///     <paramref name="baseString" /> is <c>null</c>, in which case (<paramref name="stringToJoin" /> <c>?? ""</c>) is returned.
         /// </summary>
         /// <remarks>
         ///     The idea of this is that it can be used to build out a single string and "list out" items, rather than building a <see cref="List{T}" /> and calling <see cref="string.Join(string,System.Collections.Generic.IEnumerable{string})" /> against it.
         /// </remarks>
         /// <example>
         ///     <code><![CDATA[
-        /// "yolo".Join("swag")     -> yoloswag
-        /// ]]></code>
-        ///     <code><![CDATA[
-        /// "yolo".Join("swag",":") -> yolo; swag
-        /// ]]></code>
-        ///     <code><![CDATA[
-        /// "".Join("swag", ":")    -> swag
-        /// ]]></code>
-        ///     <code><![CDATA[
-        /// null.Join(":")          -> swag
+        /// "yolo".Join("swag")      ⇒ yoloswag
+        /// "yolo".Join("swag","; ") ⇒ yolo; swag
+        /// "".Join("swag", ":")     ⇒ :swag
+        /// null.Join(":")           ⇒ swag
         /// ]]></code>
         /// </example>
-        /// <param name="baseString"></param>
-        /// <param name="stringToJoin"></param>
-        /// <param name="separator"></param>
-        /// <returns></returns>
+        /// <param name="baseString">the first <see cref="string"/></param>
+        /// <param name="stringToJoin">the second <see cref="string"/></param>
+        /// <param name="separator">the <see cref="string"/> interposed betwixt <paramref name="baseString"/> and <paramref name="stringToJoin"/></param>
+        /// <returns><paramref name="baseString"/>, <paramref name="separator"/>, and <paramref name="stringToJoin"/> combined together</returns>
         public static string Join(this string? baseString, string? stringToJoin, string? separator = "") {
-            return string.IsNullOrEmpty(baseString) ? stringToJoin.ToString("") : string.Join(separator, baseString, stringToJoin);
+            return baseString == null ? stringToJoin ?? "" : string.Join(separator, baseString, stringToJoin);
         }
 
         /// <summary>
