@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Text.RegularExpressions;
 
@@ -6,6 +7,8 @@ using FowlFever.BSharp.Collections;
 using FowlFever.BSharp.Optional;
 
 using JetBrains.Annotations;
+
+using Pure = System.Diagnostics.Contracts.PureAttribute;
 
 namespace FowlFever.BSharp.Strings {
     /// <summary>
@@ -221,6 +224,17 @@ namespace FowlFever.BSharp.Strings {
         [Pure]
         public static bool StartsWith(this string? input, Regex pattern) {
             return input != null && new Regex($"^{pattern}").IsMatch(input);
+        }
+
+        /// <summary>
+        /// Similar to <see cref="string.Split(char[])"/>, but looks for a <see cref="Regex"/> pattern.
+        /// </summary>
+        /// <param name="input">the original <see cref="string"/></param>
+        /// <param name="pattern">the <see cref="Regex"/> pattern used to split <paramref name="input"/></param>
+        /// <returns></returns>
+        [Pure]
+        public static string[] Split(this string input, Regex pattern) {
+            return pattern.Split(input);
         }
 
         #endregion
