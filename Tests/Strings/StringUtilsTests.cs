@@ -466,21 +466,53 @@ a
         #region Trim
 
         [Test]
-        [TestCase("KEEPabc",     "abc", "KEEP")]
-        [TestCase("bcONEbcbc",   "bc",  "bcONE")]
-        [TestCase("bTWObbcbc",   "bc",  "bTWOb")]
-        [TestCase("a..........", ".",   "a")]
-        public void TrimEnd(string input, string trimString, string expected) {
-            Assert.That(input.TrimEnd(trimString), Is.EqualTo(expected));
+        [TestCase("KEEPabc",     "abc", null, "KEEP")]
+        [TestCase("bcONEbcbc",   "bc",  null, "bcONE")]
+        [TestCase("bTWObbcbc",   "bc",  null, "bTWOb")]
+        [TestCase("a..........", ".",   null, "a")]
+        [TestCase("a..........", ".",   1,    "a.........")]
+        [TestCase("a..........", ".",   5,    "a.....")]
+        [TestCase("a..........", ".",   99,   "a")]
+        public void TrimEnd(string input, string trimString, int? trimLimit, string expected) {
+            Assert.That(input.TrimEnd(trimString, trimLimit), Is.EqualTo(expected));
+        }
+
+        [TestCase("987a123", @"\d",    1,    "987a12")]
+        [TestCase("987a123", @"\d",    2,    "987a1")]
+        [TestCase("987a123", @"\d",    3,    "987a")]
+        [TestCase("987a123", @"\d",    4,    "987a")]
+        [TestCase("987a123", @"\d",    null, "987a")]
+        [TestCase("987a123", @"\d{2}", 2,    "987a1")]
+        [TestCase("987a123", @"\d{2}", 1,    "987a1")]
+        [TestCase("987a123", @"\d{2}", null, "987a1")]
+        public void TrimEnd_Regex(string input, string trimPatternString, int? trimLimit, string expected) {
+            Assert.That(input.TrimEnd(new Regex(trimPatternString), trimLimit), Is.EqualTo(expected));
         }
 
         [Test]
-        [TestCase("abcKEEP",     "abc", "KEEP")]
-        [TestCase("bcbcONEbcbc", "bc",  "ONEbcbc")]
-        [TestCase("5.[t]JK",     "5.",  "[t]JK")]
-        [TestCase("\\.\\.!!",    "\\.", "!!")]
-        public void TrimStart(string input, string trimString, string expected) {
-            Assert.That(input.TrimStart(trimString), Is.EqualTo(expected));
+        [TestCase("abcKEEP",     "abc", null, "KEEP")]
+        [TestCase("bcbcONEbcbc", "bc",  null, "ONEbcbc")]
+        [TestCase("5.[t]JK",     "5.",  null, "[t]JK")]
+        [TestCase("\\.\\.!!",    "\\.", null, "!!")]
+        [TestCase(".....a",      "..",  null, ".a")]
+        [TestCase(".....a",      "..",  1,    "...a")]
+        [TestCase(".....a",      "..",  2,    ".a")]
+        [TestCase(".....a",      "..",  3,    ".a")]
+        [TestCase(".....a",      ".",   3,    "..a")]
+        public void TrimStart(string input, string trimString, int? trimLimit, string expected) {
+            Assert.That(input.TrimStart(trimString, trimLimit), Is.EqualTo(expected));
+        }
+
+        [TestCase("987a123", @"\d",    1,    "87a123")]
+        [TestCase("987a123", @"\d",    2,    "7a123")]
+        [TestCase("987a123", @"\d",    3,    "a123")]
+        [TestCase("987a123", @"\d",    4,    "a123")]
+        [TestCase("987a123", @"\d",    null, "a123")]
+        [TestCase("987a123", @"\d{2}", 2,    "7a123")]
+        [TestCase("987a123", @"\d{2}", 1,    "7a123")]
+        [TestCase("987a123", @"\d{2}", null, "7a123")]
+        public void TrimStart_Regex(string input, string trimPatternString, int? trimLimit, string expected) {
+            Assert.That(input.TrimStart(new Regex(trimPatternString), trimLimit), Is.EqualTo(expected));
         }
 
         [Test]

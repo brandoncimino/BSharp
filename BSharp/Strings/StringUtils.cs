@@ -423,63 +423,78 @@ namespace FowlFever.BSharp.Strings {
             return Trim(input, pattern);
         }
 
-        [ContractAnnotation("input:null => null")]
         [Pure]
-        public static string? Trim(this string? input, Regex trimPattern) {
-            if (input == null) {
-                return null;
-            }
-
+        public static string Trim(this string input, Regex trimPattern) {
             var reg   = new Regex($"^({trimPattern})*(?<trimmed>.*?)({trimPattern})*$");
             var match = reg.Match(input);
 
             return match.Success ? match.Groups["trimmed"].Value : input;
         }
 
-        [ContractAnnotation("input:null => null")]
-        [Pure]
-        public static string? TrimEnd(this string? input, string trimString) {
-            if (input == null) {
-                return null;
-            }
-
-            var trimPattern = new Regex(Regex.Escape(trimString));
-            return TrimEnd(input, trimPattern);
+        private static string GetTrimQuantifier(int? numberToTrim) {
+            return numberToTrim.IfPresentOrElse(it => $"{{0,{it}}}", () => "*");
         }
 
-        [ContractAnnotation("input:null => null")]
+        /// <summary>
+        /// Removes up to <paramref name="numberToTrim"/> instances of <paramref name="trimString"/> from the <b>end</b> of <paramref name="input"/>.
+        /// </summary>
+        /// <remarks>
+        /// If <paramref name="numberToTrim"/> is null, then <b>all</b> instances are removed.
+        /// </remarks>
+        /// <param name="input">the original <see cref="string"/></param>
+        /// <param name="trimString">the <see cref="string"/> to be removed </param>
+        /// <param name="numberToTrim">the maximum number of <paramref name="trimString"/>s to remove</param>
+        /// <returns><paramref name="input"/> with some number of <paramref name="trimString"/>s removed from the <b>end</b></returns>
         [Pure]
-        public static string? TrimEnd(this string? input, Regex trimPattern) {
-            if (input == null) {
-                return null;
-            }
+        public static string TrimEnd(this string input, string trimString, int? numberToTrim = default) {
+            var trimPattern = new Regex(Regex.Escape(trimString));
+            return TrimEnd(input, trimPattern, numberToTrim);
+        }
 
-            var reg   = new Regex($@"^(?<trimmed>.*?)({trimPattern})*$");
-            var match = reg.Match(input);
+        /// <summary>
+        /// Removes up to <paramref name="numberToTrim"/> instances of <paramref name="trimPattern"/> from the <b>end</b> of <paramref name="input"/>.
+        /// </summary>
+        /// <remarks><inheritdoc cref="TrimEnd(string,string,System.Nullable{int})"/></remarks>
+        /// <param name="input">the original <see cref="string"/></param>
+        /// <param name="trimPattern">the <see cref="Regex"/> pattern to be removed</param>
+        /// <param name="numberToTrim">the maximum number of <paramref name="trimPattern"/>s to remove</param>
+        /// <returns><paramref name="input"/> with some number of <paramref name="trimPattern"/>s removed from the <b>end</b></returns>
+        [Pure]
+        public static string TrimEnd(this string input, Regex trimPattern, int? numberToTrim = default) {
+            var trimQuantifier = GetTrimQuantifier(numberToTrim);
+            var reg            = new Regex($@"^(?<trimmed>.*?)({trimPattern}){trimQuantifier}$");
+            var match          = reg.Match(input);
 
             return match.Success ? match.Groups["trimmed"].Value : input;
         }
 
-        [ContractAnnotation("input:null => null")]
+        /// <summary>
+        /// Removes up to <paramref name="numberToTrim"/> instances of <paramref name="trimString"/> from the <b>beginning</b> of <paramref name="input"/>.
+        /// </summary>
+        /// <remarks><inheritdoc cref="TrimEnd(string,string,System.Nullable{int})"/></remarks>
+        /// <param name="input">the original <see cref="string"/></param>
+        /// <param name="trimString">the <see cref="Regex"/> pattern to be removed</param>
+        /// <param name="numberToTrim">the maximum number of <paramref name="trimString"/>s to remove</param>
+        /// <returns><paramref name="input"/> with some number of <paramref name="trimString"/>s removed from the <b>beginning</b></returns>
         [Pure]
-        public static string? TrimStart(this string? input, string trimString) {
-            if (input == null) {
-                return null;
-            }
-
+        public static string TrimStart(this string input, string trimString, int? numberToTrim = default) {
             var pattern = new Regex(Regex.Escape(trimString));
-            return TrimStart(input, pattern);
+            return TrimStart(input, pattern, numberToTrim);
         }
 
-        [ContractAnnotation("input:null => null")]
+        /// <summary>
+        /// Removes up to <paramref name="numberToTrim"/> instances of <paramref name="trimPattern"/> from the <b>beginning</b> of <paramref name="input"/>.
+        /// </summary>
+        /// <remarks><inheritdoc cref="TrimEnd(string,string,System.Nullable{int})"/></remarks>
+        /// <param name="input">the original <see cref="string"/></param>
+        /// <param name="trimPattern">the <see cref="Regex"/> pattern to be removed</param>
+        /// <param name="numberToTrim">the maximum number of <paramref name="trimPattern"/>s to remove</param>
+        /// <returns><paramref name="input"/> with some number of <paramref name="trimPattern"/>s removed from the <b>beginning</b></returns>
         [Pure]
-        public static string? TrimStart(this string? input, Regex pattern) {
-            if (input == null) {
-                return null;
-            }
-
-            var reg   = new Regex(@$"^({pattern})*(?<trimmed>.*?)$");
-            var match = reg.Match(input);
+        public static string TrimStart(this string input, Regex trimPattern, int? numberToTrim = default) {
+            var trimQuantifier = GetTrimQuantifier(numberToTrim);
+            var reg            = new Regex(@$"^({trimPattern}){trimQuantifier}(?<trimmed>.*?)$");
+            var match          = reg.Match(input);
 
             return match.Success ? match.Groups["trimmed"].Value : input;
         }
