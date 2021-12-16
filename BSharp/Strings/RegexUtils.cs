@@ -224,5 +224,30 @@ namespace FowlFever.BSharp.Strings {
         }
 
         #endregion
+
+        /// <summary>
+        /// Removes <b>at most 1</b> instance of <paramref name="pattern"/> from the <b>end</b> of <paramref name="input"/>
+        /// </summary>
+        /// <param name="input">the original <see cref="string"/></param>
+        /// <param name="pattern">the <see cref="Regex"/> pattern being removed</param>
+        /// <returns><paramref name="input"/> with <b>at most 1</b> instance of <paramref name="pattern"/> removed</returns>
+        [Pure]
+        public static string RemoveLast(this string input, Regex pattern) {
+            pattern = new Regex(pattern.ToString(), RegexOptions.RightToLeft);
+            return pattern.Replace(input, "", 1);
+        }
+
+        /// <summary>
+        /// Removes <b>at most 1</b> instance of <paramref name="pattern"/> from the <b>end</b> of <paramref name="input"/>
+        /// </summary>
+        /// <param name="input">the original <see cref="string"/></param>
+        /// <param name="pattern">the <see cref="Regex"/> pattern being removed</param>
+        /// <returns><paramref name="input"/> with <b>at most 1</b> instance of <paramref name="pattern"/> removed</returns>
+        [Pure]
+        public static string RemoveFirst(this string input, Regex pattern) {
+            var opts = pattern.Options & ~RegexOptions.RightToLeft;
+            pattern = new Regex(pattern.ToString(), opts);
+            return pattern.Replace(input, "", 1);
+        }
     }
 }

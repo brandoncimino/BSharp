@@ -1057,6 +1057,28 @@ namespace FowlFever.BSharp.Strings {
             return (before, after);
         }
 
+        /// <summary>
+        /// Removes the <b>single latter-most</b> instance of <paramref name="toRemove"/>.
+        /// </summary>
+        /// <param name="str">the original <see cref="string"/></param>
+        /// <param name="toRemove">the <see cref="string"/> to be removed</param>
+        /// <returns>the original <see cref="string"/> with the <b>single latter-most</b> instance of <paramref name="toRemove"/> removed</returns>
+        [Pure]
+        public static string RemoveLast(this string str, string toRemove) {
+            return str.EndsWith(toRemove) ? str.Remove(str.Length - toRemove.Length) : str;
+        }
+
+        /// <summary>
+        /// Removes the <b>single first</b> instance of <paramref name="toRemove"/>.
+        /// </summary>
+        /// <param name="str">the original <see cref="string"/></param>
+        /// <param name="toRemove">the <see cref="string"/>to be removed</param>
+        /// <returns>the original <see cref="string"/> with the <b>single first</b> instance of <paramref name="toRemove"/> removed</returns>
+        [Pure]
+        public static string RemoveFirst(this string str, string toRemove) {
+            return str.StartsWith(toRemove) ? str.Remove(0, toRemove.Length) : str;
+        }
+
         #endregion
     }
 }
