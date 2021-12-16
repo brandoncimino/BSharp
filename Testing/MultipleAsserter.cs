@@ -93,7 +93,7 @@ namespace FowlFever.Testing {
             Actual = actualValueDelegate;
         }
 
-        private TSelf Self => this as TSelf;
+        private TSelf Self => (this as TSelf)!;
 
         //TODO: Make an extension method of this called "AsFunc" or something
         [ContractAnnotation("null => null")]
