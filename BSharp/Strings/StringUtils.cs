@@ -160,12 +160,16 @@ namespace FowlFever.BSharp.Strings {
         /// Joins <paramref name="first"/> and <paramref name="second"/> together by a <b>single instance</b> of <paramref name="separator"/>.
         /// </summary>
         /// <example>
-        /// <ul>
-        /// <li><c>"a/".JoinWith("/b","/")  →  "a/b"</c></li>
-        /// <li><c>"a--".JoinWith("b","-")  →  "a-b"</c></li>
-        /// <li><c>"_a".JoinWith("b_","_")  →  "_a_b_"</c></li>
-        /// <li><c>null.JoinWith("b","!!")  →  "b"</c></li>
-        /// </ul>
+        /// <code><![CDATA[
+        /// "a/".JoinWith("/b","/")  →  "a/b"
+        /// "a--".JoinWith("b","-")  →  "a-b"
+        /// "_a".JoinWith("b_","_")  →  "_a_b_"
+        /// null.JoinWith("b","!!")  →  "!!b"
+        /// "a".JoinWith(null,"!!")  →  "a!!"
+        /// null.JoinWith(null,"!")  →  "!!"
+        /// "".JoinWith("a","!!")    →  "!!a"
+        /// " ".JoinWith(" ","!!")   →  " !! "
+        /// ]]></code>
         /// </example>
         /// <param name="first"></param>
         /// <param name="second"></param>
@@ -173,10 +177,9 @@ namespace FowlFever.BSharp.Strings {
         /// <returns></returns>
         public static string JoinWith(this string? first, string? second, string? separator) {
             separator ??= "";
-            first     =   first?.TrimEnd(separator);
-            second    =   second?.TrimStart(separator);
-
-            return new[] { first, second }.Where(it => it.IsNotEmpty()).JoinString(separator) ?? "";
+            first     =   first?.TrimEnd(separator)    ?? "";
+            second    =   second?.TrimStart(separator) ?? "";
+            return string.Join(separator, first, second);
         }
 
         #region Prettification
