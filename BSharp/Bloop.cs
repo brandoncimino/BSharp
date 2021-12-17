@@ -186,6 +186,11 @@ namespace FowlFever.BSharp {
             return iterations.Repeat(loopFunction);
         }
 
+        /// <inheritdoc cref="Repeat{T}(int,System.Func{int,T})"/>
+        public static IEnumerable<T> Select<T>(this int iterations, Func<int, T> loopFunction) {
+            return iterations.For(loopFunction);
+        }
+
         /// <inheritdoc cref="Repeat(int,Action)"/>
         public static void For(this int iterations, Action action) {
             iterations.Repeat(action);
