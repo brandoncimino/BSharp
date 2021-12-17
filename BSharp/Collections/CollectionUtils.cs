@@ -965,6 +965,10 @@ namespace FowlFever.BSharp.Collections {
             return source == null ? Enumerable.Empty<T>() : source.Where(it => it.HasValue).Select(it => it!.Value);
         }
 
+        public static IEnumerable<T> MustNotContainNull<T>(this IEnumerable<T?> source) {
+            return source.Select(it => it ?? throw new ArgumentNullException(nameof(source), "Contained a null entry!"));
+        }
+
         #region NonBlank
 
         /// <summary>
@@ -981,6 +985,16 @@ namespace FowlFever.BSharp.Collections {
         }
 
         /// <summary>
+        /// Throws an <see cref="ArgumentNullException"/> if any of the <paramref name="lines"/> <see cref="StringUtils.IsBlank"/>.
+        /// </summary>
+        /// <param name="lines">the <see cref="string"/>s being validated</param>
+        /// <returns>a collection of non-nullable <see cref="string"/>s</returns>
+        /// <exception cref="ArgumentNullException">if any of the <paramref name="lines"/> <see cref="StringUtils.IsBlank"/></exception>
+        public static IEnumerable<string> MustNotContainBlank(this IEnumerable<string?> lines) {
+            return lines.Select(it => it.IsNotBlank() ? it! : throw new ArgumentNullException(nameof(lines), $"Contained a blank string: {lines.Prettify()}"));
+        }
+
+        /// <summary>
         ///
         /// </summary>
         /// <remarks>
@@ -991,6 +1005,16 @@ namespace FowlFever.BSharp.Collections {
         /// <seealso cref="NonBlank"/>
         public static IEnumerable<string> NonEmpty(this IEnumerable<string?>? lines) {
             return (lines == null ? Enumerable.Empty<string>() : lines.Where(it => it.IsNotEmpty()))!;
+        }
+
+        /// <summary>
+        /// Throws an <see cref="ArgumentNullException"/> if any of the <paramref name="lines"/> <see cref="StringUtils.IsEmpty"/>.
+        /// </summary>
+        /// <param name="lines">the <see cref="string"/>s being validated</param>
+        /// <returns>a collection of non-nullable <see cref="string"/>s</returns>
+        /// <exception cref="ArgumentNullException">if any of the <paramref name="lines"/> <see cref="StringUtils.IsEmpty"/></exception>
+        public static IEnumerable<string> MustNotContainEmpty(this IEnumerable<string?> lines) {
+            return lines.Select(it => it.IsNotEmpty() ? it! : throw new ArgumentNullException(nameof(lines), $"Contained an empty string: {lines.Prettify()}"));
         }
 
         #endregion
