@@ -19,7 +19,7 @@ namespace FowlFever.BSharp.Strings {
 
             var style = type?.IsEnum == true ? settings.EnumLabelStyle : settings.TypeLabelStyle;
 
-            settings?.TraceWriter.Verbose(() => $"Using style: {style} (type: {settings.TypeLabelStyle}/{settings.TypeLabelStyle.Value}, enum: {settings.EnumLabelStyle}/{settings.EnumLabelStyle.Value})");
+            settings?.TraceWriter.Verbose(() => $"Using style: {style} (type: {settings.TypeLabelStyle}, enum: {settings.EnumLabelStyle})");
 
             if (type == null || style == TypeNameStyle.None) {
                 return "";

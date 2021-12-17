@@ -593,8 +593,13 @@ namespace FowlFever.BSharp.Strings {
         /// <returns>a collection of <see cref="string.Trim()"/>med <see cref="string"/>s</returns>
         [Pure]
         [LinqTunnel]
-        public static IEnumerable<string?> TrimLines(this IEnumerable<string?> strings) {
-            return strings.Select(it => it?.Trim());
+        public static IEnumerable<string> TrimLines(this IEnumerable<string?> strings) {
+            return strings.SplitLines().Select(it => it.Trim());
+        }
+
+        [Pure]
+        public static string TrimLines(this string? multilineString) {
+            return multilineString.SplitLines().Select(it => it.Trim()).JoinLines();
         }
 
         #region LongestLine

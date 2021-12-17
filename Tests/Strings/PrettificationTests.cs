@@ -16,6 +16,7 @@ using FowlFever.BSharp.Reflection;
 using FowlFever.BSharp.Strings;
 using FowlFever.BSharp.Strings.Json;
 using FowlFever.BSharp.Strings.Prettifiers;
+using FowlFever.BSharp.Strings.Tabler;
 using FowlFever.Testing;
 
 using NUnit.Framework;
@@ -25,9 +26,21 @@ using List = FowlFever.BSharp.Collections.List;
 
 namespace BSharp.Tests.Strings {
     public class PrettificationTests {
+        private static IEnumerable<string>? TrimLinesForComparison(string? str) {
+            return str?.Trim().SplitLines().TrimLines();
+        }
+
+        private static void CompareMultilineStrings(string? actual, string? expected) {
+            Assert.That(TrimLinesForComparison(actual), Is.EqualTo(TrimLinesForComparison(expected)));
+        }
+
         [SetUp]
         public void SetDefaultPrettificationSettings() {
-            PrettificationSettings.DefaultSettings.TraceWriter = new ConsoleTraceWriter() { LevelFilter = TraceLevel.Verbose };
+            PrettificationSettings.Default = PrettificationSettings.Default with {
+                TraceWriter = new ConsoleTraceWriter() {
+                    LevelFilter = TraceLevel.Info
+                }
+            };
         }
 
         public class Expectation {
@@ -64,13 +77,13 @@ namespace BSharp.Tests.Strings {
         [TestCase(typeof(DayOfWeek), "DayOfWeek", "DayOfWeek", "DayOfWeek")]
         public void PrettifyType(Type actualType, string expected_full, string expected_short, string expected_none) {
             var settings_full = new PrettificationSettings() {
-                TypeLabelStyle = { Value = TypeNameStyle.Full }
+                TypeLabelStyle = TypeNameStyle.Full
             };
             var settings_short = new PrettificationSettings() {
-                TypeLabelStyle = { Value = TypeNameStyle.Short }
+                TypeLabelStyle = TypeNameStyle.Short
             };
             var settings_none = new PrettificationSettings() {
-                TypeLabelStyle = { Value = TypeNameStyle.None }
+                TypeLabelStyle = TypeNameStyle.None
             };
             Console.WriteLine(
                 new[] {
@@ -118,7 +131,9 @@ one    Monday
 two    Tuesday  
 three  Wednesday";
 
-            Assert.That(dic.Prettify().Trim(), Is.EqualTo(expectedString.Trim()));
+            var pretty = dic.Prettify();
+            Console.WriteLine(pretty);
+            CompareMultilineStrings(pretty, expectedString);
         }
 
         [Test]
@@ -131,12 +146,13 @@ three  Wednesday";
             var actual = dic.Prettify();
             var expected = @"
 IComparable IVehicle                                           
------------ ---------------------------------------------------
-1           BrandonUtils.Tests.BSharp.Reflection.TrainCar  
-two         BrandonUtils.Tests.BSharp.Reflection.Duckmobile";
-            Console.WriteLine(actual);
+----------- ----------------------------------
+1           BSharp.Tests.Reflection.TrainCar  
+two         BSharp.Tests.Reflection.Duckmobile";
+            Console.WriteLine($"\nactual:\n\n{actual.Trim()}");
+            Console.WriteLine($"\nexpected:\n\n{expected.Trim()}");
 
-            Assert.That(actual.Trim(), Is.EqualTo(expected.Trim()));
+            CompareMultilineStrings(actual, expected);
         }
 
         private static Expectation[] Tuple2Expectations = new[] {
@@ -206,7 +222,7 @@ int (int, string)
         [TestCase(typeof(int),                                                       typeof(int))]
         [TestCase(typeof(Professor<IPrettifiable>),                                  typeof(IPrettifiable))]
         public void SimplifiedTypes(Type original, Type simplified) {
-            var actual = PrettificationTypeSimplifier.SimplifyType(original, Prettification.DefaultPrettificationSettings);
+            var actual = PrettificationTypeSimplifier.SimplifyType(original, PrettificationSettings.Default);
             Asserter.Against(actual)
                     .And(Is.EqualTo(simplified))
                     .Invoke();
@@ -428,7 +444,7 @@ int (int, string)
                     Original = ls,
                     Expected = "[1, 2, 3]",
                     Settings = new PrettificationSettings() {
-                        TypeLabelStyle = { Value = TypeNameStyle.None }
+                        TypeLabelStyle = TypeNameStyle.None
                     }
                 },
                 new Expectation() {
@@ -439,21 +455,21 @@ int (int, string)
                     Original = ls,
                     Expected = "List<>[1, 2, 3]",
                     Settings = new PrettificationSettings() {
-                        TypeLabelStyle = { Value = TypeNameStyle.Short }
+                        TypeLabelStyle = TypeNameStyle.Short
                     }
                 },
                 new Expectation() {
                     Original = ls,
                     Settings = new PrettificationSettings() {
-                        TypeLabelStyle = { Value = TypeNameStyle.Full }
+                        TypeLabelStyle = TypeNameStyle.Full
                     },
                     Expected = "List<int>[1, 2, 3]"
                 },
                 new Expectation() {
                     Original = ls,
                     Settings = new PrettificationSettings() {
-                        PreferredLineStyle = { Value = LineStyle.Multi },
-                        TypeLabelStyle     = { Value = TypeNameStyle.Full }
+                        PreferredLineStyle = LineStyle.Multi,
+                        TypeLabelStyle     = TypeNameStyle.Full
                     },
                     Expected = @"
 List<int>[
@@ -521,7 +537,7 @@ List<int>[
         [Test]
         public void TypeLabelStyle([Values] TypeNameStyle style) {
             var settings = new PrettificationSettings() {
-                TypeLabelStyle = { Value = style }
+                TypeLabelStyle = style
             };
             var type = typeof(Dictionary<int, List<string>>);
             Console.WriteLine(
@@ -537,8 +553,8 @@ List<int>[
         [Test]
         public void PerformanceTest_Dictionary() {
             var settings    = new PrettificationSettings();
-            var oldSettings = Prettification.DefaultPrettificationSettings;
-            Prettification.DefaultPrettificationSettings = settings;
+            var oldSettings = PrettificationSettings.Default with { };
+            PrettificationSettings.Default = settings;
 
             Console.WriteLine($"Settings: {settings}");
             Console.WriteLine($"Trace Writer: {settings.TraceWriter}");
@@ -572,7 +588,7 @@ List<int>[
             );
 
             Console.WriteLine(comparison);
-            Prettification.DefaultPrettificationSettings = oldSettings;
+            PrettificationSettings.Default = oldSettings;
         }
 
         [Test]
@@ -581,8 +597,8 @@ List<int>[
             const int iterations = 2000;
 
             var settings    = new PrettificationSettings();
-            var oldSettings = Prettification.DefaultPrettificationSettings;
-            Prettification.DefaultPrettificationSettings = settings;
+            var oldSettings = PrettificationSettings.Default with { };
+            PrettificationSettings.Default = settings;
 
             var comparison = MethodTimer.CompareExecutions(
                 (type, settings),
@@ -592,7 +608,7 @@ List<int>[
             );
 
             Console.WriteLine(comparison);
-            Prettification.DefaultPrettificationSettings = oldSettings;
+            PrettificationSettings.Default = oldSettings;
             Assert.That(comparison.Faster, Is.EqualTo(AggregateExecutionComparison.Which.Second));
         }
 
@@ -635,33 +651,6 @@ List<int>[
             Assert.That(comparison.Faster, Is.EqualTo(AggregateExecutionComparison.Which.First));
         }
 
-        [Test]
-        public void CloneSettings() {
-            var original = new PrettificationSettings() {
-                HeaderStyle          = { Value = HeaderStyle.None },
-                TableHeaderSeparator = { Value = "💄" },
-                NullPlaceholder      = { Value = "⛑" },
-                PreferredLineStyle   = { Value = LineStyle.Dynamic }
-            };
-
-            var copy = original.JsonClone();
-
-            Asserter.Against(copy)
-                    .WithPrettificationSettings(new PrettificationSettings())
-                    .And(Has.Property(nameof(copy.HeaderStyle)).EqualTo(original.HeaderStyle))
-                    .And(Has.Property(nameof(copy.TableHeaderSeparator)).EqualTo(original.TableHeaderSeparator))
-                    .And(Has.Property(nameof(copy.NullPlaceholder)).EqualTo(original.NullPlaceholder))
-                    .And(Has.Property(nameof(copy.PreferredLineStyle)).EqualTo(original.PreferredLineStyle))
-                    .And(Has.Property(nameof(copy.LineLengthLimit)).EqualTo(original.LineLengthLimit))
-                    .AndComparingFallbacks(copy.HeaderStyle,          original.HeaderStyle)
-                    .AndComparingFallbacks(copy.TableHeaderSeparator, original.TableHeaderSeparator)
-                    .AndComparingFallbacks(copy.NullPlaceholder,      original.NullPlaceholder)
-                    .AndComparingFallbacks(copy.PreferredLineStyle,   original.PreferredLineStyle)
-                    .AndComparingFallbacks(copy.LineLengthLimit,      original.LineLengthLimit)
-                    .And(Is.Not.SameAs(original))
-                    .Invoke();
-        }
-
         private static Type[] PrettyTypesWithInterfaces = {
             typeof(IList<>),
             typeof(KeyedCollection<,>),
@@ -675,7 +664,7 @@ List<int>[
         [TestCase(DayOfWeek.Monday, TypeNameStyle.None,  nameof(DayOfWeek.Monday))]
         public void PrettifyEnumTypeLabel(Enum value, TypeNameStyle enumLabelStyle, string expectedString) {
             var settings = new PrettificationSettings() {
-                EnumLabelStyle = { Value = enumLabelStyle }
+                EnumLabelStyle = enumLabelStyle
             };
 
             Assert.That(DayOfWeek.Monday.Prettify(settings), Is.EqualTo(expectedString));
@@ -683,8 +672,7 @@ List<int>[
 
         [Test]
         public void DoInterfaceAndInheritFindDifferentPrettifiers([ValueSource(nameof(PrettyTypesWithInterfaces))] Type t) {
-            Prettification.DefaultPrettificationSettings = LineStyle.Single;
-            var settings    = Prettification.DefaultPrettificationSettings;
+            var settings    = PrettificationSettings.Default with { PreferredLineStyle = LineStyle.Single };
             var iPrettifier = PrettifierFinders.FindInterfacePrettifier(Prettification.Prettifiers, t, settings);
             var cPrettifier = PrettifierFinders.FindInheritedPrettifier(Prettification.Prettifiers, t, settings);
             var gPrettifier = PrettifierFinders.FindGenericallyTypedPrettifier(Prettification.Prettifiers, t, settings);
@@ -723,5 +711,45 @@ List<int>[
                     .And(it => it.Prettify(), Is.EqualTo(ExtendsDBType.PrettyString()))
                     .Invoke();
         }
+
+        #region Table
+
+        [Test]
+        public void PrettifyTable() {
+            var table = new Table(
+                new Row("yolo--", "🦽",   55),
+                new Row("swag",   999999, new[] { 1, 2, 3 })
+            );
+
+            var pretty = table.Prettify();
+            Console.WriteLine(pretty);
+
+            Assert.That(
+                pretty,
+                Is.EqualTo(
+                    @"yolo-- 🦽     55              
+swag   999999 Int32[][1, 2, 3]"
+                )
+            );
+        }
+
+        [Test]
+        public void PrettifyTable_WithHeader() {
+            var table = new Table(
+                new Row("Column #1", "Also this stuff"),
+                new Row(1,           23)
+            ) {
+                HasHeaderRow = true
+            };
+
+            var pretty = table.Prettify();
+            Console.WriteLine(pretty);
+
+            Asserter.Against(pretty)
+                    .And(StringUtils.LineCount, Is.EqualTo(table.Rows.Count + 1))
+                    .Invoke();
+        }
+
+        #endregion
     }
 }

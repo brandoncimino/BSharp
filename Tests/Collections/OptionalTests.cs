@@ -111,19 +111,19 @@ namespace BSharp.Tests.Collections {
             return value;
         }
 
-        private static T Unboxional<T>(Optional<T> optional) {
-            return optional.GetValueOrDefault((T)default);
+        private static T? Unboxional<T>(Optional<T> optional) {
+            return optional.GetValueOrDefault((T?)default);
         }
 
         [Test]
         public void NullInterfaceEquality() {
-            var               optional_a  = (IOptional<string>)null;
-            var               optional_b  = (IOptional<string>)null;
-            var               optional_c  = (Optional<string>)null;
-            IOptional<string> def_a       = default;
-            IOptional<string> def_b       = default;
-            Optional<string>  def_c       = default;
-            const string      null_string = default;
+            var                optional_a  = (IOptional<string>?)null;
+            var                optional_b  = (IOptional<string>?)null;
+            var                optional_c  = (Optional<string>?)null;
+            IOptional<string>? def_a       = default;
+            IOptional<string>? def_b       = default;
+            Optional<string>   def_c       = default;
+            const string       null_string = default;
             AssertAll.Of(
                 () => Assert.False(Optional.AreEqual(optional_a,  null_string), "Optional.AreEqual(optional_a, null_string)"),
                 () => Assert.False(Optional.AreEqual(null_string, optional_a),  "Optional.AreEqual(null_string, optional_a)"),
@@ -140,7 +140,7 @@ namespace BSharp.Tests.Collections {
 
         [Test]
         public void OptionalOfNull_HasValue() {
-            var ofNull = new Optional<string>(null);
+            var ofNull = new Optional<string?>(null);
 
             AssertAll.Of(
                 ofNull,
@@ -153,14 +153,14 @@ namespace BSharp.Tests.Collections {
         [SuppressMessage("ReSharper", "SuggestVarOrType_Elsewhere")]
         [SuppressMessage("ReSharper", "ExpressionIsAlwaysNull")]
         public void OptionalOfNull_Equality() {
-            Optional<string>  ofNull           = new Optional<string>(null);
-            Optional<string>  ofNull2          = new Optional<string>(null);
-            string            nullValue        = (string)null;
-            Optional<string>  nullOptional     = (Optional<string>)null;
-            IOptional<string> nullInterface    = (IOptional<string>)null;
-            Optional<string>  defaultOptional  = default;
-            IOptional<string> defaultInterface = default;
-            Optional<string>  empty            = new Optional<string>();
+            Optional<string?>  ofNull           = new Optional<string?>(null);
+            Optional<string?>  ofNull2          = new Optional<string?>(null);
+            string?            nullValue        = null;
+            Optional<string>?  nullOptional     = (Optional<string>?)null;
+            IOptional<string>? nullInterface    = (IOptional<string>?)null;
+            Optional<string>?  defaultOptional  = default;
+            IOptional<string>? defaultInterface = default;
+            Optional<string>   empty            = new Optional<string>();
 
             Console.WriteLine($"ofNull: [{ofNull}]");
             Console.WriteLine($"nullOptional: [{nullOptional}]");
@@ -274,12 +274,12 @@ namespace BSharp.Tests.Collections {
 
         #region ToString
 
-        public static (Optional<object>, string)[] GetOptionalToStringExpectations() {
+        public static (Optional<object?>, string)[] GetOptionalToStringExpectations() {
             return new[] {
-                (new Optional<object>(5), "Optional<object>[5]"),
-                (new Optional<object>(), $"Optional<object>[{Optional.EmptyPlaceholder}]"),
-                (new Optional<object>(null), $"Optional<object>[{new PrettificationSettings().NullPlaceholder.Value}]"),
-                (new Optional<object>(new Optional<object>(new Optional<object>("yolo"))), "Optional<object>[Optional<object>[Optional<object>[yolo]]]")
+                (new Optional<object?>(5), "Optional<object>[5]"),
+                (new Optional<object?>(), $"Optional<object>[{Optional.EmptyPlaceholder}]"),
+                (new Optional<object?>(null), $"Optional<object>[{new PrettificationSettings().NullPlaceholder}]"),
+                (new Optional<object?>(new Optional<object>(new Optional<object>("yolo"))), "Optional<object>[Optional<object>[Optional<object>[yolo]]]")
             };
         }
 
@@ -319,7 +319,7 @@ namespace BSharp.Tests.Collections {
 
         [Test]
         public void Serialize_OptionalOfNull() {
-            var optional = Optional.Of<string>(null);
+            var optional = Optional.Of<string?>(null);
             var json     = JsonConvert.SerializeObject(optional);
             Console.WriteLine($"json: {json}");
             Assert.That(json, Is.EqualTo("[null]"));

@@ -31,9 +31,7 @@ namespace FowlFever.BSharp.Exceptions {
             IEnumerable<object>? valuesThatShouldBeThere,
             string?              messagePrefix
         ) {
-            PrettificationSettings prettySettings = new PrettificationSettings() {
-                TypeLabelStyle = { Value = TypeNameStyle.Full }
-            };
+            var prettySettings = PrettificationSettings.Default with { TypeLabelStyle = TypeNameStyle.Full };
 
             var badValues = valuesThatShouldBeThere?.Except(superset);
 
@@ -83,13 +81,11 @@ namespace FowlFever.BSharp.Exceptions {
         ) : this(superset, Enumerable.Repeat(invalidValue, 1), messagePrefix, innerException) { }
 
         private string BuildMessage(IEnumerable<T> superset, IEnumerable<T>? valuesThatShouldBeThere) {
-            PrettificationSettings prettySettings = new PrettificationSettings() {
-                TypeLabelStyle = { Value = TypeNameStyle.Full }
-            };
+            var prettySettings = PrettificationSettings.Default with { TypeLabelStyle = TypeNameStyle.Full };
 
             var badValues = valuesThatShouldBeThere?.Except(superset);
 
-            return new Dictionary<object, object>() {
+            return new Dictionary<object, object?>() {
                 [superset.GetType().PrettifyType(prettySettings)] = this,
                 [nameof(valuesThatShouldBeThere)]                 = valuesThatShouldBeThere,
                 ["Disallowed values"]                             = badValues

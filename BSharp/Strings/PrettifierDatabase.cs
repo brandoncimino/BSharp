@@ -66,7 +66,7 @@ namespace FowlFever.BSharp.Strings {
                 new Prettifier<IPrettifiable>(PrettifyPrettifiable),
                 new Prettifier<Enum>(InnerPretty.PrettifyEnum),
                 new Prettifier<Type>(InnerPretty.PrettifyType),
-                new Prettifier<IDictionary>(InnerPretty.PrettifyDictionary2),
+                new Prettifier<IDictionary>(InnerPretty.PrettifyDictionary3),
                 new Prettifier<KeyedList<object, object>>(InnerPretty.PrettifyKeyedList),
                 new Prettifier<(object, object)>(InnerPretty.Tuple2),
                 new Prettifier<(object, object, object)>(InnerPretty.Tuple3),
@@ -84,8 +84,8 @@ namespace FowlFever.BSharp.Strings {
             );
         }
 
-        internal static string PrettifyPrettifiable(IPrettifiable prettifiable, PrettificationSettings settings) => prettifiable.Prettify(settings);
-        internal static string PrettifyToString(object            obj,          PrettificationSettings settings) => obj.ToString();
+        internal static string PrettifyPrettifiable(IPrettifiable prettifiable, PrettificationSettings? settings) => prettifiable.Prettify(settings);
+        internal static string PrettifyToString(object            obj,          PrettificationSettings? settings) => obj.ToString();
 
         #region Special High-Priority Prettifiers
 

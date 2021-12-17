@@ -12,7 +12,7 @@ using JetBrains.Annotations;
 namespace FowlFever.BSharp.Strings.Prettifiers {
     internal static partial class InnerPretty {
         public static string PrettifyFileSystemInfo(FileSystemInfo item, PrettificationSettings? settings = default) {
-            settings ??= Prettification.DefaultPrettificationSettings;
+            settings ??= PrettificationSettings.Default;
 
             return settings.PreferredLineStyle == LineStyle.Single
                        ? PrettifySingleItem(item, settings)

@@ -22,18 +22,16 @@ namespace FowlFever.BSharp.Strings.Prettifiers {
         ) {
             var asObjects      = enumerable.Cast<object>();
             var enumerableType = enumerable.GetType();
-            var lineStyle      = settings?.PreferredLineStyle.Value ?? default;
-            var innerSettings = settings.JsonClone(
-                it => {
-                    it.EnumLabelStyle.Set(TypeNameStyle.None);
-                    it.TypeLabelStyle.Set(TypeNameStyleExtensions.Reduce(it.TypeLabelStyle.Value));
-                }
-            );
-            return lineStyle switch {
+            var innerSettings = settings with {
+                EnumLabelStyle = TypeNameStyle.None,
+                TypeLabelStyle = settings.TypeLabelStyle.Reduce()
+            };
+
+            return settings.PreferredLineStyle switch {
                 LineStyle.Dynamic => PrettifyEnumerable_DynamicLine(asObjects, enumerableType, settings, innerSettings),
                 LineStyle.Multi   => PrettifyEnumerable_MultiLine(asObjects, enumerableType, settings, innerSettings),
                 LineStyle.Single  => PrettifyEnumerable_SingleLine(asObjects, enumerableType, settings, innerSettings),
-                _                 => throw BEnum.InvalidEnumArgumentException(nameof(PrettificationSettings.PreferredLineStyle), lineStyle)
+                _                 => throw BEnum.InvalidEnumArgumentException(nameof(PrettificationSettings.PreferredLineStyle), settings.PreferredLineStyle)
             };
         }
 
@@ -49,7 +47,7 @@ namespace FowlFever.BSharp.Strings.Prettifiers {
             var single = PrettifyEnumerable_SingleLine(enumerable, enumerableType, outerSettings, innerSettings);
 
             if (single.Length > outerSettings.LineLengthLimit) {
-                outerSettings.TraceWriter.Verbose(() => $"🪓 {nameof(single)} length {single.Length} > {outerSettings.LineLengthLimit}/{outerSettings.LineLengthLimit.Value}/{(int)outerSettings.LineLengthLimit}; falling back to {nameof(PrettifyEnumerable_MultiLine)}", 1);
+                outerSettings.TraceWriter.Verbose(() => $"🪓 {nameof(single)} length {single.Length} > {outerSettings.LineLengthLimit}/{outerSettings.LineLengthLimit}/{outerSettings.LineLengthLimit}; falling back to {nameof(PrettifyEnumerable_MultiLine)}", 1);
                 return PrettifyEnumerable_MultiLine(enumerable, enumerableType, outerSettings, innerSettings);
             }
 

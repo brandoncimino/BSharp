@@ -9,7 +9,7 @@ using JetBrains.Annotations;
 namespace FowlFever.BSharp.Strings.Prettifiers {
     internal static partial class InnerPretty {
         private static string PrettifyTupleArray(this IEnumerable<object> array, PrettificationSettings? settings) {
-            settings ??= Prettification.DefaultPrettificationSettings;
+            settings ??= PrettificationSettings.Default;
             return array
                    .Select(it => it.Prettify(settings))
                    .JoinString(", ")

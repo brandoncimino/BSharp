@@ -10,7 +10,7 @@ using FowlFever.BSharp.Enums;
 using FowlFever.BSharp.Exceptions;
 using FowlFever.BSharp.Optional;
 using FowlFever.BSharp.Reflection;
-using FowlFever.BSharp.Strings.Json;
+using FowlFever.BSharp.Strings.Tabler;
 
 using JetBrains.Annotations;
 
@@ -33,10 +33,10 @@ namespace FowlFever.BSharp.Strings.Prettifiers {
             string                 fallback,
             PrettificationSettings settings
         ) {
-            return settings.HeaderStyle.Value switch {
+            return settings.HeaderStyle switch {
                 HeaderStyle.None      => fallback,
                 HeaderStyle.TypeNames => valueType ?? InferType(values),
-                _                     => throw BEnum.InvalidEnumArgumentException(nameof(settings.HeaderStyle), settings.HeaderStyle.Value)
+                _                     => throw BEnum.InvalidEnumArgumentException(nameof(settings.HeaderStyle), settings.HeaderStyle)
             };
         }
 
@@ -44,7 +44,7 @@ namespace FowlFever.BSharp.Strings.Prettifiers {
             IDictionary             dictionary,
             PrettificationSettings? settings
         ) {
-            settings ??= Prettification.DefaultPrettificationSettings;
+            settings ??= PrettificationSettings.Default;
             return (
                        GetHeader(dictionary.Keys,   default, "Key",   settings),
                        GetHeader(dictionary.Values, default, "Value", settings)
@@ -55,7 +55,7 @@ namespace FowlFever.BSharp.Strings.Prettifiers {
             IDictionary<TKey, TVal> dictionary,
             PrettificationSettings? settings
         ) {
-            settings ??= Prettification.DefaultPrettificationSettings;
+            settings ??= PrettificationSettings.Default;
             return (
                        GetHeader(dictionary.Keys,   typeof(TKey), "Key",   settings),
                        GetHeader(dictionary.Values, typeof(TVal), "Value", settings)
@@ -77,7 +77,7 @@ namespace FowlFever.BSharp.Strings.Prettifiers {
 
 
         public static string PrettifyDictionary2(IDictionary dictionary, PrettificationSettings? settings = default) {
-            settings ??= Prettification.DefaultPrettificationSettings;
+            settings ??= PrettificationSettings.Default;
 
             var keys = dictionary.Keys.Cast<object>();
             var vals = dictionary.Values.Cast<object>();
@@ -103,9 +103,8 @@ namespace FowlFever.BSharp.Strings.Prettifiers {
             public IEnumerable<object> Cells;
 
             public IEnumerable<string> GetLines(PrettificationSettings settings) {
-                settings ??= Prettification.DefaultPrettificationSettings;
-                settings =   settings.JsonClone();
-                settings.PreferredLineStyle.Set(LineStyle.Single);
+                settings ??= PrettificationSettings.Default;
+                settings =   settings with { PreferredLineStyle = LineStyle.Single };
 
                 var prettyCells = Cells.Select(it => it.Prettify(settings)).ToList();
 
@@ -113,7 +112,7 @@ namespace FowlFever.BSharp.Strings.Prettifiers {
                     var headerStr     = Header.Prettify(settings);
                     int longestCell   = prettyCells.LongestLine();
                     int longestLine   = longestCell.Max(headerStr.Length);
-                    var separatorLine = (settings.TableHeaderSeparator.Value ?? " ").Fill(longestLine);
+                    var separatorLine = (settings.TableHeaderSeparator).Fill(longestLine);
                     return new[] {
                         headerStr,
                         separatorLine
@@ -128,8 +127,8 @@ namespace FowlFever.BSharp.Strings.Prettifiers {
             public readonly Col Keys = new Col();
             public readonly Col Vals = new Col();
 
-            public IEnumerable<string> GetLines(PrettificationSettings? settings) {
-                settings ??= Prettification.DefaultPrettificationSettings.JsonClone();
+            public IEnumerable<string> GetLines(PrettificationSettings settings) {
+                settings = settings with { PreferredLineStyle = LineStyle.Single };
                 // calculate the various widths
                 var keyLines = Keys.GetLines(settings).ToArray();
                 var valLines = Vals.GetLines(settings).ToArray();
@@ -192,7 +191,7 @@ namespace FowlFever.BSharp.Strings.Prettifiers {
             Optional<object>        valHeader,
             PrettificationSettings? settings
         ) {
-            settings ??= Prettification.DefaultPrettificationSettings;
+            settings ??= PrettificationSettings.Default;
 
             // add the headers
             keys.Insert(0, keyHeader);
@@ -283,6 +282,15 @@ namespace FowlFever.BSharp.Strings.Prettifiers {
                 (dictionary.Values.Cast<object>(), typeof(TValue)),
                 settings
             );
+        }
+
+        internal static string PrettifyDictionary3(IDictionary dictionary, PrettificationSettings? settings = default) {
+            return Table.Of(
+                            InferType(dictionary.Keys),
+                            InferType(dictionary.Values),
+                            dictionary.ToGeneric()
+                        )
+                        .Prettify(settings);
         }
     }
 }

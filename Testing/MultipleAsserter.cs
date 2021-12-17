@@ -411,10 +411,10 @@ namespace FowlFever.Testing {
             testResults = testResults.ToList();
             var failures = testResults.Where(it => it.Failed).ToList();
 
-            var prettySettings = new PrettificationSettings() {
-                PreferredLineStyle = { Value = LineStyle.Single },
-                LineLengthLimit    = { Value = 30 },
-                TypeLabelStyle     = { Value = TypeNameStyle.Short }
+            var prettySettings = PrettificationSettings.Default with {
+                PreferredLineStyle = LineStyle.Single,
+                LineLengthLimit = 30,
+                TypeLabelStyle = TypeNameStyle.Short
             };
 
             var countString = failures.IsNotEmpty() ? $"[{failures.Count}/{testResults.Count()}]" : $"All {testResults.Count()}";

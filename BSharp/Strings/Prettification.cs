@@ -9,6 +9,9 @@ using JetBrains.Annotations;
 using Pure = System.Diagnostics.Contracts.PureAttribute;
 
 namespace FowlFever.BSharp.Strings {
+    /// <summary>
+    /// TODO: Implement some kind of "caching", with some kind of stateful "PrettyCache" object so we don't have to re-prettify the same object multiple times within a single .Prettify() call
+    /// </summary>
     [PublicAPI]
     public static class Prettification {
         internal const           string              DefaultNullPlaceholder = "⛔";
@@ -23,15 +26,11 @@ namespace FowlFever.BSharp.Strings {
         };
 
 
-        [Obsolete]
-        public static PrettificationSettings DefaultPrettificationSettings {
-            get => PrettificationSettings.DefaultSettings;
-            [CanBeNull] set => PrettificationSettings.DefaultSettings = value;
-        }
+        [Obsolete] public static PrettificationSettings DefaultPrettificationSettings => PrettificationSettings.Default;
 
 
         public static PrettificationSettings ResolveSettings(PrettificationSettings? settings) {
-            return settings ?? PrettificationSettings.DefaultSettings;
+            return settings ?? PrettificationSettings.Default;
         }
 
         public static void RegisterPrettifier(IPrettifier prettifier) {
@@ -62,7 +61,7 @@ namespace FowlFever.BSharp.Strings {
             settings.TraceWriter.Info(() => $"👸 Prettifying [{cinderella?.GetType().Name}]");
 
             if (cinderella == null) {
-                return settings.NullPlaceholder.Value ?? "";
+                return settings.NullPlaceholder;
             }
 
             var prettifier = PrettifierFinders.FindPrettifier(

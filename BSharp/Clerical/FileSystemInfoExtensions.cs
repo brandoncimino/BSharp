@@ -150,7 +150,7 @@ namespace FowlFever.BSharp.Clerical {
                     [nameof(parent)]       = parent,
                     [nameof(relativePath)] = relativePath,
                     ["joined"]             = BPath.JoinPath(parent, relativePath)
-                }.Prettify(new PrettificationSettings() { LineLengthLimit = { Value = int.MaxValue } })
+                }.Prettify(PrettificationSettings.Default with { TraceWriter = null, LineLengthLimit = int.MaxValue })
             );
 
             return BPath.JoinPath(parent, relativePath);

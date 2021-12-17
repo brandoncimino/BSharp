@@ -21,7 +21,7 @@ namespace FowlFever.BSharp.Strings.Prettifiers {
         /// <returns>a pretty <see cref="string"/></returns>
         [Pure]
         public static string PrettifyType(this Type? type, PrettificationSettings? settings) {
-            settings ??= Prettification.DefaultPrettificationSettings;
+            settings ??= PrettificationSettings.Default;
 
             if (type == null) {
                 return settings.NullPlaceholder;
@@ -61,18 +61,18 @@ namespace FowlFever.BSharp.Strings.Prettifiers {
 
 
         private static string StylizeGenericTypeArguments(IEnumerable<Type?> genericTypeArguments, PrettificationSettings? settings) {
-            settings ??= Prettification.DefaultPrettificationSettings;
-            return settings.TypeLabelStyle.Value switch {
+            settings ??= PrettificationSettings.Default;
+            return settings.TypeLabelStyle switch {
                 TypeNameStyle.None  => "",
                 TypeNameStyle.Full  => genericTypeArguments.Select(it => it.PrettifyType(settings)).JoinString(", "),
                 TypeNameStyle.Short => genericTypeArguments.Select(_ => "").JoinString(","),
-                _                   => throw BEnum.InvalidEnumArgumentException(nameof(settings.TypeLabelStyle.Value), settings.TypeLabelStyle.Value)
+                _                   => throw BEnum.InvalidEnumArgumentException(nameof(settings.TypeLabelStyle), settings.TypeLabelStyle)
             };
         }
 
 
         internal static string WithTypeLabel(this string? thing, Type labelType, PrettificationSettings settings, string joiner = "") {
-            return new[] { labelType.GetTypeLabel(settings), thing }.NonNull().JoinString(joiner);
+            return new[] { labelType.GetTypeLabel(settings), thing }.NonEmpty().JoinString(joiner);
         }
     }
 }

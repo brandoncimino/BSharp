@@ -7,7 +7,7 @@ using FowlFever.BSharp.Strings.Prettifiers;
 
 namespace FowlFever.BSharp.Strings {
     public class Prettifier<T> : IPrettifier<T> {
-        private Func<T?, PrettificationSettings?, string> PrettificationFunction { get; }
+        private Func<T, PrettificationSettings, string> PrettificationFunction { get; }
 
         public Type PrettifierType { get; }
 
@@ -15,9 +15,9 @@ namespace FowlFever.BSharp.Strings {
 
         #region Constructors
 
-        public Prettifier(Func<T?, string> prettifierFunc) : this((it, settings) => prettifierFunc.Invoke(it)) { }
+        public Prettifier(Func<T, string> prettifierFunc) : this((it, settings) => prettifierFunc.Invoke(it)) { }
 
-        public Prettifier(Func<T?, PrettificationSettings?, string> prettifierFunc) {
+        public Prettifier(Func<T, PrettificationSettings, string> prettifierFunc) {
             PrettificationFunction = prettifierFunc;
             PrettifierType         = PrettificationTypeSimplifier.SimplifyType(typeof(T), new PrettificationSettings());
         }
@@ -35,12 +35,12 @@ namespace FowlFever.BSharp.Strings {
         }
 
         public string Prettify(object? cinderella, PrettificationSettings? settings = default) {
-            settings ??= Prettification.DefaultPrettificationSettings;
+            settings ??= PrettificationSettings.Default;
 
             settings.TraceWriter.Verbose(() => $"⚠ DANGEROUSLY prettifying [{cinderella?.GetType().Name}]");
 
             if (cinderella == null) {
-                return settings.NullPlaceholder.Value;
+                return settings.NullPlaceholder;
             }
             else if (PrettifierType.IsGenericType) {
                 return PrettifyGeneric(cinderella, settings);
@@ -51,7 +51,7 @@ namespace FowlFever.BSharp.Strings {
         }
 
         public string PrettifySafely(object? cinderella, PrettificationSettings? settings = default) {
-            settings ??= Prettification.DefaultPrettificationSettings;
+            settings ??= PrettificationSettings.Default;
 
             settings.TraceWriter.Verbose(() => $"🦺 SAFELY prettifying [{cinderella?.GetType().Name}]");
 
@@ -100,7 +100,7 @@ namespace FowlFever.BSharp.Strings {
 
 
         private string PrettifyGeneric(object? cinderella, PrettificationSettings? settings) {
-            settings ??= Prettification.DefaultPrettificationSettings;
+            settings ??= PrettificationSettings.Default;
 
             settings.TraceWriter.Verbose(() => $"🕵️ Using generic prettification for [{cinderella?.GetType()}");
 
