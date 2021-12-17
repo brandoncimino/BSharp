@@ -28,11 +28,13 @@ namespace FowlFever.BSharp.Strings.Json {
         /// <param name="settings">optional <see cref="JsonSerializerSettings"/></param>
         /// <typeparam name="T"></typeparam>
         /// <returns>a <b>new</b> <typeparamref name="T"/> instance that is a <b>deep clone</b> of <paramref name="original"/></returns>
-        [ContractAnnotation("original:null => null")]
-        [ContractAnnotation("original:notnull => notnull")]
-        public static T? JsonClone<T>(this T? original, JsonSerializerSettings? settings = default) where T : IJsonCloneable {
+        public static T JsonClone<T>(this T original, JsonSerializerSettings? settings = default) where T : IJsonCloneable {
+            if (original == null) {
+                throw new ArgumentNullException(nameof(original));
+            }
+
             var json = JsonConvert.SerializeObject(original, settings!);
-            return JsonConvert.DeserializeObject<T>(json, settings);
+            return JsonConvert.DeserializeObject<T>(json, settings) ?? throw new InvalidOperationException("Deserialization during JSON cloning produced a null value!");
         }
 
         /// <summary>
