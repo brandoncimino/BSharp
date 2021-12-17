@@ -380,7 +380,7 @@ namespace FowlFever.BSharp.Optional {
         [ContractAnnotation("a:null => false")]
         public static bool AreEqual<T>(IOptional<T>? a, T? b) {
             // this method compares the _value_ of `a` to `b`, which means a value has to exist
-            if (!(a is { HasValue: true })) {
+            if (a is not { HasValue: true }) {
                 return false;
             }
 
