@@ -74,6 +74,7 @@ namespace FowlFever.BSharp.Strings {
         /// Strangely, despite the hideous 80-thousand extra steps of using <a href="https://docs.oracle.com/javase/8/docs/api/java/util/regex/Pattern.html">Java's Regex library</a>, Java actually uses the correct verb, <a href="https://docs.oracle.com/javase/8/docs/api/java/util/regex/Pattern.html#matches-java.lang.String-java.lang.CharSequence-">Matches()</a>.
         /// </remarks>
         /// <returns><see cref="Regex.IsMatch(string, string)"/></returns>
+        [Pure]
         public static bool Matches(this string str, string pattern) {
             return Regex.IsMatch(str, pattern);
         }
@@ -84,6 +85,7 @@ namespace FowlFever.BSharp.Strings {
         /// <param name="str"></param>
         /// <param name="pattern"></param>
         /// <returns></returns>
+        [Pure]
         public static bool DoesNotMatch(this string str, string pattern) {
             return !str.Matches(pattern);
         }
@@ -98,6 +100,7 @@ namespace FowlFever.BSharp.Strings {
         /// <param name="pattern"><inheritdoc cref="Matches(string,string)"/></param>
         /// <param name="options">any applicable <see cref="RegexOptions"/>, like <see cref="RegexOptions.Multiline"/></param>
         /// <returns><see cref="Regex.IsMatch(string, string, RegexOptions)"/></returns>
+        [Pure]
         public static bool Matches(this string str, string pattern, RegexOptions options) {
             return Regex.IsMatch(str, pattern, options);
         }
@@ -109,12 +112,14 @@ namespace FowlFever.BSharp.Strings {
         /// <param name="pattern"></param>
         /// <param name="options"></param>
         /// <returns></returns>
+        [Pure]
         public static bool DoesNotMatch(this string str, string pattern, RegexOptions options) {
             return !str.Matches(pattern, options);
         }
 
         /// <inheritdoc cref="Matches(string,string)"/>
         /// <returns><see cref="Regex.IsMatch(string)"/></returns>
+        [Pure]
         public static bool Matches(this string str, Regex pattern) {
             return pattern.IsMatch(str);
         }
@@ -125,6 +130,7 @@ namespace FowlFever.BSharp.Strings {
         /// <param name="str"></param>
         /// <param name="pattern"></param>
         /// <returns></returns>
+        [Pure]
         public static bool DoesNotMatch(this string str, Regex pattern) {
             return !str.Matches(pattern);
         }
@@ -133,6 +139,7 @@ namespace FowlFever.BSharp.Strings {
 
         #region MatchesAll
 
+        [Pure]
         public static bool MatchesAll(this string str, IEnumerable<string> patterns, RegexOptions? options = default) {
             return options.IfPresentOrElse(
                 rOpts => patterns.All(pat => Regex.IsMatch(str, pat, rOpts)),
@@ -140,22 +147,20 @@ namespace FowlFever.BSharp.Strings {
             );
         }
 
-        public static bool MatchesAll(this string str, params string[] patterns) {
-            return MatchesAll(str, patterns.AsEnumerable());
-        }
+        [Pure]
+        public static bool MatchesAll(this string str, params string[] patterns) => MatchesAll(str, patterns.AsEnumerable());
 
-        public static bool MatchesAll(this string str, params Regex[] patterns) {
-            return MatchesAll(str, patterns.AsEnumerable());
-        }
+        [Pure]
+        public static bool MatchesAll(this string str, params Regex[] patterns) => MatchesAll(str, patterns.AsEnumerable());
 
-        public static bool MatchesAll(this string str, IEnumerable<Regex> patterns, RegexOptions? options = default) {
-            return patterns.All(it => it.IsMatch(str));
-        }
+        [Pure]
+        public static bool MatchesAll(this string str, IEnumerable<Regex> patterns, RegexOptions? options = default) => patterns.All(it => it.IsMatch(str));
 
         #endregion
 
         #region MatchesAny
 
+        [Pure]
         public static bool MatchesAny(this string str, IEnumerable<string> patterns, RegexOptions? options = default) {
             return options.IfPresentOrElse(
                 rOpts => patterns.Any(pat => Regex.IsMatch(str, pat, rOpts)),
@@ -163,17 +168,14 @@ namespace FowlFever.BSharp.Strings {
             );
         }
 
-        public static bool MatchesAny(this string str, params string[] patterns) {
-            return MatchesAny(str, patterns.AsEnumerable());
-        }
+        [Pure]
+        public static bool MatchesAny(this string str, params string[] patterns) => MatchesAny(str, patterns.AsEnumerable());
 
-        public static bool MatchesAny(this string str, IEnumerable<Regex> patterns) {
-            return patterns.Any(it => it.IsMatch(str));
-        }
+        [Pure]
+        public static bool MatchesAny(this string str, IEnumerable<Regex> patterns) => patterns.Any(it => it.IsMatch(str));
 
-        public static bool MatchesAny(this string str, params Regex[] patterns) {
-            return MatchesAny(str, patterns.AsEnumerable());
-        }
+        [Pure]
+        public static bool MatchesAny(this string str, params Regex[] patterns) => MatchesAny(str, patterns.AsEnumerable());
 
         #endregion
 
@@ -186,17 +188,14 @@ namespace FowlFever.BSharp.Strings {
             );
         }
 
-        public static bool MatchesNone(this string str, params string[] patterns) {
-            return MatchesNone(str, patterns.AsEnumerable());
-        }
+        [Pure]
+        public static bool MatchesNone(this string str, params string[] patterns) => MatchesNone(str, patterns.AsEnumerable());
 
-        public static bool MatchesNone(this string str, IEnumerable<Regex> patterns) {
-            return patterns.None(it => it.IsMatch(str));
-        }
+        [Pure]
+        public static bool MatchesNone(this string str, IEnumerable<Regex> patterns) => patterns.None(it => it.IsMatch(str));
 
-        public static bool MatchesNone(this string str, params Regex[] patterns) {
-            return MatchesNone(str, patterns.AsEnumerable());
-        }
+        [Pure]
+        public static bool MatchesNone(this string str, params Regex[] patterns) => MatchesNone(str, patterns.AsEnumerable());
 
         #endregion
 
