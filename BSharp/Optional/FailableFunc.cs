@@ -12,15 +12,15 @@ public class FailableFunc<TValue> : Failable, IFailableFunc<TValue>, IEquatable<
     public           object?          ValueOrExcuse => _value.HasValue ? _value.Value : _excuse;
 
     private FailableFunc(
-        TValue     value,
-        Exception? excuse
+        Optional<TValue> value,
+        Exception?       excuse
     ) : base(excuse, default, default) {
         _value = value;
     }
 
     public static FailableFunc<TValue> Invoke(Func<TValue> failableFunc) {
         try {
-            return new FailableFunc<TValue>(failableFunc.Invoke(), default);
+            return new FailableFunc<TValue>(Optional.Of(failableFunc.Invoke()), default);
         }
         catch (Exception e) {
             return new FailableFunc<TValue>(default, e);

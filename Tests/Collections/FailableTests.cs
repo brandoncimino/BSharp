@@ -33,7 +33,7 @@ namespace BSharp.Tests.Collections {
                 Asserter.Against(failableFunc)
                         .And(Has.Property(nameof(failableFunc.HasValue)).False)
                         .And(Has.Property(nameof(failableFunc.Failed)).True)
-                        .And(it => it.Value,  Throws.InvalidOperationException)
+                        .And(it => it.Value,  Throws.Exception)
                         .And(it => it.Excuse, Throws.Nothing)
                         .Invoke();
             }
@@ -44,7 +44,7 @@ namespace BSharp.Tests.Collections {
                         .And(Has.Property(nameof(failableFunc.HasValue)).True)
                         .And(Has.Property(nameof(failableFunc.Failed)).False)
                         .And(it => it.Value,  Throws.Nothing)
-                        .And(it => it.Excuse, Throws.InvalidOperationException)
+                        .And(it => it.Excuse, Throws.Exception)
                         .Invoke();
             }
 
@@ -67,9 +67,9 @@ namespace BSharp.Tests.Collections {
             public static IMultipleAsserter Equality<T>(FailableFunc<T> failableFunc, T expectedValue, Should should) {
                 return Asserter.Against(failableFunc)
                                .WithHeading($"Equality of {failableFunc.GetType().Prettify()} {failableFunc} and {typeof(T).Prettify()} {expectedValue}")
-                               .And(it => it.Equals(expectedValue),                        should.Constrain())
-                               .And(it => Optional.AreEqual(it,            expectedValue), should.Constrain())
-                               .And(it => Optional.AreEqual(expectedValue, it),            should.Constrain());
+                               .And(it => it.Equals(expectedValue),                        should.Constrain(), ".Equals")
+                               .And(it => Optional.AreEqual(it,            expectedValue), should.Constrain(), "Optional.AreEqual")
+                               .And(it => Optional.AreEqual(expectedValue, it),            should.Constrain(), "Optional.AreEqual(reverse)");
             }
 
             public static IMultipleAsserter ObjectEquality<T>(FailableFunc<T> failableFunc, object? obj, Should should) {
