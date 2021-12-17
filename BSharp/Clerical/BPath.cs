@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 
 using FowlFever.BSharp.Collections;
+using FowlFever.BSharp.Enums;
 using FowlFever.BSharp.Optional;
 using FowlFever.BSharp.Strings;
 using FowlFever.Conjugal.Affixing;
@@ -23,57 +24,71 @@ namespace FowlFever.BSharp.Clerical {
         internal static readonly RegexGroup ExtensionGroup            = new RegexGroup(nameof(ExtensionGroup), @"(\.[^.]+?)+$");
         internal static readonly char[]     Separators                = Enum.GetValues(typeof(DirectorySeparator)).Cast<DirectorySeparator>().Select(DirectorySeparatorExtensions.ToChar).ToArray();
         public static readonly   Regex      DirectorySeparatorPattern = new Regex(@"[\\\/]");
+        public static readonly   Regex      OuterSeparatorPattern     = RegexUtils.OuterMatch(DirectorySeparatorPattern);
+        public static readonly   Regex      InnerSeparatorPattern     = RegexUtils.InnerMatch(DirectorySeparatorPattern);
         internal static readonly string     OpenFolderIcon            = "📂";
         internal static readonly string     ClosedFolderIcon          = "📁";
         internal static readonly string     FileIcon                  = "📄";
 
         public static Failable ValidatePath(string? maybePath) {
-            Action action = () => {
-                ValidatePathCharacters(maybePath);
-                _ = Path.GetFullPath(maybePath!);
-            };
-            return action.Try();
+            Action<string> action = Validate.PathString;
+            return action!.Try(maybePath);
         }
 
-        public static Failable ValidateFileName(string? maybeFileName) {
-            Action action = () => {
-                ValidateFileNameCharacters(maybeFileName);
-                _ = Path.GetFullPath(maybeFileName!);
-            };
-            return action.Try();
+        public static string[] SplitPath(this string path) {
+            return path.Split(InnerSeparatorPattern);
         }
 
-        private static void ValidatePathCharacters(string? maybePath) {
-            if (maybePath == null) {
-                throw new ArgumentNullException($"The string [{maybePath.ToString(Prettification.DefaultNullPlaceholder)}] wasn't a valid path: it was blank!");
+        private static class Validate {
+            public static void PathString(string? maybePath) {
+                ValidationExtensions.ValidateMultiple(
+                    maybePath,
+                    p => p.MustNotBeBlank(),
+                    p => _ = Path.GetFullPath(p!),
+                    p => _ = new FileInfo(p!),
+                    PathChars,
+                    p => PathParts(p?.SplitPath())
+                );
             }
 
-            if (maybePath.ContainsAny(Path.GetInvalidPathChars())) {
-                var badCharacters = maybePath.Intersect(Path.GetInvalidPathChars());
-                throw new ArgumentException($"The string [{maybePath}] isn't a valid path: it contains the illegal characters {badCharacters.Prettify()}!");
-            }
-        }
+            public static string PathPart(string? part, bool isFirst) {
+                ValidationExtensions.ValidateMultiple(
+                    part,
+                    p => p.MustNotBeBlank(),
+                    p => _ = p?.Matches(InnerSeparatorPattern)                == true ? throw new ArgumentException($"[{part}] contains inner separators!") : true,
+                    p => _ = p?.Matches($"{DirectorySeparatorPattern}{{2,}}") == true ? throw new ArgumentException($"[{part}] contains repeating separators!") : true,
+                    p => FileNameChars(p, isFirst)
+                );
 
-        [ContractAnnotation("null => stop")]
-        private static void ValidateFileNameCharacters(string? maybeFileName) {
-            if (maybeFileName == null) {
-                throw new ArgumentNullException($"The string [{maybeFileName.ToString(Prettification.DefaultNullPlaceholder)}] wasn't a valid filename: it was blank!");
+                return part!;
             }
 
-            if (maybeFileName.ContainsAny(Path.GetInvalidFileNameChars())) {
-                var badCharacters = maybeFileName.Intersect(Path.GetInvalidFileNameChars());
-                throw new ArgumentException($"The string [{maybeFileName}] isn't a valid filename: it contains the illegal characters {badCharacters.Prettify()}!");
+            public static IList<string> PathParts(IEnumerable<string?>? parts) {
+                return parts?.Select((it, i) => PathPart(it, i == 0)).ToList()!;
+            }
+
+            private static void PathChars(string? maybePath) {
+                if (maybePath?.ContainsAny(Path.GetInvalidPathChars()) == true) {
+                    var badChars = maybePath.Intersect(Path.GetInvalidPathChars());
+                    throw new ArgumentException($"[{maybePath}] contains invalid path characters: {badChars.Prettify()}");
+                }
+            }
+
+            private static void FileNameChars(string? maybeFile, bool isFirst) {
+                if (isFirst) {
+                    return;
+                }
+
+                if (maybeFile?.Trim(OuterSeparatorPattern).ContainsAny(Path.GetInvalidFileNameChars()) == true) {
+                    var badChars = maybeFile.Intersect(Path.GetInvalidFileNameChars());
+                    throw new ArgumentException($"[{maybeFile}] contains invalid file name characters: [{badChars.JoinString(",")}]");
+                }
             }
         }
 
         [ContractAnnotation("null => false")]
         public static bool IsValidPath(string? maybePath) {
             return ValidatePath(maybePath).Failed == false;
-        }
-
-        [ContractAnnotation("null => false")]
-        public static bool IsValidFileName(string? maybeFileName) {
-            return ValidateFileName(maybeFileName).Failed == false;
         }
 
 
@@ -155,14 +170,21 @@ namespace FowlFever.BSharp.Clerical {
             return path.IsBlank() ? "" : DirectorySeparatorPattern.Replace(path!.Trim(), separator.ToCharString());
         }
 
+        private enum JoinSeparatorOption {
+            Simple,
+            TrimAll,
+            TrimOne,
+        }
+
 
         /// <summary>
-        /// Combines multiple <see cref="string"/>s into a <see cref="Path"/> <see cref="string"/>, ensuring that <b>exactly 1</b>
-        /// <see cref="DirectorySeparator"/> exists between them.
+        /// Combines multiple <see cref="string"/>s into a <see cref="Path"/> <see cref="string"/>.
         /// <p/>
         /// Also <see cref="NormalizeSeparators"/> using <paramref name="separator"/>.
         /// </summary>
         /// <remarks>
+        /// Up to one <see cref="DirectorySeparator"/> is "collapsed", i.e. <c>JoinPath("a//", "/b") => "a//b"</c>
+        /// <p/>
         /// <see cref="StringUtils.IsEmpty"/> strings <b>are included in the path</b> as <c>""</c>, i.e. <c>JoinPath("a",null) => "a/"</c>
         /// </remarks>
         /// <param name="parent">the first part of the path</param>
@@ -175,10 +197,33 @@ namespace FowlFever.BSharp.Clerical {
             string?            child,
             DirectorySeparator separator
         ) {
-            parent = parent?.Trim().TrimEnd(DirectorySeparatorPattern);
-            child  = child?.Trim().TrimStart(DirectorySeparatorPattern);
-            var path = parent.JoinWith(child, separator.ToCharString());
-            return NormalizeSeparators(path, separator);
+            return JoinPath(new[] { parent, child });
+        }
+
+        private static string _JoinPathInternal(
+            string?             parent,
+            string?             child,
+            DirectorySeparator  separator,
+            JoinSeparatorOption joinSeparatorOption
+        ) {
+            Validate.PathString(parent);
+            Validate.PathString(child);
+            switch (joinSeparatorOption) {
+                case JoinSeparatorOption.TrimAll:
+                    parent = parent!.TrimEnd(OuterSeparatorPattern);
+                    child  = child!.TrimStart(OuterSeparatorPattern);
+                    break;
+                case JoinSeparatorOption.TrimOne:
+                    parent = parent!.TrimEnd(OuterSeparatorPattern, 1);
+                    child  = child!.TrimStart(OuterSeparatorPattern, 1);
+                    break;
+                case JoinSeparatorOption.Simple:
+                    break;
+                default:
+                    throw BEnum.InvalidEnumArgumentException(nameof(joinSeparatorOption), joinSeparatorOption);
+            }
+
+            return NormalizeSeparators(string.Join(separator.ToCharString(), parent, child));
         }
 
         /**
@@ -226,7 +271,8 @@ namespace FowlFever.BSharp.Clerical {
         /// <returns>a new <see cref="Path"/> <see cref="string"/></returns>
         [Pure]
         public static string JoinPath(IEnumerable<string?>? parts, DirectorySeparator separator = DirectorySeparator.Universal) {
-            return parts?.Aggregate((pathSoFar, nextPart) => JoinPath(pathSoFar, nextPart, separator)) ?? "";
+            parts = Validate.PathParts(parts?.SelectMany(it => it?.SplitPath()));
+            return parts?.Aggregate((pathSoFar, nextPart) => _JoinPathInternal(pathSoFar, nextPart, separator, JoinSeparatorOption.TrimOne)) ?? "";
         }
     }
 }

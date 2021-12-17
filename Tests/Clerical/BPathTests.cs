@@ -39,56 +39,45 @@ namespace BSharp.Tests.Clerical {
             );
         }
 
-        [TestCase("this is really really really really really really really really really really really really really really really really really really really really really really really really really really really really really really really really really really really really really really really really really really really really really really really really long", Fail, Fail)]
+        [TestCase("a/b",      "a", "b")]
+        [TestCase(@"a/\b/",   "a", "", "b/")]
+        [TestCase("/",        "/")]
+        [TestCase("/a/b",     "/a", "b")]
+        [TestCase("//a//b//", "/",  "a", "", "b", "/")]
+        public void SplitPath(string path, params string[] expectedParts) {
+            Asserter.Against(path)
+                    .And(it => it.SplitPath(), Is.EqualTo(expectedParts))
+                    .Invoke();
+        }
+
+        [TestCase("this is really really really really really really really really really really really really really really really really really really really really really really really really really really really really really really really really really really really really really really really really really really really really really really really really long", Fail)]
         [Test]
-        [TestCase("abc",          Pass,        Pass)]
-        [TestCase(".ssh",         Pass,        Pass)]
-        [TestCase("a|b",          Fail,        Fail)]
-        [TestCase("%$@#%!@:$#%[", Fail,        Fail)]
-        [TestCase(null,           Fail,        Fail)]
-        [TestCase("",             Fail,        Fail)]
-        [TestCase("\n",           Fail,        Fail)]
-        [TestCase("C:/",          Pass,        Fail)]
-        [TestCase("C:D:E",        Fail,        Fail)]
-        [TestCase("//yolo",       Should.Pass, Should.Fail)]
-        [TestCase(@"\\yolo",      Should.Pass, Should.Fail)]
-        [TestCase("a/b",          Should.Pass, Should.Fail)]
-        [TestCase(@"a\b",         Pass,        Fail)]
-        [TestCase(@":\\c",        Fail,        Fail)]
-        public void IsValidFilename(string? path, Should pathShould, Should fileNameShould) {
-            bool isPath;
-            bool isFile;
-            try {
-                var fullPath = Path.GetFullPath(path!);
-                isPath = !fullPath.ContainsAny(Path.GetInvalidPathChars());
-            }
-            catch {
-                isPath = false;
-            }
-
-            Console.WriteLine($"Contains invalid FILE chars: {path?.ContainsAny(Path.GetInvalidFileNameChars())}");
-            Console.WriteLine($"Contains invalid PATH chars: {path?.ContainsAny(Path.GetInvalidPathChars())}");
-
-            try {
-                if (isPath) {
-                    var fileInfo = new FileInfo(path!);
-                    Console.WriteLine($"got a file info...{fileInfo}");
-                    isFile = !path!.ContainsAny(Path.GetInvalidFileNameChars());
-                }
-                else {
-                    isFile = false;
-                }
-            }
-            catch {
-                isFile = false;
+        [TestCase("abc",          Pass)]
+        [TestCase(".ssh",         Pass)]
+        [TestCase("a|b",          Fail)]
+        [TestCase("%$@#%!@:$#%[", Fail)]
+        [TestCase(null,           Fail)]
+        [TestCase("",             Fail)]
+        [TestCase("\n",           Fail)]
+        [TestCase("C:/",          Pass)]
+        [TestCase("C:D:E",        Fail)]
+        [TestCase("//yolo",       Fail)]
+        [TestCase(@"\\yolo",      Fail)]
+        [TestCase("a/b",          Pass)]
+        [TestCase(@"a\b",         Pass)]
+        [TestCase(@":\\c",        Fail)]
+        [TestCase("/a/b//c",      Fail)]
+        public void IsValidFilename(string? path, Should should) {
+            Console.WriteLine("📎 Take this test with a grain of salt...file system validation is confusing...");
+            var vp = BPath.ValidatePath(path);
+            if (vp.Failed) {
+                Console.WriteLine(vp.Excuse);
             }
 
             Asserter.Against(path)
                     .WithHeading($"{nameof(IsValidFilename)}: {path}")
-                    .And(BPath.IsValidPath,      Is.EqualTo(isPath))
-                    .And(BPath.ValidatePath,     Has.Property(nameof(Failable.Failed)).EqualTo(!isPath))
-                    .And(BPath.IsValidFileName,  Is.EqualTo(isFile))
-                    .And(BPath.ValidateFileName, Has.Property(nameof(Failable.Failed)).EqualTo(!isFile))
+                    .And(BPath.IsValidPath,  should.Constrain())
+                    .And(BPath.ValidatePath, Has.Property(nameof(Failable.Failed)).EqualTo(should.Inverse().Boolean()), () => BPath.ValidatePath(path).Excuse.ToString())
                     .Invoke();
         }
 
@@ -138,32 +127,39 @@ namespace BSharp.Tests.Clerical {
         }
 
         [Test]
-        [TestCase("a/b",    "a",   "b")]
-        [TestCase("/a/b",   "/a/", "/b")]
-        [TestCase(@"a/b/c", @"a\", "b",  "c")]
-        [TestCase("a/c",    "a",   "",   "c")]
-        [TestCase("a/b",    null,  null, "", "\n", "\t", null, "a", null, "  ", "\n \t", "b")]
-        public void JoinPath(string expectedPath, params string[] parts) {
-            Console.WriteLine(@"\n: " + string.IsNullOrWhiteSpace("\n"));
-            Console.WriteLine(@"\t: " + string.IsNullOrWhiteSpace("\t"));
-            Assert.That(BPath.JoinPath(parts), Is.EqualTo(expectedPath));
+        [TestCase("a/b",    "a",     "b")]
+        [TestCase("/a/b",   "/a/",   "/b")]
+        [TestCase(@"a/b/c", @"a\",   "b", "c")]
+        [TestCase(null,     "a",     "",  "c")]
+        [TestCase(null,     null,    "")]
+        [TestCase(null,     null,    "",   "a")]
+        [TestCase(null,     "/a//",  "/b", "/c")]
+        [TestCase(null,     "/a/",   "",   "")]
+        [TestCase(null,     "",      "")]
+        [TestCase("/",      "/",     "/")]
+        [TestCase(null,     "//",    "/")]
+        [TestCase(null,     null,    null, "", "\n", "\t", null, "a", null, "  ", "\n \t", "b")]
+        [TestCase(null,     "//a",   "//b")]
+        [TestCase("/a/b/c", "/a\\b", "c")]
+        public void JoinPath(string? expectedPath, params string[] parts) {
+            Assert.That(() => BPath.JoinPath(parts), expectedPath == null ? Throws.Exception : Is.EqualTo(expectedPath), () => $"{parts.Prettify()} => {BPath.JoinPath(parts)}");
         }
 
-        [TestCase(null,                                      "b",        "b")]
-        [TestCase("a",                                       null,       "a")]
-        [TestCase(null,                                      null,       "")]
-        [TestCase("/",                                       null,       "")]
-        [TestCase("/",                                       @"\",       "")]
-        [TestCase("//a",                                     "//b",      "//a/b")]
-        [TestCase("a",                                       "",         "a")]
-        [TestCase("",                                        "b",        "b")]
-        [TestCase("",                                        "",         "")]
-        [TestCase(@"\/\/\/a/\/\/\/\/\/\/\\////\\\///\/\/\/", @"b\\\///", "//////a/b//////")]
-        public void JonPath_Simple(string parent, string child, string expected) {
-            AssertAll.Of(
-                () => Assert.That(BPath.JoinPath(parent, child),           Is.EqualTo(expected)),
-                () => Assert.That(BPath.JoinPath(new[] { parent, child }), Is.EqualTo(expected))
-            );
+        [TestCase(null,                                      "b",        null)]
+        [TestCase("a",                                       null,       null)]
+        [TestCase(null,                                      null,       null)]
+        [TestCase("/",                                       null,       null)]
+        [TestCase("/",                                       @"\",       "/")]
+        [TestCase("//a",                                     "//b",      null)]
+        [TestCase("a",                                       "",         null)]
+        [TestCase("",                                        "b",        null)]
+        [TestCase("",                                        "",         null)]
+        [TestCase(@"\/\/\/a/\/\/\/\/\/\/\\////\\\///\/\/\/", @"b\\\///", null)]
+        [TestCase("a",                                       "b",        "a/b")]
+        [TestCase("a/",                                      @"\b",      "a/b")]
+        [TestCase("/a/b/",                                   "/c/d/",    "/a/b/c/d/")]
+        public void JoinPath_Simple(string parent, string child, string? expected) {
+            Assert.That(() => BPath.JoinPath(parent, child), expected == null ? Throws.Exception : Is.EqualTo(expected), () => $"[{parent}, {child}] => {BPath.JoinPath(parent, child)}");
         }
 
         [Test]
