@@ -860,7 +860,6 @@ namespace FowlFever.BSharp.Collections {
             return valueThatMightBeNull == null ? source : source.Prepend(valueThatMightBeNull);
         }
 
-
         [Pure]
         [LinqTunnel]
         public static IEnumerable<T> PrependNonNull<T>(
@@ -1313,6 +1312,23 @@ namespace FowlFever.BSharp.Collections {
         }
 
         /// <summary>
+        /// A variation of the built-int <see cref="Enumerable.ToDictionary{TSource,TKey}(System.Collections.Generic.IEnumerable{TSource},System.Func{TSource,TKey})"/>
+        /// that "deconstructs" the <see cref="KeyValuePair{TKey,TValue}"/> to a separate <see cref="KeyValuePair{TKey,TValue}.Key"/> and <see cref="KeyValuePair{TKey,TValue}.Value"/>.
+        /// </summary>
+        /// <param name="source">the original <see cref="IDictionary{TKey,TValue}"/></param>
+        /// <param name="selector">the <see cref="Func{TResult}"/> that transforms each <see cref="KeyValuePair{TKey,TValue}"/></param>
+        /// <typeparam name="TKey">the <see cref="Type"/> of <paramref name="source"/>'s <see cref="IDictionary{TKey,TValue}.Keys"/></typeparam>
+        /// <typeparam name="TOld">the <see cref="Type"/> of <paramref name="source"/>'s <see cref="IDictionary{TKey,TValue}.Values"/></typeparam>
+        /// <typeparam name="TNew">the <see cref="Type"/> of the <b>new</b> <see cref="IDictionary.Values"/></typeparam>
+        /// <returns>a new <see cref="Dictionary{TKey,TValue}"/></returns>
+        public static Dictionary<TKey, TNew> ToDictionary<TKey, TOld, TNew>(this IDictionary<TKey, TOld> source, Func<TKey, TOld, TNew> selector) {
+            return source.ToDictionary(
+                kvp => kvp.Key,
+                kvp => selector(kvp.Key, kvp.Value)
+            );
+        }
+
+        /// <summary>
         /// A variation of the built-in <see cref="Enumerable.Select{TSource,TResult}(System.Collections.Generic.IEnumerable{TSource},System.Func{TSource,TResult})"/>
         /// that separates the <see cref="KeyValuePair{TKey,TValue}.Key"/> and <see cref="KeyValuePair{TKey,TValue}.Value"/> before sending them to the <paramref name="selector"/> <see cref="Func{T1,T2,TResult}"/>.
         /// </summary>
@@ -1324,7 +1340,7 @@ namespace FowlFever.BSharp.Collections {
         /// <returns>a new <see cref="IEnumerable{T}"/> containing the results of the <paramref name="selector"/></returns>
         /// <seealso cref="ForEach{TKey,TVal}(System.Collections.Generic.IDictionary{TKey,TVal},System.Action{TKey,TVal})"/>
         [Pure]
-        public static IEnumerable<TNew?> Select<TKey, TVal, TNew>(this IDictionary<TKey, TVal> source, Func<TKey, TVal, TNew> selector) {
+        public static IEnumerable<TNew> Select<TKey, TVal, TNew>(this IDictionary<TKey, TVal> source, Func<TKey, TVal, TNew> selector) {
             return source.Select(kvp => selector.Invoke(kvp.Key, kvp.Value));
         }
 
