@@ -263,5 +263,20 @@ namespace FowlFever.BSharp.Strings {
             pattern = new Regex(pattern.ToString(), opts);
             return pattern.Replace(input, "", 1);
         }
+
+        #region Pattern Builders
+
+        public static readonly Regex NotStart = new Regex("(?<!^)");
+        public static readonly Regex NotEnd   = new Regex("(?!$)");
+
+        public static Regex InnerMatch(Regex originalPattern) {
+            return new Regex($"{NotStart}{originalPattern}{NotEnd}", originalPattern.Options);
+        }
+
+        public static Regex OuterMatch(Regex originalPattern) {
+            return new Regex($"(^{originalPattern}|{originalPattern}$)");
+        }
+
+        #endregion
     }
 }
