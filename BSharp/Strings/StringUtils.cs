@@ -96,15 +96,9 @@ namespace FowlFever.BSharp.Strings {
         /// <param name="repetitions">The number of times <paramref name="toRepeat" /> should be repeated.</param>
         /// <param name="separator">An optional character, analogous to </param>
         /// <returns></returns>
-        [ContractAnnotation("toRepeat:null => null")]
-        [ContractAnnotation("toRepeat:notnull => notnull")]
-        public static string? Repeat(this string? toRepeat, [NonNegativeValue] int repetitions, string? separator = "") {
+        public static string Repeat(this string toRepeat, [NonNegativeValue] int repetitions, string? separator = "") {
             if (repetitions.IsPositive() == false) {
                 throw new ArgumentOutOfRangeException(nameof(repetitions));
-            }
-
-            if (toRepeat == null) {
-                return null;
             }
 
             var list = new List<string>();
@@ -843,7 +837,7 @@ namespace FowlFever.BSharp.Strings {
 
 
         public static string OrNullPlaceholder(this object? obj, PrettificationSettings? settings) {
-            settings ??= Prettification.DefaultPrettificationSettings;
+            settings ??= PrettificationSettings.Default;
             return OrNullPlaceholder(obj, settings.NullPlaceholder);
         }
 
