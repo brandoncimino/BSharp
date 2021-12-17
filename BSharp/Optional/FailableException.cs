@@ -26,8 +26,8 @@ namespace FowlFever.BSharp.Optional {
         }
 
 
-        internal static InvalidOperationException FailedException<TValue>(IFailableFunc<TValue> failableFunc, Optional<Exception> actualExcuse) {
-            return new InvalidOperationException($"Unable to retrieve the {typeof(TValue).Prettify()} {nameof(failableFunc.Value)} from the {failableFunc.GetType().Prettify()} because it failed!", actualExcuse.OrElse(default));
+        internal static InvalidOperationException FailedException<TValue>(IFailableFunc<TValue> failableFunc, Exception? actualExcuse) {
+            return new InvalidOperationException($"Unable to retrieve the {typeof(TValue).Prettify()} {nameof(failableFunc.Value)} from the {failableFunc.GetType().Prettify()} because it failed!", actualExcuse);
         }
     }
 }
