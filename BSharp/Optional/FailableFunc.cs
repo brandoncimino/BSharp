@@ -1,122 +1,46 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 
-using FowlFever.BSharp.Strings;
-using FowlFever.BSharp.Strings.Prettifiers;
+namespace FowlFever.BSharp.Optional;
 
-using JetBrains.Annotations;
+public class FailableFunc<TValue> : Failable, IFailableFunc<TValue>, IEquatable<IOptional<TValue>>, IEquatable<TValue> {
+    private readonly Optional<TValue> _value;
+    public           int              Count         => _value.Count;
+    public           bool             HasValue      => _value.HasValue;
+    public           TValue           Value         => _value.HasValue ? _value.Value : throw FailableException.FailedException(this, _excuse);
+    public           object?          ValueOrExcuse => _value.HasValue ? _value.Value : _excuse;
 
-namespace FowlFever.BSharp.Optional {
-    /**
-     * <inheritdoc cref="IFailableFunc{TValue}"/>
-     */
-    [PublicAPI]
-    public readonly struct FailableFunc<TValue> : IFailableFunc<TValue>, IEquatable<IOptional<TValue>>, IEquatable<TValue> {
-        public bool HasValue { get; }
+    private FailableFunc(
+        TValue     value,
+        Exception? excuse
+    ) : base(excuse, default, default) {
+        _value = value;
+    }
 
-        private readonly Optional<TValue?> _value;
-        internal         Optional<TValue>  SafeValue => HasValue ? _value : default;
-        public           TValue            Value     => HasValue ? _value.Value : throw FailableException.FailedException(this, _excuse);
-
-        private readonly Optional<Exception?> _excuse;
-
-        /// <returns><see cref="_excuse"/>.<see cref="IOptional{T}.Value"/> if present and non-null; otherwise, returns <see cref="NoExcuseExcuse"/></returns>
-        private Exception _getExcuseSafely() => _excuse.OrElse(null) ?? NoExcuseExcuse();
-
-        public Exception Excuse => Failed ? _getExcuseSafely() : throw FailableException.DidNotFailException(this, _value);
-
-        internal Optional<Exception> SafeExcuse => Failed ? _excuse : default;
-
-        public bool Failed => !HasValue;
-        public int  Count  => HasValue ? 1 : 0;
-
-
-        private IEnumerable<TValue?> EnumerableImplementation => HasValue ? Enumerable.Repeat(Value, 1) : Enumerable.Empty<TValue>();
-
-
-        public FailableFunc(Func<TValue> valueSupplier) {
-            try {
-                _value   = valueSupplier.Invoke();
-                HasValue = true;
-                _excuse  = default;
-            }
-            catch (Exception e) {
-                _value   = default;
-                HasValue = false;
-                _excuse  = e;
-            }
+    public static FailableFunc<TValue> Invoke(Func<TValue> failableFunc) {
+        try {
+            return new FailableFunc<TValue>(failableFunc.Invoke(), default);
         }
-
-        #region Equality
-
-        public IEnumerator<TValue> GetEnumerator() {
-            return EnumerableImplementation.GetEnumerator();
+        catch (Exception e) {
+            return new FailableFunc<TValue>(default, e);
         }
+    }
 
-        IEnumerator IEnumerable.GetEnumerator() {
-            return GetEnumerator();
-        }
-
-        public override bool Equals(object obj) {
-            return obj switch {
-                IOptional<TValue> optional => Equals(optional),
-                TValue value               => Equals(value),
-                _                          => Equals(this, obj)
-            };
-        }
-
-        public bool Equals(FailableFunc<TValue> other) {
-            return _value.Equals(other._value);
-        }
-
-        public override int GetHashCode() {
-            return _value.GetHashCode();
-        }
-
-        public bool Equals(IOptional<TValue> other) {
-            return Optional.AreEqual(this, other);
-        }
-
-        public bool Equals(TValue other) {
-            return Optional.AreEqual(this, other);
-        }
-
-        public static bool operator ==(FailableFunc<TValue?> a, IOptional<TValue?>? b) {
-            return Optional.AreEqual(a, b);
-        }
-
-        public static bool operator !=(FailableFunc<TValue?> a, IOptional<TValue?>? b) {
-            return !Optional.AreEqual(a, b);
-        }
-
-        public static bool operator ==(FailableFunc<TValue?> a, TValue? b) {
-            return Optional.AreEqual(a, b);
-        }
-
-        public static bool operator !=(FailableFunc<TValue?> a, TValue? b) {
-            return !Optional.AreEqual(a, b);
-        }
-
-        public static bool operator ==(TValue? a, FailableFunc<TValue?> b) {
-            return Optional.AreEqual(a, b);
-        }
-
-        public static bool operator !=(TValue? a, FailableFunc<TValue?> b) {
-            return !Optional.AreEqual(a, b);
-        }
-
-        #endregion
+    public IEnumerator<TValue> GetEnumerator() {
+        return _value.GetEnumerator();
+    }
 
 
-        public override string ToString() {
-            return Failed ? Excuse.ToString() : Value.Prettify();
-        }
+    IEnumerator IEnumerable.GetEnumerator() {
+        return GetEnumerator();
+    }
 
+    public bool Equals(IOptional<TValue> other) {
+        return Optional.AreEqual(_value, other);
+    }
 
-        private InvalidOperationException NoExcuseExcuse() {
-            return new InvalidOperationException($"This {GetType().PrettifyType(default)} has no {nameof(_excuse)}! This probably means it is a default value, or was created using a no-argument constructor.");
-        }
+    public bool Equals(TValue other) {
+        return Optional.AreEqual(_value, other);
     }
 }

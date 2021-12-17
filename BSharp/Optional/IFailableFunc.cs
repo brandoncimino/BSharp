@@ -25,5 +25,7 @@ namespace FowlFever.BSharp.Optional {
     /// </remarks>
     /// <typeparam name="TValue">the <see cref="IOptional{T}.Value"/>, if this succeeded</typeparam>
     [PublicAPI]
-    public interface IFailableFunc<out TValue> : IOptional<TValue>, IFailable { }
+    public interface IFailableFunc<out TValue> : IOptional<TValue>, IFailable {
+        public object? ValueOrExcuse { get; }
+    }
 }

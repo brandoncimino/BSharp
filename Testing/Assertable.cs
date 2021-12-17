@@ -21,48 +21,54 @@ namespace FowlFever.Testing {
         public Func<string> Nickname { get; }
 
         private Assertable(
-            Action       action,
+            Failable     failable,
             Func<string> nickname
         ) : base(
-            action,
-            typeof(SuccessException)
+            failable
         ) {
             Nickname = nickname;
         }
 
+        private Assertable(
+            Action       action,
+            Func<string> nickname
+        ) : this(
+            Invoke(action, typeof(SuccessException)),
+            nickname
+        ) { }
+
         public Assertable(
-            Func<string>?                                          nickname,
-            TestDelegate                                           assertion,
-            IResolveConstraint                                     constraint,
-            Func<string>?                                          message,
-            Action<TestDelegate, IResolveConstraint, Func<string>> actionResolver
+            Func<string>?                                           nickname,
+            TestDelegate                                            assertion,
+            IResolveConstraint                                      constraint,
+            Func<string>?                                           message,
+            Action<TestDelegate, IResolveConstraint, Func<string>?> actionResolver
         ) : this(
             () => actionResolver.Invoke(assertion, constraint, message),
             nickname ?? GetNicknameSupplier(assertion, constraint)
         ) { }
 
         public Assertable(
-            Func<string>?                                                         nickname,
-            ActualValueDelegate<object>                                           actual,
-            IResolveConstraint                                                    constraint,
-            Func<string>?                                                         message,
-            Action<ActualValueDelegate<object>, IResolveConstraint, Func<string>> resolver
-        ) : base(
-            () => resolver.Invoke(actual, constraint, message)
-        ) {
-            Nickname = nickname ?? GetNicknameSupplier(actual, constraint);
-        }
+            Func<string>?                                                          nickname,
+            ActualValueDelegate<object>                                            actual,
+            IResolveConstraint                                                     constraint,
+            Func<string>?                                                          message,
+            Action<ActualValueDelegate<object>, IResolveConstraint, Func<string>?> resolver
+        ) : this(
+            () => resolver.Invoke(actual, constraint, message),
+            nickname ?? GetNicknameSupplier(actual, constraint)
+        ) { }
 
         public override string ToString() {
             return this.FormatAssertable().JoinLines() ?? base.ToString();
         }
 
         public static IAssertable Assert<TActual>(
-            Func<string>?                                                          nickname,
-            ActualValueDelegate<TActual>                                           actual,
-            IResolveConstraint                                                     constraint,
-            Func<string>?                                                          message,
-            Action<ActualValueDelegate<TActual>, IResolveConstraint, Func<string>> resolver
+            Func<string>?                                                           nickname,
+            ActualValueDelegate<TActual>                                            actual,
+            IResolveConstraint                                                      constraint,
+            Func<string>?                                                           message,
+            Action<ActualValueDelegate<TActual>, IResolveConstraint, Func<string>?> resolver
         ) {
             return new Assertable(
                 () => resolver.Invoke(actual, constraint, message),

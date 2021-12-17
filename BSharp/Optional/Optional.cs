@@ -196,14 +196,14 @@ namespace FowlFever.BSharp.Optional {
                 throw new ArgumentNullException(nameof(functionThatMightFail));
             }
 
-            return new FailableFunc<T>(functionThatMightFail);
+            return FailableFunc<T>.Invoke(functionThatMightFail);
         }
 
         public static FailableFunc<TOut> Try<TIn, TOut>(
             this Func<TIn, TOut> functionThatMightFail,
             TIn                  input
         ) {
-            return new FailableFunc<TOut>(() => functionThatMightFail.Invoke(input));
+            return FailableFunc<TOut>.Invoke(() => functionThatMightFail.Invoke(input));
         }
 
         public static FailableFunc<TOut> Try<T1, T2, TOut>(
@@ -211,7 +211,7 @@ namespace FowlFever.BSharp.Optional {
             T1                      arg1,
             T2                      arg2
         ) {
-            return new FailableFunc<TOut>(() => functionThatMightFail.Invoke(arg1, arg2));
+            return FailableFunc<TOut>.Invoke(() => functionThatMightFail.Invoke(arg1, arg2));
         }
 
         public static FailableFunc<TOut> Try<T1, T2, T3, TOut>(
@@ -220,7 +220,7 @@ namespace FowlFever.BSharp.Optional {
             T2                          arg2,
             T3                          arg3
         ) {
-            return new FailableFunc<TOut>(() => functionThatMightFail.Invoke(arg1, arg2, arg3));
+            return FailableFunc<TOut>.Invoke(() => functionThatMightFail.Invoke(arg1, arg2, arg3));
         }
 
         #endregion
@@ -233,13 +233,13 @@ namespace FowlFever.BSharp.Optional {
         /// </summary>
         /// <param name="actionThatMightFail">the <see cref="Action"/> being executed</param>
         /// <returns>a <see cref="Failable"/> containing information about execution of the <paramref name="actionThatMightFail"/></returns>
-        public static Failable Try([InstantHandle] this Action actionThatMightFail) => new Failable(actionThatMightFail);
+        public static Failable Try([InstantHandle] this Action actionThatMightFail) => Failable.Invoke(actionThatMightFail);
 
-        public static Failable Try<T>([InstantHandle] this                  Action<T>                  actionThatMightFail, T  argument)                                 => new Failable(() => actionThatMightFail.Invoke(argument));
-        public static Failable Try<T1, T2>([InstantHandle] this             Action<T1, T2>             actionThatMightFail, T1 arg1, T2 arg2)                            => new Failable(() => actionThatMightFail.Invoke(arg1, arg2));
-        public static Failable Try<T1, T2, T3>([InstantHandle] this         Action<T1, T2, T3>         actionThatMightFail, T1 arg1, T2 arg2, T3 arg3)                   => new Failable(() => actionThatMightFail.Invoke(arg1, arg2, arg3));
-        public static Failable Try<T1, T2, T3, T4>([InstantHandle] this     Action<T1, T2, T3, T4>     actionThatMightFail, T1 arg1, T2 arg2, T3 arg3, T4 arg4)          => new Failable(() => actionThatMightFail.Invoke(arg1, arg2, arg3, arg4));
-        public static Failable Try<T1, T2, T3, T4, T5>([InstantHandle] this Action<T1, T2, T3, T4, T5> actionThatMightFail, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5) => new Failable(() => actionThatMightFail.Invoke(arg1, arg2, arg3, arg4, arg5));
+        public static Failable Try<T>([InstantHandle] this                  Action<T>                  actionThatMightFail, T  argument)                                 => Failable.Invoke(() => actionThatMightFail.Invoke(argument));
+        public static Failable Try<T1, T2>([InstantHandle] this             Action<T1, T2>             actionThatMightFail, T1 arg1, T2 arg2)                            => Failable.Invoke(() => actionThatMightFail.Invoke(arg1, arg2));
+        public static Failable Try<T1, T2, T3>([InstantHandle] this         Action<T1, T2, T3>         actionThatMightFail, T1 arg1, T2 arg2, T3 arg3)                   => Failable.Invoke(() => actionThatMightFail.Invoke(arg1, arg2, arg3));
+        public static Failable Try<T1, T2, T3, T4>([InstantHandle] this     Action<T1, T2, T3, T4>     actionThatMightFail, T1 arg1, T2 arg2, T3 arg3, T4 arg4)          => Failable.Invoke(() => actionThatMightFail.Invoke(arg1, arg2, arg3, arg4));
+        public static Failable Try<T1, T2, T3, T4, T5>([InstantHandle] this Action<T1, T2, T3, T4, T5> actionThatMightFail, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5) => Failable.Invoke(() => actionThatMightFail.Invoke(arg1, arg2, arg3, arg4, arg5));
 
         /// <summary>
         /// Attempts to execute this <see cref="Action"/>, capturing <see cref="Exception"/>s and returning a <see cref="Timeable"/>
