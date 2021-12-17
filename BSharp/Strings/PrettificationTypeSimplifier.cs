@@ -70,6 +70,7 @@ namespace FowlFever.BSharp.Strings {
             if (SimplestTypes.ContainsKey(type)) {
                 var simplest = SimplestTypes[type];
                 settings.TraceWriter.Verbose(() => $"🦠 Could not simplify {type.Name} past {simplest.Name}!", recurCount + 2);
+                return simplest;
             }
 
             var simplified = type switch {
