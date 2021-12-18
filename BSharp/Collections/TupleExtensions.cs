@@ -57,7 +57,6 @@ namespace FowlFever.BSharp.Collections {
         [Pure]
         public static T?[] ToArray<T>(this (T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T) tuple) => new[] { tuple.Item1, tuple.Item2, tuple.Item3, tuple.Item4, tuple.Item5, tuple.Item6, tuple.Item7, tuple.Item8, tuple.Item9, tuple.Item10, tuple.Item11, tuple.Item12, tuple.Item13, tuple.Item14, tuple.Item15, tuple.Item16, tuple.Item17 };
 
-
         [Pure]
         public static object?[] ToObjArray<T, T2>(this (T, T2) tuple) => new object[] { tuple.Item1, tuple.Item2 };
 
@@ -158,7 +157,6 @@ namespace FowlFever.BSharp.Collections {
             return tuples.Select(it => it.Item1);
         }
 
-
         [Pure]
         [LinqTunnel]
         public static IEnumerable<T?> Item1<T, T2, T3>(this IEnumerable<(T, T2, T3)> tuples) {
@@ -174,7 +172,6 @@ namespace FowlFever.BSharp.Collections {
         public static IEnumerable<T2?> Item2<T, T2>(this IEnumerable<(T, T2)> tuples) {
             return tuples.Select(it => it.Item2);
         }
-
 
         [Pure]
         [LinqTunnel]
@@ -196,12 +193,15 @@ namespace FowlFever.BSharp.Collections {
 
         #endregion
 
-        #region Sum ⚠: These methods have been disabled because they slowed down IntelliJ's autocompletion a _lot_
+        #region Math ⚠: These methods have been disabled beyond Tuple2s because they slowed down IntelliJ's autocompletion a _lot_
 
-        //
-        // #region Sum<int>
-        //
-        // [Pure] public static int Sum(this (int, int)                                                                            tuple) => tuple.ToArray().Sum();
+        #region Sum
+
+        #region Sum<int>
+
+        [Pure]
+        public static int Sum(this (int, int) tuple) => tuple.ToArray().Sum();
+
         // [Pure] public static int Sum(this (int, int, int)                                                                       tuple) => tuple.ToArray().Sum();
         // [Pure] public static int Sum(this (int, int, int, int)                                                                  tuple) => tuple.ToArray().Sum();
         // [Pure] public static int Sum(this (int, int, int, int, int)                                                             tuple) => tuple.ToArray().Sum();
@@ -218,11 +218,15 @@ namespace FowlFever.BSharp.Collections {
         // [Pure] public static int Sum(this (int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int)      tuple) => tuple.ToArray().Sum();
         // [Pure] public static int Sum(this (int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int) tuple) => tuple.ToArray().Sum();
         //
-        // #endregion
+
+        #endregion
+
+        #region Sum<int?>
+
         //
-        // #region Sum<int?>
-        //
-        // [Pure] public static int? Sum(this (int?, int?)                                                                                     tuple) => tuple.ToArray().Sum();
+        [Pure]
+        public static int? Sum(this (int?, int?) tuple) => tuple.ToArray().Sum();
+
         // [Pure] public static int? Sum(this (int?, int?, int?)                                                                               tuple) => tuple.ToArray().Sum();
         // [Pure] public static int? Sum(this (int?, int?, int?, int?)                                                                         tuple) => tuple.ToArray().Sum();
         // [Pure] public static int? Sum(this (int?, int?, int?, int?, int?)                                                                   tuple) => tuple.ToArray().Sum();
@@ -240,9 +244,11 @@ namespace FowlFever.BSharp.Collections {
         //
         // [Pure] public static int? Sum(this (int?, int?, int?, int?, int?, int?, int?, int?, int?, int?, int?, int?, int?, int?, int?, int?, int?) tuple) => tuple.ToArray().Sum();
         //
-        // #endregion
-        //
-        // #region Sum<long>
+
+        #endregion
+
+        #region Sum<long>
+
         //
         // [Pure] public static long Sum(this (long, long)                                                                                           tuple) => tuple.ToArray().Sum();
         // [Pure] public static long Sum(this (long, long, long)                                                                                     tuple) => tuple.ToArray().Sum();
@@ -261,11 +267,14 @@ namespace FowlFever.BSharp.Collections {
         // [Pure] public static long Sum(this (long, long, long, long, long, long, long, long, long, long, long, long, long, long, long, long)       tuple) => tuple.ToArray().Sum();
         // [Pure] public static long Sum(this (long, long, long, long, long, long, long, long, long, long, long, long, long, long, long, long, long) tuple) => tuple.ToArray().Sum();
         //
-        // #endregion
-        //
-        // #region Sum<long?>
-        //
-        // [Pure] public static long? Sum(this (long?, long?)                                                                                                   tuple) => tuple.ToArray().Sum();
+
+        #endregion
+
+        #region Sum<long?>
+
+        [Pure]
+        public static long? Sum(this (long?, long?) tuple) => tuple.ToArray().Sum();
+
         // [Pure] public static long? Sum(this (long?, long?, long?)                                                                                            tuple) => tuple.ToArray().Sum();
         // [Pure] public static long? Sum(this (long?, long?, long?, long?)                                                                                     tuple) => tuple.ToArray().Sum();
         // [Pure] public static long? Sum(this (long?, long?, long?, long?, long?)                                                                              tuple) => tuple.ToArray().Sum();
@@ -283,11 +292,14 @@ namespace FowlFever.BSharp.Collections {
         //
         // [Pure] public static long? Sum(this (long?, long?, long?, long?, long?, long?, long?, long?, long?, long?, long?, long?, long?, long?, long?, long?, long?) tuple) => tuple.ToArray().Sum();
         //
-        // #endregion
-        //
-        // #region Sum<float>
-        //
-        // [Pure] public static float Sum(this (float, float)                                                                                                          tuple) => tuple.ToArray().Sum();
+
+        #endregion
+
+        #region Sum<float>
+
+        [Pure]
+        public static float Sum(this (float, float) tuple) => tuple.ToArray().Sum();
+
         // [Pure] public static float Sum(this (float, float, float)                                                                                                   tuple) => tuple.ToArray().Sum();
         // [Pure] public static float Sum(this (float, float, float, float)                                                                                            tuple) => tuple.ToArray().Sum();
         // [Pure] public static float Sum(this (float, float, float, float, float)                                                                                     tuple) => tuple.ToArray().Sum();
@@ -304,11 +316,14 @@ namespace FowlFever.BSharp.Collections {
         // [Pure] public static float Sum(this (float, float, float, float, float, float, float, float, float, float, float, float, float, float, float, float)        tuple) => tuple.ToArray().Sum();
         // [Pure] public static float Sum(this (float, float, float, float, float, float, float, float, float, float, float, float, float, float, float, float, float) tuple) => tuple.ToArray().Sum();
         //
-        // #endregion
-        //
-        // #region Sum<float?>
-        //
-        // [Pure] public static float? Sum(this (float?, float?)                                                                                                                 tuple) => tuple.ToArray().Sum();
+
+        #endregion
+
+        #region Sum<float?>
+
+        [Pure]
+        public static float? Sum(this (float?, float?) tuple) => tuple.ToArray().Sum();
+
         // [Pure] public static float? Sum(this (float?, float?, float?)                                                                                                         tuple) => tuple.ToArray().Sum();
         // [Pure] public static float? Sum(this (float?, float?, float?, float?)                                                                                                 tuple) => tuple.ToArray().Sum();
         // [Pure] public static float? Sum(this (float?, float?, float?, float?, float?)                                                                                         tuple) => tuple.ToArray().Sum();
@@ -326,11 +341,14 @@ namespace FowlFever.BSharp.Collections {
         //
         // [Pure] public static float? Sum(this (float?, float?, float?, float?, float?, float?, float?, float?, float?, float?, float?, float?, float?, float?, float?, float?, float?) tuple) => tuple.ToArray().Sum();
         //
-        // #endregion
-        //
-        // #region Sum<double>
-        //
-        // [Pure] public static double Sum(this (double, double)                                                                                                                         tuple) => tuple.ToArray().Sum();
+
+        #endregion
+
+        #region Sum<double>
+
+        [Pure]
+        public static double Sum(this (double, double) tuple) => tuple.ToArray().Sum();
+
         // [Pure] public static double Sum(this (double, double, double)                                                                                                                 tuple) => tuple.ToArray().Sum();
         // [Pure] public static double Sum(this (double, double, double, double)                                                                                                         tuple) => tuple.ToArray().Sum();
         // [Pure] public static double Sum(this (double, double, double, double, double)                                                                                                 tuple) => tuple.ToArray().Sum();
@@ -347,11 +365,14 @@ namespace FowlFever.BSharp.Collections {
         // [Pure] public static double Sum(this (double, double, double, double, double, double, double, double, double, double, double, double, double, double, double, double)         tuple) => tuple.ToArray().Sum();
         // [Pure] public static double Sum(this (double, double, double, double, double, double, double, double, double, double, double, double, double, double, double, double, double) tuple) => tuple.ToArray().Sum();
         //
-        // #endregion
-        //
-        // #region Sum<double?>
-        //
-        // [Pure] public static double? Sum(this (double?, double?)                                                                                                                               tuple) => tuple.ToArray().Sum();
+
+        #endregion
+
+        #region Sum<double?>
+
+        [Pure]
+        public static double? Sum(this (double?, double?) tuple) => tuple.ToArray().Sum();
+
         // [Pure] public static double? Sum(this (double?, double?, double?)                                                                                                                      tuple) => tuple.ToArray().Sum();
         // [Pure] public static double? Sum(this (double?, double?, double?, double?)                                                                                                             tuple) => tuple.ToArray().Sum();
         // [Pure] public static double? Sum(this (double?, double?, double?, double?, double?)                                                                                                    tuple) => tuple.ToArray().Sum();
@@ -369,11 +390,14 @@ namespace FowlFever.BSharp.Collections {
         //
         // [Pure] public static double? Sum(this (double?, double?, double?, double?, double?, double?, double?, double?, double?, double?, double?, double?, double?, double?, double?, double?, double?) tuple) => tuple.ToArray().Sum();
         //
-        // #endregion
-        //
-        // #region Sum<decimal>
-        //
-        // [Pure] public static decimal Sum(this (decimal, decimal)                                                                                                                                        tuple) => tuple.ToArray().Sum();
+
+        #endregion
+
+        #region Sum<decimal>
+
+        [Pure]
+        public static decimal Sum(this (decimal, decimal) tuple) => tuple.ToArray().Sum();
+
         // [Pure] public static decimal Sum(this (decimal, decimal, decimal)                                                                                                                               tuple) => tuple.ToArray().Sum();
         // [Pure] public static decimal Sum(this (decimal, decimal, decimal, decimal)                                                                                                                      tuple) => tuple.ToArray().Sum();
         // [Pure] public static decimal Sum(this (decimal, decimal, decimal, decimal, decimal)                                                                                                             tuple) => tuple.ToArray().Sum();
@@ -392,9 +416,11 @@ namespace FowlFever.BSharp.Collections {
         //
         // #endregion
         //
-        // #region Sum<decimal?>
-        //
-        // [Pure] public static decimal? Sum(this (decimal?, decimal?)                                                                                                                                             tuple) => tuple.ToArray().Sum();
+
+        #region Sum<decimal?>
+
+        [Pure]
+        public static decimal? Sum(this (decimal?, decimal?) tuple) => tuple.ToArray().Sum();
         // [Pure] public static decimal? Sum(this (decimal?, decimal?, decimal?)                                                                                                                                   tuple) => tuple.ToArray().Sum();
         // [Pure] public static decimal? Sum(this (decimal?, decimal?, decimal?, decimal?)                                                                                                                         tuple) => tuple.ToArray().Sum();
         // [Pure] public static decimal? Sum(this (decimal?, decimal?, decimal?, decimal?, decimal?)                                                                                                               tuple) => tuple.ToArray().Sum();
@@ -411,9 +437,46 @@ namespace FowlFever.BSharp.Collections {
         // [Pure] public static decimal? Sum(this (decimal?, decimal?, decimal?, decimal?, decimal?, decimal?, decimal?, decimal?, decimal?, decimal?, decimal?, decimal?, decimal?, decimal?, decimal?, decimal?) tuple) => tuple.ToArray().Sum();
         //
         // [Pure] public static decimal? Sum(this (decimal?, decimal?, decimal?, decimal?, decimal?, decimal?, decimal?, decimal?, decimal?, decimal?, decimal?, decimal?, decimal?, decimal?, decimal?, decimal?, decimal?) tuple) => tuple.ToArray().Sum();
-        //
-        // #endregion
-        //
+
+        #endregion
+
+        #endregion
+
+        #endregion
+
+        #region Max
+
+        /// <summary>
+        /// Returns that <b>maximum</b> values of each <see cref="Tuple{T1,T2}"/> member individually.
+        /// </summary>
+        /// <param name="tuples">a collection of <see cref="Tuple{T1,T2}"/>s where both items are <see cref="IComparable{T}"/></param>
+        /// <typeparam name="T1">the <see cref="Type"/> of <see cref="Tuple{T1,T2}.Item1"/></typeparam>
+        /// <typeparam name="T2">the <see cref="Type"/> of <see cref="Tuple{T1,T2}.Item2"/></typeparam>
+        /// <returns>a <see cref="Tuple{T1,T2}"/> containing the <b>maximum</b> <typeparamref name="T1"/> and <typeparamref name="T2"/> values</returns>
+        public static (T1, T2) Max<T1, T2>(this IEnumerable<(T1, T2)> tuples)
+            where T1 : IComparable<T1>
+            where T2 : IComparable<T2> {
+            return tuples.Aggregate((a, b) => a.Max(b));
+        }
+
+        #endregion
+
+        #region Min
+
+        /// <summary>
+        /// Returns that <b>minimum</b> values of each <see cref="Tuple{T1,T2}"/> member individually.
+        /// </summary>
+        /// <param name="tuples">a collection of <see cref="Tuple{T1,T2}"/>s where both items are <see cref="IComparable{T}"/></param>
+        /// <typeparam name="T1">the <see cref="Type"/> of <see cref="Tuple{T1,T2}.Item1"/></typeparam>
+        /// <typeparam name="T2">the <see cref="Type"/> of <see cref="Tuple{T1,T2}.Item2"/></typeparam>
+        /// <returns>a <see cref="Tuple{T1,T2}"/> containing the <b>minimum</b> <typeparamref name="T1"/> and <typeparamref name="T2"/> values</returns>
+        public static (T1, T2) Min<T1, T2>(this IEnumerable<(T1, T2)> tuples)
+            where T1 : IComparable<T1>
+            where T2 : IComparable<T2> {
+            return tuples.Aggregate((a, b) => a.Min(b));
+        }
+
+        #endregion
 
         #endregion
     }
