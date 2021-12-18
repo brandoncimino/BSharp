@@ -33,6 +33,8 @@ namespace FowlFever.BSharp.Reflection {
             throw new NotImplementedException("TBD - I need to stop getting distracted!");
         }
 
+        #region Binding Flags
+
         /// <summary>
         /// <see cref="BindingFlags"/> that correspond to all "variables",
         /// which should be all <see cref="PropertyInfo"/>s and <see cref="FieldInfo"/>s
@@ -62,6 +64,8 @@ namespace FowlFever.BSharp.Reflection {
             BindingFlags.Instance |
             BindingFlags.Static   |
             BindingFlags.NonPublic;
+
+        #endregion
 
         private const string PropertyCaptureGroupName = "property";
 
@@ -296,7 +300,6 @@ namespace FowlFever.BSharp.Reflection {
             return autoPropertyName == null ? null : owningType.GetProperty(autoPropertyName);
         }
 
-
         [Pure]
         [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter")]
         private static IEnumerable<PropertyInfo> Get_PropertiesAnnotatedWith_BackedBy(FieldInfo fieldInfo, Type owningType = default) {
@@ -304,7 +307,6 @@ namespace FowlFever.BSharp.Reflection {
             return owningType.GetProperties(VariablesBindingFlags)
                              .Where(it => Get_BackedBy_BackingFieldName(it) == fieldInfo.Name);
         }
-
 
         [PublicAPI]
         public static IEnumerable<PropertyInfo> BackedProperties(this FieldInfo fieldInfo) {
@@ -329,7 +331,6 @@ namespace FowlFever.BSharp.Reflection {
         private static string? Get_BackedBy_BackingFieldName(PropertyInfo propertyInfo) {
             return propertyInfo.GetCustomAttribute<BackedByAttribute>()?.BackingFieldName;
         }
-
 
         [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter")]
         private static IEnumerable<FieldInfo> Get_FieldsAnnotatedWith_BackingFieldFor(PropertyInfo propertyInfo, Type owningType = default) {
@@ -552,23 +553,9 @@ namespace FowlFever.BSharp.Reflection {
             typeof(Tuple<,,,,,,,>),
         };
 
-        /// <remarks>
-        /// This is only necessary in .NET Standard 2.0, because in .NET Standard 2.1, an <a href="https://docs.microsoft.com/en-us/dotnet/api/System.Runtime.CompilerServices.ITuple?view=netframework-4.7.1">ITuple</a> interface is available.
-        /// </remarks>
-        /// <param name="type">a <see cref="Type"/></param>
-        /// <returns>true if the given <see cref="Type"/> is one of the <see cref="Tuple{T}"/> or <see cref="ValueTuple{T1}"/> types</returns>
-        public static bool IsTupleType(this Type type) {
-            return type.IsGenericType && TupleTypes.Any(it => type.GetGenericTypeDefinition().IsAssignableFrom(it));
-        }
-
         #endregion
 
         #region Type Ancestry
-
-        public static bool IsExceptionType(this Type self) {
-            return typeof(Exception).IsAssignableFrom(self);
-        }
-
 
         internal static Type CommonType([InstantHandle] IEnumerable<Type?>? types) {
             if (types == null) {
@@ -630,7 +617,6 @@ namespace FowlFever.BSharp.Reflection {
         //     return overlap.FirstOrDefault();
         // }
 
-
         internal static IEnumerable<Type> CommonInterfaces(Type? a, Type? b) {
             var aInts = a.GetAllInterfaces();
             var bInts = b.GetAllInterfaces();
@@ -641,7 +627,6 @@ namespace FowlFever.BSharp.Reflection {
         internal static IEnumerable<Type> CommonInterfaces(IEnumerable<Type?> types) {
             return types.Select(it => it.GetAllInterfaces()).Intersection();
         }
-
 
         public static IEnumerable<Type> GetAllInterfaces(this Type? type) {
             return _GetAllInterfaces(type);
@@ -925,6 +910,37 @@ namespace FowlFever.BSharp.Reflection {
         /// <inheritdoc cref="GetToStringOverride(System.Type?,FowlFever.BSharp.Reflection.ReflectionUtils.Inheritance)"/>
         public static MethodInfo? GetToStringOverride(this Type? type) {
             return GetToStringOverride(type, Inheritance.Inherited);
+        }
+
+        #endregion
+
+        #region Type Types
+
+        /// <remarks>
+        /// This is only necessary in .NET Standard 2.0, because in .NET Standard 2.1, an <a href="https://docs.microsoft.com/en-us/dotnet/api/System.Runtime.CompilerServices.ITuple?view=netframework-4.7.1">ITuple</a> interface is available.
+        /// </remarks>
+        /// <param name="type">this <see cref="Type"/></param>
+        /// <returns>true if this <see cref="Type"/> is one of the <see cref="Tuple{T}"/> or <see cref="ValueTuple{T1}"/> types</returns>
+        public static bool IsTupleType(this Type type) {
+            return type.IsGenericType && TupleTypes.Any(it => type.GetGenericTypeDefinition().IsAssignableFrom(it));
+        }
+
+        /// <param name="type">this <see cref="Type"/></param>
+        /// <returns>true if this <see cref="Type"/> inherits from <see cref="Exception"/></returns>
+        public static bool IsExceptionType(this Type type) {
+            return typeof(Exception).IsAssignableFrom(type);
+        }
+
+        public static bool IsNullableType(this Type type) {
+            return type.IsNullableValueType() || type.IsNullableReferenceType();
+        }
+
+        public static bool IsNullableValueType(this Type type) {
+            return type.IsConstructedGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>);
+        }
+
+        public static bool IsNullableReferenceType(this Type type) {
+            throw new NotImplementedException("need to figure out how to do this - probably with annotations or something");
         }
 
         #endregion

@@ -35,7 +35,6 @@ namespace FowlFever.BSharp.Strings.Prettifiers {
             return type.IsGenericType ? PrettifyGenericType(type, settings) : type.NameOrKeyword();
         }
 
-
         private static string PrettifyGenericType(Type? genericType, PrettificationSettings? settings) {
             if (genericType?.IsGenericType != true) {
                 throw new ArgumentException($"{genericType} is not a generic type!", nameof(genericType));
@@ -47,18 +46,19 @@ namespace FowlFever.BSharp.Strings.Prettifiers {
             return genericType.Name.Replace($"`{genArgs.Length}", PrettifyGenericTypeArguments(genArgs, settings));
         }
 
-
         private static string PrettifyTupleType(Type tupleType, PrettificationSettings? settings) {
             var genArgs = tupleType.GetGenericArguments().Select(it => it.PrettifyType(settings));
             return $"({genArgs.JoinString(", ")})";
         }
 
+        private static string PrettifyNullableType(Type type, PrettificationSettings settings) {
+            throw new NotImplementedException("Need to implement along with logic to detect nullable reference types");
+        }
 
         private static string PrettifyGenericTypeArguments(IEnumerable<Type> genericTypeArguments, PrettificationSettings? settings) {
             var stylizedArgs = StylizeGenericTypeArguments(genericTypeArguments, settings);
             return $"<{stylizedArgs}>";
         }
-
 
         private static string StylizeGenericTypeArguments(IEnumerable<Type?> genericTypeArguments, PrettificationSettings? settings) {
             settings ??= PrettificationSettings.Default;
@@ -69,7 +69,6 @@ namespace FowlFever.BSharp.Strings.Prettifiers {
                 _                   => throw BEnum.InvalidEnumArgumentException(nameof(settings.TypeLabelStyle), settings.TypeLabelStyle)
             };
         }
-
 
         internal static string WithTypeLabel(this string? thing, Type labelType, PrettificationSettings settings, string joiner = "") {
             return new[] { labelType.GetTypeLabel(settings), thing }.NonEmpty().JoinString(joiner);

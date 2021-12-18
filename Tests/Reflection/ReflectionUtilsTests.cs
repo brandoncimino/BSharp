@@ -72,7 +72,6 @@ namespace BSharp.Tests.Reflection {
             public static    T   Prop_Static_Mixed_Private_Setter { get;         private set; }
             public static    int Prop_Static_Get_Only             { get; } = Prop_Static_Get_Only_Default_Value;
 
-
             public Privacy(T value) {
                 Field_Public    = value;
                 Field_Private   = value;
@@ -216,7 +215,6 @@ namespace BSharp.Tests.Reflection {
                 Is.EquivalentTo(AllVariables.Select(it => it.Name))
             );
         }
-
 
         #region Backing Fields
 
@@ -590,6 +588,38 @@ namespace BSharp.Tests.Reflection {
         [TestCase(typeof(IncorporealSelf), Should.BeNotNull)]
         public void PersonalToStringMethod(Type type, Should should) {
             Assert.That(type.GetToStringOverride, should.Constrain());
+        }
+
+        #endregion
+
+        #region Type Types
+
+        public string? NullableString;
+        public int?    NullableInt;
+        public string  SolidString;
+        public int     SolidInt;
+
+        public enum TypeNullability {
+            None,
+            Reference,
+            Value
+        }
+
+        public readonly static (FieldInfo field, TypeNullability nullability)[] Nullabilities = new[] {
+            (typeof(ReflectionUtilsTests).GetField(nameof(NullableString))!, TypeNullability.Reference),
+            (typeof(ReflectionUtilsTests).GetField(nameof(NullableInt))!, TypeNullability.Value),
+            (typeof(ReflectionUtilsTests).GetField(nameof(SolidString))!, TypeNullability.None),
+            (typeof(ReflectionUtilsTests).GetField(nameof(SolidInt))!, TypeNullability.None)
+        };
+
+        [Test]
+        public void Nullability([ValueSource(nameof(Nullabilities))] (FieldInfo field, TypeNullability nullability) expectation) {
+            var (field, nullability) = expectation;
+            throw new NotImplementedException("need to finish this test, about detecting nullability of reference types");
+            // Console.WriteLine(Table.Of(
+            // ));
+            Console.WriteLine(field.Prettify());
+            Console.WriteLine(field.FieldType);
         }
 
         #endregion

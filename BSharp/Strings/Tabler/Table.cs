@@ -84,6 +84,10 @@ public record Table : IReadOnlyList<Row>, IPrettifiable {
     /// <inheritdoc cref="Of(System.Collections.Generic.IEnumerable{FowlFever.BSharp.Strings.Tabler.Row})"/>
     public static Table Of(IEnumerable<object> headerRow, IEnumerable<IEnumerable<object>> rows) => Of(Row.Of(headerRow), rows.Select(Row.Of));
 
+    public static Table Of(object[,] data) {
+        throw new NotImplementedException("Need to implement building a table out of a 2d array (maybe through the Grid class?)");
+    }
+
     /// <summary>
     /// Creates a new <see cref="Table"/>, <b>forcing</b> <see cref="HasHeaderRow"/> to be <c>true</c>.
     /// </summary>
@@ -193,4 +197,8 @@ public record Table : IReadOnlyList<Row>, IPrettifiable {
     public Row this[int index] => Rows[index];
 
     #endregion
+
+    public override string ToString() {
+        return Prettify();
+    }
 }

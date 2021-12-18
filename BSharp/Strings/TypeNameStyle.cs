@@ -27,7 +27,7 @@ namespace FowlFever.BSharp.Strings {
 
             var str = type.PrettifyType(settings);
 
-            if (type.IsArray || type.IsEnum || type.IsEnumerable()) {
+            if (type.IsArray || type.IsEnum || (type != typeof(string) && type.IsEnumerable())) {
                 return str;
             }
 

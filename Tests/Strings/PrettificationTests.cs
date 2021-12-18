@@ -25,7 +25,8 @@ using Is = NUnit.Framework.Is;
 using List = FowlFever.BSharp.Collections.List;
 
 namespace BSharp.Tests.Strings {
-    public class PrettificationTests {
+    //TODO: Split this into multiple files
+    public partial class PrettificationTests {
         private static IEnumerable<string>? TrimLinesForComparison(string? str) {
             return str?.Trim().SplitLines().TrimLines();
         }
@@ -57,11 +58,15 @@ namespace BSharp.Tests.Strings {
             }
         }
 
+        private struct Structure { }
+
         [Test]
-        [TestCase(typeof(int),    "int",    "int",    "int")]
-        [TestCase(typeof(object), "object", "object", "object")]
-        [TestCase(typeof(float),  "float",  "float",  "float")]
-        [TestCase(typeof(string), "string", "string", "string")]
+        [TestCase(typeof(int),        "int",        "int",        "int")]
+        [TestCase(typeof(object),     "object",     "object",     "object")]
+        [TestCase(typeof(float),      "float",      "float",      "float")]
+        [TestCase(typeof(string),     "string",     "string",     "string")]
+        [TestCase(typeof(int?),       "int?",       "int?",       "int?")]
+        [TestCase(typeof(Structure?), "Structure?", "Structure?", "Structure?")]
         [TestCase(
             typeof(KeyValuePair<DayOfWeek, string>),
             "KeyValuePair<DayOfWeek, string>",
@@ -104,6 +109,11 @@ namespace BSharp.Tests.Strings {
                     .And(it => it.PrettifyType(settings_none),  Is.EqualTo(expected_none))
                     .And(it => it.PrettifyType(settings_short), Is.EqualTo(expected_short))
                     .Invoke();
+        }
+
+        [Test]
+        public void PrettifyType_NullableValue() {
+            throw new NotImplementedException("need to actually do this");
         }
 
         [Test]
@@ -577,7 +587,7 @@ List<int>[
 
             // ReSharper disable once SuggestBaseTypeForParameter
             void ViaSpecific(Dictionary<DayOfWeek, string> obj) {
-                _ = InnerPretty.PrettifyDictionary<DayOfWeek, string>(obj, settings);
+                _ = InnerPretty.PrettifyDictionary3_Generic(obj, settings);
             }
 
             var comparison = MethodTimer.CompareExecutions(
