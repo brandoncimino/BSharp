@@ -142,8 +142,8 @@ namespace FowlFever.BSharp.Clerical {
         [Pure]
         public static string EnsureTrailingSeparator(string? path, DirectorySeparator separator = DirectorySeparator.Universal) {
             return NormalizeSeparators(
-                path?.Trim()
-                    .TrimEnd(DirectorySeparatorPattern)
+                (path?.Trim()
+                     .TrimEnd(DirectorySeparatorPattern))
                     .Suffix(separator.ToCharString()),
                 separator
             );
