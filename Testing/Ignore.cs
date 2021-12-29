@@ -125,5 +125,12 @@ namespace FowlFever.Testing {
                    .And(constraints)
                    .Invoke();
         }
+
+        /// <inheritdoc cref="Assert.Ignore(string?)"/>
+        /// <remarks>This is an alias for <see cref="Assert.Ignore(string?)"/>.</remarks>
+        [ContractAnnotation("=> stop")]
+        public static void This(string? message) {
+            Assert.Ignore(message);
+        }
     }
 }

@@ -22,6 +22,7 @@ namespace BSharp.Tests.Chronic {
     public class ExecutionTimeTests {
         [Test]
         public void SingleActionTime() {
+            Ignore.This("I need to accept that I don't understand enough about computers to properly measure method efficiency 😢");
             Action action = Quick;
 
             //stopwatch version
@@ -61,6 +62,7 @@ namespace BSharp.Tests.Chronic {
         /// </summary>
         [Test]
         public void ListVsSet() {
+            Ignore.This("I need to accept that I don't understand enough about computers to properly measure method efficiency 😢");
             const int iterations = 1000;
             var       items      = MakeHugeCollection(iterations).ToArray();
             var       toFind     = items.Random();
