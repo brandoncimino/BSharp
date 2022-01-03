@@ -68,7 +68,7 @@ namespace BSharp.Tests.Clerical {
         [TestCase(@":\\c",        Fail)]
         [TestCase("/a/b//c",      Fail)]
         public void IsValidFilename(string? path, Should should) {
-            var msg = "📎 Take this test with a grain of salt...file system validation is confusing...";
+            const string msg = "📎 Take this test with a grain of salt...file system validation is confusing...";
             try {
                 Console.WriteLine(msg);
                 var vp = BPath.ValidatePath(path);
