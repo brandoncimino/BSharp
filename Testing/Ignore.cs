@@ -129,8 +129,8 @@ namespace FowlFever.Testing {
         /// <inheritdoc cref="Assert.Ignore(string?)"/>
         /// <remarks>This is an alias for <see cref="Assert.Ignore(string?)"/>.</remarks>
         [ContractAnnotation("=> stop")]
-        public static void This(string? message) {
-            Assert.Ignore(message);
+        public static void This(string? message, Exception? inner = default) {
+            Assert.Ignore(message, inner);
         }
     }
 }
