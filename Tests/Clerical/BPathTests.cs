@@ -44,6 +44,8 @@ namespace BSharp.Tests.Clerical {
         [TestCase("/",        "/")]
         [TestCase("/a/b",     "/a", "b")]
         [TestCase("//a//b//", "/",  "a", "", "b", "/")]
+        [TestCase("/a//b/","/a","","b/")]
+        [TestCase("/a//","/a","")]
         public void SplitPath(string path, params string[] expectedParts) {
             Asserter.Against(path)
                     .And(it => it.SplitPath(), Is.EqualTo(expectedParts))
