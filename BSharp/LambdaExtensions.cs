@@ -40,5 +40,19 @@ namespace FowlFever.BSharp {
         public static TResult Invoke<T1, T2, T3, T4, T5, T6, T7, TResult>(this Func<T1, T2, T3, T4, T5, T6, T7, TResult> func, (T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7) args) => func.Invoke(args.arg1, args.arg2, args.arg3, args.arg4, args.arg5, args.arg6, args.arg7);
 
         #endregion
+
+        #region Laziness
+
+        /// <summary>
+        /// Shorthand for new <see cref="Lazy{T}"/>(<paramref name="valueFactory"/>).
+        /// </summary>
+        /// <param name="valueFactory">a <see cref="Func{TResult}"/> that should only be executed once</param>
+        /// <typeparam name="T">the output type of <paramref name="valueFactory"/></typeparam>
+        /// <returns>a new <see cref="Lazy{T}"/></returns>
+        public static Lazy<T> Lazily<T>(this Func<T> valueFactory) {
+            return new Lazy<T>(valueFactory);
+        }
+
+        #endregion
     }
 }
