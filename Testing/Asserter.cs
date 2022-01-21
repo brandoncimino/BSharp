@@ -15,7 +15,7 @@ namespace FowlFever.Testing {
         public override void ResolveFunc<T1>(
             ActualValueDelegate<T1> actual,
             IResolveConstraint      constraint,
-            Func<string>            message
+            Func<string>?           message
         ) {
             var msg = message?.Invoke();
             if (msg.IsBlank()) {
@@ -29,7 +29,7 @@ namespace FowlFever.Testing {
         public override void ResolveAction(
             TestDelegate       action,
             IResolveConstraint constraint,
-            Func<string>       message
+            Func<string>?      message
         ) {
             if (message == null) {
                 Assert.That(action, constraint);

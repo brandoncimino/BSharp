@@ -60,7 +60,7 @@ namespace FowlFever.Testing {
         ) { }
 
         public override string ToString() {
-            return this.FormatAssertable().JoinLines() ?? base.ToString();
+            return this.FormatAssertable().JoinLines();
         }
 
         public static IAssertable Assert<TActual>(
