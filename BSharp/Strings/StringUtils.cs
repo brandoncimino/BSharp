@@ -852,11 +852,14 @@ namespace FowlFever.BSharp.Strings {
         /// <param name="str">this <see cref="string"/></param>
         /// <param name="blankPlaceholder">the fallback string if <paramref name="str"/> <see cref="IsBlank"/>. Defaults to <c>""</c></param>
         /// <returns>this <see cref="string"/> or <paramref name="blankPlaceholder"/></returns>
-        [ContractAnnotation("blankPlaceholder:notnull => notnull")]
-        [ContractAnnotation("blankPlaceholder:null => canbenull")]
-        public static string? IfBlank(this string? str, string? blankPlaceholder) {
+        public static string IfBlank(this string? str, string? blankPlaceholder) {
             blankPlaceholder ??= "";
-            return str.IsBlank() ? blankPlaceholder : str;
+            return str.IsBlank() ? blankPlaceholder : str!;
+        }
+
+        /// <inheritdoc cref="IfBlank(string?,string?)"/>
+        public static string IfBlank(this string? str, Func<string> blankPlaceholder) {
+            return str.IsBlank() ? blankPlaceholder.Invoke() : str!;
         }
 
 
