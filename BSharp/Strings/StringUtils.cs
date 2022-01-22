@@ -145,6 +145,19 @@ namespace FowlFever.BSharp.Strings {
         }
 
         /// <summary>
+        /// Similar to <see cref="Join"/>, but only joins <see cref="IsNotBlank"/> strings.
+        /// </summary>
+        /// <param name="baseString"></param>
+        /// <param name="stringToJoin"></param>
+        /// <param name="separator"></param>
+        /// <returns></returns>
+        public static string JoinNonBlank(this string? baseString, string? stringToJoin, string? separator = "") {
+            return baseString.IsBlank() ?
+                       stringToJoin.IsBlank() ? "" : stringToJoin!
+                       : string.Join(separator, baseString, stringToJoin);
+        }
+
+        /// <summary>
         /// Joins <paramref name="first"/> and <paramref name="second"/> together by a <b>single instance</b> of <paramref name="separator"/>.
         /// </summary>
         /// <example>
