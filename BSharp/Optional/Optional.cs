@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Linq;
+using System.Runtime;
 
 using FowlFever.BSharp.Collections;
 using FowlFever.BSharp.Enums;
@@ -172,11 +173,11 @@ namespace FowlFever.BSharp.Optional {
         /// <typeparam name="TOut">the output <see cref="Type"/></typeparam>
         /// <returns>a nullable <typeparamref name="TOut"/></returns>
         [Pure]
-        public static TOut? Select<TIn, TOut>(
+        public static TOut? SelectNullable<TIn, TOut>(
             this TIn?       nullable,
             Func<TIn, TOut> selector
         ) {
-            return nullable != null ? selector(nullable) : default;
+            return nullable == null ? default : selector(nullable);
         }
 
         /// <summary>
