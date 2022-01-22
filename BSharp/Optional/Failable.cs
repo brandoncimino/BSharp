@@ -15,25 +15,24 @@ namespace FowlFever.BSharp.Optional {
      * <inheritdoc cref="IFailable"/>
      */
     public class Failable : IFailable {
-        protected const   string                    SuccessIcon = "✅";
-        protected const   string                    FailIcon    = "❌";
-        internal readonly Exception?                _excuse;
-        public            Exception                 Excuse                => _excuse ?? throw FailableException.DidNotFailException(this);
-        public            bool                      Failed                => _excuse != null;
-        public            IReadOnlyCollection<Type> IgnoredExceptionTypes { get; }
-        public            Optional<Exception>       IgnoredException      { get; }
+        protected const string                    SuccessIcon = "✅";
+        protected const string                    FailIcon    = "❌";
+        public          Exception?                Excuse                { get; }
+        public          bool                      Failed                => Excuse != null;
+        public          IReadOnlyCollection<Type> IgnoredExceptionTypes { get; }
+        public          Exception?                IgnoredException      { get; }
 
         protected Failable(
             Exception?         excuse,
             IEnumerable<Type>? ignoredExceptionTypes,
             Exception?         ignoredException
         ) {
-            _excuse               = excuse;
-            IgnoredException      = Optional.OfNullable(ignoredException);
+            Excuse                = excuse;
+            IgnoredException      = ignoredException;
             IgnoredExceptionTypes = ignoredExceptionTypes?.ToArray() ?? Array.Empty<Type>();
         }
 
-        protected Failable(Failable other) : this(other._excuse, other.IgnoredExceptionTypes, other.IgnoredException.OrDefault()) { }
+        protected Failable(IFailable other) : this(other.Excuse, other.IgnoredExceptionTypes, other.IgnoredException) { }
 
         public static Failable Invoke(
             [InstantHandle]

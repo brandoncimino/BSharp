@@ -21,7 +21,7 @@ namespace FowlFever.Testing {
         public Func<string> Nickname { get; }
 
         private Assertable(
-            Failable     failable,
+            IFailable    failable,
             Func<string> nickname
         ) : base(
             failable
@@ -29,7 +29,7 @@ namespace FowlFever.Testing {
             Nickname = nickname;
         }
 
-        private Assertable(
+        internal Assertable(
             Action       action,
             Func<string> nickname
         ) : this(
@@ -37,56 +37,37 @@ namespace FowlFever.Testing {
             nickname
         ) { }
 
-        public Assertable(
-            Func<string>?                                           nickname,
-            TestDelegate                                            assertion,
-            IResolveConstraint                                      constraint,
-            Func<string>?                                           message,
-            Action<TestDelegate, IResolveConstraint, Func<string>?> actionResolver
+        /// <summary>
+        /// TODO: Move this into an instance method of <see cref="MultipleAsserter{TSelf,TActual}"/>
+        /// </summary>
+        /// <param name="nickname"></param>
+        /// <param name="assertion"></param>
+        /// <param name="constraint"></param>
+        /// <param name="message"></param>
+        /// <param name="actionResolver"></param>
+        internal Assertable(
+            Func<string>?                                     nickname,
+            Action                                            assertion,
+            IResolveConstraint                                constraint,
+            Func<string>?                                     message,
+            Action<Action, IResolveConstraint, Func<string>?> actionResolver
         ) : this(
             () => actionResolver.Invoke(assertion, constraint, message),
             nickname ?? GetNicknameSupplier(assertion, constraint)
-        ) { }
-
-        public Assertable(
-            Func<string>?                                                          nickname,
-            ActualValueDelegate<object>                                            actual,
-            IResolveConstraint                                                     constraint,
-            Func<string>?                                                          message,
-            Action<ActualValueDelegate<object>, IResolveConstraint, Func<string>?> resolver
-        ) : this(
-            () => resolver.Invoke(actual, constraint, message),
-            nickname ?? GetNicknameSupplier(actual, constraint)
         ) { }
 
         public override string ToString() {
             return this.FormatAssertable().JoinLines();
         }
 
-        public static IAssertable Assert<TActual>(
-            Func<string>?                                                           nickname,
-            ActualValueDelegate<TActual>                                            actual,
-            IResolveConstraint                                                      constraint,
-            Func<string>?                                                           message,
-            Action<ActualValueDelegate<TActual>, IResolveConstraint, Func<string>?> resolver
-        ) {
-            return new Assertable(
-                () => resolver.Invoke(actual, constraint, message),
-                nickname ?? GetNicknameSupplier(actual, constraint)
-            );
+        internal static Func<string> GetNicknameSupplier(object? actual, IResolveConstraint? constraint, PrettificationSettings? settings = default) {
+            return () => GetNickname(actual, constraint, settings);
         }
 
-
-        internal static Func<string> GetNicknameSupplier(Delegate? dgate, IResolveConstraint? constraint, PrettificationSettings? settings = default) {
-            return () => GetNickname(dgate, constraint, settings);
-        }
-
-
-        private static string GetNickname(Delegate? dgate, IResolveConstraint? constraint, PrettificationSettings? settings) {
-            var dName = dgate?.Prettify(settings);
+        private static string GetNickname(object? actual, IResolveConstraint? constraint, PrettificationSettings? settings) {
+            var dName = actual?.Prettify(settings);
             var cName = constraint?.Prettify(settings);
-            var parts = new[] { dName, cName };
-            return parts.NonBlank().JoinString(" 🗜 ");
+            return dName.JoinNonBlank(cName, " 🗜 ");
         }
     }
 }

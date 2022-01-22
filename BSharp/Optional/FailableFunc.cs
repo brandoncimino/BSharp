@@ -8,8 +8,8 @@ public class FailableFunc<TValue> : Failable, IFailableFunc<TValue>, IEquatable<
     private readonly Optional<TValue> _value;
     public           int              Count         => _value.Count;
     public           bool             HasValue      => _value.HasValue;
-    public           TValue           Value         => _value.HasValue ? _value.Value : throw FailableException.FailedException(this, _excuse);
-    public           object?          ValueOrExcuse => _value.HasValue ? _value.Value : _excuse;
+    public           TValue           Value         => _value.HasValue ? _value.Value : throw FailableException.FailedException(this, Excuse);
+    public           object?          ValueOrExcuse => _value.HasValue ? _value.Value : Excuse;
 
     private FailableFunc(
         Optional<TValue> value,
@@ -30,7 +30,6 @@ public class FailableFunc<TValue> : Failable, IFailableFunc<TValue>, IEquatable<
     public IEnumerator<TValue> GetEnumerator() {
         return _value.GetEnumerator();
     }
-
 
     IEnumerator IEnumerable.GetEnumerator() {
         return GetEnumerator();

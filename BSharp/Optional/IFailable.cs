@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 using JetBrains.Annotations;
 
@@ -17,7 +18,7 @@ namespace FowlFever.BSharp.Optional {
         /// <li><see cref="Excuse"/> should <b>never</b> return <c>null</c>.</li>
         /// </ul>
         /// </remarks>
-        public Exception Excuse { get; }
+        public Exception? Excuse { get; }
 
         /// <summary>
         /// Whether or not this <see cref="IFailable"/> was a failure.
@@ -29,5 +30,9 @@ namespace FowlFever.BSharp.Optional {
         /// </ul>
         /// </remarks>
         public bool Failed { get; }
+
+        IReadOnlyCollection<Type> IgnoredExceptionTypes { get; }
+
+        Exception? IgnoredException { get; }
     }
 }

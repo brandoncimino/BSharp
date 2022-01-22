@@ -13,9 +13,9 @@ using Pure = System.Diagnostics.Contracts.PureAttribute;
 namespace FowlFever.Testing {
     public class Asserter<T> : MultipleAsserter<Asserter<T>, T> {
         public override void ResolveFunc<T1>(
-            ActualValueDelegate<T1> actual,
-            IResolveConstraint      constraint,
-            Func<string>?           message
+            Func<T1>           actual,
+            IResolveConstraint constraint,
+            Func<string>?      message
         ) {
             var msg = message?.Invoke();
             if (msg.IsBlank()) {
@@ -27,7 +27,7 @@ namespace FowlFever.Testing {
         }
 
         public override void ResolveAction(
-            TestDelegate       action,
+            Action             action,
             IResolveConstraint constraint,
             Func<string>?      message
         ) {
@@ -39,26 +39,49 @@ namespace FowlFever.Testing {
             }
         }
 
+        public override void ResolveActual<T1>(
+            T1                 actual,
+            IResolveConstraint constraint,
+            Func<string>?      message
+        ) {
+            if (message == null) {
+                Assert.That(actual, constraint);
+            }
+            else {
+                Assert.That(actual, constraint, message);
+            }
+        }
+
         protected override void OnFailure(string results) => Assert.Fail(results);
 
         public Asserter() { }
-        public Asserter(T                      actual) : base(actual) { }
-        public Asserter(ActualValueDelegate<T> actualValueDelegate) : base(actualValueDelegate) { }
+        public Asserter(T       actual) : base(actual) { }
+        public Asserter(Func<T> actualValueDelegate) : base(actualValueDelegate) { }
     }
 
     [PublicAPI]
     public static class Asserter {
+        internal static IMultipleAsserter Against<TSelf, TOld, TNew>(
+            MultipleAsserter<TSelf, TOld?> parent,
+            Func<TOld?, TNew>              transformation
+        ) where TSelf : MultipleAsserter<TSelf, TOld?>, new() {
+            return new Asserter<TNew>(() => transformation(parent.Actual.Value));
+        }
+
         [Pure]
         public static Asserter<T> Against<T>(T actual) {
             return new Asserter<T>(actual);
         }
 
         [Pure]
-        public static Asserter<T> Against<T>(ActualValueDelegate<T> actualValueDelegate) {
+        public static Asserter<T> Against<T>(Func<T> actualValueDelegate) {
             return new Asserter<T>(actualValueDelegate);
         }
 
         [Pure]
         public static Asserter<object> WithHeading(string? heading) => new Asserter<object>().WithHeading(heading);
+
+        [Pure]
+        public static Asserter<T> WithHeading<T>(string? heading) => new Asserter<T>().WithHeading(heading);
     }
 }

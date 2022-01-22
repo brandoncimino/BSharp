@@ -8,8 +8,12 @@ namespace FowlFever.Testing {
 
         Func<string>? Heading { get; }
 
-        int Indent { get; set; }
+        /// <remarks>
+        /// The <c>protected</c> modifier, in an interface, does <b>NOT</b> allow <b>implementing classes</b> to access
+        /// that member - it only allows <b>child interfaces</b> to access it!
+        /// </remarks>
+        int Indent { get; }
 
-        PrettificationSettings PrettificationSettings { get; }
+        PrettificationSettings? PrettificationSettings { get; }
     }
 }

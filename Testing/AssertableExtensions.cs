@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+using FowlFever.BSharp.Collections;
 using FowlFever.BSharp.Optional;
 using FowlFever.BSharp.Strings;
 using FowlFever.Conjugal.Affixing;
@@ -30,16 +31,15 @@ namespace FowlFever.Testing {
                    .Indent(indent);
         }
 
-        private static IEnumerable<string> FormatExcuseMessage(IAssertable failure, string excuseIcon) {
-            return failure.Excuse.Message.SplitLines();
-            // return failure.Excuse.Message.SplitLines().Prefix("|", " ").IndentWithLabel(excuseIcon);
+        private static IEnumerable<string> FormatExcuseMessage(IAssertable failure, string excuseIcon = ExcuseIcon) {
+            return failure.Excuse?.Message.SplitLines() ?? Enumerable.Empty<string>();
         }
 
-        private static IEnumerable<string> FormatExcuse(IAssertable failure, string excuseIcon) {
+        private static IEnumerable<string> FormatExcuse(IAssertable failure, string excuseIcon = ExcuseIcon) {
             if (failure.Failed) {
                 var message    = FormatExcuseMessage(failure, excuseIcon);
-                var stacktrace = failure.Excuse.StackTrace.SplitLines();
-                return message.Concat(stacktrace);
+                var stacktrace = failure.Excuse?.StackTrace.SplitLines();
+                return message.Concat(stacktrace.NonNull());
             }
             else {
                 return Array.Empty<string>();
