@@ -370,8 +370,8 @@ namespace FowlFever.Testing {
 
         [MustUseReturnValue]
         public TSelf AndAgainst<TNew>(
-            Func<TActual?, TNew>                 transformation,
-            Func<Asserter<TNew>, Asserter<TNew>> ass
+            Func<TActual?, TNew?>                  transformation,
+            Func<Asserter<TNew?>, Asserter<TNew?>> ass
         ) {
             var a2 = Asserter.Against(this!, transformation);
             _Add_Asserter(a2);
