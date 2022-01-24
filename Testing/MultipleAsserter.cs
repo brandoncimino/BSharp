@@ -15,7 +15,7 @@ using NUnit.Framework.Internal;
 
 namespace FowlFever.Testing {
     [PublicAPI]
-    public abstract class MultipleAsserter<TSelf, TActual> : IMultipleAsserter where TSelf : MultipleAsserter<TSelf, TActual?>, new() {
+    public abstract class MultipleAsserter<TSelf, TActual> : IMultipleAsserter where TSelf : MultipleAsserter<TSelf, TActual>, new() {
         private const string HeadingIcon = "🧪";
 
         public PrettificationSettings? PrettificationSettings { get; protected set; }
@@ -131,7 +131,8 @@ namespace FowlFever.Testing {
         ) {
             protected internal override IAssertable Test(MultipleAsserter<TSelf, TActual> asserter) {
                 return new Assertable(
-                    () => asserter.ResolveActual(Transformation.DynamicInvoke(asserter.Actual.Value), Constraint, Message),
+                    () => asserter.ResolveFunc(() => Transformation.DynamicInvoke(asserter.Actual.Value), Constraint, Message),
+                    // () => asserter.ResolveActual(Transformation.DynamicInvoke(asserter.Actual.Value), Constraint, Message),
                     Nickname
                 );
             }
@@ -250,6 +251,16 @@ namespace FowlFever.Testing {
 
         [MustUseReturnValue]
         public TSelf And(
+            Action<TActual?>   action,
+            IResolveConstraint constraint,
+            Func<string>?      nickname = default
+        ) {
+            _Add_Action_AgainstActual(action, constraint, nickname);
+            return Self;
+        }
+
+        [MustUseReturnValue]
+        public TSelf And(
             Action<TActual?> action,
             Func<string>?    nickname = default
         ) =>
@@ -260,11 +271,29 @@ namespace FowlFever.Testing {
             );
 
         [MustUseReturnValue]
+        public TSelf Satisfies(
+            Action<TActual?> action,
+            Func<string>?    nickname = default
+        ) => And(action, nickname);
+
+        [MustUseReturnValue]
         public TSelf And(
             Action<TActual?> action,
             string?          nickname
         ) =>
             _Add_Action_AgainstActual(action, default, AsFunc(nickname));
+
+        [MustUseReturnValue]
+        public TSelf Satisfies(
+            Action<TActual?>   action,
+            IResolveConstraint constraint,
+            Func<string>?      nickname = default
+        ) =>
+            And(
+                action,
+                constraint,
+                nickname
+            );
 
         #endregion
 
@@ -339,16 +368,19 @@ namespace FowlFever.Testing {
         #region Constraints_AgainstTransformation
 
         private TSelf _Add_Constraint_AgainstTransformation<TNew>(Func<TActual, TNew> actualTransformation, IResolveConstraint constraint, Func<string>? nickname) {
-            nickname ??= Assertable.GetNicknameSupplier(actualTransformation, constraint);
             Subtests.Add(new Constraint_AgainstTransformation(actualTransformation, constraint, nickname));
             return Self;
         }
 
         [MustUseReturnValue]
-        public TSelf And<TNew>(Func<TActual, TNew> tf, IResolveConstraint constraint, Func<string>? nickname = default) => _Add_Constraint_AgainstTransformation(tf, constraint, nickname);
+        public TSelf And<TNew>(Func<TActual, TNew> tf, IResolveConstraint constraint, Func<string>? nickname = default) {
+            return _Add_Constraint_AgainstTransformation(tf, constraint, nickname);
+        }
 
         [MustUseReturnValue]
-        public TSelf And<TNew>(Func<TActual, TNew> tf, IResolveConstraint constraint, string? nickname) => _Add_Constraint_AgainstTransformation(tf, constraint, AsFunc(nickname));
+        public TSelf And<TNew>(Func<TActual, TNew> tf, IResolveConstraint constraint, string? nickname) {
+            return _Add_Constraint_AgainstTransformation(tf, constraint, AsFunc(nickname));
+        }
 
         [MustUseReturnValue]
         public TSelf And<TNew>(IEnumerable<(Func<TActual, TNew>, IResolveConstraint)>? constraints) {
