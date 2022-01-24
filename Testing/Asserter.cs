@@ -11,18 +11,19 @@ using NUnit.Framework.Constraints;
 using Pure = System.Diagnostics.Contracts.PureAttribute;
 
 namespace FowlFever.Testing {
-    public class Asserter<T> : MultipleAsserter<Asserter<T>, T> {
+    public class Asserter<T> : MultipleAsserter<Asserter<T?>, T> {
         public override void ResolveFunc<T1>(
             Func<T1>           actual,
             IResolveConstraint constraint,
             Func<string>?      message
         ) {
             var msg = message?.Invoke();
+            var del = new ActualValueDelegate<T1>(actual);
             if (msg.IsBlank()) {
-                Assert.That(actual, constraint);
+                Assert.That(del, constraint);
             }
             else {
-                Assert.That(actual, constraint, msg);
+                Assert.That(del, constraint, msg);
             }
         }
 
@@ -31,11 +32,12 @@ namespace FowlFever.Testing {
             IResolveConstraint constraint,
             Func<string>?      message
         ) {
+            var del = new TestDelegate(action);
             if (message == null) {
-                Assert.That(action, constraint);
+                Assert.That(del, constraint);
             }
             else {
-                Assert.That(action, constraint, message);
+                Assert.That(del, constraint, message);
             }
         }
 
