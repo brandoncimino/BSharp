@@ -1,5 +1,3 @@
-using FowlFever.BSharp.Optional;
-
 using JetBrains.Annotations;
 
 using Newtonsoft.Json;
@@ -7,10 +5,10 @@ using Newtonsoft.Json;
 namespace FowlFever.BSharp.Clerical.Saving {
     [PublicAPI]
     public class SaveManagerSettings {
-        public Fallback<JsonSerializerSettings?> JsonSerializerSettings  { get; } = new Fallback<JsonSerializerSettings>(new JsonSerializerSettings());
-        public Fallback<string?>                 AutoSaveName            { get; } = new Fallback<string>("AutoSave");
-        public Fallback<string?>                 SaveFileExtension       { get; } = new Fallback<string>(".sav.json");
-        public Fallback<int>                     BackupSaveSlots         { get; } = new Fallback<int>(10);
-        public Fallback<DuplicateFileResolution> DuplicateFileResolution { get; } = new Fallback<DuplicateFileResolution>();
+        public JsonSerializerSettings  JsonSerializerSettings  { get; } = new JsonSerializerSettings();
+        public string                  AutoSaveName            { get; } = "AutoSave";
+        public string                  SaveFileExtension       { get; } = ".sav.json";
+        public int                     BackupSaveSlots         { get; } = 10;
+        public DuplicateFileResolution DuplicateFileResolution { get; } = default;
     }
 }

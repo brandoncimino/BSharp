@@ -206,7 +206,11 @@ namespace BSharp.Tests.Collections {
 
         [Test]
         public void Serialize_NestedOptionalOfArray() {
-            var inner = Optional.Of(new[] { 1, 2, 3 });
+            var inner = Optional.Of(
+                new[] {
+                    1, 2, 3
+                }
+            );
             var outer = Optional.Of(inner);
             // Console.WriteLine(inner == outer);
             var json = JsonConvert.SerializeObject(outer);
@@ -238,7 +242,9 @@ namespace BSharp.Tests.Collections {
 
         [Test]
         public void ToOptional_MultipleItems() {
-            var ls = new[] { 1, 2, 3 };
+            var ls = new[] {
+                1, 2, 3
+            };
 
             Assert.Throws<InvalidOperationException>(() => ls.ToOptional());
         }
@@ -257,11 +263,17 @@ namespace BSharp.Tests.Collections {
         [Test]
         [TestCase(double.PositiveInfinity)]
         [TestCase("#yolo")]
-        [TestCase(new[] { 1, 2, 3 })]
+        [TestCase(
+            new[] {
+                1, 2, 3
+            }
+        )]
         [TestCase(default(object))]
         public void ToOptional_Single(object value) {
             // var value = double.NegativeInfinity;
-            var ls = new object[] { value };
+            var ls = new object[] {
+                value
+            };
             Asserter.Against(ls.ToOptional)
                     .And(Has.Property(nameof(IOptional<object>.Count)).EqualTo(1))
                     .And(Has.Property(nameof(IOptional<object>.HasValue)).True)
@@ -276,10 +288,7 @@ namespace BSharp.Tests.Collections {
 
         public static (Optional<object?>, string)[] GetOptionalToStringExpectations() {
             return new[] {
-                (new Optional<object?>(5), "Optional<object>[5]"),
-                (new Optional<object?>(), $"Optional<object>[{Optional.EmptyPlaceholder}]"),
-                (new Optional<object?>(null), $"Optional<object>[{new PrettificationSettings().NullPlaceholder}]"),
-                (new Optional<object?>(new Optional<object>(new Optional<object>("yolo"))), "Optional<object>[Optional<object>[Optional<object>[yolo]]]")
+                (new Optional<object?>(5), "Optional<object>[5]"), (new Optional<object?>(), $"Optional<object>[{Optional.EmptyPlaceholder}]"), (new Optional<object?>(null), $"Optional<object>[{new PrettificationSettings().NullPlaceholder}]"), (new Optional<object?>(new Optional<object>(new Optional<object>("yolo"))), "Optional<object>[Optional<object>[Optional<object>[yolo]]]")
             };
         }
 
@@ -348,13 +357,32 @@ namespace BSharp.Tests.Collections {
 
             var innerAsserter = Asserter.Against(() => JsonConvert.SerializeObject(inner, settings))
                                         .WithHeading($"Inner Json -> {inner}")
-                                        .And(it => it.LineCount(),              Is.EqualTo(3), "Line Count")
-                                        .And(it => it.SplitLines().TrimLines(), Is.EqualTo(new[] { "[", valueString, "]" }));
+                                        .And(it => it.LineCount(), Is.EqualTo(3), "Line Count")
+                                        .And(
+                                            it => it.SplitLines().TrimLines(),
+                                            Is.EqualTo(
+                                                new[] {
+                                                    "[", valueString, "]"
+                                                }
+                                            )
+                                        );
 
             var outerAsserter = Asserter.Against(() => JsonConvert.SerializeObject(outer, settings))
                                         .WithHeading($"Outer Json -> {outer}")
-                                        .And(it => it.LineCount(),              Is.EqualTo(5),                                         "Line Count")
-                                        .And(it => it.SplitLines().TrimLines(), Is.EqualTo(new[] { "[", "[", valueString, "]", "]" }), "Trimmed Lines");
+                                        .And(it => it.LineCount(), Is.EqualTo(5), "Line Count")
+                                        .And(
+                                            it => it.SplitLines().TrimLines(),
+                                            Is.EqualTo(
+                                                new[] {
+                                                    "[",
+                                                    "[",
+                                                    valueString,
+                                                    "]",
+                                                    "]"
+                                                }
+                                            ),
+                                            "Trimmed Lines"
+                                        );
 
             Asserter.WithHeading("Nested Optional Jsons Respect Json Serialization Settings")
                     .And(innerAsserter)
@@ -419,7 +447,7 @@ namespace BSharp.Tests.Collections {
             Console.WriteLine($"fromJson: {fromJson}");
             Asserter.Against(fromJson)
                     .And(it => it.HasValue, Is.False)
-                    .And(it => it.Value,    Throws.InvalidOperationException)
+                    .Satisfies(it => _ = it.Value, Throws.InvalidOperationException)
                     .Invoke();
         }
 
