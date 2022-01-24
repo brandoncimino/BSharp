@@ -54,7 +54,9 @@ namespace FowlFever.BSharp.Strings {
         /// <remarks>
         /// Intended to passed to <see cref="string.Split(string[], StringSplitOptions)"/>.
         /// </remarks>
-        internal static readonly string[] LineBreakSplitters = { "\r\n", "\r", "\n" };
+        internal static readonly string[] LineBreakSplitters = {
+            "\r\n", "\r", "\n"
+        };
 
         /// <summary>
         /// Prepends <paramref name="toIndent"/>.
@@ -152,8 +154,8 @@ namespace FowlFever.BSharp.Strings {
         /// <param name="separator"></param>
         /// <returns></returns>
         public static string JoinNonBlank(this string? baseString, string? stringToJoin, string? separator = "") {
-            return baseString.IsBlank() ?
-                       stringToJoin.IsBlank() ? "" : stringToJoin!
+            return baseString.IsBlank()
+                       ? stringToJoin.IsBlank() ? "" : stringToJoin!
                        : string.Join(separator, baseString, stringToJoin);
         }
 
@@ -356,7 +358,6 @@ namespace FowlFever.BSharp.Strings {
             };
         }
 
-
         [ContractAnnotation("filler:null => stop")]
         public static string FillRight(this string? self, [NonNegativeValue] int totalLength, string filler) {
             ValidateFillParameters(filler, totalLength);
@@ -371,7 +372,6 @@ namespace FowlFever.BSharp.Strings {
             return self + filler.Fill(additionalLengthNeeded);
         }
 
-
         [ContractAnnotation("filler:null => stop")]
         public static string FillLeft(this string? self, [NonNegativeValue] int totalLength, string filler) {
             ValidateFillParameters(filler, totalLength);
@@ -385,7 +385,6 @@ namespace FowlFever.BSharp.Strings {
             var additionalLengthNeeded = totalLength - self.Length;
             return self + filler.Fill(additionalLengthNeeded).Reverse().JoinString();
         }
-
 
         [ContractAnnotation("filler:null => stop")]
         public static string Fill(this string filler, [NonNegativeValue] int totalLength) {
@@ -773,7 +772,7 @@ namespace FowlFever.BSharp.Strings {
         /// <param name="obj"></param>
         /// <param name="nullPlaceholder"></param>
         /// <returns></returns>
-        public static string[] ToStringLines(this object? obj, string? nullPlaceholder = "") {
+        public static string[] ToStringLines(this object? obj, string nullPlaceholder = "") {
             if (obj is IEnumerable<object> e) {
                 return e.SelectMany(it => it.ToStringLines(nullPlaceholder)).SplitLines();
             }
@@ -847,12 +846,10 @@ namespace FowlFever.BSharp.Strings {
             return str.IsNullOrEmpty() ? emptyPlaceholder : str;
         }
 
-
         public static string OrNullPlaceholder(this object? obj, string? nullPlaceholder = Prettification.DefaultNullPlaceholder) {
             nullPlaceholder ??= Prettification.DefaultNullPlaceholder;
             return obj?.ToString() ?? nullPlaceholder;
         }
-
 
         public static string OrNullPlaceholder(this object? obj, PrettificationSettings? settings) {
             settings ??= PrettificationSettings.Default;
@@ -874,7 +871,6 @@ namespace FowlFever.BSharp.Strings {
         public static string IfBlank(this string? str, Func<string> blankPlaceholder) {
             return str.IsBlank() ? blankPlaceholder.Invoke() : str!;
         }
-
 
         [ContractAnnotation("null => stop")]
         public static string MustNotBeBlank(this string? str) {
@@ -951,18 +947,15 @@ namespace FowlFever.BSharp.Strings {
             return PrefixIfMissing(str, prefix);
         }
 
-
         public static string PrefixIfMissing(this string? str, string? prefix) {
             str    ??= "";
             prefix ??= "";
             return str.StartsWith(prefix) == true ? str : str.Prefix(prefix);
         }
 
-
         public static string AppendIfMissing(this string? str, string? suffix) {
             return SuffixIfMissing(str, suffix);
         }
-
 
         public static string SuffixIfMissing(this string? str, string? suffix) {
             str    ??= "";

@@ -43,6 +43,23 @@ public class FailableFunc<TValue> : Failable, IFailableFunc<TValue>, IEquatable<
         return Optional.AreEqual(_value, other);
     }
 
+    /// <summary>
+    /// I don't <i>think</i> I want to override <see cref="object.GetHashCode"/> for this...but I dunno.
+    /// I should probably read stuff like <a href="https://docs.microsoft.com/en-us/previous-versions/dotnet/netframework-4.0/336aedhh(v=vs.100)">implementing the Equals method</a>
+    /// in more detail.
+    ///
+    /// Basically...the word <c>pragma</c> scares me.
+    /// </summary>
+    /// <param name="other"></param>
+    /// <returns></returns>
+    public override bool Equals(object other) {
+        return other switch {
+            TValue tv             => Equals(tv),
+            IOptional<TValue> opt => Equals(opt),
+            _                     => base.Equals(other) // this complains about reference equality...but why?
+        };
+    }
+
     public override string ToString() {
         return $"{base.ToString()} => {ValueOrExcuse}";
     }

@@ -73,10 +73,11 @@ namespace BSharp.Tests.Collections {
             }
 
             public static IMultipleAsserter ObjectEquality<T>(FailableFunc<T> failableFunc, object? obj, Should should) {
+                // Console.WriteLine($"Optional.AreEqual({failableFunc}, {obj}) => {Optional.AreEqual(failableFunc, obj)}");
                 return Asserter.Against(failableFunc)
-                               .WithHeading($"[{failableFunc}] should {(should.Boolean() ? "be" : "not be")} equal to [{obj}]")
-                               .And(it => it.Equals(obj),  should.Constrain())
-                               .And(it => Equals(it, obj), should.Constrain());
+                               .WithHeading($"[{failableFunc}] should {(should.Boolean() ? "be" : "not be")} equal to [{obj}]; {failableFunc.Equals(obj)}")
+                               .And(it => it.Equals(obj),  should.Constrain(), $"{failableFunc}.Equals({obj})")
+                               .And(it => Equals(it, obj), should.Constrain(), $"Equals({failableFunc}, {obj})");
             }
         }
 
@@ -161,8 +162,13 @@ namespace BSharp.Tests.Collections {
         public void FailableSuccessObjectEquality() {
             var failable  = Optional.Try(Succeed);
             var failable2 = Optional.Try(Succeed);
+            Console.WriteLine($"int: {failable.Equals(5)}");
+            Console.WriteLine($"obj: {failable.Equals((object)5)}");
+            Console.WriteLine($"int-int: {5.Equals(5)}");
+            Console.WriteLine($"int-obj: {5.Equals((object)5)}");
+            Console.WriteLine($"obj-int: {((object)5).Equals(5)}");
             Asserter.Against(failable)
-                    .And(Validate.Equality(failable, Expected_Value, Should.Pass))
+                    // .And(Validate.Equality(failable, Expected_Value, Should.Pass))
                     .And(Validate.ObjectEquality(failable, failable2, Should.Pass))
                     .Invoke();
         }
