@@ -42,4 +42,8 @@ public class FailableFunc<TValue> : Failable, IFailableFunc<TValue>, IEquatable<
     public bool Equals(TValue other) {
         return Optional.AreEqual(_value, other);
     }
+
+    public override string ToString() {
+        return $"{base.ToString()} => {ValueOrExcuse}";
+    }
 }
