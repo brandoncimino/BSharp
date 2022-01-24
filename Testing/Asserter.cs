@@ -11,7 +11,7 @@ using NUnit.Framework.Constraints;
 using Pure = System.Diagnostics.Contracts.PureAttribute;
 
 namespace FowlFever.Testing {
-    public class Asserter<T> : MultipleAsserter<Asserter<T?>, T> {
+    public class Asserter<T> : MultipleAsserter<Asserter<T>, T> {
         public override void ResolveFunc<T1>(
             Func<T1>           actual,
             IResolveConstraint constraint,
