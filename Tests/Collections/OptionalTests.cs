@@ -124,16 +124,16 @@ namespace BSharp.Tests.Collections {
             IOptional<string>? def_b       = default;
             Optional<string>   def_c       = default;
             const string       null_string = default;
-            AssertAll.Of(
-                () => Assert.False(Optional.AreEqual(optional_a,  null_string), "Optional.AreEqual(optional_a, null_string)"),
-                () => Assert.False(Optional.AreEqual(null_string, optional_a),  "Optional.AreEqual(null_string, optional_a)"),
-                () => Assert.True(Optional.AreEqual(optional_a,   optional_b), "Optional.AreEqual(optional_a, optional_b)"),
-                () => Assert.True(Optional.AreEqual(optional_b,   optional_a), "Optional.AreEqual(optional_b,optional_a)"),
-                () => Assert.True(Optional.AreEqual(def_a,        def_b),      "Optional.AreEqual(def_a, def_b)"),
-                () => Assert.True(Optional.AreEqual(def_a,        def_a),      "Optional.AreEqual(def_a, def_a)"),
-                () => Assert.False(Optional.AreEqual(optional_a,  optional_c), "Optional.AreEqual(optional_a, optional_c)"),
-                () => Assert.False(Optional.AreEqual(optional_c,  def_c),      "Optional.AreEqual(optional_c, def_c)")
-            );
+            Asserter.WithHeading(nameof(NullInterfaceEquality))
+                    .And(() => Assert.False(Optional.AreEqual(optional_a,  null_string)), "Optional.AreEqual(optional_a, null_string)")
+                    .And(() => Assert.False(Optional.AreEqual(null_string, optional_a)),  "Optional.AreEqual(null_string, optional_a)")
+                    .And(() => Assert.True(Optional.AreEqual(optional_a,   optional_b)),  "Optional.AreEqual(optional_a, optional_b)")
+                    .And(() => Assert.True(Optional.AreEqual(optional_b,   optional_a)),  "Optional.AreEqual(optional_b,optional_a)")
+                    .And(() => Assert.True(Optional.AreEqual(def_a,        def_b)),       "Optional.AreEqual(def_a, def_b)")
+                    .And(() => Assert.True(Optional.AreEqual(def_a,        def_a)),       "Optional.AreEqual(def_a, def_a)")
+                    .And(() => Assert.False(Optional.AreEqual(optional_a,  optional_c)),  "Optional.AreEqual(optional_a, optional_c)")
+                    .And(() => Assert.False(Optional.AreEqual(optional_c,  def_c)),       "Optional.AreEqual(optional_c, def_c)")
+                    .Invoke();
         }
 
         #region Optional of null
@@ -142,11 +142,10 @@ namespace BSharp.Tests.Collections {
         public void OptionalOfNull_HasValue() {
             var ofNull = new Optional<string?>(null);
 
-            AssertAll.Of(
-                ofNull,
-                Has.Property(nameof(ofNull.HasValue)).True,
-                Has.Property(nameof(ofNull.Value)).Null
-            );
+            Asserter.Against(ofNull)
+                    .And(Has.Property(nameof(ofNull.HasValue)).True)
+                    .And(Has.Property(nameof(ofNull.Value)).Null)
+                    .Invoke();
         }
 
         [Test]
@@ -226,7 +225,7 @@ namespace BSharp.Tests.Collections {
             Console.WriteLine($"\n⛑inner == outer -> {inner     == outer}");
             Console.WriteLine($"\n⏱{inner} == {outer} -> {inner == outer}");
 
-            Asserter.WithHeading(nameof(NestedOptionalEquality))
+            Asserter.WithHeading($"{nameof(NestedOptionalEquality)}, inner: {inner.Prettify()}, outer: {outer.Prettify()}")
                     .And(() => Assert.That(inner      == innerValue, "inner == innerValue"))
                     .And(() => Assert.That(innerValue == inner,      "innerValue == inner"))
                     .And(() => Assert.That(inner      != outer,      "inner != outer"))
@@ -255,7 +254,7 @@ namespace BSharp.Tests.Collections {
             Asserter.Against(ls.ToOptional)
                     .And(Has.Property(nameof(IOptional<object>.Count)).EqualTo(0))
                     .And(Has.Property(nameof(IOptional<object>.HasValue)).False)
-                    .And(it => it.Value, Throws.InvalidOperationException)
+                    .Satisfies(it => _ = it.Value, Throws.InvalidOperationException)
                     .And(Is.Empty)
                     .Invoke();
         }
@@ -489,7 +488,7 @@ namespace BSharp.Tests.Collections {
             Asserter.Against(flat)
                     .And(Is.TypeOf<Optional<int>>())
                     .And(it => it.HasValue, Is.EqualTo(false))
-                    .And(it => it.Value,    Throws.InvalidOperationException)
+                    .Satisfies(it => _ = it.Value, Throws.InvalidOperationException)
                     .Invoke();
         }
 
@@ -517,7 +516,7 @@ namespace BSharp.Tests.Collections {
             Asserter.Against(flat)
                     .And(Is.TypeOf<Optional<int>>())
                     .And(it => it.HasValue, Is.EqualTo(false))
-                    .And(it => it.Value,    Throws.InvalidOperationException)
+                    .Satisfies(it => _ = it.Value, Throws.InvalidOperationException)
                     .Invoke();
         }
 
@@ -547,7 +546,7 @@ namespace BSharp.Tests.Collections {
             Asserter.Against(flat)
                     .And(Is.TypeOf<Optional<int>>())
                     .And(it => it.HasValue, Is.EqualTo(false))
-                    .And(it => it.Value,    Throws.InvalidOperationException)
+                    .Satisfies(it => _ = it.Value, Throws.InvalidOperationException)
                     .Invoke();
         }
 
@@ -559,8 +558,8 @@ namespace BSharp.Tests.Collections {
 
             Asserter.Against(flat)
                     .And(Is.TypeOf<Optional<int>>())
-                    .And(it => it.HasValue,    Is.False)
-                    .And(it => it.Value,       Throws.InvalidOperationException)
+                    .And(it => it.HasValue, Is.False)
+                    .Satisfies(it => _ = it.Value, Throws.InvalidOperationException)
                     .And(() => outer.HasValue, Is.True)
                     .Invoke();
         }
