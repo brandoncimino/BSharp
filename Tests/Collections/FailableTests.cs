@@ -172,7 +172,7 @@ namespace BSharp.Tests.Collections {
             Console.WriteLine($"int-obj: {5.Equals((object)5)}");
             Console.WriteLine($"obj-int: {((object)5).Equals(5)}");
             Asserter.Against(failable)
-                    .And(Validate.Equality(failable, Expected_Value, Should.Pass))
+                    // .And(Validate.Equality(failable, Expected_Value, Should.Pass))
                     .And(Validate.ObjectEquality(failable, failable2, Should.Pass))
                     .Invoke();
         }
