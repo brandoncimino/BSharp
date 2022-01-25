@@ -67,6 +67,7 @@ namespace BSharp.Tests.Strings {
         [TestCase(typeof(string),     "string",     "string",     "string")]
         [TestCase(typeof(int?),       "int?",       "int?",       "int?")]
         [TestCase(typeof(Structure?), "Structure?", "Structure?", "Structure?")]
+        [TestCase(typeof(Dictionary<string,string?>), "Dictionary<string,string?>", "Dictionary<,>", "Dictionary<>")]
         [TestCase(
             typeof(KeyValuePair<DayOfWeek, string>),
             "KeyValuePair<DayOfWeek, string>",
@@ -96,7 +97,7 @@ namespace BSharp.Tests.Strings {
                     $"Name:     {actualType.Name}",
                     $"FullName: {actualType.FullName}",
                     $"Prettify: {actualType.Prettify()}",
-                    $"P. type:  {InnerPretty.PrettifyType(actualType, default)}",
+                    $"P. type:  {actualType.PrettifyType(default)}",
                     $"Full:     {actualType.PrettifyType(settings_full)}",
                     $"Short:    {actualType.PrettifyType(settings_short)}",
                     $"None:     {actualType.PrettifyType(settings_none)}",
@@ -113,7 +114,19 @@ namespace BSharp.Tests.Strings {
 
         [Test]
         public void PrettifyType_NullableValue() {
-            throw new NotImplementedException("need to actually do this");
+            var tp = typeof(int?);
+            Console.WriteLine(new Dictionary<object,object>() {
+                ["Type"] = tp,
+                ["Pretty"] = tp.Prettify(),
+                ["VT?"] = tp.IsValueType
+            }.Prettify());
+            PrettifyType(typeof(int?), "int?", "int?", "int?");
+        }
+
+        [Test]
+        public void PrettifyType_NullableReference() {
+            string? str = "";
+            PrettifyType(str.GetType(), "string?", "string?", "string?");
         }
 
         [Test]
@@ -710,13 +723,14 @@ List<int>[
             }
 
             public static string PrettyString() {
-                var prettyString = $"{nameof(ExtendsDBType)} > {nameof(ParameterInfo)}";
+                var prettyString = $"{nameof(ExtendsDBType)} inherits {nameof(ParameterInfo)}";
                 return prettyString;
             }
         }
 
         [Test]
         public void PrettifyPrefersToStringOverrideOverInheritedClass() {
+            Assert.Ignore("FindToStringOverridePrettifier is currently DISABLED!");
             Asserter.Against(new ExtendsDBType())
                     .And(it => it.Prettify(), Is.EqualTo(ExtendsDBType.PrettyString()))
                     .Invoke();

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Linq;
@@ -10,6 +11,7 @@ using System.Text.RegularExpressions;
 using FowlFever.BSharp.Attributes;
 using FowlFever.BSharp.Collections;
 using FowlFever.BSharp.Exceptions;
+using FowlFever.BSharp.Optional;
 using FowlFever.BSharp.Strings;
 using FowlFever.BSharp.Strings.Prettifiers;
 
@@ -698,7 +700,7 @@ namespace FowlFever.BSharp.Reflection {
         [Pure]
         [ContractAnnotation("child:null => stop")]
         [ContractAnnotation("possibleParents:null => stop")]
-        public static bool IsKindOf(this Type child, [InstantHandle] IEnumerable<Type> possibleParents) {
+        public static bool IsChildOf(this Type child, [InstantHandle] IEnumerable<Type> possibleParents) {
             if (child == null) {
                 throw new ArgumentNullException(nameof(child));
             }
@@ -711,12 +713,12 @@ namespace FowlFever.BSharp.Reflection {
         }
 
         /**
-         * <inheritdoc cref="IsKindOf(System.Type,System.Collections.Generic.IEnumerable{System.Type})"/>
+         * <inheritdoc cref="IsChildOf(System.Type,System.Collections.Generic.IEnumerable{System.Type})"/>
          */
         [Pure]
         [ContractAnnotation("child:null => stop")]
         [ContractAnnotation("possibleParents:null => stop")]
-        public static bool IsKindOf(this Type child, params Type[] possibleParents) => IsKindOf(child, possibleParents.AsEnumerable());
+        public static bool IsChildOf(this Type child, Type possibleParent, params Type[] possibleParents) => IsChildOf(child, possibleParents.AsEnumerable().Prepend(possibleParent));
 
         /// <summary>
         /// Determines whether a <b>variable</b> of this <see cref="Type"/> is capable of holding a <b>value</b> of <paramref name="valueType"/>.
@@ -931,16 +933,98 @@ namespace FowlFever.BSharp.Reflection {
             return typeof(Exception).IsAssignableFrom(type);
         }
 
-        public static bool IsNullableType(this Type type) {
+        public static bool IsNullable(this Type type) {
             return type.IsNullableValueType() || type.IsNullableReferenceType();
         }
 
         public static bool IsNullableValueType(this Type type) {
-            return type.IsConstructedGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>);
+            return Nullable.GetUnderlyingType(type) != null;
         }
 
+        private static readonly HashSet<string> NullableAttributes = new HashSet<string>() {
+            "System.Runtime.CompilerServices.NullableAttribute", "JetBrains.Annotations.CanBeNullAttribute"
+        };
+
         public static bool IsNullableReferenceType(this Type type) {
-            throw new NotImplementedException("need to figure out how to do this - probably with annotations or something");
+            return !type.IsValueType && (type._IsNullableAnnotated() || type._IsNullableAnnotated());
+        }
+
+        /// <summary>
+        /// The comment <a href="https://stackoverflow.com/a/58454489">here</a> has some big check for constructor arguments and bytes instead of just the presence of the attribute...is that necessary at all...?
+        /// </summary>
+        /// <param name="memberInfo"></param>
+        /// <returns></returns>
+        private static bool _IsNullableAnnotated(this MemberInfo memberInfo) {
+            var attributes = memberInfo.CustomAttributes.ToList();
+
+
+            var nbt = attributes.FirstOrDefault(it => NullableAttributes.Contains(it.AttributeType.FullName))?._GetNullableByte();
+
+            if (attributes.Any(it => NullableAttributes.Contains(it.AttributeType.FullName))) {
+                Console.WriteLine($"-> Nullable via {nameof(_IsNullableAnnotated)}! [byte: {nbt}, {nbt==2}]\n{attributes.JoinLines()}");
+            }
+
+            return nbt == 2;
+        }
+
+        private static bool _IsInsideNullableContext(this MemberInfo memberInfo) {
+            var outerAttributes = memberInfo.DeclaringType?.CustomAttributes.ToList();
+
+            var nbt = outerAttributes?.FirstOrDefault(it => it.AttributeType.FullName == "System.Runtime.CompilerServices.NullableContextAttribute")?._GetNullableByte();
+
+            if (outerAttributes?.Any(it => it.AttributeType.FullName == "System.Runtime.CompilerServices.NullableContextAttribute") == true) {
+                Console.WriteLine($"-> Nullable via parent context! {outerAttributes.Where(it => it.AttributeType.FullName!.EndsWith("NullableContextAttribute")).JoinLines()}");
+            }
+
+            return nbt == 2;
+        }
+
+        public static bool IsNullable(this ParameterInfo parameterInfo) {
+            if (parameterInfo.ParameterType.IsValueType) {
+                return parameterInfo.ParameterType.IsNullable();
+            }
+
+            return parameterInfo.CustomAttributes.Any(it => NullableAttributes.Contains(it.AttributeType.FullName)) ||
+                   parameterInfo.ParameterType.IsNullable();
+        }
+
+        public static bool IsNullable(this MethodInfo methodInfo) {
+            if (methodInfo.ReturnParameter == null) {
+                return false;
+            }
+
+            return methodInfo._IsNullableAnnotated()     ||
+                   methodInfo._IsInsideNullableContext() ||
+                   methodInfo.ReturnParameter.IsNullable();
+        }
+
+        public static bool IsNullable(this MemberInfo memberInfo) {
+            if (memberInfo._IsNullableAnnotated() || memberInfo._IsInsideNullableContext()) {
+                return true;
+            }
+
+            return memberInfo switch {
+                FieldInfo f    => f.FieldType.IsNullable(),
+                PropertyInfo p => p.PropertyType.IsNullable(),
+                MethodInfo m   => m.ReturnType.IsNullable(),
+                Type t => t.IsNullable(),
+                _ => false
+            };
+        }
+
+        private static byte? _GetNullableByte(this CustomAttributeData attribute) {
+            var arg = attribute.ConstructorArguments.FirstOrDefault();
+
+            if (arg.ArgumentType == typeof(byte)) {
+                return arg.Value as byte?;
+            }
+
+            if (arg.ArgumentType == typeof(byte[])) {
+                var argArgs = (ReadOnlyCollection<CustomAttributeTypedArgument>)arg.Value!;
+                return argArgs.FirstOrDefault().Value as byte?;
+            }
+
+            return null;
         }
 
         #endregion
