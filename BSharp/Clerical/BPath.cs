@@ -24,8 +24,8 @@ namespace FowlFever.BSharp.Clerical {
         internal static readonly RegexGroup ExtensionGroup            = new RegexGroup(nameof(ExtensionGroup), @"(\.[^.]+?)+$");
         internal static readonly char[]     Separators                = Enum.GetValues(typeof(DirectorySeparator)).Cast<DirectorySeparator>().Select(DirectorySeparatorExtensions.ToChar).ToArray();
         public static readonly   Regex      DirectorySeparatorPattern = new Regex(@"[\\\/]");
-        public static readonly   Regex      OuterSeparatorPattern     = RegexUtils.OuterMatch(DirectorySeparatorPattern);
-        public static readonly   Regex      InnerSeparatorPattern     = RegexUtils.InnerMatch(DirectorySeparatorPattern);
+        public static readonly   Regex      OuterSeparatorPattern     = RegexPatterns.OuterMatch(DirectorySeparatorPattern);
+        public static readonly   Regex      InnerSeparatorPattern     = RegexPatterns.InnerMatch(DirectorySeparatorPattern);
         internal static readonly string     OpenFolderIcon            = "📂";
         internal static readonly string     ClosedFolderIcon          = "📁";
         internal static readonly string     FileIcon                  = "📄";
@@ -114,7 +114,7 @@ namespace FowlFever.BSharp.Clerical {
         public static string GetFullExtension(string path) {
             return Path.GetFileName(path)
                        .Match(ExtensionGroup.Regex)
-                       .Groups[ExtensionGroup.GroupName]
+                       .Groups[ExtensionGroup.Name]
                        .Value;
         }
 
@@ -142,8 +142,8 @@ namespace FowlFever.BSharp.Clerical {
         [Pure]
         public static string EnsureTrailingSeparator(string? path, DirectorySeparator separator = DirectorySeparator.Universal) {
             return NormalizeSeparators(
-                path?.Trim()
-                    .TrimEnd(DirectorySeparatorPattern)
+                (path?.Trim()
+                     .TrimEnd(DirectorySeparatorPattern))
                     .Suffix(separator.ToCharString()),
                 separator
             );

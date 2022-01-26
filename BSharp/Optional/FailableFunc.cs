@@ -8,8 +8,8 @@ public class FailableFunc<TValue> : Failable, IFailableFunc<TValue>, IEquatable<
     private readonly Optional<TValue> _value;
     public           int              Count         => _value.Count;
     public           bool             HasValue      => _value.HasValue;
-    public           TValue           Value         => _value.HasValue ? _value.Value : throw FailableException.FailedException(this, _excuse);
-    public           object?          ValueOrExcuse => _value.HasValue ? _value.Value : _excuse;
+    public           TValue           Value         => _value.HasValue ? _value.Value : throw FailableException.FailedException(this, Excuse);
+    public           object?          ValueOrExcuse => _value.HasValue ? _value.Value : Excuse;
 
     private FailableFunc(
         Optional<TValue> value,
@@ -31,7 +31,6 @@ public class FailableFunc<TValue> : Failable, IFailableFunc<TValue>, IEquatable<
         return _value.GetEnumerator();
     }
 
-
     IEnumerator IEnumerable.GetEnumerator() {
         return GetEnumerator();
     }
@@ -42,5 +41,26 @@ public class FailableFunc<TValue> : Failable, IFailableFunc<TValue>, IEquatable<
 
     public bool Equals(TValue other) {
         return Optional.AreEqual(_value, other);
+    }
+
+    /// <summary>
+    /// I don't <i>think</i> I want to override <see cref="object.GetHashCode"/> for this...but I dunno.
+    /// I should probably read stuff like <a href="https://docs.microsoft.com/en-us/previous-versions/dotnet/netframework-4.0/336aedhh(v=vs.100)">implementing the Equals method</a>
+    /// in more detail.
+    ///
+    /// Basically...the word <c>pragma</c> scares me.
+    /// </summary>
+    /// <param name="other"></param>
+    /// <returns></returns>
+    public override bool Equals(object other) {
+        return other switch {
+            TValue tv             => Equals(tv),
+            IOptional<TValue> opt => Equals(opt),
+            _                     => base.Equals(other) // this complains about reference equality...but why?
+        };
+    }
+
+    public override string ToString() {
+        return $"{base.ToString()} => {ValueOrExcuse}";
     }
 }

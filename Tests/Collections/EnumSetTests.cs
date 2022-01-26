@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 
 using FowlFever.BSharp.Enums;
@@ -61,10 +59,8 @@ namespace BSharp.Tests.Collections {
                 _           => throw new ArgumentException()
             };
 
-            AssertAll.Of(
-                () => mustResolver(Must),
-                () => Assert.That(set.Contains(mustBeContained), Is.EqualTo(should == Should.Pass))
-            );
+            Assert.That(() => set.Contains(mustBeContained), Is.EqualTo(should == Should.Pass));
+            Assert.That(() => mustResolver(Must),            Throws.Nothing);
         }
 
         [Test]
@@ -94,48 +90,29 @@ namespace BSharp.Tests.Collections {
         [Test]
         public void EquivalencyWithMismatchedOrder() {
             var backwardsWeekend = new EnumSet<DayOfWeek>(DayOfWeek.Sunday, DayOfWeek.Saturday);
-            AssertAll.Of(
-                backwardsWeekend,
-                Is.Not.EqualTo(GetWeekend()),
-                Is.EquivalentTo(GetWeekend())
-            );
+            Asserter.Against(backwardsWeekend)
+                    .And(Is.Not.EqualTo(GetWeekend()))
+                    .And(Is.EquivalentTo(GetWeekend()))
+                    .Invoke();
         }
 
         [Test]
         public void OfAllValues_WithDuplicates() {
             var values         = Enum.GetValues(typeof(EnumWithDuplicates));
-            var distinctValues = values.Cast<EnumWithDuplicates>().Distinct();
+            var distinctValues = values.Cast<EnumWithDuplicates>().Distinct().ToArray();
 
             var ofAllValues = EnumSet.OfAllValues<EnumWithDuplicates>();
 
-            AssertAll.Of(
-                ofAllValues,
-                Has.Count.EqualTo(3),
-                Is.EquivalentTo(distinctValues),
-                Is.Not.EqualTo(values)
-            );
+            Asserter.Against(ofAllValues)
+                    .And(Has.Count.EqualTo(3))
+                    .And(Is.EquivalentTo(distinctValues))
+                    .And(Is.Not.EqualTo(values))
+                    .Invoke();
         }
 
         #region ReadOnlyEnumSet
 
-        [Test]
-        public void enumExc() {
-            throw new NotImplementedException("I don't think this test is finished...what was I trying to do?");
-            var excepts = new Dictionary<string, string>() {
-                ["arg(null, null)"]     = new ArgumentException(null,   (string)null).Message,
-                ["arg(null, yolo)"]     = new ArgumentException(null,   "yolo").Message,
-                ["arg(yolo, null)"]     = new ArgumentException("yolo", (string)null).Message,
-                ["earg(null, -1, DoW)"] = new InvalidEnumArgumentException(null,   -1, typeof(DayOfWeek)).Message,
-                ["earg(null,null)"]     = new InvalidEnumArgumentException(null,   null).Message,
-                ["earg(yolo,null)"]     = new InvalidEnumArgumentException("yolo", null).Message,
-                ["earg(null,npe)"]      = new InvalidEnumArgumentException(null,   new ArgumentNullException()).Message
-            };
-            foreach (var pair in excepts) {
-                Console.WriteLine($"\n{pair.Key} = {pair.Value}");
-            }
-            // throw new ArgumentException(null, (string)null);
-            // throw new InvalidEnumArgumentException(null, -1, typeof(DayOfWeek));
-        }
+        //TODO: ???
 
         #endregion
     }

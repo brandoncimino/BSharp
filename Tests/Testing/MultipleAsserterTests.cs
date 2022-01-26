@@ -3,6 +3,7 @@ using System;
 using FowlFever.Testing;
 
 using NUnit.Framework;
+using NUnit.Framework.Internal;
 
 using Is = NUnit.Framework.Is;
 
@@ -36,6 +37,9 @@ namespace BSharp.Tests.Testing {
             Assert.Throws<TException>(asserter.Invoke);
         }
 
+        /// <summary>
+        /// NOTE: <see cref="SuccessException"/> is no longer properly caught inside of delegates in NUnit 😿
+        /// </summary>
         [Test]
         public void MultipleAsserter_Asserter_NoFailures() {
             ValidateMultiAss_NoFailures<Asserter<object>>();
@@ -105,5 +109,69 @@ namespace BSharp.Tests.Testing {
         }
 
         #endregion
+
+        [Test]
+        public void ActualValueDelegateIsOnlyCalledOnce() {
+            var fnCount = 0;
+
+            int Fn() {
+                fnCount++;
+                Console.WriteLine($"{nameof(fnCount)} = {fnCount}");
+                return fnCount;
+            }
+
+            Assert.That(fnCount, Is.EqualTo(0));
+
+            var ass = Asserter.Against(Fn)
+                              .And(Is.EqualTo(1).And.GreaterThan(0).And.EqualTo(1).And.LessThan(2))
+                              .And(it => it * 2, Is.EqualTo(2))
+                              .And(Is.EqualTo(1))
+                              .And(DoubleMe, Is.EqualTo(2))
+                              .And(it => { Console.WriteLine("🦥"); });
+
+            ass.Invoke();
+            ass.Invoke();
+            ass.Invoke();
+
+            Assert.That(fnCount, Is.EqualTo(1));
+        }
+
+        private static int DoubleMe(int i) {
+            return i * 2;
+        }
+
+        [Test]
+        public void AndAgainstDoesNotNeedActualUntilInvoked() {
+            var asserter = Asserter.WithHeading("hi")
+                                   .AndAgainst(it => it, ass => ass.And(Is.Not.Null));
+
+            // NOTE: Assert.Throws<Exception> requires that EXACTLY System.Exception is thrown, which is useless
+            Assert.That(asserter.Invoke, Throws.Exception);
+        }
+
+        [Test]
+        public void ConstraintAgainstActual() {
+            Asserter.Against(5).And(Is.EqualTo(5)).Invoke();
+        }
+
+        [Test]
+        public void AndAgainstFailsIfInvokedWithoutActual() {
+            var asserter = Asserter.WithHeading<int>(nameof(AndAgainstFailsIfInvokedWithoutActual))
+                                   .AndAgainst(it => it * 2, ass => ass.And(Is.EqualTo(3)));
+
+
+            using (new TestExecutionContext.IsolatedContext()) {
+                Assert.That(asserter.Invoke, Throws.Exception);
+            }
+        }
+
+        [Test]
+        public void AndAgainstWorksWhenActualWasSetLate() {
+            var asserter = Asserter.WithHeading<int>(nameof(AndAgainstWorksWhenActualWasSetLate))
+                                   .AndAgainst(it => it, ass => ass.And(Is.EqualTo(3)))
+                                   .Against(3);
+
+            Assert.That(asserter.Invoke, Throws.Nothing);
+        }
     }
 }

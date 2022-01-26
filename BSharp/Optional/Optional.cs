@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Linq;
+using System.Runtime;
 
 using FowlFever.BSharp.Collections;
 using FowlFever.BSharp.Enums;
@@ -156,6 +157,27 @@ namespace FowlFever.BSharp.Optional {
             Func<TIn, TOut>     selector
         ) {
             return optional.AsEnumerable().Select(selector).ToOptional();
+        }
+
+        /// <summary>
+        /// If this <typeparamref name="TIn"/> is <b>not</b> <c>null</c>, <see cref="Func{T,TResult}.Invoke"/> <paramref name="selector"/>.
+        ///
+        /// Otherwise, return a null <typeparamref name="TOut"/>.
+        /// </summary>
+        /// <remarks>
+        /// Intended to let you treat a nullable type (<see cref="ValueType"/> OR reference) as an <see cref="IOptional{T}"/>.
+        /// </remarks>
+        /// <param name="nullable">a <see cref="ValueType"/> that might be null</param>
+        /// <param name="selector">a <see cref="Func{TResult}"/> to apply to a <b>non-null</b> <typeparamref name="TIn"/></param>
+        /// <typeparam name="TIn">the original <see cref="Type"/></typeparam>
+        /// <typeparam name="TOut">the output <see cref="Type"/></typeparam>
+        /// <returns>a nullable <typeparamref name="TOut"/></returns>
+        [Pure]
+        public static TOut? SelectNullable<TIn, TOut>(
+            this TIn?       nullable,
+            Func<TIn, TOut> selector
+        ) {
+            return nullable == null ? default : selector(nullable);
         }
 
         /// <summary>

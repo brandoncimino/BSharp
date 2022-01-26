@@ -35,7 +35,7 @@ namespace FowlFever.BSharp.Strings.Prettifiers {
             return type.IsGenericType ? PrettifyGenericType(type, settings) : type.NameOrKeyword();
         }
 
-        private static string PrettifyGenericType(Type? genericType, PrettificationSettings? settings) {
+        private static string PrettifyGenericType(Type? genericType, PrettificationSettings settings) {
             if (genericType?.IsGenericType != true) {
                 throw new ArgumentException($"{genericType} is not a generic type!", nameof(genericType));
             }
@@ -43,25 +43,30 @@ namespace FowlFever.BSharp.Strings.Prettifiers {
             // Make sure to use `.GetGenericArguments()` and not `.GenericTypeArguments`, because the latter will return an empty array for
             // a generic type definition like `List<>`
             var genArgs = genericType.GetGenericArguments();
+
+            // Perform a special replacement on the Nullable<> type
+            if (genericType.IsNullable()) {
+                return genArgs.Select(it => PrettifyNullableType(it, settings)).JoinString(", ");
+            }
+
             return genericType.Name.Replace($"`{genArgs.Length}", PrettifyGenericTypeArguments(genArgs, settings));
         }
 
-        private static string PrettifyTupleType(Type tupleType, PrettificationSettings? settings) {
+        private static string PrettifyTupleType(Type tupleType, PrettificationSettings settings) {
             var genArgs = tupleType.GetGenericArguments().Select(it => it.PrettifyType(settings));
             return $"({genArgs.JoinString(", ")})";
         }
 
         private static string PrettifyNullableType(Type type, PrettificationSettings settings) {
-            throw new NotImplementedException("Need to implement along with logic to detect nullable reference types");
+            return $"{type.Prettify(settings)}?";
         }
 
-        private static string PrettifyGenericTypeArguments(IEnumerable<Type> genericTypeArguments, PrettificationSettings? settings) {
+        private static string PrettifyGenericTypeArguments(IEnumerable<Type> genericTypeArguments, PrettificationSettings settings) {
             var stylizedArgs = StylizeGenericTypeArguments(genericTypeArguments, settings);
             return $"<{stylizedArgs}>";
         }
 
-        private static string StylizeGenericTypeArguments(IEnumerable<Type?> genericTypeArguments, PrettificationSettings? settings) {
-            settings ??= PrettificationSettings.Default;
+        private static string StylizeGenericTypeArguments(IEnumerable<Type?> genericTypeArguments, PrettificationSettings settings) {
             return settings.TypeLabelStyle switch {
                 TypeNameStyle.None  => "",
                 TypeNameStyle.Full  => genericTypeArguments.Select(it => it.PrettifyType(settings)).JoinString(", "),

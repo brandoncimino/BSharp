@@ -1,0 +1,54 @@
+:source-language: c#
+
+Say we want to create an immutable `MagicCard` class, which:
+
+- Always contains a `Name`
+- Might contain a `Set`
+
+We could declare that class as:
+
+----
+public record class MagicCard(string Name);
+----
+
+This would ensure that:
+
+- `Name` must be set, either as:
+** `new MagicCard("Borborygmos");`
+** `new MagicCard { Name = "Borborygmos" };`
+
+Now, we want to add a property for the `Block`:
+
+- We can derive the `Block` from the `Name` by making a request to link:https://api.scryfall.com[]
+- Making a request to Scryfall is *slow*, so we want to be as *lazy as possible*
+
+- We've written a method, `Scryfall.GetBlock(string cardName)`
+
+.Computed Property
+----
+public record class MagicCard(string Name){
+    public string Block => Scryfall.GetBlock(Name);
+}
+----
+
+- ✅ Doesn't call `Scryfall` in `new MagicCard()`
+- ❌ Calls `Scryfall` whenever you call `MagicCard.Block`
+
+.Readonly Field
+----
+public record class MagicCard(string Name){
+    public readonly string Block = Scryfall.GetBlock(Name);
+}
+----
+
+- ✅ Calls `Scryfall` at most 1 time
+- ❌ _Always_ calls `Scryfall`
+
+.Stored Property
+----
+public record class MagicCard(string Name){
+    public string Block { get; } = Scryfall.GetBlock(Name);
+}
+----
+
+- ❌ Same flaws as with a *Readonly Field*

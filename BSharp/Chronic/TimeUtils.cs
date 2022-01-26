@@ -89,7 +89,6 @@ namespace FowlFever.BSharp.Chronic {
             return TimeSpan.FromTicks((long)(dividend.Ticks / divisor));
         }
 
-
         /// <inheritdoc cref="Divide(System.TimeSpan,double)"/>
         [Pure]
         public static TimeSpan Divide(this DateTime dividend, double divisor) {
@@ -119,7 +118,19 @@ namespace FowlFever.BSharp.Chronic {
         /// </summary>
         /// <param name="dividend">The number to be divided (i.e. top of the fraction)</param>
         /// <param name="divisor">The number by which <paramref name="dividend" /> will be divided (i.e. the bottom of the fraction)</param>
-        /// <returns></returns>
+        /// <returns>the <see cref="TimeSpan" /> remainder after <paramref name="dividend" /> is divided by <paramref name="divisor" />.</returns>
+        /// <example>
+        /// <code><![CDATA[
+        /// var month = TimeSpan.FromDays(30);
+        /// var week = TimeSpan.FromDays(7);
+        ///
+        /// var modulus = month.Modulus(week);  // => TimeSpan.FromDays(2);
+        /// ]]></code></example>
+        /// <remarks>
+        /// Ideally, this method would mimic <see cref="double"/> modulus calculations, in which anything <c>% 0</c> equals <see cref="double.NaN"/>.
+        ///
+        /// However, there is no <see cref="TimeSpan"/> that intuitively represents <see cref="double.NaN"/>, and so this will throw an <see cref="ArgumentException"/> instead.
+        /// </remarks>
         [Pure]
         public static TimeSpan Modulus(this TimeSpan dividend, TimeSpan divisor) {
             if (divisor == TimeSpan.Zero) {

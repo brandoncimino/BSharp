@@ -2,8 +2,12 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel.Design.Serialization;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 
 using FowlFever.BSharp;
 using FowlFever.BSharp.Collections;
@@ -100,20 +104,38 @@ namespace BSharp.Tests.Reflection {
 
                 #region Instance Fields
 
-                new VariableInfo() { Name = nameof(Field_Public), MemberType    = MemberTypes.Field },
-                new VariableInfo() { Name = nameof(Field_Private), MemberType   = MemberTypes.Field },
-                new VariableInfo() { Name = nameof(Field_Protected), MemberType = MemberTypes.Field },
+                new VariableInfo() {
+                    Name = nameof(Field_Public), MemberType = MemberTypes.Field
+                },
+                new VariableInfo() {
+                    Name = nameof(Field_Private), MemberType = MemberTypes.Field
+                },
+                new VariableInfo() {
+                    Name = nameof(Field_Protected), MemberType = MemberTypes.Field
+                },
 
                 #endregion
 
                 #region Instance Properties
 
-                new VariableInfo() { Name = nameof(Prop_Public), MemberType               = MemberTypes.Property, Gettable = true, Settable = true },
-                new VariableInfo() { Name = nameof(Prop_Private), MemberType              = MemberTypes.Property, Gettable = true, Settable = true },
-                new VariableInfo() { Name = nameof(Prop_Protected), MemberType            = MemberTypes.Property, Gettable = true, Settable = true },
-                new VariableInfo() { Name = nameof(Prop_Mixed_Private_Getter), MemberType = MemberTypes.Property, Gettable = true, Settable = true },
-                new VariableInfo() { Name = nameof(Prop_Mixed_Private_Setter), MemberType = MemberTypes.Property, Gettable = true, Settable = true },
-                new VariableInfo() { Name = nameof(Prop_Get_Only), MemberType             = MemberTypes.Property, Gettable = true, Settable = false },
+                new VariableInfo() {
+                    Name = nameof(Prop_Public), MemberType = MemberTypes.Property, Gettable = true, Settable = true
+                },
+                new VariableInfo() {
+                    Name = nameof(Prop_Private), MemberType = MemberTypes.Property, Gettable = true, Settable = true
+                },
+                new VariableInfo() {
+                    Name = nameof(Prop_Protected), MemberType = MemberTypes.Property, Gettable = true, Settable = true
+                },
+                new VariableInfo() {
+                    Name = nameof(Prop_Mixed_Private_Getter), MemberType = MemberTypes.Property, Gettable = true, Settable = true
+                },
+                new VariableInfo() {
+                    Name = nameof(Prop_Mixed_Private_Setter), MemberType = MemberTypes.Property, Gettable = true, Settable = true
+                },
+                new VariableInfo() {
+                    Name = nameof(Prop_Get_Only), MemberType = MemberTypes.Property, Gettable = true, Settable = false
+                },
 
                 #endregion
 
@@ -123,20 +145,38 @@ namespace BSharp.Tests.Reflection {
 
                 #region Static Fields
 
-                new VariableInfo() { Name = nameof(Field_Static_Public), MemberType    = MemberTypes.Field },
-                new VariableInfo() { Name = nameof(Field_Static_Private), MemberType   = MemberTypes.Field },
-                new VariableInfo() { Name = nameof(Field_Static_Protected), MemberType = MemberTypes.Field },
+                new VariableInfo() {
+                    Name = nameof(Field_Static_Public), MemberType = MemberTypes.Field
+                },
+                new VariableInfo() {
+                    Name = nameof(Field_Static_Private), MemberType = MemberTypes.Field
+                },
+                new VariableInfo() {
+                    Name = nameof(Field_Static_Protected), MemberType = MemberTypes.Field
+                },
 
                 #endregion
 
                 #region Static Properties
 
-                new VariableInfo() { Name = nameof(Prop_Static_Public), MemberType               = MemberTypes.Property, Gettable = true, Settable = true },
-                new VariableInfo() { Name = nameof(Prop_Static_Private), MemberType              = MemberTypes.Property, Gettable = true, Settable = true },
-                new VariableInfo() { Name = nameof(Prop_Static_Protected), MemberType            = MemberTypes.Property, Gettable = true, Settable = true },
-                new VariableInfo() { Name = nameof(Prop_Static_Mixed_Private_Getter), MemberType = MemberTypes.Property, Gettable = true, Settable = true },
-                new VariableInfo() { Name = nameof(Prop_Static_Mixed_Private_Setter), MemberType = MemberTypes.Property, Gettable = true, Settable = true },
-                new VariableInfo() { Name = nameof(Prop_Static_Get_Only), MemberType             = MemberTypes.Property, Gettable = true, Settable = false },
+                new VariableInfo() {
+                    Name = nameof(Prop_Static_Public), MemberType = MemberTypes.Property, Gettable = true, Settable = true
+                },
+                new VariableInfo() {
+                    Name = nameof(Prop_Static_Private), MemberType = MemberTypes.Property, Gettable = true, Settable = true
+                },
+                new VariableInfo() {
+                    Name = nameof(Prop_Static_Protected), MemberType = MemberTypes.Property, Gettable = true, Settable = true
+                },
+                new VariableInfo() {
+                    Name = nameof(Prop_Static_Mixed_Private_Getter), MemberType = MemberTypes.Property, Gettable = true, Settable = true
+                },
+                new VariableInfo() {
+                    Name = nameof(Prop_Static_Mixed_Private_Setter), MemberType = MemberTypes.Property, Gettable = true, Settable = true
+                },
+                new VariableInfo() {
+                    Name = nameof(Prop_Static_Get_Only), MemberType = MemberTypes.Property, Gettable = true, Settable = false
+                },
 
                 #endregion
 
@@ -327,20 +367,20 @@ namespace BSharp.Tests.Reflection {
         #region Type Ancestry
 
         [TestCase(
-            new[] { typeof(List<object>), typeof(IList<object>), typeof(IEnumerable<object>) },
+            new[] {
+                typeof(List<object>), typeof(IList<object>), typeof(IEnumerable<object>)
+            },
             typeof(IEnumerable<object>)
         )]
         [TestCase(
             new[] {
-                typeof(int),
-                typeof(string)
+                typeof(int), typeof(string)
             },
             typeof(IComparable)
         )]
         [TestCase(
             new[] {
-                typeof(List<object>),
-                typeof(Collection<object>)
+                typeof(List<object>), typeof(Collection<object>)
             },
             typeof(IList<object>)
         )]
@@ -348,9 +388,7 @@ namespace BSharp.Tests.Reflection {
             var ass = Asserter.WithHeading($"{nameof(MostCommonType)} for: {types.Prettify()}");
 
             new[] {
-                (types, "Forward"),
-                (types.Randomize(), "Random"),
-                (types.Reverse(), "Reversed")
+                (types, "Forward"), (types.Randomize(), "Random"), (types.Reverse(), "Reversed")
             }.ForEach(
                 it => {
                     var (typeList, message) = it;
@@ -371,7 +409,13 @@ namespace BSharp.Tests.Reflection {
         }
 
         [Test]
-        [TestCase(typeof(Duckmobile), typeof(TrainCar), new[] { typeof(ILand), typeof(ICar), typeof(IVehicle) })]
+        [TestCase(
+            typeof(Duckmobile),
+            typeof(TrainCar),
+            new[] {
+                typeof(ILand), typeof(ICar), typeof(IVehicle)
+            }
+        )]
         public void CommonInterface(Type a, Type b, Type[] expectedOptions) {
             var actual = ReflectionUtils.CommonInterfaces(a, b);
 
@@ -602,24 +646,74 @@ namespace BSharp.Tests.Reflection {
         public enum TypeNullability {
             None,
             Reference,
-            Value
+            Value,
+            Yes
         }
 
         public readonly static (FieldInfo field, TypeNullability nullability)[] Nullabilities = new[] {
-            (typeof(ReflectionUtilsTests).GetField(nameof(NullableString))!, TypeNullability.Reference),
-            (typeof(ReflectionUtilsTests).GetField(nameof(NullableInt))!, TypeNullability.Value),
-            (typeof(ReflectionUtilsTests).GetField(nameof(SolidString))!, TypeNullability.None),
-            (typeof(ReflectionUtilsTests).GetField(nameof(SolidInt))!, TypeNullability.None)
+            (typeof(ReflectionUtilsTests).GetField(nameof(NullableString))!, TypeNullability.Reference), (typeof(ReflectionUtilsTests).GetField(nameof(NullableInt))!, TypeNullability.Value), (typeof(ReflectionUtilsTests).GetField(nameof(SolidString))!, TypeNullability.None), (typeof(ReflectionUtilsTests).GetField(nameof(SolidInt))!, TypeNullability.None),
         };
 
         [Test]
-        public void Nullability([ValueSource(nameof(Nullabilities))] (FieldInfo field, TypeNullability nullability) expectation) {
-            var (field, nullability) = expectation;
-            throw new NotImplementedException("need to finish this test, about detecting nullability of reference types");
-            // Console.WriteLine(Table.Of(
-            // ));
-            Console.WriteLine(field.Prettify());
-            Console.WriteLine(field.FieldType);
+        public void Nullability([ValueSource(nameof(Nullabilities))] (MemberInfo field, TypeNullability nullability) expectation) {
+            var (member, nullability) = expectation;
+            Assert.That(member.IsNullable, Is.EqualTo(nullability != TypeNullability.None));
+        }
+
+        public record NullableExpectation(MemberInfo Member, TypeNullability Nullability, string Nickname);
+
+        public static List<NullableExpectation> GetNullabies() {
+            var self = typeof(ReflectionUtilsTests);
+
+            var ls = new List<NullableExpectation>() {
+                new(typeof(int), TypeNullability.None, "int"),
+                new(typeof(int?), TypeNullability.Value, "int?"),
+                new(typeof(string), TypeNullability.None, "string"),
+                new(((string?)"")!.GetType(), TypeNullability.Reference, "string?"),
+                new(self.GetField(nameof(SolidInt))!, TypeNullability.None, "int field"),
+                new(self.GetField(nameof(NullableInt))!, TypeNullability.Value, "int? field"),
+                new(self.GetField(nameof(SolidString))!, TypeNullability.None, "string field"),
+                new(self.GetField(nameof(NullableString))!, TypeNullability.Reference, "string? field")
+            };
+
+            var methodWithNullReturn = self.GetMethod(nameof(MethodWithNullReturnType))!;
+            ls.Add(new NullableExpectation(methodWithNullReturn, TypeNullability.Yes, "method (string, string?) => string?"));
+            ls.Add(new NullableExpectation(methodWithNullReturn.ReturnType, TypeNullability.Reference, "ReturnType of method (string, string?) => string?"));
+
+            var methodWithNullGenerics = self.GetMethod(nameof(MethodWithNullGenerics))!;
+            ls.Add(new NullableExpectation(methodWithNullGenerics, TypeNullability.Yes, "generic method (notnull, class?) => class?"));
+            ls.Add(new NullableExpectation(methodWithNullGenerics, TypeNullability.Yes, "ReturnType of generic method generic method (notnull, class?) => class?"));
+
+            var instanceOfClassWithNullGenerics = new ClassWithNullGenerics<string, string?>().GetType();
+            ls.Add(new NullableExpectation(instanceOfClassWithNullGenerics.GetGenericArguments()[0], TypeNullability.None, "[string] in instance of generic <string, string?>"));
+            ls.Add(new NullableExpectation(instanceOfClassWithNullGenerics.GetGenericArguments()[1], TypeNullability.Reference, "[string?] in instance of generic <string, string?>"));
+
+            var nullGenericTypeDef = instanceOfClassWithNullGenerics.GetGenericTypeDefinition();
+            ls.Add(new NullableExpectation(nullGenericTypeDef.GetGenericArguments()[0], TypeNullability.None, "[notnull] in class <notnull, class?>"));
+            ls.Add(new NullableExpectation(nullGenericTypeDef.GetGenericArguments()[1], TypeNullability.Reference, "[class?] in class <notnull, class?>"));
+
+            return ls;
+        }
+
+        public class ClassWithNullGenerics<TSolid, TNull> where TSolid : notnull where TNull : class? {
+
+        }
+
+        public TNull? MethodWithNullGenerics<TSolid, TNull>(TSolid a, TNull b) where  TSolid : notnull where TNull : class? {
+            return default;
+        }
+
+        public string? MethodWithNullReturnType(string solid, string? nullable) {
+            return default;
+        }
+
+        [Test]
+        public void IsNullable([ValueSource(nameof(GetNullabies))] NullableExpectation expectation) {
+            Console.WriteLine(expectation);
+
+            Asserter.Against(expectation.Member)
+                    .And(ReflectionUtils.IsNullable, Is.EqualTo(expectation.Nullability != TypeNullability.None), expectation.Nickname)
+                    .Invoke();
         }
 
         #endregion

@@ -51,9 +51,7 @@ namespace FowlFever.BSharp.Clerical.Saving {
 
             if (match.Success) {
                 return new SaveFileName() {
-                    Nickname      = match.Groups[NicknameGroup.GroupName].Value,
-                    TimeStamp     = new DateTime(long.Parse(match.Groups[TimeStampGroup.GroupName].Value)),
-                    FullExtension = match.Groups[BPath.ExtensionGroup.GroupName].Value,
+                    Nickname = match.Groups[NicknameGroup.Name].Value, TimeStamp = new DateTime(long.Parse(match.Groups[TimeStampGroup.Name].Value)), FullExtension = match.Groups[BPath.ExtensionGroup.Name].Value,
                 };
             }
             else {

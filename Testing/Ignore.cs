@@ -41,21 +41,21 @@ namespace FowlFever.Testing {
             Unless(actual, new NotConstraint(constraint.Resolve()));
         }
 
-        public static void If<T>(ActualValueDelegate<T> actual, IResolveConstraint constraint) {
+        public static void If<T>(Func<T> actual, IResolveConstraint constraint) {
             constraint.Resolve().ApplyTo(actual);
         }
 
         public static void Unless<T>(
-            ActualValueDelegate<T> actualValueDelegate,
-            IResolveConstraint     constraint,
-            Func<string>?          messageProvider
+            Func<T>            actualValueDelegate,
+            IResolveConstraint constraint,
+            Func<string>?      messageProvider
         ) {
             var appliedConstraint = constraint.Resolve().ApplyTo(actualValueDelegate);
             HandleConstraintResult(appliedConstraint, messageProvider);
         }
 
         public static void Unless(
-            TestDelegate       action,
+            Action             action,
             IResolveConstraint constraint,
             Func<string>?      messageProvider
         ) {
@@ -63,11 +63,19 @@ namespace FowlFever.Testing {
             HandleConstraintResult(appliedConstraint, messageProvider);
         }
 
+        public static void Unless(
+            object             actual,
+            IResolveConstraint constraint,
+            Func<string>?      messageProvider
+        ) {
+            var appliedConstraint = constraint.Resolve().ApplyTo(actual);
+            HandleConstraintResult(appliedConstraint, messageProvider);
+        }
+
         private static void HandleConstraintResult(ConstraintResult result, Func<string>? messageProvider) {
             if (result.IsSuccess == false) {
                 var mParts = new[] {
-                    messageProvider?.Try().OrDefault(),
-                    result.Description
+                    messageProvider?.Try().OrDefault(), result.Description
                 };
 
                 Assert.Ignore(mParts.NonNull().JoinLines());
@@ -90,7 +98,7 @@ namespace FowlFever.Testing {
             }
         }
 
-        public static void Unless<T>(ActualValueDelegate<T> actual, IResolveConstraint constraint) {
+        public static void Unless<T>(Func<T> actual, IResolveConstraint constraint) {
             var appliedConstraint = constraint.Resolve().ApplyTo(actual);
             if (appliedConstraint.IsSuccess == false) {
                 Assert.Ignore(appliedConstraint.Description);
@@ -104,7 +112,7 @@ namespace FowlFever.Testing {
         }
 
         public static void Unless(params Action[] assertions) {
-            Unless(null, assertions);
+            Unless(null!, assertions);
         }
 
         public static void Unless<T>(string heading, T actual, params IResolveConstraint[] constraints) {
@@ -120,10 +128,17 @@ namespace FowlFever.Testing {
                    .Invoke();
         }
 
-        public static void Unless<T>(ActualValueDelegate<T> actual, params IResolveConstraint[] constraints) {
+        public static void Unless<T>(Func<T> actual, params IResolveConstraint[] constraints) {
             Ignorer.Against(actual)
                    .And(constraints)
                    .Invoke();
+        }
+
+        /// <inheritdoc cref="Assert.Ignore(string?)"/>
+        /// <remarks>This is an alias for <see cref="Assert.Ignore(string?)"/>.</remarks>
+        [ContractAnnotation("=> stop")]
+        public static void This(string? message, Exception? inner = default) {
+            Assert.Ignore(message, inner);
         }
     }
 }

@@ -15,18 +15,13 @@ namespace FowlFever.BSharp.Optional {
         }
 
         [Pure]
+        public static Optional<T> ToOptional<T>(this T? nullableValue) {
+            return nullableValue == null ? Optional.Empty<T>() : Optional.Of(nullableValue);
+        }
+
+        [Pure]
         public static Optional<T> ToOptional<T>(this T? nullableValue) where T : struct {
             return nullableValue.HasValue ? Optional.Of(nullableValue.Value) : default;
-        }
-
-        [Pure]
-        public static T? ToNullable<T>(this IOptional<T> optional) where T : struct {
-            return optional.OrElse(default);
-        }
-
-        [Pure]
-        public static T? ToNullable<T>(this IOptional<T?> optional) where T : struct {
-            return optional.OrElse(default);
         }
     }
 }
