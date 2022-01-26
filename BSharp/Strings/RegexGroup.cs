@@ -122,6 +122,10 @@ namespace FowlFever.BSharp.Strings {
             };
         }
 
+        public override string ToString() {
+            return Pattern;
+        }
+
         /// <param name="name"><see cref="Name"/></param>
         /// <param name="subexpression"><see cref="Subexpression"/></param>
         /// <returns>a <see cref="RegexGroupStyle.Named"/> <see cref="RegexGroup"/></returns>

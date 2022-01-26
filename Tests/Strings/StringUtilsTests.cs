@@ -577,14 +577,97 @@ a
         [TestCase("_a",        "b_",    "_",    "_a_b_")]
         [TestCase("a(hi)(hi)", "(hi)b", "(hi)", "a(hi)b")]
         [TestCase(null,        null,    null,   "")]
+        [TestCase("a/",        "/b",    "/",    "a/b")]
+        [TestCase("a--",       "b",     "-",    "a-b")]
+        [TestCase("_a",        "b_",    "_",    "_a_b_")]
+        [TestCase(null,        "b",     "!!",   "b")]
+        [TestCase("a",         null,    "!!",   "a")]
+        [TestCase(null,        null,    "!",    "")]
+        [TestCase("",          "a",     "!!",   "!!a")]
+        [TestCase(" ",         " ",     "!!",   " !! ")]
+        [TestCase(null,        "b",     "b",    "b")]
+        [TestCase(null,        "bb",    "b",    "bb")]
         public void JoinWith(
-            string first,
-            string second,
-            string separator,
+            string? first,
+            string? second,
+            string? separator,
+            string  expected
+        ) {
+            Assert.That(first.JoinWith(second, separator), Is.EqualTo(expected), $"[{first.Prettify()}] joined with [{second.Prettify()}] via [{separator}]");
+        }
+
+        #endregion
+
+        #region Limit
+
+        [TestCase("a1",       @"\d",    3, "a1")]
+        [TestCase("a12",      @"\d",    3, "a12")]
+        [TestCase("a123",     @"\d",    3, "a123")]
+        [TestCase("a1234",    @"\d",    3, "a123")]
+        [TestCase("a12345",   @"\d",    3, "a123")]
+        [TestCase("t1",       @"\d{2}", 2, "t1")]
+        [TestCase("t12",      @"\d{2}", 2, "t12")]
+        [TestCase("t123",     @"\d{2}", 2, "t123")]
+        [TestCase("t1234",    @"\d{2}", 2, "t1234")]
+        [TestCase("t12345",   @"\d{2}", 2, "t12345")]
+        [TestCase("t123456",  @"\d{2}", 2, "t1234")]
+        [TestCase("t123456x", @"\d{2}", 2, "t123456x")]
+        public void Limit(
+            string input,
+            string trimPattern,
+            int    max,
             string expected
         ) {
-            Assert.That(first.JoinWith(second, separator), Is.EqualTo(expected));
+            Assert.That(input.Limit(trimPattern, max), Is.EqualTo(expected));
         }
+
+        [TestCase("1a",       @"\d",    3, "1a")]
+        [TestCase("12a",      @"\d",    3, "12a")]
+        [TestCase("123a",     @"\d",    3, "123a")]
+        [TestCase("1234a",    @"\d",    3, "234a")]
+        [TestCase("12345a",   @"\d",    3, "345a")]
+        [TestCase("1t",       @"\d{2}", 2, "1t")]
+        [TestCase("12t",      @"\d{2}", 2, "12t")]
+        [TestCase("123t",     @"\d{2}", 2, "123t")]
+        [TestCase("1234t",    @"\d{2}", 2, "1234t")]
+        [TestCase("12345t",   @"\d{2}", 2, "12345t")]
+        [TestCase("123456t",  @"\d{2}", 2, "3456t")]
+        [TestCase("x123456t", @"\d{2}", 2, "x123456t")]
+        public void LimitStart(
+            string input,
+            string trimPattern,
+            int    max,
+            string expected
+        ) {
+            Assert.That(input.LimitStart(trimPattern, max), Is.EqualTo(expected));
+        }
+
+        #region Constrain
+
+        [TestCase("a1",       @"\d",    "9",   2, 3, "a19")]
+        [TestCase("a12",      @"\d",    "9",   2, 3, "a12")]
+        [TestCase("a123",     @"\d",    "9",   2, 3, "a123")]
+        [TestCase("a1234",    @"\d",    "9",   2, 3, "a123")]
+        [TestCase("a12345",   @"\d",    "9",   2, 3, "a123")]
+        [TestCase("t1",       @"\d{2}", "xy9", 2, 2, "t1xy9xy9")]
+        [TestCase("t12",      @"\d{2}", "xy9", 2, 2, "t12xy9")]
+        [TestCase("t123",     @"\d{2}", "xy9", 2, 2, "t123xy9")]
+        [TestCase("t1234",    @"\d{2}", "xy9", 2, 2, "t1234")]
+        [TestCase("t12345",   @"\d{2}", "xy9", 2, 2, "t12345")]
+        [TestCase("t123456",  @"\d{2}", "xy9", 2, 2, "t1234")]
+        [TestCase("t123456x", @"\d{2}", "xy9", 2, 2, "t123456xxy9xy9")]
+        public void Constrain(
+            string input,
+            string trimPattern,
+            string padString,
+            int    min,
+            int    max,
+            string expected
+        ) {
+            Assert.That(input.ForceEndingPattern(new Regex(trimPattern), padString, min, max), Is.EqualTo(expected));
+        }
+
+        #endregion
 
         #endregion
     }

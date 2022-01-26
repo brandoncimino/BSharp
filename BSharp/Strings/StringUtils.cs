@@ -162,6 +162,9 @@ namespace FowlFever.BSharp.Strings {
         /// <summary>
         /// Joins <paramref name="first"/> and <paramref name="second"/> together by a <b>single instance</b> of <paramref name="separator"/>.
         /// </summary>
+        /// <remarks>
+        /// Note that <paramref name="separator"/> won't removed unnecessarily.
+        /// </remarks>
         /// <example>
         /// <code><![CDATA[
         /// "a/".JoinWith("/b","/")  →  "a/b"
@@ -178,7 +181,13 @@ namespace FowlFever.BSharp.Strings {
         /// <param name="second"></param>
         /// <param name="separator"></param>
         /// <returns></returns>
-        public static string JoinWith(this string? first, string? second, string? separator) {
+        public static string JoinWith(
+            this string? first,
+            string?      second,
+            string?      separator,
+            int          min = 0,
+            int          max = 1
+        ) {
             separator ??= "";
             first     =   first?.TrimEnd(separator)    ?? "";
             second    =   second?.TrimStart(separator) ?? "";
@@ -347,7 +356,13 @@ namespace FowlFever.BSharp.Strings {
         /// <param name="trail">the <see cref="string"/> used to indicated that <paramref name="self"/> has been <see cref="Truncate"/>d</param>
         /// <returns>a <see cref="string"/> with a <see cref="string.Length"/> of <paramref name="desiredLength"/></returns>
         /// <exception cref="ArgumentException"></exception>
-        public static string ForceToLength(this string? self, [ValueRange(0, long.MaxValue)] int desiredLength, string? filler = " ", string? trail = Ellipsis) {
+        public static string ForceToLength(
+            this string? self,
+            [ValueRange(0, long.MaxValue)]
+            int desiredLength,
+            string? filler = " ",
+            string? trail  = Ellipsis
+        ) {
             self ??= "";
 
             return self.Length.CompareTo(desiredLength).Sign() switch {
@@ -474,6 +489,133 @@ namespace FowlFever.BSharp.Strings {
             return match.Success ? match.Groups["trimmed"].Value : input;
         }
 
+        private static string _Limit(
+            string input,
+            Regex  trimPattern,
+            int    maxKept,
+            bool   fromStart
+        ) {
+            var keep = $"({trimPattern}){{{maxKept}}}";
+            var drop = $"({trimPattern})*";
+
+            var pattern = fromStart
+                              ? new Regex($"^{drop}(?<final>{keep}.*?)$", RegexOptions.RightToLeft)
+                              : new Regex($"^(?<final>.*?{keep}){drop}$");
+
+            var match = pattern.Match(input);
+            return match.Success ? match.Groups["final"].Value : input;
+        }
+
+        [Pure]
+        public static string Limit(
+            this string input,
+            Regex       trimPattern,
+            int         maxKept
+        ) {
+            return _Limit(input, trimPattern, maxKept, false);
+        }
+
+        [Pure]
+        public static string Limit(this string input, string trimString, int maxKept) {
+            return Limit(input, new Regex(Regex.Escape(trimString)), maxKept);
+        }
+
+        [Pure]
+        public static string LimitStart(
+            this string input,
+            Regex       trimPattern,
+            int         maxKept
+        ) {
+            return _Limit(input, trimPattern, maxKept, true);
+        }
+
+        [Pure]
+        public static string LimitStart(this string input, string trimString, int maxKept) {
+            return LimitStart(input, new Regex(Regex.Escape(trimString)), maxKept);
+        }
+
+        private static string _ForcePattern(
+            this string input,
+            Regex       trimPattern,
+            string      padString,
+            [NonNegativeValue]
+            int minKept,
+            [NonNegativeValue]
+            int maxKept,
+            bool fromStart
+        ) {
+            // For some stupid reason, Rider doesn't understand it's own "NonNegativeValue" annotation, and thinks it means "Strictly Positive Value" -_-
+            // ReSharper disable once ConditionIsAlwaysTrueOrFalse
+            if (minKept < 0 || minKept > maxKept) {
+                throw new ArgumentOutOfRangeException(nameof(minKept), minKept, $"Must be >= 0 and <= {nameof(maxKept)} ({maxKept})");
+            }
+
+            if (maxKept <= 0 || maxKept < minKept) {
+                throw new ArgumentOutOfRangeException(nameof(maxKept), maxKept, $"Must be >= 0 and >= {nameof(minKept)} ({minKept})");
+            }
+
+            var pat = $"(?<chunks>{trimPattern})*";
+            pat = fromStart ? $"^{pat}" : $"{pat}$";
+            var match = input.Match(pat);
+            if (match.Success) {
+                var grp      = match.Groups["chunks"];
+                var capCount = grp.Captures.Count;
+                // Console.WriteLine($"🧢 {capCount} [{minKept}..{maxKept}]");
+                if (capCount < minKept) {
+                    // Console.WriteLine($"Padding with {padString} * {minKept - capCount}");
+                    return input + padString.Repeat(minKept - capCount);
+                }
+
+                if (capCount > maxKept) {
+                    // Console.WriteLine($"Trimming {trimPattern} * {capCount - maxKept}");
+                    return input.TrimEnd(trimPattern, capCount - maxKept);
+                }
+            }
+
+            return input;
+        }
+
+        /// <summary>
+        /// Ensures that there are between <paramref name="minKept"/> and <paramref name="maxKept"/> instances of <paramref name="trimPattern"/> at the <b>end</b>
+        /// of this <see cref="string"/>.
+        /// <br/>
+        /// If there are too many, they are removed.
+        /// <br/>
+        /// If there are too few, then <paramref name="padString"/> is repeated once for each missing <paramref name="trimPattern"/>.
+        /// </summary>
+        /// <param name="input">the original <see cref="string"/></param>
+        /// <param name="trimPattern">the <see cref="Regex"/> that should appear at the end of the <see cref="string"/></param>
+        /// <param name="padString">the <see cref="string"/> appended to <paramref name="input"/> if it doesn't have enough instances of <paramref name="trimPattern"/></param>
+        /// <param name="minKept">the <b>minimum</b> occurrences of <see cref="trimPattern"/>. Must be ≥ 0 and ≤ <paramref name="maxKept"/></param>
+        /// <param name="maxKept">the <b>maximum</b> occurrences of <see cref="trimPattern"/>. Must be ≥ <see cref="minKept"/> ≥ 0</param>
+        /// <returns>a new <see cref="string"/> with the desired ending</returns>
+        /// <exception cref="ArgumentOutOfRangeException">if <see cref="maxKept"/> ≥ <see cref="minKept"/> ≥ 0 isn't <c>true</c></exception>
+        [Pure]
+        public static string ForceEndingPattern(
+            this string input,
+            Regex       trimPattern,
+            string      padString,
+            [NonNegativeValue]
+            int minKept,
+            [NonNegativeValue]
+            int maxKept
+        ) {
+            return _ForcePattern(input, trimPattern, padString, minKept, maxKept, false);
+        }
+
+        [Pure]
+        public static string ForceStartingPattern(
+            this string input,
+            Regex       trimPattern,
+            string      padString,
+            [NonNegativeValue]
+            int minKept,
+            [NonNegativeValue]
+            int maxKept
+        ) {
+            return _ForcePattern(input, trimPattern, padString, minKept, maxKept, false);
+        }
+
         /// <summary>
         /// Removes up to <paramref name="numberToTrim"/> instances of <paramref name="trimString"/> from the <b>beginning</b> of <paramref name="input"/>.
         /// </summary>
@@ -527,7 +669,12 @@ namespace FowlFever.BSharp.Strings {
         /**
          * <inheritdoc cref="Splitex(string,string)"/>
          */
-        public static string[] Splitex(this string input, string pattern, RegexOptions options, TimeSpan matchTimeout) {
+        public static string[] Splitex(
+            this string  input,
+            string       pattern,
+            RegexOptions options,
+            TimeSpan     matchTimeout
+        ) {
             return Regex.Split(input, pattern, options, matchTimeout);
         }
 

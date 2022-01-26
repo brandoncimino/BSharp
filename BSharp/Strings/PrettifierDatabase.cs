@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Text.RegularExpressions;
 
 using FowlFever.BSharp.Collections;
 using FowlFever.BSharp.Strings.Prettifiers;
@@ -59,7 +60,6 @@ namespace FowlFever.BSharp.Strings {
                               .FirstOrDefault();
         }
 
-
         public static PrettifierDatabase GetDefaultPrettifiers() {
             return new PrettifierDatabase(
                 new Prettifier<string>(Convert.ToString),
@@ -68,6 +68,7 @@ namespace FowlFever.BSharp.Strings {
                 new Prettifier<Type>(InnerPretty.PrettifyType),
                 new Prettifier<IDictionary>(InnerPretty.PrettifyDictionary3),
                 new Prettifier<KeyedList<object, object>>(InnerPretty.PrettifyKeyedList),
+                new Prettifier<Match>(InnerPretty.PrettifyRegexMatch),
                 new Prettifier<(object, object)>(InnerPretty.Tuple2),
                 new Prettifier<(object, object, object)>(InnerPretty.Tuple3),
                 new Prettifier<(object, object, object, object)>(InnerPretty.Tuple4),
