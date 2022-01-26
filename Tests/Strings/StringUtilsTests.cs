@@ -33,7 +33,12 @@ namespace BSharp.Tests.Strings {
             "123",
             "yolo"
         )]
-        public void FillRight(string original, int desiredLength, string filler, string expectedResult) {
+        public void FillRight(
+            string original,
+            int    desiredLength,
+            string filler,
+            string expectedResult
+        ) {
             Assert.That(original.FillRight(desiredLength, filler), Is.EqualTo(expectedResult));
         }
 
@@ -105,7 +110,12 @@ namespace BSharp.Tests.Strings {
             "= Reasonable Heading =\n" +
             "======================"
         )]
-        public void FormatHeader(string heading, string border, string padding, string expectedResult) {
+        public void FormatHeader(
+            string heading,
+            string border,
+            string padding,
+            string expectedResult
+        ) {
             Assert.That(StringUtils.FormatHeading(heading, border, padding), Is.EqualTo(expectedResult));
         }
 
@@ -339,7 +349,13 @@ a
         [Test]
         [TestCase("a",  1, 2, ' ', "  a")]
         [TestCase(" b", 3, 1, ' ', "    b")]
-        public void IndentString(string original, int indentCount, int indentSize, char indentChar, string expectedString) {
+        public void IndentString(
+            string original,
+            int    indentCount,
+            int    indentSize,
+            char   indentChar,
+            string expectedString
+        ) {
             Assert.That(original.Indent(indentCount, indentSize, indentChar), Is.EqualTo(expectedString));
         }
 
@@ -443,24 +459,6 @@ a
             Assert.That(actualLines, Is.EqualTo(expectedLines));
         }
 
-        [Test]
-        public void FormatNUnitException() {
-            var exc = GetNUnitFailure(8, 5);
-
-            Console.WriteLine($"message:\n{exc.Message}\n");
-            Console.WriteLine($"stack:\n{exc.StackTrace}\n");
-        }
-
-        private Exception GetNUnitFailure(object actual, object expected) {
-            try {
-                Assert.That(actual, Is.EqualTo(expected));
-                return null;
-            }
-            catch (Exception e) {
-                return e;
-            }
-        }
-
         #endregion
 
         #region Trim
@@ -473,7 +471,12 @@ a
         [TestCase("a..........", ".",   1,    "a.........")]
         [TestCase("a..........", ".",   5,    "a.....")]
         [TestCase("a..........", ".",   99,   "a")]
-        public void TrimEnd(string input, string trimString, int? trimLimit, string expected) {
+        public void TrimEnd(
+            string input,
+            string trimString,
+            int?   trimLimit,
+            string expected
+        ) {
             Assert.That(input.TrimEnd(trimString, trimLimit), Is.EqualTo(expected));
         }
 
@@ -485,7 +488,12 @@ a
         [TestCase("987a123", @"\d{2}", 2,    "987a1")]
         [TestCase("987a123", @"\d{2}", 1,    "987a1")]
         [TestCase("987a123", @"\d{2}", null, "987a1")]
-        public void TrimEnd_Regex(string input, string trimPatternString, int? trimLimit, string expected) {
+        public void TrimEnd_Regex(
+            string input,
+            string trimPatternString,
+            int?   trimLimit,
+            string expected
+        ) {
             Assert.That(input.TrimEnd(new Regex(trimPatternString), trimLimit), Is.EqualTo(expected));
         }
 
@@ -499,7 +507,12 @@ a
         [TestCase(".....a",      "..",  2,    ".a")]
         [TestCase(".....a",      "..",  3,    ".a")]
         [TestCase(".....a",      ".",   3,    "..a")]
-        public void TrimStart(string input, string trimString, int? trimLimit, string expected) {
+        public void TrimStart(
+            string input,
+            string trimString,
+            int?   trimLimit,
+            string expected
+        ) {
             Assert.That(input.TrimStart(trimString, trimLimit), Is.EqualTo(expected));
         }
 
@@ -511,7 +524,12 @@ a
         [TestCase("987a123", @"\d{2}", 2,    "7a123")]
         [TestCase("987a123", @"\d{2}", 1,    "7a123")]
         [TestCase("987a123", @"\d{2}", null, "7a123")]
-        public void TrimStart_Regex(string input, string trimPatternString, int? trimLimit, string expected) {
+        public void TrimStart_Regex(
+            string input,
+            string trimPatternString,
+            int?   trimLimit,
+            string expected
+        ) {
             Assert.That(input.TrimStart(new Regex(trimPatternString), trimLimit), Is.EqualTo(expected));
         }
 
@@ -526,7 +544,13 @@ a
 
         [Test]
         [TestCase("123a123", @"\d+", "123a", "a123", "a")]
-        public void Trim_Regex(string input, string trimPattern, string expected_end, string expected_start, string expected_both) {
+        public void Trim_Regex(
+            string input,
+            string trimPattern,
+            string expected_end,
+            string expected_start,
+            string expected_both
+        ) {
             var pattern = new Regex(trimPattern);
             Asserter.Against(input)
                     .And(it => it.TrimEnd(pattern),   Is.EqualTo(expected_end))
@@ -553,7 +577,12 @@ a
         [TestCase("_a",        "b_",    "_",    "_a_b_")]
         [TestCase("a(hi)(hi)", "(hi)b", "(hi)", "a(hi)b")]
         [TestCase(null,        null,    null,   "")]
-        public void JoinWith(string first, string second, string separator, string expected) {
+        public void JoinWith(
+            string first,
+            string second,
+            string separator,
+            string expected
+        ) {
             Assert.That(first.JoinWith(second, separator), Is.EqualTo(expected));
         }
 
