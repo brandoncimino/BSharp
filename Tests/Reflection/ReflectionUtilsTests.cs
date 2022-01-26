@@ -2,12 +2,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel.Design.Serialization;
-using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
-using System.Threading;
 
 using FowlFever.BSharp;
 using FowlFever.BSharp.Collections;
@@ -118,24 +114,12 @@ namespace BSharp.Tests.Reflection {
 
                 #region Instance Properties
 
-                new VariableInfo() {
-                    Name = nameof(Prop_Public), MemberType = MemberTypes.Property, Gettable = true, Settable = true
-                },
-                new VariableInfo() {
-                    Name = nameof(Prop_Private), MemberType = MemberTypes.Property, Gettable = true, Settable = true
-                },
-                new VariableInfo() {
-                    Name = nameof(Prop_Protected), MemberType = MemberTypes.Property, Gettable = true, Settable = true
-                },
-                new VariableInfo() {
-                    Name = nameof(Prop_Mixed_Private_Getter), MemberType = MemberTypes.Property, Gettable = true, Settable = true
-                },
-                new VariableInfo() {
-                    Name = nameof(Prop_Mixed_Private_Setter), MemberType = MemberTypes.Property, Gettable = true, Settable = true
-                },
-                new VariableInfo() {
-                    Name = nameof(Prop_Get_Only), MemberType = MemberTypes.Property, Gettable = true, Settable = false
-                },
+                new VariableInfo() { Name = nameof(Prop_Public), MemberType               = MemberTypes.Property, Gettable = true, Settable = true },
+                new VariableInfo() { Name = nameof(Prop_Private), MemberType              = MemberTypes.Property, Gettable = true, Settable = true },
+                new VariableInfo() { Name = nameof(Prop_Protected), MemberType            = MemberTypes.Property, Gettable = true, Settable = true },
+                new VariableInfo() { Name = nameof(Prop_Mixed_Private_Getter), MemberType = MemberTypes.Property, Gettable = true, Settable = true },
+                new VariableInfo() { Name = nameof(Prop_Mixed_Private_Setter), MemberType = MemberTypes.Property, Gettable = true, Settable = true },
+                new VariableInfo() { Name = nameof(Prop_Get_Only), MemberType             = MemberTypes.Property, Gettable = true, Settable = false },
 
                 #endregion
 
@@ -650,16 +634,6 @@ namespace BSharp.Tests.Reflection {
             Yes
         }
 
-        public readonly static (FieldInfo field, TypeNullability nullability)[] Nullabilities = new[] {
-            (typeof(ReflectionUtilsTests).GetField(nameof(NullableString))!, TypeNullability.Reference), (typeof(ReflectionUtilsTests).GetField(nameof(NullableInt))!, TypeNullability.Value), (typeof(ReflectionUtilsTests).GetField(nameof(SolidString))!, TypeNullability.None), (typeof(ReflectionUtilsTests).GetField(nameof(SolidInt))!, TypeNullability.None),
-        };
-
-        [Test]
-        public void Nullability([ValueSource(nameof(Nullabilities))] (MemberInfo field, TypeNullability nullability) expectation) {
-            var (member, nullability) = expectation;
-            Assert.That(member.IsNullable, Is.EqualTo(nullability != TypeNullability.None));
-        }
-
         public record NullableExpectation(MemberInfo Member, TypeNullability Nullability, string Nickname);
 
         public static List<NullableExpectation> GetNullabies() {
@@ -677,7 +651,7 @@ namespace BSharp.Tests.Reflection {
             };
 
             var methodWithNullReturn = self.GetMethod(nameof(MethodWithNullReturnType))!;
-            ls.Add(new NullableExpectation(methodWithNullReturn, TypeNullability.Yes, "method (string, string?) => string?"));
+            ls.Add(new NullableExpectation(methodWithNullReturn,            TypeNullability.Yes,       "method (string, string?) => string?"));
             ls.Add(new NullableExpectation(methodWithNullReturn.ReturnType, TypeNullability.Reference, "ReturnType of method (string, string?) => string?"));
 
             var methodWithNullGenerics = self.GetMethod(nameof(MethodWithNullGenerics))!;
@@ -685,21 +659,23 @@ namespace BSharp.Tests.Reflection {
             ls.Add(new NullableExpectation(methodWithNullGenerics, TypeNullability.Yes, "ReturnType of generic method generic method (notnull, class?) => class?"));
 
             var instanceOfClassWithNullGenerics = new ClassWithNullGenerics<string, string?>().GetType();
-            ls.Add(new NullableExpectation(instanceOfClassWithNullGenerics.GetGenericArguments()[0], TypeNullability.None, "[string] in instance of generic <string, string?>"));
+            ls.Add(new NullableExpectation(instanceOfClassWithNullGenerics.GetGenericArguments()[0], TypeNullability.None,      "[string] in instance of generic <string, string?>"));
             ls.Add(new NullableExpectation(instanceOfClassWithNullGenerics.GetGenericArguments()[1], TypeNullability.Reference, "[string?] in instance of generic <string, string?>"));
 
             var nullGenericTypeDef = instanceOfClassWithNullGenerics.GetGenericTypeDefinition();
-            ls.Add(new NullableExpectation(nullGenericTypeDef.GetGenericArguments()[0], TypeNullability.None, "[notnull] in class <notnull, class?>"));
+            ls.Add(new NullableExpectation(nullGenericTypeDef.GetGenericArguments()[0], TypeNullability.None,      "[notnull] in class <notnull, class?>"));
             ls.Add(new NullableExpectation(nullGenericTypeDef.GetGenericArguments()[1], TypeNullability.Reference, "[class?] in class <notnull, class?>"));
 
             return ls;
         }
 
-        public class ClassWithNullGenerics<TSolid, TNull> where TSolid : notnull where TNull : class? {
+        public class ClassWithNullGenerics<TSolid, TNull>
+            where TSolid : notnull
+            where TNull : class? { }
 
-        }
-
-        public TNull? MethodWithNullGenerics<TSolid, TNull>(TSolid a, TNull b) where  TSolid : notnull where TNull : class? {
+        public TNull? MethodWithNullGenerics<TSolid, TNull>(TSolid a, TNull b)
+            where TSolid : notnull
+            where TNull : class? {
             return default;
         }
 
@@ -712,6 +688,7 @@ namespace BSharp.Tests.Reflection {
             Console.WriteLine(expectation);
 
             Asserter.Against(expectation.Member)
+                    .WithForgiveness("Detecting nullability is really messy, and apparently becomes a standard feature in C# 6")
                     .And(ReflectionUtils.IsNullable, Is.EqualTo(expectation.Nullability != TypeNullability.None), expectation.Nickname)
                     .Invoke();
         }

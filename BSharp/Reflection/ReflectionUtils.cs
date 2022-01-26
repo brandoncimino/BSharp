@@ -11,7 +11,6 @@ using System.Text.RegularExpressions;
 using FowlFever.BSharp.Attributes;
 using FowlFever.BSharp.Collections;
 using FowlFever.BSharp.Exceptions;
-using FowlFever.BSharp.Optional;
 using FowlFever.BSharp.Strings;
 using FowlFever.BSharp.Strings.Prettifiers;
 
@@ -108,7 +107,8 @@ namespace FowlFever.BSharp.Reflection {
             return field ?? throw ReflectionException.VariableNotFoundException(type, variableName);
         }
 
-        public static T ResetAllVariables<T>(this T objectWithVariables) where T : class {
+        public static T ResetAllVariables<T>(this T objectWithVariables)
+            where T : class {
             throw new NotImplementedException();
 
             var variables         = objectWithVariables.GetType().GetVariables();
@@ -854,10 +854,7 @@ namespace FowlFever.BSharp.Reflection {
 
         #region ToString
 
-        public enum Inheritance {
-            Inherited,
-            DeclaredOnly
-        }
+        public enum Inheritance { Inherited, DeclaredOnly }
 
         /// <summary>
         /// Returns this <see cref="Type"/>'s override of <see cref="object.ToString"/>, if present.
@@ -955,28 +952,13 @@ namespace FowlFever.BSharp.Reflection {
         /// <param name="memberInfo"></param>
         /// <returns></returns>
         private static bool _IsNullableAnnotated(this MemberInfo memberInfo) {
-            var attributes = memberInfo.CustomAttributes.ToList();
-
-
-            var nbt = attributes.FirstOrDefault(it => NullableAttributes.Contains(it.AttributeType.FullName))?._GetNullableByte();
-
-            if (attributes.Any(it => NullableAttributes.Contains(it.AttributeType.FullName))) {
-                Console.WriteLine($"-> Nullable via {nameof(_IsNullableAnnotated)}! [byte: {nbt}, {nbt==2}]\n{attributes.JoinLines()}");
-            }
-
-            return nbt == 2;
+            var attributes = memberInfo.GetCustomAttributesData().ToList();
+            return attributes.FirstOrDefault(it => NullableAttributes.Contains(it.AttributeType.FullName))?._GetNullableByte() == 2;
         }
 
         private static bool _IsInsideNullableContext(this MemberInfo memberInfo) {
-            var outerAttributes = memberInfo.DeclaringType?.CustomAttributes.ToList();
-
-            var nbt = outerAttributes?.FirstOrDefault(it => it.AttributeType.FullName == "System.Runtime.CompilerServices.NullableContextAttribute")?._GetNullableByte();
-
-            if (outerAttributes?.Any(it => it.AttributeType.FullName == "System.Runtime.CompilerServices.NullableContextAttribute") == true) {
-                Console.WriteLine($"-> Nullable via parent context! {outerAttributes.Where(it => it.AttributeType.FullName!.EndsWith("NullableContextAttribute")).JoinLines()}");
-            }
-
-            return nbt == 2;
+            var outerAttributes = memberInfo.DeclaringType?.GetCustomAttributesData().ToList();
+            return outerAttributes?.FirstOrDefault(it => it.AttributeType.FullName == "System.Runtime.CompilerServices.NullableContextAttribute")?._GetNullableByte() == 2;
         }
 
         public static bool IsNullable(this ParameterInfo parameterInfo) {
@@ -1007,8 +989,8 @@ namespace FowlFever.BSharp.Reflection {
                 FieldInfo f    => f.FieldType.IsNullable(),
                 PropertyInfo p => p.PropertyType.IsNullable(),
                 MethodInfo m   => m.ReturnType.IsNullable(),
-                Type t => t.IsNullable(),
-                _ => false
+                Type t         => t.IsNullable(),
+                _              => false
             };
         }
 

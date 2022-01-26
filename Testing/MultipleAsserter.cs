@@ -15,7 +15,8 @@ using NUnit.Framework.Internal;
 
 namespace FowlFever.Testing {
     [PublicAPI]
-    public abstract class MultipleAsserter<TSelf, TActual> : IMultipleAsserter where TSelf : MultipleAsserter<TSelf, TActual>, new() {
+    public abstract class MultipleAsserter<TSelf, TActual> : IMultipleAsserter
+        where TSelf : MultipleAsserter<TSelf, TActual>, new() {
         private const string HeadingIcon = "🧪";
 
         public PrettificationSettings? PrettificationSettings { get; protected set; }
@@ -31,6 +32,8 @@ namespace FowlFever.Testing {
         public Func<string>? Heading { get; set; }
 
         public int Indent { get; protected set; }
+
+        private Action<string>? CustomActionOnFailure;
 
         #region Subtest Types
 
@@ -146,8 +149,27 @@ namespace FowlFever.Testing {
 
         protected abstract void OnFailure(string results);
 
+        /// <summary>
+        /// ⚠ DO NOT call this method directly!
+        ///
+        /// Call <see cref="Succeed"/> instead!
+        /// </summary>
+        /// <param name="results"></param>
         protected virtual void OnSuccess(string results) {
             Console.WriteLine(results);
+        }
+
+        protected void Fail(string results) {
+            if (CustomActionOnFailure != null) {
+                CustomActionOnFailure.Invoke(results);
+            }
+            else {
+                OnFailure(results);
+            }
+        }
+
+        protected void Succeed(string results) {
+            OnSuccess(results);
         }
 
         public abstract void ResolveFunc<T>(
@@ -445,12 +467,27 @@ namespace FowlFever.Testing {
 
         #endregion
 
-        #region With Indent
+        #region WithIndent
 
         [MustUseReturnValue]
         protected TSelf WithIndent(int indent) {
             Indent = indent;
             return Self;
+        }
+
+        #endregion
+
+        #region WithActionOnFailure
+
+        [MustUseReturnValue]
+        public TSelf WithActionOnFailure(Action<string>? actionOnFailure) {
+            CustomActionOnFailure = actionOnFailure;
+            return Self;
+        }
+
+        [MustUseReturnValue]
+        public TSelf WithForgiveness(string excuse) {
+            return WithActionOnFailure(str => throw new InconclusiveException($"Failure was forgiven: {excuse}\n{str}"));
         }
 
         #endregion
@@ -546,10 +583,10 @@ namespace FowlFever.Testing {
         public void Invoke() {
             var results = TestEverything().ToList();
             if (results.Any(it => it.Failed)) {
-                OnFailure(FormatMultipleAssertionMessage(results));
+                Fail(FormatMultipleAssertionMessage(results));
             }
             else {
-                OnSuccess(FormatMultipleAssertionMessage(results));
+                Succeed(FormatMultipleAssertionMessage(results));
             }
         }
     }

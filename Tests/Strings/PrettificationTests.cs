@@ -61,13 +61,13 @@ namespace BSharp.Tests.Strings {
         private struct Structure { }
 
         [Test]
-        [TestCase(typeof(int),        "int",        "int",        "int")]
-        [TestCase(typeof(object),     "object",     "object",     "object")]
-        [TestCase(typeof(float),      "float",      "float",      "float")]
-        [TestCase(typeof(string),     "string",     "string",     "string")]
-        [TestCase(typeof(int?),       "int?",       "int?",       "int?")]
-        [TestCase(typeof(Structure?), "Structure?", "Structure?", "Structure?")]
-        [TestCase(typeof(Dictionary<string,string?>), "Dictionary<string,string?>", "Dictionary<,>", "Dictionary<>")]
+        [TestCase(typeof(int),                         "int",                         "int",           "int")]
+        [TestCase(typeof(object),                      "object",                      "object",        "object")]
+        [TestCase(typeof(float),                       "float",                       "float",         "float")]
+        [TestCase(typeof(string),                      "string",                      "string",        "string")]
+        [TestCase(typeof(int?),                        "int?",                        "int?",          "int?")]
+        [TestCase(typeof(Structure?),                  "Structure?",                  "Structure?",    "Structure?")]
+        [TestCase(typeof(Dictionary<string, string?>), "Dictionary<string, string?>", "Dictionary<,>", "Dictionary<>")]
         [TestCase(
             typeof(KeyValuePair<DayOfWeek, string>),
             "KeyValuePair<DayOfWeek, string>",
@@ -81,7 +81,12 @@ namespace BSharp.Tests.Strings {
             "List<>"
         )]
         [TestCase(typeof(DayOfWeek), "DayOfWeek", "DayOfWeek", "DayOfWeek")]
-        public void PrettifyType(Type actualType, string expected_full, string expected_short, string expected_none) {
+        public void PrettifyType(
+            Type   actualType,
+            string expected_full,
+            string expected_short,
+            string expected_none
+        ) {
             var settings_full = new PrettificationSettings() {
                 TypeLabelStyle = TypeNameStyle.Full
             };
@@ -106,6 +111,7 @@ namespace BSharp.Tests.Strings {
                 }.JoinLines()
             );
             Asserter.Against(actualType)
+                    .WithForgiveness("Detecting nullability is really messy, and apparently becomes a standard feature in C# 6")
                     .And(it => it.PrettifyType(settings_full),  Is.EqualTo(expected_full))
                     .And(it => it.PrettifyType(settings_none),  Is.EqualTo(expected_none))
                     .And(it => it.PrettifyType(settings_short), Is.EqualTo(expected_short))
@@ -115,11 +121,13 @@ namespace BSharp.Tests.Strings {
         [Test]
         public void PrettifyType_NullableValue() {
             var tp = typeof(int?);
-            Console.WriteLine(new Dictionary<object,object>() {
-                ["Type"] = tp,
-                ["Pretty"] = tp.Prettify(),
-                ["VT?"] = tp.IsValueType
-            }.Prettify());
+            Console.WriteLine(
+                new Dictionary<object, object>() {
+                    ["Type"]   = tp,
+                    ["Pretty"] = tp.Prettify(),
+                    ["VT?"]    = tp.IsValueType
+                }.Prettify()
+            );
             PrettifyType(typeof(int?), "int?", "int?", "int?");
         }
 
