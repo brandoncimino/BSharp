@@ -1,7 +1,10 @@
 using System;
+using System.Collections.Generic;
+using System.ComponentModel;
 using System.Data;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
+using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 
@@ -23,49 +26,59 @@ namespace FowlFever.BSharp.Exceptions;
 /// </remarks>
 [PublicAPI]
 public static class Must {
-    public static T NotBeNull<T>(string parameterName, T? actualValue, string methodName) where T : class? {
-        return actualValue ?? throw RejectArgument.WasNull(parameterName, actualValue, methodName);
+    public static T NotBeNull<T>(T? actualValue, string parameterName, string methodName) where T : class? {
+        return actualValue ?? throw RejectArgument.WasNull(actualValue, parameterName, methodName);
     }
 
     #region Numbers
 
-    public static T BeANumericValue<T>(string parameterName, T? actualValue, string methodName) {
+    public static T BeANumericValue<T>(T? actualValue, string parameterName, string methodName) {
         if (actualValue?.IsNumber() == true) {
             return actualValue;
         }
 
-        throw RejectArgument.WasNotANumericValue(parameterName, actualValue, methodName);
+        throw RejectArgument.WasNotANumericValue(actualValue, parameterName, methodName);
     }
 
-    public static T BePositive<T>(string parameterName, T? actualValue, string methodName) {
+    [NonNegativeValue]
+    public static T BePositive<T>(T? actualValue, string parameterName, string methodName) {
         if (actualValue != null && Mathb.IsPositive(actualValue)) {
             return actualValue;
         }
 
-        throw RejectArgument.WasNotPositive(parameterName, actualValue, methodName);
+        throw RejectArgument.WasNotPositive(actualValue, parameterName, methodName);
     }
 
-    public static T BeStrictlyPositive<T>(string parameterName, T? actualValue, string methodName) {
+    [NonNegativeValue]
+    public static T BeStrictlyPositive<T>(T? actualValue, string parameterName, string methodName) {
         if (actualValue != null && Mathb.IsStrictlyPositive(actualValue)) {
             return actualValue;
         }
 
-        throw RejectArgument.WasNotStrictlyPositive(parameterName, actualValue, methodName);
+        throw RejectArgument.WasNotStrictlyPositive(actualValue, parameterName, methodName);
     }
 
-    public static T BeNegative<T>(string parameterName, T? actualValue, string methodName) {
+    public static T BeNegative<T>(T? actualValue, string parameterName, string methodName) {
         if (actualValue != null && Mathb.IsNegative(actualValue)) {
             return actualValue;
         }
 
-        throw RejectArgument.WasNotNegative(parameterName, actualValue, methodName);
+        throw RejectArgument.WasNotNegative(actualValue, parameterName, methodName);
     }
 
     #endregion
 
     #region Strings
 
-    public static string NotBeBlank(string parameterName, string? actualValue, string methodName) {
+    /// <summary>
+    ///
+    /// </summary>
+    /// <param name="actualValue"></param>
+    /// <param name="parameterName"></param>
+    /// <param name="methodName"></param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentException"></exception>
+    public static string NotBeBlank(string? actualValue, string parameterName, string methodName) {
         if (actualValue?.IsNotBlank() == true) {
             return actualValue;
         }
@@ -73,12 +86,20 @@ public static class Must {
         throw RejectArgument.WasBlank(parameterName, actualValue, methodName);
     }
 
-    public static string NotBeEmpty(string parameterName, string? actualValue, string methodName) {
+    /// <summary>
+    ///
+    /// </summary>
+    /// <param name="actualValue"></param>
+    /// <param name="parameterName"></param>
+    /// <param name="methodName"></param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentException"></exception>
+    public static string NotBeEmpty(string? actualValue, string parameterName, string methodName) {
         if (actualValue?.IsNotEmpty() == true) {
             return actualValue;
         }
 
-        throw RejectArgument.WasEmpty(parameterName, actualValue, methodName);
+        throw RejectArgument.WasEmpty(actualValue, parameterName, methodName);
     }
 
     #endregion
@@ -87,46 +108,46 @@ public static class Must {
 public static class RejectArgument {
     private const string Icon = "🚮";
 
-    private static string GetPreamble<T>(string parameterName, T? actualValue, string methodName) {
+    private static string GetPreamble<T>(T? actualValue, string parameterName, string methodName) {
         return $"{Icon} {methodName} rejected parameter {parameterName}";
     }
 
-    public static ArgumentNullException WasNull<T>(string parameterName, T? actualValue, string methodName) where T : class? {
-        return new ArgumentNullException(parameterName, GetPreamble<T>(parameterName, null, methodName));
+    public static ArgumentNullException WasNull<T>(T? actualValue, string parameterName, string methodName) where T : class? {
+        return new ArgumentNullException(parameterName, GetPreamble(actualValue, parameterName, methodName));
     }
 
     #region Numbers
 
     [Pure]
-    public static ArgumentOutOfRangeException WasNotPositive<T>(string parameterName, T? actualValue, string methodName) {
+    public static ArgumentOutOfRangeException WasNotPositive<T>(T? actualValue, string parameterName, string methodName) {
         return new ArgumentOutOfRangeException(
             parameterName,
             actualValue,
-            $"{GetPreamble(parameterName, actualValue, methodName)}: Must be positive (x ≥ 0)!"
+            $"{GetPreamble(actualValue, parameterName, methodName)}: Must be positive (x ≥ 0)!"
         );
     }
 
     [Pure]
-    public static ArgumentOutOfRangeException WasNotStrictlyPositive<T>(string parameterName, T? actualValue, string methodName) {
+    public static ArgumentOutOfRangeException WasNotStrictlyPositive<T>(T? actualValue, string parameterName, string methodName) {
         return new ArgumentOutOfRangeException(
             parameterName,
             actualValue,
-            $"{GetPreamble(parameterName, actualValue, methodName)}: Must be strictly positive (x > 0)!"
+            $"{GetPreamble(actualValue, parameterName, methodName)}: Must be strictly positive (x > 0)!"
         );
     }
 
     [Pure]
-    public static ArgumentOutOfRangeException WasNotNegative<T>(string parameterName, T? actualValue, string methodName) {
+    public static ArgumentOutOfRangeException WasNotNegative<T>(T? actualValue, string parameterName, string methodName) {
         return new ArgumentOutOfRangeException(
             parameterName,
             actualValue,
-            $"{GetPreamble(parameterName, actualValue, methodName)}: Must be negative (x < 0)!"
+            $"{GetPreamble(actualValue, parameterName, methodName)}: Must be negative (x < 0)!"
         );
     }
 
     [Pure]
-    public static ArgumentException WasNotANumericValue<T>(string parameterName, T? actualValue, string methodName) {
-        var preamble = GetPreamble(parameterName, actualValue, methodName);
+    public static ArgumentException WasNotANumericValue<T>(T? actualValue, string parameterName, string methodName) {
+        var preamble = GetPreamble(actualValue, parameterName, methodName);
         var message  = $"{preamble}: [{typeof(T).Prettify()}]{actualValue} was not a numeric value!";
         return new ArgumentException(message, parameterName);
     }
@@ -136,13 +157,24 @@ public static class RejectArgument {
     #region Switches
 
     [Pure]
-    public static ArgumentException UnhandledSwitchBranch<T>(string parameterName, T? actualValue, string methodName) {
-        return new ArgumentException($"{GetPreamble(parameterName, actualValue, methodName)}: Value was unhandled by any switch branch!");
+    public static ArgumentException UnhandledSwitchBranch<T>(T? actualValue, string parameterName, string methodName) {
+        return new ArgumentException($"{GetPreamble(actualValue, parameterName, methodName)}: Value was unhandled by any switch branch!");
     }
 
     [Pure]
-    public static ArgumentException UnhandledSwitchType<T>(string parameterName, T? actualValue, string methodName) {
-        return new ArgumentException($"{GetPreamble(parameterName, actualValue, methodName)}: Value of type {actualValue?.GetType() ?? typeof(T)} was unhandled by any switch branch!");
+    public static ArgumentException UnhandledSwitchType<T>(T? actualValue, string parameterName, string methodName) {
+        return new ArgumentException($"{GetPreamble(actualValue, parameterName, methodName)}: Value of type {actualValue?.GetType() ?? typeof(T)} was unhandled by any switch branch!");
+    }
+
+    [Pure]
+    public static InvalidEnumArgumentException UnhandledSwitchEnum<T>(
+        T? actualValue,
+        string parameterName,
+        string methodName
+    ) where T : Enum {
+        return new InvalidEnumArgumentException(
+            $"{GetPreamble(actualValue, parameterName, methodName)}: The {typeof(T).Name} value [{actualValue.OrNullPlaceholder()}] was not handled by any branches of the switch statement!"
+        );
     }
 
     #endregion
@@ -150,13 +182,13 @@ public static class RejectArgument {
     #region Strings
 
     [Pure]
-    public static ArgumentException WasBlank(string parameterName, string? actualValue, string methodName) {
-        return new ArgumentException($"{GetPreamble(parameterName, actualValue, methodName)}: Must not be blank (null, empty, or whitespace)!");
+    public static ArgumentException WasBlank(string? actualValue, string parameterName, string methodName) {
+        return new ArgumentException($"{GetPreamble(actualValue, parameterName, methodName)}: Must not be blank (null, empty, or whitespace)!");
     }
 
     [Pure]
-    public static ArgumentException WasEmpty(string parameterName, string? actualValue, string methodName) {
-        return new ArgumentException($"{GetPreamble(parameterName, actualValue, methodName)}: Must not be null or an empty string!");
+    public static ArgumentException WasEmpty(string? actualValue, string parameterName, string methodName) {
+        return new ArgumentException($"{GetPreamble(actualValue, parameterName, methodName)}: Must not be null or an empty string!");
     }
 
     #endregion
