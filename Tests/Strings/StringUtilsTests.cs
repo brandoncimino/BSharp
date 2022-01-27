@@ -344,8 +344,8 @@ a
             string relativeString,
             string absoluteString
         ) {
-            Assert.That(original.Indent(indentCount, indentString, StringUtils.IndentMode.Relative), Is.EqualTo(relativeString));
-            Assert.That(original.Indent(indentCount, indentString, StringUtils.IndentMode.Absolute), Is.EqualTo(absoluteString));
+            Assert.That(original.Indent(indentCount, indentString, StringUtils.IndentMode.Relative).Single(), Is.EqualTo(relativeString));
+            Assert.That(original.Indent(indentCount, indentString, StringUtils.IndentMode.Absolute).Single(), Is.EqualTo(absoluteString));
         }
 
         public class IndentExpectation {
