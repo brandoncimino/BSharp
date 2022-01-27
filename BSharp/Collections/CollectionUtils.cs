@@ -239,11 +239,10 @@ namespace FowlFever.BSharp.Collections {
         /// <summary>
         /// An extension method version of <see cref="string.Join(string,System.Collections.Generic.IEnumerable{string})"/> that joins using the <c>\n</c> line break.
         /// </summary>
-        /// <remarks>Null <see cref="IEnumerable{T}"/>s are treated as <see cref="Enumerable.Empty{TResult}"/>.</remarks>
         /// <param name="enumerable">the <see cref="IEnumerable{T}"/> whose entries will be joined</param>
         /// <typeparam name="T">the type of each <see cref="IEnumerable{T}"/> entry </typeparam>
         /// <returns>the result of <see cref="string.Join(string,System.Collections.Generic.IEnumerable{string})"/></returns>
-        public static string JoinLines<T>(this IEnumerable<T?>? enumerable) {
+        public static string JoinLines<T>(this IEnumerable<T?> enumerable) {
             return string.Join("\n", enumerable.OrEmpty());
         }
 
