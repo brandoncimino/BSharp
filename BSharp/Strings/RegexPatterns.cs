@@ -31,4 +31,9 @@ public static class RegexPatterns {
     public static Regex OuterMatch(Regex originalPattern) {
         return new Regex(OuterMatch(originalPattern.ToString()));
     }
+
+    [Pure]
+    public static Regex Escaped(string exactString) {
+        return new Regex(Regex.Escape(exactString));
+    }
 }
