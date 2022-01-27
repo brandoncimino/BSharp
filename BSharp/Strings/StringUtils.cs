@@ -480,19 +480,26 @@ namespace FowlFever.BSharp.Strings {
             var pat = $"(?<chunks>{trimPattern})*";
             pat = fromStart ? $"^{pat}" : $"{pat}$";
             var match = input.Match(pat);
+            var grp   = match.Groups["chunks"];
 
             if (match.Success == false) {
                 return input;
             }
 
-            var grp      = match.Groups["chunks"];
             var capCount = grp.Captures.Count;
 
             if (capCount < minKept) {
-                return input + padString.Repeat(minKept - capCount);
+                var additional = padString.Repeat(minKept - capCount);
+                return fromStart ? $"{additional}{input}" : $"{input}{additional}";
             }
 
-            return capCount > maxKept ? input.TrimEnd(trimPattern, capCount - maxKept) : input;
+            // ReSharper disable once InvertIf
+            if (capCount > maxKept) {
+                var numberToTrim = capCount - maxKept;
+                return fromStart ? TrimStart(input, trimPattern, numberToTrim) : TrimEnd(input, trimPattern, numberToTrim);
+            }
+
+            throw new BrandonException("Shouldn't have been able to reach this");
         }
 
         /// <summary>
@@ -533,7 +540,7 @@ namespace FowlFever.BSharp.Strings {
             [NonNegativeValue]
             int maxKept
         ) {
-            return _ForcePattern(input, trimPattern, padString, minKept, maxKept, false);
+            return _ForcePattern(input, trimPattern, padString, minKept, maxKept, true);
         }
 
         [Pure]
@@ -551,11 +558,11 @@ namespace FowlFever.BSharp.Strings {
             this string input,
             string      startingString,
             [NonNegativeValue]
-            int minimumStartingStrings,
+            int minKept,
             [NonNegativeValue]
-            int maximumStartingStrings
+            int maxKept
         ) {
-            throw new NotImplementedException();
+            return input.ForceStartingPattern(RegexPatterns.Escaped(startingString), startingString, minKept, maxKept);
         }
 
         /// <summary>

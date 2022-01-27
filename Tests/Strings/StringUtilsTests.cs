@@ -334,6 +334,19 @@ a
 
         #region Indent
 
+        [TestCase("-b", "-", 3, 5,"---b")]
+        [TestCase("DDDDabcDD", "D", 2, 3, "DDDabcDD")]
+        [TestCase("Dx","DD",2,4,"DDDDDx")]
+        public void ForceStartingString(
+            string input,
+            string startingString,
+            int startingCount_min,
+            int startingCount_max,
+            string expected
+        ) {
+            Assert.That(input.ForceStartingString(startingString, startingCount_min, startingCount_max), Is.EqualTo(expected));
+        }
+
         [Test]
         [TestCase("a",  2,  "-", "--a", "--a")]
         [TestCase("-b", 3,  "-", "----b", "---b")]
@@ -344,8 +357,10 @@ a
             string relativeString,
             string absoluteString
         ) {
-            Assert.That(original.Indent(indentCount, indentString, StringUtils.IndentMode.Relative).Single(), Is.EqualTo(relativeString));
-            Assert.That(original.Indent(indentCount, indentString, StringUtils.IndentMode.Absolute).Single(), Is.EqualTo(absoluteString));
+            Assert.Multiple(() => {
+                Assert.That(original.Indent(indentCount, indentString, StringUtils.IndentMode.Relative).Single(), Is.EqualTo(relativeString), "Relative");
+                Assert.That(original.Indent(indentCount, indentString, StringUtils.IndentMode.Absolute).Single(), Is.EqualTo(absoluteString), "Absolute");
+            });
         }
 
         public class IndentExpectation {
