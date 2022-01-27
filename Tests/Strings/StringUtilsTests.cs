@@ -11,6 +11,7 @@ using FowlFever.BSharp.Strings;
 using FowlFever.Testing;
 
 using NUnit.Framework;
+using NUnit.Framework.Constraints;
 
 using Is = NUnit.Framework.Is;
 
@@ -571,13 +572,13 @@ a
         [TestCase(null,        "b",     "-",    "b")]
         [TestCase("a",         null,    "-",    "a")]
         [TestCase(null,        null,    "-",    "")]
-        [TestCase("a",         "b",     null,   "ab")]
-        [TestCase("a",         "b",     "a",    "b")]
-        [TestCase("a",         "b",     "b",    "a")]
+        [TestCase("a",         "b",     null,   "🧨")]
+        [TestCase("a",         "b",     "a",    "ab")]
+        [TestCase("a",         "b",     "b",    "ab")]
         [TestCase("#YO",       "LO",    "YO",   "#YOLO")]
         [TestCase("_a",        "b_",    "_",    "_a_b_")]
         [TestCase("a(hi)(hi)", "(hi)b", "(hi)", "a(hi)b")]
-        [TestCase(null,        null,    null,   "")]
+        [TestCase(null,        null,    null,   "🧨")]
         [TestCase("a/",        "/b",    "/",    "a/b")]
         [TestCase("a--",       "b",     "-",    "a-b")]
         [TestCase("_a",        "b_",    "_",    "_a_b_")]
@@ -587,14 +588,15 @@ a
         [TestCase("",          "a",     "!!",   "!!a")]
         [TestCase(" ",         " ",     "!!",   " !! ")]
         [TestCase(null,        "b",     "b",    "b")]
-        [TestCase(null,        "bb",    "b",    "bb")]
+        [TestCase(null,        "bb",    "b",    "b")]
         public void JoinWith(
             string? first,
             string? second,
             string? separator,
             string  expected
         ) {
-            Assert.That(first.JoinWith(second, separator), Is.EqualTo(expected), $"[{first.Prettify()}] joined with [{second.Prettify()}] via [{separator}]");
+            IResolveConstraint expectation = expected == "🧨" ? Throws.InstanceOf(typeof(ArgumentException)) : Is.EqualTo(expected);
+            Assert.That(() => first.JoinWith(second, separator!), expectation, $"[{first.Prettify()}] joined with [{second.Prettify()}] via [{separator}]");
         }
 
         #endregion

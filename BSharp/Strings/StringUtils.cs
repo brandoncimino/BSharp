@@ -216,18 +216,53 @@ namespace FowlFever.BSharp.Strings {
         /// <param name="first"></param>
         /// <param name="second"></param>
         /// <param name="separator"></param>
+        /// <param name="min"></param>
+        /// <param name="max"></param>
         /// <returns></returns>
         public static string JoinWith(
             this string? first,
             string?      second,
-            string?      separator,
-            int          min = 0,
+            string      separator,
+            int          min = 1,
             int          max = 1
         ) {
-            separator ??= "";
-            first     =   first?.TrimEnd(separator)    ?? "";
-            second    =   second?.TrimStart(separator) ?? "";
-            return string.Join(separator, first, second);
+            //TODO: this will be very inefficient, but who cares!
+            var subExp       = $"(?<separators>{Regex.Escape(separator)})+";
+            Console.WriteLine($"subExp: {subExp}");
+
+            var firstPattern = new Regex(@$"^(?<base>.*?){subExp}$");
+            var firstMatch   = first?.Match(firstPattern);
+            Console.WriteLine("1 - "+firstMatch.Prettify());
+            var firstBase  = firstMatch?.Groups["base"];
+            var firstSep   = firstMatch?.Groups["separators"];
+            var firstCount = firstSep?.Captures.Count;
+            var firstValue = firstMatch?.Success == true ? firstBase?.Value : first;
+
+            var secondPattern = new Regex($"^{subExp}(?<base>.*)$");
+            var secondMatch   = second?.Match(secondPattern);
+            Console.WriteLine("2 - "+secondMatch.Prettify());
+            var secondBase  = secondMatch?.Groups["base"];
+            var secondSep   = secondMatch?.Groups["separators"];
+            var secondCount = secondSep?.Captures.Count;
+            var secondValue = secondMatch?.Success == true ? secondBase?.Value : second;
+
+            var capTotal = firstCount + secondCount;
+
+            //TODO: this could probably be in its own method
+            string trueCenter;
+
+            if (capTotal > max) {
+                trueCenter = separator.Repeat(max);
+            }
+            else if (capTotal < min) {
+                trueCenter = separator.Repeat(min);
+            }
+            else {
+                trueCenter = firstSep?.Value + secondSep?.Value;
+            }
+
+            // return string.Join(separator, first, second);
+            return $"{firstValue}{trueCenter}{secondValue}";
         }
 
         #region Padding, filling, truncating, trimming, and trailing
