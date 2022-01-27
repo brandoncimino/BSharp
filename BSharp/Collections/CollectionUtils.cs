@@ -1124,7 +1124,7 @@ namespace FowlFever.BSharp.Collections {
          */
         [Pure]
         [LinqTunnel]
-        public static T?[] EmptyIfNull<T>(this T?[]? source) {
+        public static T[] EmptyIfNull<T>(this T[]? source) {
             return source ?? Array.Empty<T>();
         }
 
@@ -1133,7 +1133,7 @@ namespace FowlFever.BSharp.Collections {
          */
         [Pure]
         [LinqTunnel]
-        public static T?[] OrEmpty<T>(this T?[]? source) {
+        public static T[] OrEmpty<T>(this T[]? source) {
             return source.EmptyIfNull();
         }
 
