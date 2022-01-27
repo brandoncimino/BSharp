@@ -812,16 +812,6 @@ namespace FowlFever.BSharp.Collections {
             return additionalValuesThatMightBeNull == null ? source : source.Concat(additionalValuesThatMightBeNull.NonNull());
         }
 
-        public static void t2() {
-            List<string>  lsr = new List<string>() { "a", "b" };
-            List<string?> lsn = new List<string?>() { "a" };
-
-            var lsrr = lsr.AppendNonNull(lsr);
-            var lsrn = lsr.AppendNonNull(lsn);
-            var lsnr = lsn.AppendNonNull(lsr);
-            var lsnn = lsn.AppendNonNull(lsn);
-        }
-
         /**
          * <inheritdoc cref="AppendNonNull{T}(System.Collections.Generic.IEnumerable{T},T)"/>
          */
