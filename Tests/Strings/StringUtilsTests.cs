@@ -5,6 +5,7 @@ using System.Text.RegularExpressions;
 
 using FowlFever.BSharp;
 using FowlFever.BSharp.Collections;
+using FowlFever.BSharp.Enums;
 using FowlFever.BSharp.Strings;
 using FowlFever.Testing;
 
@@ -347,26 +348,26 @@ a
         #region Indent
 
         [Test]
-        [TestCase("a",  1, 2, ' ', "  a")]
-        [TestCase(" b", 3, 1, ' ', "    b")]
+        [TestCase("a",  2, /*2,*/ "-", "--a", "--a")]
+        [TestCase("-b", 3, /*1,*/ "-", "----b", "---b")]
         public void IndentString(
             string original,
             int    indentCount,
-            int    indentSize,
-            char   indentChar,
-            string expectedString
+            string indentString,
+            string relativeString,
+            string absoluteString
         ) {
-            Assert.That(original.Indent(indentCount, indentSize, indentChar), Is.EqualTo(expectedString));
+            Assert.That(original.Indent(indentCount, indentString, StringUtils.IndentMode.Relative), Is.EqualTo(relativeString));
+            Assert.That(original.Indent(indentCount, indentString, StringUtils.IndentMode.Absolute), Is.EqualTo(absoluteString));
         }
 
-        public class IndentExpectation {
-            public IEnumerable<string> OriginalLines;
-            public IEnumerable<string> ExpectedLines;
-            public int                 IndentCount;
-            public int                 IndentSize;
-            public char                IndentChar;
+        public record IndentExpectation {
+            public IEnumerable<string> OriginalLines { get; init; }
+            public IEnumerable<string> ExpectedLines { get; init; }
+            public int                 IndentCount   { get; init; }
+            public string              IndentString  { get; init; }
 
-            public IEnumerable<string> ActualLines => OriginalLines.Indent(IndentCount, IndentSize, IndentChar);
+            public IEnumerable<string> ActualLines => OriginalLines.Indent(IndentCount, IndentString);
         }
 
         public static IEnumerable<IndentExpectation> GetIndentExpectations() {
@@ -384,18 +385,16 @@ a
                         "  c",
                         "   d"
                     },
-                    IndentChar  = StringUtils.DefaultIndentChar,
+                    IndentString  = StringUtils.DefaultIndentString,
                     IndentCount = 1,
-                    IndentSize  = StringUtils.DefaultIndentSize
                 },
                 new IndentExpectation() {
                     OriginalLines = new[] {
                         "  a",
                         "    b"
                     },
-                    IndentChar  = '%',
+                    IndentString  = "%%%%",
                     IndentCount = 3,
-                    IndentSize  = 4,
                     ExpectedLines = new[] {
                         "%%%%%%%%%%%%  a",
                         "%%%%%%%%%%%%    b"

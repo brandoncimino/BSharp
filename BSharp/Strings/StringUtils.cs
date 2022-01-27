@@ -1,13 +1,18 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.Contracts;
+using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Reflection;
+using System.Text;
 using System.Text.RegularExpressions;
 
 using FowlFever.BSharp.Collections;
 using FowlFever.BSharp.Enums;
+using FowlFever.BSharp.Exceptions;
 using FowlFever.BSharp.Optional;
 using FowlFever.Conjugal.Affixing;
 
@@ -20,7 +25,8 @@ using Pure = System.Diagnostics.Contracts.PureAttribute;
 namespace FowlFever.BSharp.Strings {
     [PublicAPI]
     public static class StringUtils {
-        public const int DefaultIndentSize = 2;
+        public const int DefaultIndentSize   = 2;
+        public const string DefaultIndentString = "  ";
 
         /// <summary>
         /// A <see cref="string"/> for a single-glyph <a href="https://en.wikipedia.org/wiki/Ellipsis">ellipsis</a>, i.e. <c>'…'</c>.
@@ -58,38 +64,70 @@ namespace FowlFever.BSharp.Strings {
             "\r\n", "\r", "\n"
         };
 
+        #region Indentation
+
         /// <summary>
-        /// Prepends <paramref name="toIndent"/>.
+        /// Determines how <see cref="StringUtils.Indent(string,int,string,FowlFever.BSharp.Strings.StringUtils.IndentMode)">Indent() methods</see> should be applied.
         /// </summary>
-        /// <param name="toIndent">The <see cref="string" /> to be indented.</param>
-        /// <param name="indentCount">The number of indentations (i.e. number of times hitting "tab").</param>
-        /// <param name="indentSize">The <see cref="string.Length"/> of each individual indentation. Defaults to <see cref="DefaultIndentSize"/>.</param>
-        /// <param name="indentChar">The <see cref="char"/> that is <see cref="Repeat(char,int,string)"/>ed to build a single indentation. Defaults to <see cref="DefaultIndentChar"/>.</param>
-        /// <returns>The indented <see cref="string"/>.</returns>
-        /// <seealso cref="Indent(IEnumerable{string},int,int,char)"/>
-        [ContractAnnotation("toIndent:null => null")]
-        [ContractAnnotation("toIndent:notnull => notnull")]
-        public static string? Indent(
-            this string? toIndent,
+        public enum IndentMode { Relative, Absolute }
+
+        /// <summary>
+        /// Prepends <paramref name="toIndent"/> with <paramref name="indentCount"/>
+        /// </summary>
+        /// <param name="toIndent">the <see cref="string" /> to be indented</param>
+        /// <param name="indentCount">the number of indentations (i.e. number of times hitting "tab")</param>
+        /// <param name="indentString">the <see cref="string"/> used for each indent. Defaults to <see cref="DefaultIndentString"/></param>
+        /// <param name="indentMode">either <see cref="IndentMode.Relative"/> or <see cref="IndentMode.Absolute"/></param>
+        /// <exception cref="ArgumentOutOfRangeException">if <see cref="IndentMode.Absolute"/> is used when <paramref name="indentCount"/> is negative</exception>
+        /// <exception cref="ArgumentException">if <paramref name="indentString"/> <see cref="IsEmpty"/></exception>
+        /// <returns>the indented <see cref="string"/></returns>
+        /// <seealso cref="Indent(string,int,string,FowlFever.BSharp.Strings.StringUtils.IndentMode)"/>
+        public static IEnumerable<string> Indent(
+            this string toIndent,
+            int indentCount = 1,
+            string indentString = DefaultIndentString,
+            IndentMode indentMode = IndentMode.Relative
+        ) {
+            Must.NotBeEmpty(indentString, nameof(indentString), nameof(Indent));
+            return Enumerable.Repeat(toIndent, 1).Indent(indentCount, indentString, indentMode);
+        }
+
+        public static IEnumerable<string> Indent(
+            this IEnumerable<string> toIndent,
+            int                indentCount  = 1,
+            string             indentString = DefaultIndentString,
+            IndentMode         indentMode   = IndentMode.Relative
+        ) {
+            indentString = Must.NotBeBlank(indentString,nameof(indentString), nameof(Indent));
+
+            toIndent = toIndent.SplitLines();
+
+            return indentMode switch {
+                IndentMode.Absolute => IndentAbsolute(toIndent, indentCount, indentString),
+                IndentMode.Relative => IndentRelative(toIndent, indentCount),
+                _                   => throw BEnum.UnhandledSwitch(indentMode, nameof(indentMode), nameof(Indent)),
+            };
+        }
+
+        public static IEnumerable<string> IndentRelative(IEnumerable<string> toIndent, int indentCount = 1, string indentString = DefaultIndentString) {
+            return indentCount switch {
+                0   => toIndent,
+                > 0 => toIndent.Select(it => it.Prefix(indentString.Repeat(indentCount))),
+                < 0 => toIndent.Select(it => TrimStart(it, indentString, indentCount * -1)),
+            };
+        }
+
+        public static IEnumerable<string> IndentAbsolute(
+            IEnumerable<string> toIndent,
             [NonNegativeValue]
             int indentCount = 1,
-            [NonNegativeValue]
-            int indentSize = DefaultIndentSize,
-            char indentChar = ' '
+            string indentString = DefaultIndentString
         ) {
-            if (indentCount.IsPositive() == false) {
-                throw new ArgumentOutOfRangeException(nameof(indentCount));
-            }
-
-            if (indentSize.IsPositive() == false) {
-                throw new ArgumentOutOfRangeException(nameof(indentSize));
-            }
-
-            return indentChar
-                   .Repeat(indentSize)
-                   .Repeat(indentCount)
-                   .Suffix(toIndent);
+            Must.BePositive(indentCount, nameof(indentCount), nameof(IndentAbsolute));
+            return toIndent.Select(it => it.ForceStartingString(indentString, indentCount));
         }
+
+        #endregion
 
         /// <summary>
         /// Joins <paramref name="toRepeat" /> with itself <paramref name="repetitions" /> times, using the optional <paramref name="separator" />
@@ -193,119 +231,6 @@ namespace FowlFever.BSharp.Strings {
             second    =   second?.TrimStart(separator) ?? "";
             return string.Join(separator, first, second);
         }
-
-        #region Prettification
-
-        [Obsolete]
-        public static string Prettify(object thing, bool recursive = true, int recursionCount = 0) {
-            const int recursionMax = 10;
-            var       type         = thing.GetType().ToString();
-            string    method       = null;
-            string    prettyString = null;
-
-            switch (thing) {
-                //don't do anything special with strings
-                //check for value types (int, char, etc.), which we shouldn't do anything fancy with
-                //TODO 7/4/2021: The line written above is a BOLD FACED LIE
-                //  Actually, this whole method is just hot garbage and needs to be REBORN
-                case string s:
-                    method       = "string";
-                    prettyString = s;
-                    break;
-                case ValueType _:
-                    method       = nameof(ValueType);
-                    prettyString = thing.ToString();
-                    break;
-                case IEnumerable enumerableThing:
-                    method = $"recursion, {recursionCount}";
-
-                    recursionCount++;
-
-                    if (!recursive || recursionCount >= recursionMax) {
-                        goto default;
-                    }
-
-                    foreach (var entry in enumerableThing) {
-                        prettyString += "\n" + Prettify(entry, true, recursionCount);
-                    }
-
-                    break;
-                default:
-                    try {
-                        method       = "JSON";
-                        prettyString = JsonConvert.SerializeObject(thing, Formatting.Indented);
-                    }
-                    catch (Exception) {
-                        method = "JSON - FAILED!";
-                    }
-
-                    break;
-            }
-
-            // account for null prettyString and method
-            // (we're doing this here, rather than initializing them to default values, so we can trigger things if there's a failure)
-            // NOTE from Brandon on 8/22/2021: this fancy-schmancy ??= operator is...funky
-            prettyString ??= thing.ToString();
-            method       ??= "NO METHOD FOUND";
-
-
-            return $"[{method}]{prettyString}".Indent(indentCount: recursionCount);
-        }
-
-        //TODO: Add an extension method version of "Prettify" and re-do the fuck out of "Prettify"
-        //TODO: Move prettification methods into a dedicated class
-        //TODO: the fuck is the difference between "Prettify" and "Pretty"?! "Prettify" is definitely a better name!
-        public static string Pretty(this object obj) {
-            throw new NotImplementedException("DEAR GOD I immediately started making a 'PrettyOptions' enum to go along with this ARGH");
-        }
-
-        public static string ListVariables(object obj) {
-            return ListMembers(obj, MemberTypes.Property | MemberTypes.Field);
-        }
-
-        public static string ListProperties(object obj) {
-            return ListMembers(obj, MemberTypes.Property);
-        }
-
-        public static string ListFields(object obj) {
-            return ListMembers(obj, MemberTypes.Field);
-        }
-
-        public static string ListMembers(object obj, MemberTypes memberTypes = MemberTypes.All) {
-            //if obj is a already a type, cast it and use it; otherwise, grab its type
-            Type objType = obj is Type type ? type : obj.GetType();
-            return objType.GetMembers().Where(member => memberTypes.HasFlag(member.MemberType)).Aggregate($"[{objType}] {memberTypes}:", (current, member) => current + $"\n\t{FormatMember(member, obj)}");
-        }
-
-        /// <summary>
-        /// TODO: rename this to "PrettifyMember"
-        /// </summary>
-        /// <param name="memberInfo"></param>
-        /// <param name="obj"></param>
-        /// <returns></returns>
-        public static string FormatMember(MemberInfo memberInfo, object obj = null) {
-            var result = $"[{memberInfo.MemberType}] {memberInfo}";
-
-            try {
-                if (obj != null) {
-                    switch (memberInfo) {
-                        case PropertyInfo propertyInfo:
-                            result += $": {propertyInfo.GetValue(obj)}";
-                            break;
-                        case FieldInfo fieldInfo:
-                            result += $": {fieldInfo.GetValue(obj)}";
-                            break;
-                    }
-                }
-            }
-            catch (Exception e) {
-                result += $"ERROR: {e.Message}";
-            }
-
-            return result;
-        }
-
-        #endregion
 
         #region Padding, filling, truncating, trimming, and trailing
 
@@ -616,6 +541,28 @@ namespace FowlFever.BSharp.Strings {
             return _ForcePattern(input, trimPattern, padString, minKept, maxKept, false);
         }
 
+        [Pure]
+        public static string ForceStartingString(
+            this string input,
+            string      startingString,
+            [NonNegativeValue]
+            int startingStringRepetitions
+        ) {
+            return ForceStartingString(input, startingString, startingStringRepetitions, startingStringRepetitions);
+        }
+
+        [Pure]
+        public static string ForceStartingString(
+            this string input,
+            string      startingString,
+            [NonNegativeValue]
+            int minimumStartingStrings,
+            [NonNegativeValue]
+            int maximumStartingStrings
+        ) {
+            throw new NotImplementedException();
+        }
+
         /// <summary>
         /// Removes up to <paramref name="numberToTrim"/> instances of <paramref name="trimString"/> from the <b>beginning</b> of <paramref name="input"/>.
         /// </summary>
@@ -720,15 +667,19 @@ namespace FowlFever.BSharp.Strings {
         /// <summary>
         /// Splits <paramref name="multilineContent"/> via <c>"\r\n", "\r", or "\n"</c>.
         /// </summary>
-        /// <example>
-        /// This will match any
-        /// </example>
+        /// <remarks>
+        /// This method returns an <see cref="Array"/> instead of an <see cref="IEnumerable{T}"/> because <see cref="string.Split(char[])"/>
+        /// returns an <see cref="Array"/> already, so we don't lose anything.
+        ///
+        /// This method doesn't accept null <paramref name="multilineContent"/>s because passing it null would result in
+        /// creating a new <see cref="Array.Empty{T}"/> array, while using null operators should be more efficient.
+        /// </remarks>
         /// <param name="multilineContent">the <see cref="string"/> being <see cref="string.Split(char[])"/></param>
         /// <param name="options"><see cref="StringSplitOptions"/></param>
         /// <returns>an <see cref="Array"/> containing each individual line from <paramref name="multilineContent"/></returns>
         [Pure]
-        public static string[] SplitLines(this string? multilineContent, StringSplitOptions options = default) {
-            return multilineContent?.Split(LineBreakSplitters, options) ?? Array.Empty<string>();
+        public static string[] SplitLines(this string multilineContent, StringSplitOptions options = default) {
+            return multilineContent.Split(LineBreakSplitters, options);
         }
 
         /// <summary>
@@ -741,8 +692,8 @@ namespace FowlFever.BSharp.Strings {
         /// <seealso cref="SplitLines(string,System.StringSplitOptions)"/>
         /// <seealso cref="ToStringLines"/>
         [Pure]
-        public static string[] SplitLines([InstantHandle] this IEnumerable<string?>? multilineContents, StringSplitOptions options = default) {
-            return multilineContents?.SelectMany(content => content.SplitLines(options)).ToArray() ?? Array.Empty<string>();
+        public static IEnumerable<string> SplitLines(this IEnumerable<string?> multilineContents, StringSplitOptions options = default) {
+            return multilineContents.SelectMany(content => content?.SplitLines(options) ?? Enumerable.Repeat<string>("", 1));
         }
 
         /// <summary>
@@ -787,43 +738,11 @@ namespace FowlFever.BSharp.Strings {
 
         [Pure]
         [NonNegativeValue]
-        public static int LineCount([InstantHandle] this IEnumerable<string?>? strings) {
-            return strings.SplitLines().Length;
+        public static int LineCount([InstantHandle] this IEnumerable<string?> strings) {
+            return strings.SplitLines().Count();
         }
 
         #endregion
-
-        /// <summary>
-        /// <see cref="Indent(string,int,int,char)"/>s each <see cref="string"/> in <paramref name="lines"/>.
-        /// </summary>
-        /// <param name="lines">a collection of <see cref="string"/>s which are treated as separate lines</param>
-        /// <param name="indentCount">how many "indents" to add, i.e. how many times the "tab" key should be hit</param>
-        /// <param name="indentSize">the <see cref="string.Length"/> of a single indent. Defaults to <see cref="DefaultIndentSize"/></param>
-        /// <param name="indentChar">the <see cref="char"/> that is <see cref="Repeat(char,int,string)"/>ed to form a single indent. Defaults to <see cref="DefaultIndentChar"/></param>
-        /// <returns>the indented <see cref="string"/>s</returns>
-        /// <seealso cref="Indent(string,int,int,char)"/>
-        [ContractAnnotation("lines:null => null")]
-        [ContractAnnotation("lines:notnull => notnull")]
-        [Pure]
-        [LinqTunnel]
-        public static IEnumerable<string>? Indent(
-            this IEnumerable<string?>? lines,
-            [NonNegativeValue]
-            int indentCount = 1,
-            [NonNegativeValue]
-            int indentSize = DefaultIndentSize,
-            char indentChar = DefaultIndentChar
-        ) {
-            if (indentCount.IsPositive() == false) {
-                throw new ArgumentOutOfRangeException(nameof(indentCount));
-            }
-
-            if (indentSize.IsPositive() == false) {
-                throw new ArgumentOutOfRangeException(nameof(indentSize));
-            }
-
-            return lines?.Select(it => it.Indent(indentCount, indentSize, indentChar)).ToList();
-        }
 
         [ContractAnnotation("lines:null => null")]
         public static IEnumerable<string>? IndentWithLabel(this IEnumerable<string>? lines, string? label, string? joiner = " ") {
@@ -919,7 +838,7 @@ namespace FowlFever.BSharp.Strings {
         /// <param name="obj"></param>
         /// <param name="nullPlaceholder"></param>
         /// <returns></returns>
-        public static string[] ToStringLines(this object? obj, string nullPlaceholder = "") {
+        public static IEnumerable<string> ToStringLines(this object? obj, string nullPlaceholder = "") {
             if (obj is IEnumerable<object> e) {
                 return e.SelectMany(it => it.ToStringLines(nullPlaceholder)).SplitLines();
             }
@@ -948,33 +867,6 @@ namespace FowlFever.BSharp.Strings {
             }
 
             return obj == null ? nullPlaceholder : obj.ToString();
-        }
-
-        /// <summary>
-        /// Applies <paramref name="formatter"/> to <paramref name="obj"/>, returning the result or, if the result is null, <paramref name="nullPlaceholder"/>.
-        /// </summary>
-        /// <param name="obj">the original <see cref="object"/></param>
-        /// <param name="formatter">the <see cref="Func{T,T2}"/> that will produce the formatted <paramref name="obj"/></param>
-        /// <param name="nullPlaceholder">the <see cref="string"/> returned when the result of <paramref name="formatter"/> is null</param>
-        /// <typeparam name="T"></typeparam>
-        /// <returns></returns>
-        /// <exception cref="ArgumentNullException"></exception>
-        [ContractAnnotation("formatter:null => stop")]
-        [ContractAnnotation("nullPlaceholder:null => stop")]
-        public static string ToString<T>(
-            this T?         obj,
-            Func<T, string> formatter,
-            string?         nullPlaceholder = Prettification.DefaultNullPlaceholder
-        ) {
-            if (nullPlaceholder == null) {
-                throw new ArgumentNullException(nameof(nullPlaceholder), $"Providing a null value as a {nameof(nullPlaceholder)} is redundant!");
-            }
-
-            if (formatter == null) {
-                throw new ArgumentNullException(nameof(formatter));
-            }
-
-            return formatter.MustNotBeNull().Try(obj).OrElse(default) ?? nullPlaceholder;
         }
 
         /// <summary>
