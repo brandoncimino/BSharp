@@ -298,7 +298,7 @@ namespace FowlFever.BSharp.Strings {
 
         [ContractAnnotation("filler:null => stop")]
         public static string FillRight(this string? self, [NonNegativeValue] int totalLength, string filler) {
-            ValidateFillParameters(filler, totalLength);
+            _Validate_FillParameters(filler, totalLength);
 
             self ??= "";
 
@@ -312,7 +312,7 @@ namespace FowlFever.BSharp.Strings {
 
         [ContractAnnotation("filler:null => stop")]
         public static string FillLeft(this string? self, [NonNegativeValue] int totalLength, string filler) {
-            ValidateFillParameters(filler, totalLength);
+            _Validate_FillParameters(filler, totalLength);
 
             self ??= "";
 
@@ -326,7 +326,7 @@ namespace FowlFever.BSharp.Strings {
 
         [ContractAnnotation("filler:null => stop")]
         public static string Fill(this string filler, [NonNegativeValue] int totalLength) {
-            ValidateFillParameters(filler, totalLength);
+            _Validate_FillParameters(filler, totalLength);
 
             var fullLength  = totalLength / filler.Length;
             var extraLength = totalLength % filler.Length;
@@ -335,7 +335,7 @@ namespace FowlFever.BSharp.Strings {
         }
 
         [ContractAnnotation("filler:null => stop")]
-        private static void ValidateFillParameters(string filler, [NonNegativeValue] int totalLength) {
+        private static void _Validate_FillParameters(string filler, [NonNegativeValue] int totalLength) {
             if (filler == null) {
                 throw new ArgumentNullException(nameof(filler));
             }
