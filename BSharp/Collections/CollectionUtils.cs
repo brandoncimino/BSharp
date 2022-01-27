@@ -953,10 +953,6 @@ namespace FowlFever.BSharp.Collections {
             return source == null ? Enumerable.Empty<T>() : source.Where(it => it.HasValue).Select(it => it!.Value);
         }
 
-        public static IEnumerable<T> MustNotContainNull<T>(this IEnumerable<T?> source) {
-            return source.Select(it => it ?? throw new ArgumentNullException(nameof(source), "Contained a null entry!"));
-        }
-
         #region NonBlank
 
         /// <summary>
