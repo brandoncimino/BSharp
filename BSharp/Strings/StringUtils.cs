@@ -480,22 +480,19 @@ namespace FowlFever.BSharp.Strings {
             var pat = $"(?<chunks>{trimPattern})*";
             pat = fromStart ? $"^{pat}" : $"{pat}$";
             var match = input.Match(pat);
-            if (match.Success) {
-                var grp      = match.Groups["chunks"];
-                var capCount = grp.Captures.Count;
-                // Console.WriteLine($"🧢 {capCount} [{minKept}..{maxKept}]");
-                if (capCount < minKept) {
-                    // Console.WriteLine($"Padding with {padString} * {minKept - capCount}");
-                    return input + padString.Repeat(minKept - capCount);
-                }
 
-                if (capCount > maxKept) {
-                    // Console.WriteLine($"Trimming {trimPattern} * {capCount - maxKept}");
-                    return input.TrimEnd(trimPattern, capCount - maxKept);
-                }
+            if (match.Success == false) {
+                return input;
             }
 
-            return input;
+            var grp      = match.Groups["chunks"];
+            var capCount = grp.Captures.Count;
+
+            if (capCount < minKept) {
+                return input + padString.Repeat(minKept - capCount);
+            }
+
+            return capCount > maxKept ? input.TrimEnd(trimPattern, capCount - maxKept) : input;
         }
 
         /// <summary>
