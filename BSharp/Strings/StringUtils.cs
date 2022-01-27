@@ -98,22 +98,20 @@ namespace FowlFever.BSharp.Strings {
             string             indentString = DefaultIndentString,
             IndentMode         indentMode   = IndentMode.Relative
         ) {
-            indentString = Must.NotBeBlank(indentString,nameof(indentString), nameof(Indent));
-
-            toIndent = toIndent.SplitLines();
+            indentString = Must.NotBeEmpty(indentString,nameof(indentString), nameof(Indent));
 
             return indentMode switch {
                 IndentMode.Absolute => IndentAbsolute(toIndent, indentCount, indentString),
-                IndentMode.Relative => IndentRelative(toIndent, indentCount),
+                IndentMode.Relative => IndentRelative(toIndent, indentCount, indentString),
                 _                   => throw BEnum.UnhandledSwitch(indentMode, nameof(indentMode), nameof(Indent)),
             };
         }
 
         public static IEnumerable<string> IndentRelative(IEnumerable<string> toIndent, int indentCount = 1, string indentString = DefaultIndentString) {
             return indentCount switch {
-                0   => toIndent,
-                > 0 => toIndent.Select(it => it.Prefix(indentString.Repeat(indentCount))),
-                < 0 => toIndent.Select(it => TrimStart(it, indentString, indentCount * -1)),
+                0   => toIndent.SplitLines(),
+                > 0 => toIndent.SplitLines().Select(it => it.Prefix(indentString.Repeat(indentCount))),
+                < 0 => toIndent.SplitLines().Select(it => TrimStart(it, indentString, indentCount * -1)),
             };
         }
 
@@ -124,7 +122,7 @@ namespace FowlFever.BSharp.Strings {
             string indentString = DefaultIndentString
         ) {
             Must.BePositive(indentCount, nameof(indentCount), nameof(IndentAbsolute));
-            return toIndent.Select(it => it.ForceStartingString(indentString, indentCount));
+            return toIndent.SplitLines().Select(it => it.ForceStartingString(indentString, indentCount));
         }
 
         #endregion

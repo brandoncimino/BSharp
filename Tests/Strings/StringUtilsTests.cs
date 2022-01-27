@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 using FowlFever.BSharp;
 using FowlFever.BSharp.Collections;
 using FowlFever.BSharp.Enums;
+using FowlFever.BSharp.Exceptions;
 using FowlFever.BSharp.Strings;
 using FowlFever.Testing;
 
@@ -58,11 +59,9 @@ namespace BSharp.Tests.Strings {
             int desiredLength
         ) {
             const string str = "yolo";
-            AssertAll.Of(
-                () => Assert.Throws<ArgumentException>(() => str.FillRight(desiredLength, "")),
-                () => Assert.Throws<ArgumentException>(() => str.FillLeft(desiredLength, "")),
-                () => Assert.Throws<ArgumentException>(() => "".Fill(desiredLength))
-            );
+            Assert.Throws<ArgumentException>(() => str.FillRight(desiredLength, ""));
+            Assert.Throws<ArgumentException>(() => str.FillLeft(desiredLength, ""));
+            Assert.Throws<ArgumentException>(() => "".Fill(desiredLength));
         }
 
         [Test]
@@ -70,20 +69,16 @@ namespace BSharp.Tests.Strings {
             [Values(0, 1, 2, 3)]
             int desiredLength
         ) {
-            AssertAll.Of(
-                () => Assert.Throws<ArgumentNullException>(() => "".FillRight(desiredLength, null)),
-                () => Assert.Throws<ArgumentNullException>(() => "".FillLeft(desiredLength, null)),
-                () => Assert.Throws<ArgumentNullException>(() => StringUtils.Fill(null, desiredLength))
-            );
+            Assert.Throws<ArgumentNullException>(() => "".FillRight(desiredLength, null!));
+            Assert.Throws<ArgumentNullException>(() => "".FillLeft(desiredLength, null!));
+            Assert.Throws<ArgumentNullException>(() => StringUtils.Fill(null!, desiredLength));
         }
 
         [Test]
         public void Fill_NegativeLength() {
-            AssertAll.Of(
-                () => Assert.Throws<ArgumentOutOfRangeException>(() => "a".FillRight(-1, "a")),
-                () => Assert.Throws<ArgumentOutOfRangeException>(() => "a".FillLeft(-1, "a")),
-                () => Assert.Throws<ArgumentOutOfRangeException>(() => "a".Fill(-1))
-            );
+            Assert.Throws<ArgumentOutOfRangeException>(() => "a".FillRight(-1, "a"));
+            Assert.Throws<ArgumentOutOfRangeException>(() => "a".FillLeft(-1, "a"));
+            Assert.Throws<ArgumentOutOfRangeException>(() => "a".Fill(-1));
         }
 
         [Test]
@@ -188,17 +183,10 @@ a
             var truncateCount = lineCount - truncateTo;
 
             if (lineCount > truncateTo) {
-                AssertAll.Of(
-                    () => Assert.That(truncated, Has.Length.EqualTo(truncateTo)),
-                    () => {
-                        if (includeMessage) {
-                            AssertAll.Of(
-                                () => Assert.That(truncated.Last(), Is.Not.EqualTo("LINE")),
-                                () => Assert.That(truncated.Last(), Contains.Substring(truncateCount + ""))
-                            );
-                        }
-                    }
-                );
+                Assert.That(truncated, Has.Length.EqualTo(truncateTo));
+                if (includeMessage) {
+                    Assert.That(truncated.Last(), Is.Not.EqualTo("LINE").And.Contains(truncateCount.ToString()));
+                }
             }
             else if (lineCount <= truncateTo) {
                 Assert.That(truncated, Is.EqualTo(ln));
@@ -253,7 +241,7 @@ a
         #region ToStringLines
 
         [TestCase(new object[] { 1, 2, 3 },    new[] { "1", "2", "3" })]
-        [TestCase(new object[] { 1, null, 3 }, new[] { "1", "", "3" })]
+        [TestCase(new object?[] { 1, null, 3 }, new[] { "1", "", "3" })]
         public void ToStringLines_Simple(object[] input, string[] expectedLines) {
             Assert.That(input.ToStringLines(), Is.EqualTo(expectedLines));
         }
@@ -264,8 +252,8 @@ a
         }
 
         [TestCase(new object[] { 1, 2, 3 },    "X", new[] { "1", "2", "3" })]
-        [TestCase(new object[] { 1, null, 3 }, "X", new[] { "1", "X", "3" })]
-        public void ToStringLines_WithNullPlaceholder(object[] input, string nullPlaceholder, string[] expectedLines) {
+        [TestCase(new object?[] { 1, null, 3 }, "X", new[] { "1", "X", "3" })]
+        public void ToStringLines_WithNullPlaceholder(object?[] input, string nullPlaceholder, string[] expectedLines) {
             Assert.That(input.ToStringLines(nullPlaceholder), Is.EqualTo(expectedLines));
         }
 
@@ -281,7 +269,6 @@ a
                               .Concat(singleExpected)
                               .ToArray();
             var split = superJaggedInputs.ToStringLines();
-            split.ForEach((it, i) => Console.WriteLine($"[{i}]{it}"));
 
             Assert.That(split, Is.EqualTo(allExpected));
         }
@@ -348,8 +335,8 @@ a
         #region Indent
 
         [Test]
-        [TestCase("a",  2, /*2,*/ "-", "--a", "--a")]
-        [TestCase("-b", 3, /*1,*/ "-", "----b", "---b")]
+        [TestCase("a",  2,  "-", "--a", "--a")]
+        [TestCase("-b", 3,  "-", "----b", "---b")]
         public void IndentString(
             string original,
             int    indentCount,
@@ -361,13 +348,13 @@ a
             Assert.That(original.Indent(indentCount, indentString, StringUtils.IndentMode.Absolute), Is.EqualTo(absoluteString));
         }
 
-        public record IndentExpectation {
+        public class IndentExpectation {
             public IEnumerable<string> OriginalLines { get; init; }
             public IEnumerable<string> ExpectedLines { get; init; }
             public int                 IndentCount   { get; init; }
             public string              IndentString  { get; init; }
 
-            public IEnumerable<string> ActualLines => OriginalLines.Indent(IndentCount, IndentString);
+            public IEnumerable<string> ActualLines => OriginalLines?.Indent(IndentCount, IndentString) ?? Enumerable.Empty<string>();
         }
 
         public static IEnumerable<IndentExpectation> GetIndentExpectations() {

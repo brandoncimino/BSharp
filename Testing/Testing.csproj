@@ -9,19 +9,20 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\BSharp\BSharp.csproj"/>
+        <ProjectReference Include="..\BSharp\BSharp.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="FowlFever.Conjugal" Version="1.0.0"/>
+        <PackageReference Include="BenchmarkDotNet" Version="0.13.1" />
+        <PackageReference Include="FowlFever.Conjugal" Version="1.0.0" />
         <PackageReference Include="IsExternalInit" Version="1.0.2">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="JetBrains.Annotations" Version="2021.3.0"/>
-        <PackageReference Include="Newtonsoft.Json" Version="13.0.1"/>
-        <PackageReference Include="NUnit" Version="3.13.2"/>
-        <PackageReference Include="NUnit3TestAdapter" Version="4.1.0"/>
+        <PackageReference Include="JetBrains.Annotations" Version="2021.3.0" />
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+        <PackageReference Include="NUnit" Version="3.13.2" />
+        <PackageReference Include="NUnit3TestAdapter" Version="4.1.0" />
     </ItemGroup>
 
 </Project>
