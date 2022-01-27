@@ -83,7 +83,7 @@ public static class Must {
             return actualValue;
         }
 
-        throw RejectArgument.WasBlank(parameterName, actualValue, methodName);
+        throw RejectArgument.WasBlank(actualValue, parameterName, methodName);
     }
 
     /// <summary>
