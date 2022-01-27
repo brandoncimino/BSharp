@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Linq;
 
 using FowlFever.BSharp.Collections;
+using FowlFever.BSharp.Exceptions;
 using FowlFever.BSharp.Strings;
 using FowlFever.BSharp.Strings.Prettifiers;
 
@@ -56,13 +57,32 @@ namespace FowlFever.BSharp.Enums {
             return new InvalidEnumArgumentException(argumentName, (int)(object)enumValue, typeof(T));
         }
 
-
         public static InvalidEnumArgumentException InvalidEnumArgumentException<T>(
             string? argumentName,
             T?      enumValue
         ) where T : struct, Enum {
             return new InvalidEnumArgumentException(argumentName, -1, typeof(T));
         }
+
+        /// <summary>
+        /// Composes a nice <see cref="System.ComponentModel.InvalidEnumArgumentException"/> specifically for use when a
+        /// <c>switch</c> statement didn't have a branch to account for <paramref name="actualValue"/>.
+        /// </summary>
+        /// <remarks>
+        /// This method is identical to <see cref="RejectArgument.UnhandledSwitchEnum{T}"/>.
+        /// </remarks>
+        /// <param name="actualValue">the <typeparamref name="T"/> value that didn't have a switch branch</param>
+        /// <param name="parameterName">the parameter that caused this exception</param>
+        /// <param name="methodName">the method that caused this exception</param>
+        /// <typeparam name="T">an <see cref="Enum"/> <see cref="Type"/></typeparam>
+        /// <returns>a nice <see cref="System.ComponentModel.InvalidEnumArgumentException"/></returns>
+        /// <see cref="RejectArgument.UnhandledSwitchEnum{T}"/>
+        public static InvalidEnumArgumentException UnhandledSwitch<T>(
+            T?     actualValue,
+            string parameterName,
+            string methodName
+        )
+            where T : Enum => RejectArgument.UnhandledSwitchEnum(actualValue, parameterName, methodName);
 
         #region Enum not in set
 
