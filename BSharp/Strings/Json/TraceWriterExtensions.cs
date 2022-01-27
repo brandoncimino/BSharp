@@ -1,6 +1,8 @@
 using System;
 using System.Diagnostics;
 
+using FowlFever.BSharp.Collections;
+
 using Newtonsoft.Json.Serialization;
 
 namespace FowlFever.BSharp.Strings.Json {
@@ -27,7 +29,7 @@ namespace FowlFever.BSharp.Strings.Json {
             }
 
             if (traceWriter.LevelFilter >= level) {
-                traceWriter.Trace(level, message.Invoke().Indent(indent), exception);
+                traceWriter.Trace(level, message.Invoke().Indent(indent).JoinLines(), exception);
             }
         }
     }

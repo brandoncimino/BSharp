@@ -63,7 +63,7 @@ namespace FowlFever.BSharp.Strings.Prettifiers {
             outerSettings.TraceWriter.Verbose(() => $"🎨 via {nameof(PrettifyEnumerable_MultiLine)}");
             enumerable = enumerable.AsList();
 
-            return enumerable.Select(it => it.Prettify(innerSettings).Indent())
+            return enumerable.SelectMany(it => it.Prettify(innerSettings).Indent())
                              .Bookend("[", "]")
                              .JoinLines()
                              .WithTypeLabel(enumerableType, outerSettings);
