@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
@@ -103,13 +104,35 @@ public static class Must {
     }
 
     #endregion
+
+    #region Files
+
+    public static T Exist<T>(T? fileOrDirectory, string parameterName, string methodName)
+        where T : FileSystemInfo {
+        if (fileOrDirectory?.Exists == true) {
+            return fileOrDirectory;
+        }
+
+        throw RejectArgument.DidNotExist(fileOrDirectory, parameterName, methodName);
+    }
+    #endregion
 }
 
 public static class RejectArgument {
     private const string Icon = "🚮";
 
     private static string GetPreamble<T>(T? actualValue, string parameterName, string methodName) {
-        return $"{Icon} {methodName} rejected parameter {parameterName}";
+        return $"{Icon} {methodName} rejected parameter [{typeof(T).Name}] {parameterName}";
+    }
+
+    private static string GetMessage<T>(
+        T?     actualValue,
+        string parameterName,
+        string methodName,
+        string reason
+    ) {
+        reason = reason.IfBlank("<reason not specified 🤷>");
+        return $"{GetPreamble(actualValue, parameterName, methodName)}: {reason}";
     }
 
     public static ArgumentNullException WasNull<T>(T? actualValue, string parameterName, string methodName) where T : class? {
@@ -158,12 +181,26 @@ public static class RejectArgument {
 
     [Pure]
     public static ArgumentException UnhandledSwitchBranch<T>(T? actualValue, string parameterName, string methodName) {
-        return new ArgumentException($"{GetPreamble(actualValue, parameterName, methodName)}: Value was unhandled by any switch branch!");
+        return new ArgumentException(
+            GetMessage(
+                actualValue,
+                parameterName,
+                methodName,
+                "Value was unhandled by any switch branch!"
+            )
+        );
     }
 
     [Pure]
     public static ArgumentException UnhandledSwitchType<T>(T? actualValue, string parameterName, string methodName) {
-        return new ArgumentException($"{GetPreamble(actualValue, parameterName, methodName)}: Value of type {actualValue?.GetType() ?? typeof(T)} was unhandled by any switch branch!");
+        return new ArgumentException(
+            GetMessage(
+                actualValue,
+                parameterName,
+                methodName,
+                "Value of type {actualValue?.GetType() ?? typeof(T)} was unhandled by any switch branch!"
+            )
+        );
     }
 
     [Pure]
@@ -173,7 +210,12 @@ public static class RejectArgument {
         string methodName
     ) where T : Enum {
         return new InvalidEnumArgumentException(
-            $"{GetPreamble(actualValue, parameterName, methodName)}: The {typeof(T).Name} value [{actualValue.OrNullPlaceholder()}] was not handled by any branches of the switch statement!"
+            GetMessage(
+                actualValue,
+                parameterName,
+                methodName,
+                $"The {typeof(T).Name} value [{actualValue.OrNullPlaceholder()}] was not handled by any branches of the switch statement!"
+            )
         );
     }
 
@@ -189,6 +231,14 @@ public static class RejectArgument {
     [Pure]
     public static ArgumentException WasEmpty(string? actualValue, string parameterName, string methodName) {
         return new ArgumentException($"{GetPreamble(actualValue, parameterName, methodName)}: Must not be null or an empty string!");
+    }
+
+    #endregion
+
+    #region Files
+
+    public static FileNotFoundException DidNotExist<T>(T? actualValue, string parameterName, string methodName) where T : FileSystemInfo {
+        return new FileNotFoundException(GetMessage(actualValue, parameterName, methodName, "Must exist!"));
     }
 
     #endregion
