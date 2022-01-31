@@ -145,15 +145,11 @@ namespace FowlFever.BSharp.Clerical {
                 throw new ArgumentNullException(nameof(parent));
             }
 
-            Console.WriteLine(
-                new Dictionary<object, object>() {
-                    [nameof(parent)]       = parent,
-                    [nameof(relativePath)] = relativePath,
-                    ["joined"]             = BPath.JoinPath(parent, relativePath)
-                }.Prettify(PrettificationSettings.Default with { TraceWriter = null, LineLengthLimit = int.MaxValue })
-            );
-
             return BPath.JoinPath(parent, relativePath);
+        }
+
+        public static FileInfo GetChildFile(this DirectoryInfo parent, string? relativePath) {
+            return new FileInfo(parent.GetChildPath(relativePath));
         }
 
         private static InvalidOperationException NotMyChildException(DirectoryInfo parent, FileSystemInfo child) {
