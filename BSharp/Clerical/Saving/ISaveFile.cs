@@ -1,4 +1,5 @@
 using System;
+using System.Text.Json;
 
 using JetBrains.Annotations;
 
@@ -26,12 +27,12 @@ namespace FowlFever.BSharp.Clerical.Saving {
         /// Serializes <see cref="Data"/> to <see cref="ISaveFile{TData}.File"/>.
         /// </summary>
         /// <param name="duplicateFileResolution">determines what we should do when a file already exists</param>
-        /// <param name="jsonSettings">optional <see cref="JsonSerializerSettings"/></param>
+        /// <param name="jsonSerializerOptions">optional <see cref="JsonSerializerSettings"/></param>
         /// <returns></returns>
-        public ISaveFile<TData> Save(DuplicateFileResolution duplicateFileResolution, JsonSerializerSettings? jsonSettings = default);
+        public ISaveFile<TData> Save(DuplicateFileResolution duplicateFileResolution, JsonSerializerOptions? jsonSerializerOptions = default);
 
         /**
-         * <inheritdoc cref="Save(DuplicateFileResolution,Newtonsoft.Json.JsonSerializerSettings)"/>
+         * <inheritdoc cref="Save(DuplicateFileResolution,JsonSerializerOptions)"/>
          */
         public ISaveFile<TData> Save(SaveManagerSettings? saveSettings = default);
 

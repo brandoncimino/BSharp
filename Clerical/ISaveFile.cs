@@ -20,6 +20,8 @@ public interface ISaveFile<out TData>
     /// </summary>
     public DateTimeOffset TimeStamp { get; }
 
+    public FileName FileName { get; }
+
     /// <summary>
     /// The <see cref="FileInfo"/> that this <see cref="ISaveFile{TData}"/> serializes to.
     /// </summary>
@@ -27,4 +29,6 @@ public interface ISaveFile<out TData>
     /// This property <b>must be immutable!</b>
     /// </remarks>
     public FileInfo File { get; }
+
+    public ISaveFile<TData> Save();
 }
