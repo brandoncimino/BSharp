@@ -98,12 +98,7 @@ namespace FowlFever.BSharp.Clerical {
         /// <remarks>This uses the <see cref="ExtensionGroup"/> <see cref="RegexGroup"/> for matching.</remarks>
         /// <param name="path">a path or file name</param>
         /// <returns><b>all</b> of the extensions at the end of the <paramref name="path"/></returns>
-        [ContractAnnotation("path:null => null")]
-        public static string[]? GetExtensions(string? path) {
-            if (path == null) {
-                return null;
-            }
-
+        public static string[] GetExtensions(string path) {
             return GetFullExtension(path)
                    .Split(new[] { '.' }, StringSplitOptions.RemoveEmptyEntries)
                    .Select(it => it.PrependIfMissing("."))
