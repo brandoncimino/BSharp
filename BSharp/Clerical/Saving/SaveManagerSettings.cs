@@ -1,3 +1,5 @@
+using System.Text.Json;
+
 using JetBrains.Annotations;
 
 using Newtonsoft.Json;
@@ -5,7 +7,7 @@ using Newtonsoft.Json;
 namespace FowlFever.BSharp.Clerical.Saving {
     [PublicAPI]
     public class SaveManagerSettings {
-        public JsonSerializerSettings  JsonSerializerSettings  { get; } = new JsonSerializerSettings();
+        public JsonSerializerOptions  JsonSerializerOptions  { get; } = new JsonSerializerOptions();
         public string                  AutoSaveName            { get; } = "AutoSave";
         public string                  SaveFileExtension       { get; } = ".sav.json";
         public int                     BackupSaveSlots         { get; } = 10;
