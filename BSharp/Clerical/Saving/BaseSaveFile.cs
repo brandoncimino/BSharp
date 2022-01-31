@@ -1,9 +1,8 @@
 using System;
 using System.IO;
+using System.Text.Json;
 
 using FowlFever.BSharp.Strings;
-
-using Newtonsoft.Json;
 
 namespace FowlFever.BSharp.Clerical.Saving {
     public abstract class BaseSaveFile<TData> : ISaveFile<TData> where TData : ISaveData {
@@ -36,20 +35,20 @@ namespace FowlFever.BSharp.Clerical.Saving {
                 data
             ) { }
 
-        public ISaveFile<TData> Save(DuplicateFileResolution duplicateFileResolution, JsonSerializerSettings? jsonSettings = default) {
+        public ISaveFile<TData> Save(DuplicateFileResolution duplicateFileResolution, JsonSerializerOptions? jsonSerializerOptions = default) {
             File.Serialize(Data, duplicateFileResolution);
             return this;
         }
 
         public ISaveFile<TData> Save(SaveManagerSettings? saveSettings = default) {
             saveSettings ??= new SaveManagerSettings();
-            Save(saveSettings.DuplicateFileResolution, saveSettings.JsonSerializerSettings);
+            Save(saveSettings.DuplicateFileResolution, saveSettings.JsonSerializerOptions);
             return this;
         }
 
         public ISaveFile<TData> Load(SaveManagerSettings? saveSettings = default) {
             saveSettings ??= new SaveManagerSettings();
-            Data         =   File.Deserialize<TData>(saveSettings.JsonSerializerSettings);
+            Data         =   File.Deserialize<TData>(saveSettings.JsonSerializerOptions);
             return this;
         }
 
