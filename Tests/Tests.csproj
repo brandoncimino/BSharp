@@ -30,6 +30,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\BSharp\BSharp.csproj" />
+        <ProjectReference Include="..\Clerical\Clerical.csproj" />
         <ProjectReference Include="..\Testing\Testing.csproj" />
     </ItemGroup>
 
