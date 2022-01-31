@@ -2,7 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.IO;
+using System.Linq;
 
+using FowlFever.BSharp.Collections;
 using FowlFever.BSharp.Strings;
 using FowlFever.BSharp.Strings.Prettifiers;
 
@@ -232,6 +234,33 @@ namespace FowlFever.BSharp.Clerical {
             if (fileSystemInfo.FileSystemInfo.Exists == false) {
                 throw ClericalErrors.ItemDoesNotExistException(fileSystemInfo);
             }
+        }
+
+        #endregion
+
+        #region IsEmpty
+
+        /// <param name="fileInfo">this <see cref="FileInfo"/></param>
+        /// <returns><c>true</c> if this doesn't <see cref="FileInfo.Exists"/> with a <see cref="FileInfo.Length"/> > 0</returns>
+        public static bool IsEmpty(this FileInfo fileInfo) {
+            return !fileInfo.IsNotEmpty();
+        }
+
+        /// <param name="fileInfo">this <see cref="FileInfo"/></param>
+        /// <returns><c>true</c> if this <see cref="FileInfo.Exists"/> and has a <see cref="FileInfo.Length"/> > 0</returns>
+        public static bool IsNotEmpty(this FileInfo fileInfo) {
+            return fileInfo is { Exists: true, Length: > 0 };
+        }
+
+        /// <param name="directoryInfo">this <see cref="DirectoryInfo"/></param>
+        /// <returns><c>true</c> unless this <see cref="DirectoryInfo.Exists"/> with <see cref="DirectoryInfo.EnumerateFileSystemInfos()"/> <see cref="CollectionUtils.IsNotEmpty{T}"/></returns>
+        public static bool IsEmpty(this DirectoryInfo directoryInfo) {
+            return !directoryInfo.IsNotEmpty();
+        }
+        /// <param name="directoryInfo">this <see cref="DirectoryInfo"/></param>
+        /// <returns><c>true</c> if this <see cref="DirectoryInfo.Exists"/> and <see cref="DirectoryInfo.EnumerateFileSystemInfos()"/> <see cref="CollectionUtils.IsNotEmpty{T}"/></returns>
+        public static bool IsNotEmpty(this DirectoryInfo directoryInfo) {
+            return directoryInfo.Exists && directoryInfo.EnumerateFileSystemInfos().Any();
         }
 
         #endregion
