@@ -24,4 +24,18 @@ public record FileName {
     public static FileName Random() {
         return new FileName(Path.GetRandomFileName());
     }
+
+    public static FileName From(string fileName) {
+        return new FileName(fileName);
+    }
+
+    public static FileName From(FileSystemInfo fileSystemInfo) {
+        return new FileName(fileSystemInfo.Name);
+    }
+}
+
+public static class FileNameExtensions {
+    public static FileName GetFileName(this FileSystemInfo fileSystemInfo) {
+        return new FileName(fileSystemInfo.Name);
+    }
 }
