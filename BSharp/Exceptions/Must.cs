@@ -37,11 +37,11 @@ namespace FowlFever.BSharp.Exceptions;
 public static class Must {
     #region Arbitration
 
-    public static T Satisfy<T>(T? actualValue, string parameterName, string methodName, Func<T,bool> predicate) {
-        return Satisfy(new ArgInfo<T>(actualValue!, parameterName, methodName), predicate);
+    public static T Satisfy<T>(T? actualValue, Func<T,bool> predicate, string parameterName, string methodName, string? reason = default) {
+        return Satisfy(new ArgInfo<T>(actualValue!, parameterName, methodName), predicate, reason);
     }
 
-    public static T Satisfy<T>(ArgInfo<T> argInfo, Func<T, bool> predicate) {
+    public static T Satisfy<T>(ArgInfo<T> argInfo, Func<T, bool> predicate, string? reason = default) {
         Exception? exc = default;
 
         try {
@@ -53,7 +53,9 @@ public static class Must {
             exc = e;
         }
 
-        throw new ArgumentException(argInfo.GetMessage($"Predicate {InnerPretty.PrettifyDelegate(predicate, PrettificationSettings.Default)} failed!"), exc);
+        reason ??= $"Predicate {InnerPretty.PrettifyDelegate(predicate, PrettificationSettings.Default)} failed!";
+
+        throw new ArgumentException(argInfo.GetMessage(reason), exc);
     }
 
     #endregion
