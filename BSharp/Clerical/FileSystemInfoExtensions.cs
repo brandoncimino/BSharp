@@ -237,32 +237,5 @@ namespace FowlFever.BSharp.Clerical {
         }
 
         #endregion
-
-        #region IsEmpty
-
-        /// <param name="fileInfo">this <see cref="FileInfo"/></param>
-        /// <returns><c>true</c> if this doesn't <see cref="FileInfo.Exists"/> with a <see cref="FileInfo.Length"/> > 0</returns>
-        public static bool IsEmptyOrMissing(this FileInfo fileInfo) {
-            return !fileInfo.IsNotEmpty();
-        }
-
-        /// <param name="fileInfo">this <see cref="FileInfo"/></param>
-        /// <returns><c>true</c> if this <see cref="FileInfo.Exists"/> and has a <see cref="FileInfo.Length"/> > 0</returns>
-        public static bool IsNotEmpty(this FileInfo fileInfo) {
-            return fileInfo is { Exists: true, Length: > 0 };
-        }
-
-        /// <param name="directoryInfo">this <see cref="DirectoryInfo"/></param>
-        /// <returns><c>true</c> unless this <see cref="DirectoryInfo.Exists"/> with <see cref="DirectoryInfo.EnumerateFileSystemInfos()"/> <see cref="CollectionUtils.IsNotEmpty{T}"/></returns>
-        public static bool IsEmptyOrMissing(this DirectoryInfo directoryInfo) {
-            return !directoryInfo.IsNotEmpty();
-        }
-        /// <param name="directoryInfo">this <see cref="DirectoryInfo"/></param>
-        /// <returns><c>true</c> if this <see cref="DirectoryInfo.Exists"/> and <see cref="DirectoryInfo.EnumerateFileSystemInfos()"/> <see cref="CollectionUtils.IsNotEmpty{T}"/></returns>
-        public static bool IsNotEmpty(this DirectoryInfo directoryInfo) {
-            return directoryInfo.Exists && directoryInfo.EnumerateFileSystemInfos().Any();
-        }
-
-        #endregion
     }
 }

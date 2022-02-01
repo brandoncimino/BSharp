@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Text.Json;
 
+using FowlFever.BSharp.Collections;
 using FowlFever.BSharp.Enums;
 using FowlFever.BSharp.Strings;
 
@@ -201,7 +203,7 @@ namespace FowlFever.BSharp.Clerical {
 
         #endregion
 
-        #region NewtonsoftJson Extensions
+        #region System.Text.Json Extensions
 
         /// <summary>
         /// <see cref="Read(System.IO.FileInfo)"/>s a <paramref name="fileInfo"/> and then <see cref="JsonSerializer.Deserialize{TValue}(System.Text.Json.JsonDocument,System.Text.Json.JsonSerializerOptions?)"/>s its content.
@@ -271,5 +273,31 @@ namespace FowlFever.BSharp.Clerical {
         }
 
         #endregion
+
+        #region Matters of Size
+
+        /// <summary>
+        /// Gets the <see cref="FileInfo.Length"/>, in bytes, <b>IF</b> this <see cref="FileInfo.Exists"/>.
+        /// Otherwise, returns <c>null</c>.
+        /// </summary>
+        /// <param name="fileInfo">this <see cref="FileInfo"/></param>
+        /// <returns>Gets the <see cref="FileInfo.Length"/>, in bytes, <b>IF</b> this <see cref="FileInfo.Exists"/></returns>
+        public static long? Size(this FileInfo fileInfo) {
+            return fileInfo.Exists ? fileInfo.Length : null;
+        }
+
+        #endregion
+
+        /// <param name="fileInfo">this <see cref="FileInfo"/></param>
+        /// <returns><c>true</c> if this <see cref="FileInfo.Exists"/> and has a <see cref="FileInfo.Length"/> > 0</returns>
+        public static bool IsNotEmpty(this FileInfo fileInfo) {
+            return fileInfo is { Exists: true, Length: > 0 };
+        }
+
+        /// <param name="fileInfo">this <see cref="FileInfo"/></param>
+        /// <returns><c>true</c> if this doesn't <see cref="FileInfo.Exists"/> with a <see cref="FileInfo.Length"/> > 0</returns>
+        public static bool IsEmptyOrMissing(this FileInfo fileInfo) {
+            return !fileInfo.IsNotEmpty();
+        }
     }
 }
