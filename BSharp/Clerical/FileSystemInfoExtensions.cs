@@ -242,7 +242,7 @@ namespace FowlFever.BSharp.Clerical {
 
         /// <param name="fileInfo">this <see cref="FileInfo"/></param>
         /// <returns><c>true</c> if this doesn't <see cref="FileInfo.Exists"/> with a <see cref="FileInfo.Length"/> > 0</returns>
-        public static bool IsEmpty(this FileInfo fileInfo) {
+        public static bool IsEmptyOrMissing(this FileInfo fileInfo) {
             return !fileInfo.IsNotEmpty();
         }
 
@@ -254,7 +254,7 @@ namespace FowlFever.BSharp.Clerical {
 
         /// <param name="directoryInfo">this <see cref="DirectoryInfo"/></param>
         /// <returns><c>true</c> unless this <see cref="DirectoryInfo.Exists"/> with <see cref="DirectoryInfo.EnumerateFileSystemInfos()"/> <see cref="CollectionUtils.IsNotEmpty{T}"/></returns>
-        public static bool IsEmpty(this DirectoryInfo directoryInfo) {
+        public static bool IsEmptyOrMissing(this DirectoryInfo directoryInfo) {
             return !directoryInfo.IsNotEmpty();
         }
         /// <param name="directoryInfo">this <see cref="DirectoryInfo"/></param>
