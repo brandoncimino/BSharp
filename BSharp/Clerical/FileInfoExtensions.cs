@@ -235,7 +235,7 @@ namespace FowlFever.BSharp.Clerical {
                     fileInfo.SerializeForcefully(obj, options);
                     break;
                 case DuplicateFileResolution.Backup:
-                    fileInfo.SerializeSafely(obj, options);
+                    fileInfo.SerializeWithBackup(obj, options);
                     break;
                 default:
                     throw BEnum.InvalidEnumArgumentException(nameof(duplicateFileResolution), duplicateFileResolution);
@@ -261,7 +261,7 @@ namespace FowlFever.BSharp.Clerical {
             fileInfo.Write(JsonSerializer.Serialize(obj, options));
         }
 
-        public static void SerializeSafely<T>(
+        public static void SerializeWithBackup<T>(
             this FileInfo           fileInfo,
             T?                      obj,
             JsonSerializerOptions? options = default
