@@ -1,4 +1,5 @@
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -8,9 +9,16 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using System.Threading;
 
+using FowlFever.BSharp.Clerical;
+using FowlFever.BSharp.Collections;
+using FowlFever.BSharp.Enums;
 using FowlFever.BSharp.Optional;
+using FowlFever.BSharp.Reflection;
 using FowlFever.BSharp.Strings;
+using FowlFever.BSharp.Strings.Prettifiers;
+using FowlFever.BSharp.Strings.Tabler;
 
 using JetBrains.Annotations;
 
@@ -27,9 +35,52 @@ namespace FowlFever.BSharp.Exceptions;
 /// </remarks>
 [PublicAPI]
 public static class Must {
-    public static T NotBeNull<T>(T? actualValue, string parameterName, string methodName) where T : class? {
-        return actualValue ?? throw RejectArgument.WasNull(actualValue, parameterName, methodName);
+    #region Arbitration
+
+    public static T Satisfy<T>(T? actualValue, string parameterName, string methodName, Func<T,bool> predicate) {
+        return Satisfy(new ArgInfo<T>(actualValue!, parameterName, methodName), predicate);
     }
+
+    public static T Satisfy<T>(ArgInfo<T> argInfo, Func<T, bool> predicate) {
+        Exception? exc = default;
+
+        try {
+            if (predicate(argInfo.ActualValue)) {
+                return argInfo.ActualValue;
+            }
+        }
+        catch (Exception e) {
+            exc = e;
+        }
+
+        throw new ArgumentException(argInfo.GetMessage($"Predicate {InnerPretty.PrettifyDelegate(predicate, PrettificationSettings.Default)} failed!"), exc);
+    }
+
+    #endregion
+
+    #region Nullity
+
+    public static T NotBeNull<T>(T? actualValue, string parameterName, string methodName) {
+        return NotBeNull(new ArgInfo<T?>(actualValue, parameterName, methodName));
+    }
+
+    public static T NotBeNull<T>(ArgInfo<T?> argInfo) {
+        return argInfo.ActualValue ?? throw argInfo.WasNull();
+    }
+
+    public static T? BeNull<T>(T? actualValue, string parameterName, string methodName) {
+        return BeNull(new ArgInfo<T?>(actualValue, parameterName, methodName));
+    }
+
+    public static T? BeNull<T>(ArgInfo<T?> argInfo) {
+        if (argInfo.ActualValue == null) {
+            return argInfo.ActualValue;
+        }
+
+        throw argInfo.WasNull();
+    }
+
+    #endregion
 
     #region Numbers
 
@@ -107,18 +158,106 @@ public static class Must {
 
     #region Files
 
-    public static T Exist<T>(T? fileOrDirectory, string parameterName, string methodName)
-        where T : FileSystemInfo {
-        if (fileOrDirectory?.Exists == true) {
-            return fileOrDirectory;
+    #region Exist
+
+    public static T Exist<T>(T fileSystemInfo, string parameterName, string methodName)
+        where T : FileSystemInfo? {
+        return Exist(new ArgInfo<T>(fileSystemInfo, parameterName, methodName));
+    }
+
+    public static T Exist<T>(ArgInfo<T> argInfo) where T : FileSystemInfo? {
+        if (argInfo.ActualValue?.Exists == true) {
+            return argInfo.ActualValue;
         }
 
-        throw RejectArgument.DidNotExist(fileOrDirectory, parameterName, methodName);
+        throw argInfo.DidNotExist();
     }
+
+    #endregion
+
+    #region NotBeEmpty
+
+    public static FileInfo NotBeEmpty(ArgInfo<FileInfo?> argInfo) {
+        if (argInfo.ActualValue?.IsNotEmpty() == true) {
+            return argInfo.ActualValue;
+        }
+
+        throw argInfo.HadLengthZero();
+    }
+
+    public static FileInfo NotBeEmpty(FileInfo? actualValue, string parameterName, string methodName) => NotBeEmpty(new ArgInfo<FileInfo?>(actualValue, parameterName, methodName));
+
+    public static DirectoryInfo NotBeEmpty(ArgInfo<DirectoryInfo?> argInfo) {
+        if (argInfo.ActualValue?.IsNotEmpty() == true) {
+            return argInfo.ActualValue;
+        }
+
+        throw argInfo.HadNoContents();
+    }
+
+    public static DirectoryInfo NotBeEmpty(DirectoryInfo? actualValue, string parameterName, string methodName) => NotBeEmpty(new ArgInfo<DirectoryInfo?>(actualValue, parameterName, methodName));
+
+    #endregion
+
+    #region BeEmptyOrMissing
+
+    public static FileInfo BeEmpty(ArgInfo<FileInfo> argInfo) {
+        if (argInfo.ActualValue.IsEmptyOrMissing()) {
+            return argInfo.ActualValue;
+        }
+
+        throw argInfo.WasNotEmpty();
+    }
+
+    public static FileInfo BeEmpty(FileInfo actualValue, string parameterName, string methodName) => BeEmpty(new ArgInfo<FileInfo>(actualValue, parameterName, methodName));
+
+    public static DirectoryInfo BeEmpty(ArgInfo<DirectoryInfo> argInfo) {
+        if (argInfo.ActualValue.IsEmptyOrMissing()) {
+            return argInfo.ActualValue;
+        }
+
+        throw argInfo.WasNotEmpty();
+    }
+
+    public static DirectoryInfo BeEmpty(DirectoryInfo actualValue, string parameterName, string methodName) => BeEmpty(new ArgInfo<DirectoryInfo>(actualValue, parameterName, methodName));
+
+        #endregion
+
+    #region NotExist
+
+    public static T NotExist<T>(ArgInfo<T> argInfo) where T : FileSystemInfo? {
+        if (argInfo.ActualValue?.Exists != true) {
+            return argInfo.ActualValue;
+        }
+
+        throw argInfo.AlreadyExisted();
+    }
+
+    public static T NotExist<T>(T fileSystemInfo, string parameterName, string methodName) where T: FileSystemInfo? => NotExist(new ArgInfo<T>(fileSystemInfo, parameterName, methodName));
+
+    #endregion
+
     #endregion
 }
 
-public static class RejectArgument {
+public record ArgInfo<T>(T ActualValue, string ParameterName, string MethodName) {
+    private const string Icon = "🚮";
+
+    public string GetPreamble() {
+        var    typeName    = typeof(T).Name;
+        var paramString = typeName.Equals(ParameterName, StringComparison.OrdinalIgnoreCase)
+                              ? $"[{ParameterName}]"
+                              : $"[{typeName}]{ParameterName}";
+        return $"{Icon} {MethodName}() 🙅 {paramString}";
+    }
+
+    public string GetMessage(string reason) {
+        reason = reason.IfBlank("<reason not specified 🤷>");
+        return $"{GetPreamble()}: {reason}";
+    }
+}
+
+internal static class RejectArgument {
     private const string Icon = "🚮";
 
     private static string GetPreamble<T>(T? actualValue, string parameterName, string methodName) {
@@ -135,9 +274,17 @@ public static class RejectArgument {
         return $"{GetPreamble(actualValue, parameterName, methodName)}: {reason}";
     }
 
-    public static ArgumentNullException WasNull<T>(T? actualValue, string parameterName, string methodName) where T : class? {
-        return new ArgumentNullException(parameterName, GetPreamble(actualValue, parameterName, methodName));
+    #region Nullity
+
+    public static ArgumentNullException WasNull<T>(this ArgInfo<T> argInfo) {
+        return new ArgumentNullException(argInfo.ParameterName, argInfo.GetPreamble());
     }
+
+    public static ArgumentException WasNotNull<T>(this ArgInfo<T> argInfo) {
+        return new ArgumentException(argInfo.GetMessage(nameof(WasNotNull)));
+    }
+
+    #endregion
 
     #region Numbers
 
@@ -237,9 +384,37 @@ public static class RejectArgument {
 
     #region Files
 
-    public static FileNotFoundException DidNotExist<T>(T? actualValue, string parameterName, string methodName) where T : FileSystemInfo {
-        return new FileNotFoundException(GetMessage(actualValue, parameterName, methodName, "Must exist!"));
+    public static FileNotFoundException DidNotExist<T>(this ArgInfo<T> argInfo) where T : FileSystemInfo? {
+        return new FileNotFoundException(argInfo.GetMessage(nameof(DidNotExist)));
     }
 
+    public static IOException AlreadyExisted<T>(this ArgInfo<T> argInfo)
+        where T : FileSystemInfo? {
+        return new IOException(argInfo.GetMessage(nameof(AlreadyExisted)));
+    }
+
+    #region WasEmpty
+
+    public static IOException HadLengthZero(this ArgInfo<FileInfo?> argInfo) {
+        return new IOException(argInfo.GetMessage($"Had a {nameof(FileInfo)}.{nameof(FileInfo.Length)}"));
+    }
+
+    public static IOException HadNoContents(this ArgInfo<DirectoryInfo?> argInfo) {
+        return new IOException(argInfo.GetMessage($"{argInfo.ActualValue?.GetType().Name ?? nameof(DirectoryInfo)} didn't contain any files or subdirectories!"));
+    }
+
+    #endregion
+
+    #region WasNotEmpty
+
+    public static IOException WasNotEmpty(this ArgInfo<FileInfo> argInfo) {
+        return new IOException(argInfo.GetMessage($"Existed and had a {nameof(FileInfo.Length)} > 0!"));
+    }
+
+    public static IOException WasNotEmpty(this ArgInfo<DirectoryInfo> argInfo) {
+        return new IOException(argInfo.GetMessage($"Existed and contained files or sub-directories!"));
+    }
+
+    #endregion
     #endregion
 }
