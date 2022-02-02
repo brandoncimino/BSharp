@@ -12,11 +12,11 @@ namespace FowlFever.Clerical.Validated;
 /// </summary>
 public record FileName(
     FileNamePart    BaseName,
-    FileExtension[] Extensions
+    FileExtensionGroup Extensions
 ) {
-    public string NameWithExtensions => Extensions.Prepend(BaseName).JoinString(".");
+    public string NameWithExtensions => $"{BaseName}{Extensions}";
 
-    public FileName(FileNamePart fileName, IEnumerable<FileExtension> extensions) : this(fileName, extensions.ToArray()) {
-
+    public override string ToString() {
+        return NameWithExtensions;
     }
 }
