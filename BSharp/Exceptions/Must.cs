@@ -296,7 +296,7 @@ public static class Must {
 
     #region BeEmptyOrMissing
 
-    public static FileInfo BeEmpty(ArgInfo<FileInfo> argInfo) {
+    public static FileInfo BeEmptyOrMissing(ArgInfo<FileInfo> argInfo) {
         if (argInfo.ActualValue.IsEmptyOrMissing()) {
             return argInfo.ActualValue;
         }
@@ -304,9 +304,9 @@ public static class Must {
         throw argInfo.WasNotEmpty();
     }
 
-    public static FileInfo BeEmpty(FileInfo actualValue, string parameterName, string methodName) => BeEmpty(new ArgInfo<FileInfo>(actualValue, parameterName, methodName));
+    public static FileInfo BeEmptyOrMissing(FileInfo actualValue, string parameterName, string methodName) => BeEmptyOrMissing(new ArgInfo<FileInfo>(actualValue, parameterName, methodName));
 
-    public static DirectoryInfo BeEmpty(ArgInfo<DirectoryInfo> argInfo) {
+    public static DirectoryInfo BeEmptyOrMissing(ArgInfo<DirectoryInfo> argInfo) {
         if (argInfo.ActualValue.IsEmptyOrMissing()) {
             return argInfo.ActualValue;
         }
@@ -314,7 +314,7 @@ public static class Must {
         throw argInfo.WasNotEmpty();
     }
 
-    public static DirectoryInfo BeEmpty(DirectoryInfo actualValue, string parameterName, string methodName) => BeEmpty(new ArgInfo<DirectoryInfo>(actualValue, parameterName, methodName));
+    public static DirectoryInfo BeEmptyOrMissing(DirectoryInfo actualValue, string parameterName, string methodName) => BeEmptyOrMissing(new ArgInfo<DirectoryInfo>(actualValue, parameterName, methodName));
 
         #endregion
 
