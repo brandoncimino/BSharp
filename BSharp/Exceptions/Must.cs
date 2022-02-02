@@ -1,5 +1,6 @@
 using System;
 using System.Buffers;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -11,6 +12,8 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading;
 
+using BenchmarkDotNet.Jobs;
+
 using FowlFever.BSharp.Clerical;
 using FowlFever.BSharp.Collections;
 using FowlFever.BSharp.Enums;
@@ -21,6 +24,8 @@ using FowlFever.BSharp.Strings.Prettifiers;
 using FowlFever.BSharp.Strings.Tabler;
 
 using JetBrains.Annotations;
+
+using Microsoft.CodeAnalysis.Operations;
 
 using Pure = System.Diagnostics.Contracts.PureAttribute;
 namespace FowlFever.BSharp.Exceptions;
@@ -56,6 +61,18 @@ public static class Must {
         reason ??= $"Predicate {InnerPretty.PrettifyDelegate(predicate, PrettificationSettings.Default)} failed!";
 
         throw new ArgumentException(argInfo.GetMessage(reason), exc);
+    }
+
+    #endregion
+
+    #region Truthfullness
+
+    public static T BeTrue<T>(T? actualValue, string parameterName, string methodName) {
+        throw new NotImplementedException();
+    }
+
+    public static T BeFalse<T>(T? actualValue, string parameterName, string methodName) {
+        throw new NotImplementedException();
     }
 
     #endregion
@@ -155,6 +172,82 @@ public static class Must {
 
         throw RejectArgument.WasEmpty(actualValue, parameterName, methodName);
     }
+
+    #region NotContain
+
+    public static string NotContain(
+        string? actualValue,
+        string  unwantedString,
+        string  parameterName,
+        string  methodName
+    ) => NotContain(new ArgInfo<string?>(actualValue, parameterName, methodName), unwantedString);
+
+    public static string NotContain(ArgInfo<string?> argInfo, string unwantedString) {
+        if (argInfo.ActualValue?.Contains(unwantedString) == false) {
+            return argInfo.ActualValue;
+        }
+
+        throw argInfo.GetException($"Contained the substring \"{unwantedString}\"!");
+    }
+
+    #endregion
+
+    #region NotMatch
+
+    public static string NotMatch(
+        string? actualValue,
+        Regex   pattern,
+        string  parameterName,
+        string  methodName
+    ) => NotMatch(new ArgInfo<string?>(actualValue, parameterName, methodName), pattern);
+
+    public static string NotMatch(ArgInfo<string?> argInfo, Regex pattern) {
+        if (argInfo.ActualValue?.Matches(pattern) == false) {
+            return argInfo.ActualValue;
+        }
+
+        throw argInfo.GetException($"Matched the Regex pattern /{pattern}/!");
+    }
+
+    #endregion
+
+    #region Contain
+
+    public static string Contain(
+        string? actualValue,
+        string  substring,
+        string  parameterName,
+        string  methodName
+    ) => Contain(new ArgInfo<string?>(actualValue, parameterName, methodName), substring);
+
+    public static string Contain(ArgInfo<string?> argInfo, string substring) {
+        if (argInfo.ActualValue?.Contains(substring) == true) {
+            return argInfo.ActualValue;
+        }
+
+        throw argInfo.GetException($"Didn't contain the substring \"{substring}\"");
+    }
+
+    #endregion
+
+    #region Match
+
+    public static string Match(
+        string? actualValue,
+        Regex   pattern,
+        string  parameterName,
+        string  methodName
+    ) => Match(new ArgInfo<string?>(actualValue, parameterName, methodName), pattern);
+
+    public static string Match(ArgInfo<string?> argInfo, Regex pattern) {
+        if (argInfo.ActualValue?.Matches(pattern) == true) {
+            return argInfo.ActualValue;
+        }
+
+        throw argInfo.GetException($"Didn't match the Regex pattern /{pattern}/!");
+    }
+
+    #endregion
 
     #endregion
 
@@ -256,6 +349,10 @@ public record ArgInfo<T>(T ActualValue, string ParameterName, string MethodName)
     public string GetMessage(string reason) {
         reason = reason.IfBlank("<reason not specified 🤷>");
         return $"{GetPreamble()}: {reason}";
+    }
+
+    public ArgumentException GetException(string reason) {
+        return new ArgumentException(GetMessage(reason), ParameterName);
     }
 }
 
