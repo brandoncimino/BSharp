@@ -104,11 +104,12 @@ public abstract class ValidatedFileData<T> : IFileData<T> {
                 Serialize();
                 break;
             case PersistenceState.FullySynced:
-                NSync().OrThrow($"{GetType().Name} was in an invalid state for the {nameof(PersistenceState)} {PersistenceState} when {nameof(Sync)} was called!");
                 break;
             default:
                 throw BEnum.UnhandledSwitch(PersistenceState, nameof(PersistenceState), nameof(Sync));
         }
+
+        NSync().OrThrow($"{GetType().Name} was in an invalid state for the {nameof(PersistenceState)} {PersistenceState} when {nameof(Sync)} was called!");
     }
 
     public void Serialize() {
