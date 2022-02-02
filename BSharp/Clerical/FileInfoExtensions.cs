@@ -290,14 +290,14 @@ namespace FowlFever.BSharp.Clerical {
 
         /// <param name="fileInfo">this <see cref="FileInfo"/></param>
         /// <returns><c>true</c> if this <see cref="FileInfo.Exists"/> and has a <see cref="FileInfo.Length"/> > 0</returns>
-        public static bool IsNotEmpty(this FileInfo fileInfo) {
+        public static bool ExistsWithContent(this FileInfo fileInfo) {
             return fileInfo is { Exists: true, Length: > 0 };
         }
 
         /// <param name="fileInfo">this <see cref="FileInfo"/></param>
         /// <returns><c>true</c> if this doesn't <see cref="FileInfo.Exists"/> with a <see cref="FileInfo.Length"/> > 0</returns>
         public static bool IsEmptyOrMissing(this FileInfo fileInfo) {
-            return !fileInfo.IsNotEmpty();
+            return !fileInfo.ExistsWithContent();
         }
     }
 }
