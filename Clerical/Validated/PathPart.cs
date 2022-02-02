@@ -1,25 +1,22 @@
+using System.Text.RegularExpressions;
+
 using FluentValidation;
 using FluentValidation.Validators;
 
 using FowlFever.BSharp.Clerical;
+using FowlFever.BSharp.Exceptions;
 
 namespace FowlFever.Clerical.Validated;
 
 public class PathPart {
-    private class PathPartValidator : AbstractValidator<PathPart> {
-        public PathPartValidator() {
-            RuleFor(it => it.Value)
-                .NotEmpty()
-                .Matches(BPath.DirectorySeparatorPattern);
-        }
-    }
-
-    private static readonly Lazy<PathPartValidator> Validator = new ();
-
     public readonly string Value;
 
     public PathPart(string value) {
-        Validator.Value.ValidateAndThrow(this);
+        var whitespacePattern = new Regex(@"\s");
+        var arg               = new ArgInfo<string?>(value, nameof(Value), $"new {GetType().Name}");
+        Must.NotMatch(arg, whitespacePattern);
+        Must.NotMatch(arg, BPath.DirectorySeparatorPattern);
+
         Value = value;
     }
 
