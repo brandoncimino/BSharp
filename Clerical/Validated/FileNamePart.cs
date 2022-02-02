@@ -1,3 +1,4 @@
+using System.IO;
 using System.Text.RegularExpressions;
 
 using FluentValidation;
@@ -13,6 +14,8 @@ namespace FowlFever.Clerical.Validated;
 /// <li>Doesn't contain <see cref="DirectorySeparator"/>s</li>
 /// <li>Doesn't contain whitespace</li>
 /// <li>Doesn't contain periods</li>
+/// <li>TODO: Doesn't contain any <see cref="Path.GetInvalidPathChars"/></li>
+/// <li>TODO: Doesn't contain any <see cref="Path.GetInvalidFileNameChars"/></li>
 /// </ul>
 /// </summary>
 public class FileNamePart {
