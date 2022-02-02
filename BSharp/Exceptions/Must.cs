@@ -268,9 +268,11 @@ public static class Must {
         throw argInfo.DidNotExist();
     }
 
-    #region ExistWithData
+    #region ExistWithContent
 
-    public static FileInfo ExistWithData(ArgInfo<FileInfo> argInfo) {
+    public static FileInfo ExistWithContent(FileInfo? actualValue, string parameterName, string methodName) => ExistWithContent(new ArgInfo<FileInfo?>(actualValue, parameterName, methodName));
+
+    public static FileInfo ExistWithContent(ArgInfo<FileInfo?> argInfo) {
         if (argInfo is { ActualValue: { Exists: true, Length: > 0 } }) {
             return argInfo.ActualValue;
         }
@@ -285,7 +287,7 @@ public static class Must {
     #region NotBeEmpty
 
     public static FileInfo NotBeEmpty(ArgInfo<FileInfo?> argInfo) {
-        if (argInfo.ActualValue?.IsNotEmpty() == true) {
+        if (argInfo.ActualValue?.ExistsWithContent() == true) {
             return argInfo.ActualValue;
         }
 
