@@ -1,3 +1,5 @@
+using System.ComponentModel;
+
 using FluentValidation;
 
 using FowlFever.BSharp.Clerical;
@@ -7,30 +9,6 @@ using JetBrains.Annotations;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace FowlFever.Clerical;
-
-internal enum PersistenceState {
-    /// <summary>
-    /// <ul>
-    /// <li>The <see cref="IFileData{T}.Data"/> has been initialized (i.e. is not <c>null</c>)</li>
-    /// <li>The <see cref="IFileData{T}.File"/> does not exist, or exists but is empty</li>
-    /// </ul>
-    /// </summary>
-    NotYetSerialized,
-
-    /// <summary>
-    /// <ul>
-    /// <li>The <see cref="IFileData{T}.File"/> <see cref="FileInfoExtensions.ExistsWithContent"/></li>
-    /// <li>The contents of the <see cref="IFileData{T}.File"/> have not been loaded into <see cref="IFileData{T}.Data"/></li>
-    /// <li>The <see cref="IFileData{T}.Data"/> is <c>null</c></li>
-    /// </ul>
-    /// </summary>
-    NotYetDeserialized,
-
-    /// <summary>
-    /// The <see cref="IFileData{T}.File"/> exists and contains the same content as <see cref="IFileData{T}.Data"/>
-    /// </summary>
-    FullySynced,
-}
 
 /// <summary>
 /// Combines a <see cref="FileInfo"/> with the deserialized <see cref="T"/> data that it contains.
@@ -50,33 +28,36 @@ public interface IFileData<out T> {
     /// </summary>
     public FileInfo File { get; }
 
-    internal PersistenceState PersistenceState { get; }
+    /// <returns>if it is safe to call <see cref="Deserialize"/></returns>
+    public bool CanDeserialize();
+
+    /// <returns>if it is safe to call <see cref="Serialize"/></returns>
+    public bool CanSerialize();
+
+    /// <summary>
+    /// Populates the <see cref="Data"/> object with the contents of <see cref="File"/>.
+    /// </summary>
+    /// <exception cref="IOException">if <see cref="CanDeserialize"/> is <c>false</c></exception>
+    public void Deserialize();
+
+    /// <summary>
+    /// Writes the <see cref="Data"/> object to the <see cref="File"/>.
+    /// </summary>
+    /// <exception cref="IOException">if <see cref="CanSerialize"/> is <c>false</c></exception>
+    public void Serialize();
+
+    /// <summary>
+    /// Ensures that:
+    /// <ul>
+    /// <li><see cref="Data"/> is not <c>null</c></li>
+    /// <li><see cref="FileInfo"/> <see cref="FileInfoExtensions.ExistsWithContent"/></li>
+    /// <li>The contents of <see cref="FileInfo"/> match the <see cref="Data"/> object</li>
+    /// </ul>
+    /// </summary>
+    /// <remarks>
+    /// This method should be <a href="https://en.wikipedia.org/wiki/Idempotence">idempotent</a>,
+    /// i.e. calling <see cref="Sync"/> twice in a row should <b>not</b> cause any issues.
+    /// </remarks>
+    /// <exception cref="IOException">if we were unable to corroborate the <see cref="Data"/> and <see cref="FileInfo"/></exception>
+    public void Sync();
 }
-
-#region Validators
-
-internal class CanDeserializeValidator<T> : AbstractValidator<IFileData<T>> {
-    public CanDeserializeValidator() {
-        RuleFor(it => it.Data).Null();
-        RuleFor(it => it.File).Must(it => it.ExistsWithContent());
-        RuleFor(it => it.PersistenceState).Equal(PersistenceState.NotYetDeserialized);
-    }
-}
-
-internal class CanSerializeValidator<T> : AbstractValidator<IFileData<T>> {
-    public CanSerializeValidator() {
-        RuleFor(it => it.Data).NotNull();
-        RuleFor(it => it.File).Must(it => it.IsEmptyOrMissing());
-        RuleFor(it => it.PersistenceState).Equal(PersistenceState.NotYetSerialized);
-    }
-}
-
-internal class FullySyncedValidator<T> : AbstractValidator<IFileData<T>> {
-    public FullySyncedValidator() {
-        RuleFor(it => it.Data).NotNull();
-        RuleFor(it => it.File).Must(it => it.ExistsWithContent());
-        RuleFor(it => it.PersistenceState).Equal(PersistenceState.FullySynced);
-    }
-}
-
-#endregion
