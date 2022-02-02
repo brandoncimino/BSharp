@@ -18,9 +18,10 @@ using Pure = System.Diagnostics.Contracts.PureAttribute;
 namespace FowlFever.BSharp.Clerical {
     /// <summary>
     /// TODO: There is almost certainly a cross-platform library to use for this that I can get from Nuget
+    /// TODO: Made this non-static to prepare for the ability to make an instantiable class like <see cref="Conjugal"/>
     /// </summary>
     [PublicAPI]
-    public static class BPath {
+    public class BPath {
         internal static readonly RegexGroup ExtensionGroup            = new RegexGroup(nameof(ExtensionGroup), @"(\.[^.]+?)+$");
         internal static readonly char[]     Separators                = Enum.GetValues(typeof(DirectorySeparator)).Cast<DirectorySeparator>().Select(DirectorySeparatorExtensions.ToChar).ToArray();
         public static readonly   Regex      DirectorySeparatorPattern = new Regex(@"[\\\/]");
@@ -35,7 +36,7 @@ namespace FowlFever.BSharp.Clerical {
             return action!.Try(maybePath);
         }
 
-        public static string[] SplitPath(this string path) {
+        public static string[] SplitPath(string path) {
             return path.Split(InnerSeparatorPattern);
         }
 
@@ -46,8 +47,8 @@ namespace FowlFever.BSharp.Clerical {
                     p => p.MustNotBeBlank(),
                     p => _ = Path.GetFullPath(p!),
                     p => _ = new FileInfo(p!),
-                    PathChars,
-                    p => PathParts(p?.SplitPath())
+                    PathChars
+                    // p => p != null ? PathParts(SplitPath(p)) : null
                 );
             }
 
@@ -266,7 +267,7 @@ namespace FowlFever.BSharp.Clerical {
         /// <returns>a new <see cref="Path"/> <see cref="string"/></returns>
         [Pure]
         public static string JoinPath(IEnumerable<string?>? parts, DirectorySeparator separator = DirectorySeparator.Universal) {
-            parts = Validate.PathParts(parts?.SelectMany(it => it?.SplitPath()));
+            parts = Validate.PathParts(parts?.SelectMany(SplitPath));
             return parts?.Aggregate((pathSoFar, nextPart) => _JoinPathInternal(pathSoFar, nextPart, separator, JoinSeparatorOption.TrimOne)) ?? "";
         }
     }
