@@ -255,7 +255,7 @@ namespace FowlFever.BSharp.Clerical {
         /// <param name="parts">the <see cref="string"/>s used to build the <see cref="Path"/></param>
         /// <returns>a new <see cref="Path"/> <see cref="string"/></returns>
         [Pure]
-        public static string JoinPath(params string?[]? parts) {
+        public static string JoinPath(params string?[] parts) {
             return JoinPath(parts, default(DirectorySeparator));
         }
 
