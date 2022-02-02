@@ -1115,7 +1115,7 @@ namespace FowlFever.BSharp.Collections {
          */
         [Pure]
         [LinqTunnel]
-        public static IEnumerable<T?> OrEmpty<T>(this IEnumerable<T?>? source) {
+        public static IEnumerable<T> OrEmpty<T>(this IEnumerable<T>? source) {
             return source.EmptyIfNull();
         }
 
