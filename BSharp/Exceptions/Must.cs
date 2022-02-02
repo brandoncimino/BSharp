@@ -268,6 +268,18 @@ public static class Must {
         throw argInfo.DidNotExist();
     }
 
+    #region ExistWithData
+
+    public static FileInfo ExistWithData(ArgInfo<FileInfo> argInfo) {
+        if (argInfo is { ActualValue: { Exists: true, Length: > 0 } }) {
+            return argInfo.ActualValue;
+        }
+
+        throw new FileNotFoundException(argInfo.GetMessage("Did not exist OR was empty!"));
+    }
+
+    #endregion
+
     #endregion
 
     #region NotBeEmpty
