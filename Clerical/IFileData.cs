@@ -29,10 +29,10 @@ public interface IFileData<out T> {
     public FileInfo File { get; }
 
     /// <returns>if it is safe to call <see cref="Deserialize"/></returns>
-    public bool CanDeserialize();
+    public bool CanDeserialize { get; }
 
     /// <returns>if it is safe to call <see cref="Serialize"/></returns>
-    public bool CanSerialize();
+    public bool CanSerialize { get; }
 
     /// <summary>
     /// Populates the <see cref="Data"/> object with the contents of <see cref="File"/>.
