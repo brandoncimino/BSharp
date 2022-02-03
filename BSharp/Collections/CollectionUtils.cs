@@ -731,8 +731,8 @@ namespace FowlFever.BSharp.Collections {
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
         public static bool AddIfMissing<T>(
-            this ICollection<T?> collection,
-            T?                   newItem
+            this ICollection<T> collection,
+            T                   newItem
         ) {
             if (collection.Contains(newItem)) {
                 return false;
