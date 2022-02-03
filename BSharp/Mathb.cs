@@ -195,31 +195,43 @@ namespace FowlFever.BSharp {
 
         #region Round
 
-        [Pure] public static double  Round(this float   value)                                                   => Math.Round(value);
-        [Pure] public static double  Round(this double  value)                                                   => Math.Round(value);
-        [Pure] public static decimal Round(this decimal value)                                                   => Math.Round(value);
-        [Pure] public static double  Round(this float   value, MidpointRounding mode)                            => Math.Round(value, mode);
-        [Pure] public static double  Round(this double  value, MidpointRounding mode)                            => Math.Round(value, mode);
-        [Pure] public static decimal Round(this decimal value, MidpointRounding mode)                            => Math.Round(value, mode);
-        [Pure] public static double  Round(this float   value, int              digits)                          => Math.Round(value, digits);
-        [Pure] public static double  Round(this double  value, int              digits)                          => Math.Round(value, digits);
-        [Pure] public static decimal Round(this decimal value, int              decimals)                        => Math.Round(value, decimals);
-        [Pure] public static double  Round(this float   value, int              digits,   MidpointRounding mode) => Math.Round(value, digits, mode);
-        [Pure] public static double  Round(this double  value, int              digits,   MidpointRounding mode) => Math.Round(value, digits, mode);
-        [Pure] public static decimal Round(this decimal value, int              decimals, MidpointRounding mode) => Math.Round(value, decimals, mode);
+        [Pure] public static double  Round(this float   value)                                                    => Math.Round(value);
+        [Pure] public static double  Round(this double  value)                                                    => Math.Round(value);
+        [Pure] public static decimal Round(this decimal value)                                                    => Math.Round(value);
+        [Pure] public static double  Round(this float   value, MidpointRounding  mode)                            => Math.Round(value, mode);
+        [Pure] public static double  Round(this double  value, MidpointRounding  mode)                            => Math.Round(value, mode);
+        [Pure] public static decimal Round(this decimal value, MidpointRounding  mode)                            => Math.Round(value, mode);
+        [Pure] public static double  Round(this float   value, RoundingDirection direction)                       => Rounder.Get(direction).Round(value);
+        [Pure] public static double  Round(this double  value, RoundingDirection direction)                       => Rounder.Get(direction).Round(value);
+        [Pure] public static decimal Round(this decimal value, RoundingDirection direction)                       => Rounder.Get(direction).Round(value);
+        [Pure] public static double  Round(this float   value, int               digits)                          => Math.Round(value, digits);
+        [Pure] public static double  Round(this double  value, int               digits)                          => Math.Round(value, digits);
+        [Pure] public static decimal Round(this decimal value, int               decimals)                        => Math.Round(value, decimals);
+        [Pure] public static double  Round(this float   value, int               digits,   MidpointRounding mode) => Math.Round(value, digits,   mode);
+        [Pure] public static double  Round(this double  value, int               digits,   MidpointRounding mode) => Math.Round(value, digits,   mode);
+        [Pure] public static decimal Round(this decimal value, int               decimals, MidpointRounding mode) => Math.Round(value, decimals, mode);
+        [Pure] public static double  Round(this float   value, int               digits,   RoundingDirection direction) => value.Round(direction).ToInt();
+        [Pure] public static double  Round(this double  value, int               digits,   RoundingDirection direction) => value.Round(direction).ToInt();
+        [Pure] public static decimal Round(this decimal value, int               decimals, RoundingDirection direction) => value.Round(direction).ToInt();
 
-        [Pure] public static int RoundToInt(this float   value)                                                   => Math.Round(value).ToInt();
-        [Pure] public static int RoundToInt(this double  value)                                                   => Math.Round(value).ToInt();
-        [Pure] public static int RoundToInt(this decimal value)                                                   => Math.Round(value).ToInt();
-        [Pure] public static int RoundToInt(this float   value, MidpointRounding mode)                            => Math.Round(value, mode).ToInt();
-        [Pure] public static int RoundToInt(this double  value, MidpointRounding mode)                            => Math.Round(value, mode).ToInt();
-        [Pure] public static int RoundToInt(this decimal value, MidpointRounding mode)                            => Math.Round(value, mode).ToInt();
-        [Pure] public static int RoundToInt(this float   value, int              digits)                          => Math.Round(value, digits).ToInt();
-        [Pure] public static int RoundToInt(this double  value, int              digits)                          => Math.Round(value, digits).ToInt();
-        [Pure] public static int RoundToInt(this decimal value, int              decimals)                        => Math.Round(value, decimals).ToInt();
-        [Pure] public static int RoundToInt(this float   value, int              digits,   MidpointRounding mode) => Math.Round(value, digits,   mode).ToInt();
-        [Pure] public static int RoundToInt(this double  value, int              digits,   MidpointRounding mode) => Math.Round(value, digits,   mode).ToInt();
-        [Pure] public static int RoundToInt(this decimal value, int              decimals, MidpointRounding mode) => Math.Round(value, decimals, mode).ToInt();
+        [Pure] public static int     RoundToInt(this float   value)                                                         => Math.Round(value).ToInt();
+        [Pure] public static int     RoundToInt(this double  value)                                                         => Math.Round(value).ToInt();
+        [Pure] public static int     RoundToInt(this decimal value)                                                         => Math.Round(value).ToInt();
+        [Pure] public static int     RoundToInt(this float   value, MidpointRounding mode)                                  => Math.Round(value, mode).ToInt();
+        [Pure] public static int     RoundToInt(this double  value, MidpointRounding mode)                                  => Math.Round(value, mode).ToInt();
+        [Pure] public static int     RoundToInt(this decimal value, MidpointRounding mode)                                  => Math.Round(value, mode).ToInt();
+        [Pure] public static int     RoundToInt(this float   value, RoundingDirection direction)                                  => Rounder.Get(direction).RoundToInt(value);
+        [Pure] public static int     RoundToInt(this double  value, RoundingDirection direction)                                  => Rounder.Get(direction).RoundToInt(value);
+        [Pure] public static int     RoundToInt(this decimal value, RoundingDirection direction)                                  => Rounder.Get(direction).RoundToInt(value);
+        [Pure] public static int     RoundToInt(this float   value, int              digits)                                => Math.Round(value, digits).ToInt();
+        [Pure] public static int     RoundToInt(this double  value, int              digits)                                => Math.Round(value, digits).ToInt();
+        [Pure] public static int     RoundToInt(this decimal value, int              decimals)                              => Math.Round(value, decimals).ToInt();
+        [Pure] public static int     RoundToInt(this float   value, int              digits,   MidpointRounding  mode)      => Math.Round(value, digits,   mode).ToInt();
+        [Pure] public static int     RoundToInt(this double  value, int              digits,   MidpointRounding  mode)      => Math.Round(value, digits,   mode).ToInt();
+        [Pure] public static int     RoundToInt(this decimal value, int              decimals, MidpointRounding  mode)      => Math.Round(value, decimals, mode).ToInt();
+        [Pure] public static double  RoundToInt(this float   value, int              digits,   RoundingDirection direction) => Rounder.Get(direction).RoundToInt(value);
+        [Pure] public static double  RoundToInt(this double  value, int              digits,   RoundingDirection direction) => Rounder.Get(direction).RoundToInt(value);
+        [Pure] public static decimal RoundToInt(this decimal value, int              decimals, RoundingDirection direction) => Rounder.Get(direction).RoundToInt(value);
 
         #endregion
 
