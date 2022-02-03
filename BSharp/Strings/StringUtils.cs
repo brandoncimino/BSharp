@@ -331,6 +331,8 @@ namespace FowlFever.BSharp.Strings {
             };
         }
 
+        #region Filling
+
         [ContractAnnotation("filler:null => stop")]
         public static string FillRight(this string? self, [NonNegativeValue] int totalLength, string filler) {
             _Validate_FillParameters(filler, totalLength);
@@ -385,6 +387,8 @@ namespace FowlFever.BSharp.Strings {
             }
         }
 
+        #endregion
+
         public static string FormatHeading(string heading, string border = "=", string padding = " ") {
             var middle = $"{border}{padding}{heading}{padding}{border}";
             var hRule  = border.FillRight(middle.Length, border);
@@ -402,6 +406,8 @@ namespace FowlFever.BSharp.Strings {
             return Trim(input, pattern);
         }
 
+        #region Trimming
+
         [Pure]
         public static string Trim(this string input, Regex trimPattern) {
             var reg   = new Regex($"^({trimPattern})*(?<trimmed>.*?)({trimPattern})*$");
@@ -410,8 +416,39 @@ namespace FowlFever.BSharp.Strings {
             return match.Success ? match.Groups["trimmed"].Value : input;
         }
 
-        private static string GetTrimQuantifier(int? numberToTrim) {
+        private static string _GetTrimQuantifier(int? numberToTrim) {
             return numberToTrim.IfPresentOrElse(it => $"{{0,{it}}}", () => "*");
+        }
+
+        /// <summary>
+        /// Removes up to <paramref name="numberToTrim"/> instances of <paramref name="trimString"/> from the <b>beginning</b> of <paramref name="input"/>.
+        /// </summary>
+        /// <remarks><inheritdoc cref="TrimEnd(string,string,System.Nullable{int})"/></remarks>
+        /// <param name="input">the original <see cref="string"/></param>
+        /// <param name="trimString">the <see cref="Regex"/> pattern to be removed</param>
+        /// <param name="numberToTrim">the maximum number of <paramref name="trimString"/>s to remove</param>
+        /// <returns><paramref name="input"/> with some number of <paramref name="trimString"/>s removed from the <b>beginning</b></returns>
+        [Pure]
+        public static string TrimStart(this string input, string trimString, int? numberToTrim = default) {
+            var pattern = new Regex(Regex.Escape(trimString));
+            return TrimStart(input, pattern, numberToTrim);
+        }
+
+        /// <summary>
+        /// Removes up to <paramref name="numberToTrim"/> instances of <paramref name="trimPattern"/> from the <b>beginning</b> of <paramref name="input"/>.
+        /// </summary>
+        /// <remarks><inheritdoc cref="TrimEnd(string,string,System.Nullable{int})"/></remarks>
+        /// <param name="input">the original <see cref="string"/></param>
+        /// <param name="trimPattern">the <see cref="Regex"/> pattern to be removed</param>
+        /// <param name="numberToTrim">the maximum number of <paramref name="trimPattern"/>s to remove</param>
+        /// <returns><paramref name="input"/> with some number of <paramref name="trimPattern"/>s removed from the <b>beginning</b></returns>
+        [Pure]
+        public static string TrimStart(this string input, Regex trimPattern, int? numberToTrim = default) {
+            var trimQuantifier = _GetTrimQuantifier(numberToTrim);
+            var reg            = new Regex(@$"^({trimPattern}){trimQuantifier}(?<trimmed>.*?)$");
+            var match          = reg.Match(input);
+
+            return match.Success ? match.Groups["trimmed"].Value : input;
         }
 
         /// <summary>
@@ -440,12 +477,16 @@ namespace FowlFever.BSharp.Strings {
         /// <returns><paramref name="input"/> with some number of <paramref name="trimPattern"/>s removed from the <b>end</b></returns>
         [Pure]
         public static string TrimEnd(this string input, Regex trimPattern, int? numberToTrim = default) {
-            var trimQuantifier = GetTrimQuantifier(numberToTrim);
+            var trimQuantifier = _GetTrimQuantifier(numberToTrim);
             var reg            = new Regex($@"^(?<trimmed>.*?)({trimPattern}){trimQuantifier}$");
             var match          = reg.Match(input);
 
             return match.Success ? match.Groups["trimmed"].Value : input;
         }
+
+        #endregion
+
+        #region Limiting
 
         private static string _Limit(
             string input,
@@ -491,6 +532,10 @@ namespace FowlFever.BSharp.Strings {
         public static string LimitStart(this string input, string trimString, int maxKept) {
             return LimitStart(input, new Regex(Regex.Escape(trimString)), maxKept);
         }
+
+        #endregion
+
+        #region "Forcing"
 
         private static string _ForcePattern(
             this string input,
@@ -600,36 +645,7 @@ namespace FowlFever.BSharp.Strings {
             return input.ForceStartingPattern(RegexPatterns.Escaped(startingString), startingString, minKept, maxKept);
         }
 
-        /// <summary>
-        /// Removes up to <paramref name="numberToTrim"/> instances of <paramref name="trimString"/> from the <b>beginning</b> of <paramref name="input"/>.
-        /// </summary>
-        /// <remarks><inheritdoc cref="TrimEnd(string,string,System.Nullable{int})"/></remarks>
-        /// <param name="input">the original <see cref="string"/></param>
-        /// <param name="trimString">the <see cref="Regex"/> pattern to be removed</param>
-        /// <param name="numberToTrim">the maximum number of <paramref name="trimString"/>s to remove</param>
-        /// <returns><paramref name="input"/> with some number of <paramref name="trimString"/>s removed from the <b>beginning</b></returns>
-        [Pure]
-        public static string TrimStart(this string input, string trimString, int? numberToTrim = default) {
-            var pattern = new Regex(Regex.Escape(trimString));
-            return TrimStart(input, pattern, numberToTrim);
-        }
-
-        /// <summary>
-        /// Removes up to <paramref name="numberToTrim"/> instances of <paramref name="trimPattern"/> from the <b>beginning</b> of <paramref name="input"/>.
-        /// </summary>
-        /// <remarks><inheritdoc cref="TrimEnd(string,string,System.Nullable{int})"/></remarks>
-        /// <param name="input">the original <see cref="string"/></param>
-        /// <param name="trimPattern">the <see cref="Regex"/> pattern to be removed</param>
-        /// <param name="numberToTrim">the maximum number of <paramref name="trimPattern"/>s to remove</param>
-        /// <returns><paramref name="input"/> with some number of <paramref name="trimPattern"/>s removed from the <b>beginning</b></returns>
-        [Pure]
-        public static string TrimStart(this string input, Regex trimPattern, int? numberToTrim = default) {
-            var trimQuantifier = GetTrimQuantifier(numberToTrim);
-            var reg            = new Regex(@$"^({trimPattern}){trimQuantifier}(?<trimmed>.*?)$");
-            var match          = reg.Match(input);
-
-            return match.Success ? match.Groups["trimmed"].Value : input;
-        }
+        #endregion
 
         #endregion
 
