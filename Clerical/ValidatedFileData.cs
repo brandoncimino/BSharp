@@ -50,7 +50,7 @@ public abstract class ValidatedFileData<T> : IFileData<T> {
     protected ValidatedFileData(FileInfo fileInfo) {
         var methodName = $"new {GetType().Name} with a pre-existing file";
         Must.BeNull(Data, nameof(Data), methodName);
-        Must.ExistWithData(fileInfo, nameof(fileInfo), methodName);
+        Must.ExistWithContent(fileInfo, nameof(fileInfo), methodName);
         File             = fileInfo;
         PersistenceState = PersistenceState.NotYetDeserialized;
     }
