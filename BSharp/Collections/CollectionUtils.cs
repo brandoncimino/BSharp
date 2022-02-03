@@ -709,6 +709,18 @@ namespace FowlFever.BSharp.Collections {
             return !source.Contains(value);
         }
 
+        /// <summary>
+        /// A simple inverse of <see cref="ContainsAny{T}(System.Collections.Generic.IEnumerable{T?},System.Collections.Generic.IEnumerable{T?})"/>.
+        /// </summary>
+        /// <param name="source">the collection being checked</param>
+        /// <param name="unwanted">the things we don't want in <paramref name="source"/></param>
+        /// <typeparam name="T">the type of the items in the collections</typeparam>
+        /// <returns>the inverse of <see cref="ContainsAny{T}(System.Collections.Generic.IEnumerable{T?},System.Collections.Generic.IEnumerable{T?})"/></returns>
+        [Pure]
+        public static bool DoesNotContainAny<T>([InstantHandle] this IEnumerable<T?> source, IEnumerable<T?> unwanted) {
+            return !source.ContainsAny(unwanted);
+        }
+
         #endregion
 
         /// <summary>
