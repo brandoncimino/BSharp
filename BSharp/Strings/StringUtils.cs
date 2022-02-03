@@ -662,6 +662,11 @@ namespace FowlFever.BSharp.Strings {
             return Regex.Split(input, pattern, options, matchTimeout);
         }
 
+        #region Containment
+
+
+        #region ContainsAny
+
         /// <summary>
         /// Returns true if the given <see cref="string"/> <see cref="string.Contains"/> <b>any</b> of the given <see cref="substrings"/>.
         /// </summary>
@@ -682,6 +687,19 @@ namespace FowlFever.BSharp.Strings {
             return ContainsAny(str, substrings.AsEnumerable());
         }
 
+        #endregion
+
+        #region DoesNotContain
+
+        /// <param name="str">this <see cref="string"/></param>
+        /// <param name="substring">the <see cref="string"/> that shouldn't be inside of <paramref name="str"/></param>
+        /// <returns>the inverse of <see cref="string.Contains"/></returns>
+        public static bool DoesNotContain(this string str, string substring) {
+            return !str.Contains(substring);
+        }
+
+        #endregion
+
         #region DoesNotContainAny
 
         /// <param name="str">this <see cref="string"/></param>
@@ -701,6 +719,8 @@ namespace FowlFever.BSharp.Strings {
 
         #endregion
 
+        #region ContainsAll
+
         /// <summary>
         /// Returns true if the given <see cref="string"/> <see cref="string.Contains"/> <b>all</b> of the given <see cref="substrings"/>.
         /// </summary>
@@ -717,6 +737,10 @@ namespace FowlFever.BSharp.Strings {
         public static bool ContainsAll(this string str, params string[] substrings) {
             return ContainsAll(str, substrings.AsEnumerable());
         }
+
+        #endregion
+
+        #endregion
 
         #region Line Management
 
