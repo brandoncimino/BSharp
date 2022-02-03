@@ -682,6 +682,25 @@ namespace FowlFever.BSharp.Strings {
             return ContainsAny(str, substrings.AsEnumerable());
         }
 
+        #region DoesNotContainAny
+
+        /// <param name="str">this <see cref="string"/></param>
+        /// <param name="substrings">the <see cref="string"/>s that shouldn't be inside of <paramref name="str"/></param>
+        /// <returns>the inverse of <see cref="ContainsAny(string,System.Collections.Generic.IEnumerable{string})"/></returns>
+        public static bool DoesNotContainAny(this string str, IEnumerable<string> substrings) {
+            return !str.ContainsAny(substrings);
+        }
+
+        /// <param name="str">this <see cref="string"/></param>
+        /// <param name="substrings">the <see cref="string"/>s that shouldn't be inside of <paramref name="str"/></param>
+        /// <returns>the inverse of <see cref="ContainsAny(string,System.Collections.Generic.IEnumerable{string})"/></returns>
+        public static bool DoesNotContainAny(this string str, params string[] substrings) {
+            return !ContainsAny(str, substrings);
+        }
+
+
+        #endregion
+
         /// <summary>
         /// Returns true if the given <see cref="string"/> <see cref="string.Contains"/> <b>all</b> of the given <see cref="substrings"/>.
         /// </summary>
