@@ -1,3 +1,5 @@
+using System.IO;
+
 using FowlFever.BSharp.Clerical;
 using FowlFever.BSharp.Strings;
 
@@ -39,4 +41,22 @@ public static class Clerk {
             separator
         );
     }
+
+    /// <summary>
+    /// The <see cref="DirectoryPath"/>-flavored version of <see cref="Path.GetTempPath"/>.
+    /// </summary>
+    /// <returns>a <see cref="DirectoryPath"/> equivalent of <see cref="Path.GetTempPath"/></returns>
+    [Pure] public static DirectoryPath GetTempDirectoryPath() => GetDirectoryPath(Path.GetTempPath());
+
+    /// <summary>
+    /// The <see cref="FileName"/>-flavored version of <see cref="Path.GetTempFileName"/>.
+    /// </summary>
+    /// <returns>a <see cref="FileName"/> equivalent of <see cref="Path.GetTempFileName"/></returns>
+    [Pure] public static FileName CreateTempFileName() => GetFileName(Path.GetTempFileName());
+
+    /// <summary>
+    /// <see cref="FileName"/>-flavored version of <see cref="Path.GetRandomFileName"/>.
+    /// </summary>
+    /// <returns>a <see cref="FileName"/> equivalent of <see cref="Path.GetRandomFileName"/></returns>
+    [Pure] public static FileName GetRandomFileName() => GetFileName(Path.GetRandomFileName());
 }
