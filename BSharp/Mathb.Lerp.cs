@@ -87,5 +87,73 @@ namespace FowlFever.BSharp {
         }
 
         #endregion
+
+        #region Splerp (split lerp)
+
+        /// <summary>
+        /// Performs a <see cref="LerpInt(int,int,double,FowlFever.BSharp.Enums.RoundingDirection)"/> operation,
+        /// returning a <see cref="Tuple{T1,T2}"/> containing both the result and the "remainder".
+        /// </summary>
+        /// <example>
+        /// This method ensures that all of the "distance" between <paramref name="start"/> and <paramref name="finish"/>)
+        /// is accounted for.
+        ///
+        /// For example, consider whole puppies:
+        /// <code><![CDATA[
+        /// int 🦈 = 5;
+        /// double 🎆 = 0.5;
+        ///
+        /// int 👈 = Lerp(0, 🦈, 🎆);   // => 0 + Math.Round(5 * .5) => Math.Round(2.5) => 2
+        /// int 👉 = Lerp(0, 🦈, 🎆);   // => 0 + Math.Round(5 * .5) => Math.Round(2.5) => 2
+        ///
+        /// int 👯 = 👈 + 👉;           // => 2 + 2 => 4
+        /// ]]></code>
+        /// We've lost a 🦈!
+        /// <p/>
+        /// But no longer!
+        /// <code><![CDATA[
+        /// int 🦈 = 5;
+        /// double 🎆 = 0.5;
+        ///
+        /// var (👈, 👉) = Sperp(0, 🦈, 🎆);    // => x = Lerp(...); (0 + x, 10 - x) => (0 + 2, 10 - 2) => (👈: 2, 👉: 8)
+        ///
+        /// int 👯‍ = 👈 + 👉;                  // => (👈: 2, 👉: 8) => 2 + 8 => 10 == 🦈!
+        /// ]]></code>
+        /// </example>
+        /// <param name="start"></param>
+        /// <param name="finish"></param>
+        /// <param name="lerpAmount"></param>
+        /// <param name="leftPortionRounding"></param>
+        /// <returns></returns>
+        public static (int A, int B) Sperp(
+            int               start,
+            int               finish,
+            double            lerpAmount,
+            RoundingDirection leftPortionRounding = default
+        ) {
+            var leftPortion = LerpInt(start, finish, lerpAmount, leftPortionRounding);
+            return (start + leftPortion, finish - leftPortion);
+        }
+
+        /// <inheritdoc cref="Sperp(int,int,double,FowlFever.BSharp.Enums.RoundingDirection)"/>
+        public static (int A, int B) Sperp(this int total, double lerpAmount, RoundingDirection leftPortionRounding = default)
+            => Sperp(0, total, lerpAmount, leftPortionRounding);
+
+        /// <inheritdoc cref="Sperp(int,int,double,FowlFever.BSharp.Enums.RoundingDirection)"/>
+        public static (long A, long B) Sperp(
+            long              start,
+            long              finish,
+            double            lerpAmount,
+            RoundingDirection leftPortionRounding = default
+        ) {
+            var leftPortion = LerpInt(start, finish, lerpAmount, leftPortionRounding);
+            return (start + leftPortion, finish - leftPortion);
+        }
+
+        /// <inheritdoc cref="Sperp(int,int,double,FowlFever.BSharp.Enums.RoundingDirection)"/>
+        public static (long A, long B) Sperp(this long total, double lerpAmount, RoundingDirection leftPortionRounding = default)
+            => Sperp(0, total, lerpAmount, leftPortionRounding);
+
+        #endregion
     }
 }
