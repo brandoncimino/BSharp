@@ -133,27 +133,17 @@ namespace FowlFever.BSharp.Strings {
         /// <param name="toRepeat">The <see cref="string" /> to be joined with itself.</param>
         /// <param name="repetitions">The number of times <paramref name="toRepeat" /> should be repeated.</param>
         /// <param name="separator">An optional character, analogous to </param>
-        /// <returns></returns>
+        /// <returns><paramref name="toRepeat"/>, joined with itself, <paramref name="repetitions"/> times</returns>
+        /// <exception cref="ArgumentOutOfRangeException">if <paramref name="repetitions"/> is negative</exception>
         public static string Repeat(this string toRepeat, [NonNegativeValue] int repetitions, string? separator = "") {
-            if (repetitions.IsPositive() == false) {
-                throw new ArgumentOutOfRangeException(nameof(repetitions));
-            }
-
-            var list = new List<string>();
-            for (var i = 0; i < repetitions; i++) {
-                list.Add(toRepeat);
-            }
-
-            return string.Join(separator, list);
+            Must.BePositive(repetitions, nameof(repetitions), nameof(Repeat));
+            return string.Join(separator, Enumerable.Repeat(toRepeat, repetitions));
         }
 
         /// <inheritdoc cref="Repeat(string,int,string)" />
-        public static string Repeat(this char toRepeat, [NonNegativeValue] int repetitions, string separator = "") {
-            if (repetitions.IsPositive() == false) {
-                throw new ArgumentOutOfRangeException(nameof(repetitions));
-            }
-
-            return Repeat(toRepeat.ToString(), repetitions, separator);
+        public static string Repeat(this char toRepeat, [NonNegativeValue] int repetitions, string? separator = "") {
+            Must.BePositive(repetitions, nameof(repetitions), nameof(Repeat));
+            return separator is null ? new string(toRepeat, repetitions) : string.Join(separator, Enumerable.Repeat(toRepeat, repetitions));
         }
 
         /// <summary>
@@ -331,11 +321,35 @@ namespace FowlFever.BSharp.Strings {
             };
         }
 
+        #region Alignment
+
+        /// <summary>
+        /// Evenly <see cref="string.PadLeft(int)"/> and <see cref="string.PadRight(int)"/> so that <paramref name="input"/> is as long as <paramref name="lineWidth"/>.
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="lineWidth"></param>
+        /// <param name="roundingDirection"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentOutOfRangeException">if <paramref name="input"/> is longer than <paramref name="lineWidth"/></exception>
+        public static string Center(this string input, int lineWidth, RoundingDirection roundingDirection = RoundingDirection.Floor) {
+            Must.NotBeNull(input, nameof(input), nameof(Center));
+
+            if (input.Length > lineWidth) {
+                throw new ArgumentOutOfRangeException($"Unable to center the string because its length ({input.Length}) was greater than the {nameof(lineWidth)} {lineWidth} !");
+            }
+
+            var padAmount = lineWidth - input.Length;
+            var (leftPad, rightPad) = padAmount.Sperp(.5);
+            return input.PadLeft(leftPad).PadRight(rightPad);
+        }
+
+        #endregion
+
         #region Filling
 
         [ContractAnnotation("filler:null => stop")]
-        public static string FillRight(this string? self, [NonNegativeValue] int totalLength, string filler) {
-            _Validate_FillParameters(filler, totalLength);
+        public static string FillRight(this string? self, [NonNegativeValue] int totalLength, string? filler = " ") {
+            (filler, totalLength) = _Validate_FillParameters(filler, totalLength);
 
             self ??= "";
 
@@ -372,7 +386,7 @@ namespace FowlFever.BSharp.Strings {
         }
 
         [ContractAnnotation("filler:null => stop")]
-        private static void _Validate_FillParameters(string filler, [NonNegativeValue] int totalLength) {
+        private static (string filler, int totalLength) _Validate_FillParameters(string? filler, [NonNegativeValue] int totalLength) {
             if (filler == null) {
                 throw new ArgumentNullException(nameof(filler));
             }
@@ -385,6 +399,8 @@ namespace FowlFever.BSharp.Strings {
             if (totalLength < 0) {
                 throw new ArgumentOutOfRangeException(nameof(totalLength), "Must be positive");
             }
+
+            return (filler, totalLength);
         }
 
         #endregion
@@ -537,18 +553,18 @@ namespace FowlFever.BSharp.Strings {
 
         #region "Forcing"
 
+        internal enum TrimFrom { End, Start }
+
         private static string _ForcePattern(
             this string input,
             Regex       trimPattern,
             string      padString,
             [NonNegativeValue]
-            int minKept,
+            int? minKept,
             [NonNegativeValue]
-            int maxKept,
-            bool fromStart
+            int? maxKept,
+            TrimFrom trimFrom
         ) {
-            // For some stupid reason, Rider doesn't understand it's own "NonNegativeValue" annotation, and thinks it means "Strictly Positive Value" -_-
-            // ReSharper disable once ConditionIsAlwaysTrueOrFalse
             if (minKept < 0 || minKept > maxKept) {
                 throw new ArgumentOutOfRangeException(nameof(minKept), minKept, $"Must be >= 0 and <= {nameof(maxKept)} ({maxKept})");
             }
@@ -558,7 +574,7 @@ namespace FowlFever.BSharp.Strings {
             }
 
             var pat = $"(?<chunks>{trimPattern})*";
-            pat = fromStart ? $"^{pat}" : $"{pat}$";
+            pat = trimFrom == TrimFrom.Start ? $"^{pat}" : $"{pat}$";
             var match = input.Match(pat);
             var grp   = match.Groups["chunks"];
 
@@ -569,14 +585,14 @@ namespace FowlFever.BSharp.Strings {
             var capCount = grp.Captures.Count;
 
             if (capCount < minKept) {
-                var additional = padString.Repeat(minKept - capCount);
-                return fromStart ? $"{additional}{input}" : $"{input}{additional}";
+                var additional = padString.Repeat((int)minKept - capCount);
+                return trimFrom == TrimFrom.Start ? $"{additional}{input}" : $"{input}{additional}";
             }
 
             // ReSharper disable once InvertIf
             if (capCount > maxKept) {
                 var numberToTrim = capCount - maxKept;
-                return fromStart ? TrimStart(input, trimPattern, numberToTrim) : TrimEnd(input, trimPattern, numberToTrim);
+                return trimFrom == TrimFrom.Start ? TrimStart(input, trimPattern, numberToTrim) : TrimEnd(input, trimPattern, numberToTrim);
             }
 
             throw new BrandonException("Shouldn't have been able to reach this");
@@ -603,11 +619,21 @@ namespace FowlFever.BSharp.Strings {
             Regex       trimPattern,
             string      padString,
             [NonNegativeValue]
-            int minKept,
+            int? minKept,
             [NonNegativeValue]
-            int maxKept
+            int? maxKept
         ) {
-            return _ForcePattern(input, trimPattern, padString, minKept, maxKept, false);
+            return _ForcePattern(input, trimPattern, padString, minKept, maxKept, TrimFrom.End);
+        }
+
+        [Pure]
+        public static string EnsureEndingPattern(
+            this string            input,
+            Regex                  trimPattern,
+            string                 padString,
+            [NonNegativeValue] int minimumRequired
+        ) {
+            return _ForcePattern(input, trimPattern, padString, minimumRequired, null, TrimFrom.End);
         }
 
         [Pure]
@@ -616,11 +642,22 @@ namespace FowlFever.BSharp.Strings {
             Regex       trimPattern,
             string      padString,
             [NonNegativeValue]
-            int minKept,
+            int? minKept,
             [NonNegativeValue]
-            int maxKept
+            int? maxKept
         ) {
-            return _ForcePattern(input, trimPattern, padString, minKept, maxKept, true);
+            return _ForcePattern(input, trimPattern, padString, minKept, maxKept, TrimFrom.Start);
+        }
+
+        [Pure]
+        public static string EnsureStartingPattern(
+            this string input,
+            Regex       trimPattern,
+            string      padString,
+            [NonNegativeValue]
+            int minimumRequired
+        ) {
+            return _ForcePattern(input, trimPattern, padString, minimumRequired, null, TrimFrom.Start);
         }
 
         [Pure]
@@ -648,6 +685,8 @@ namespace FowlFever.BSharp.Strings {
         #endregion
 
         #endregion
+
+        #region Splitex (splitting via a string treated as a Regex pattern)
 
         /// <summary>
         /// An extension method to call <see cref="Regex.Split(string)"/>.
@@ -677,6 +716,8 @@ namespace FowlFever.BSharp.Strings {
         ) {
             return Regex.Split(input, pattern, options, matchTimeout);
         }
+
+        #endregion
 
         #region Containment
 
