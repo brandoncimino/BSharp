@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.Contracts;
 using System.Linq;
 
 using FowlFever.BSharp.Enums;
 
 using JetBrains.Annotations;
+using Pure = System.Diagnostics.Contracts.PureAttribute;
 
 namespace FowlFever.BSharp.Chronic {
     /// <summary>
@@ -30,63 +32,58 @@ namespace FowlFever.BSharp.Chronic {
 
         #region Addition
 
-        [Pure]
-        public static TimeSpan Add(this TimeSpan span, double amount, TimeUnit unit) {
-            return span + SpanOf(amount, unit);
-        }
-
-        [Pure]
-        public static DateTime Add(this DateTime date, double amount, TimeUnit unit) {
-            return date + SpanOf(amount, unit);
-        }
+        [Pure] public static TimeSpan Add(this TimeSpan span, double amount, TimeUnit unit) => span + SpanOf(amount, unit);
+        [Pure] public static DateTime Add(this DateTime date, double amount, TimeUnit unit) => date + SpanOf(amount, unit);
 
         #endregion
 
         #region Subtraction
 
-        [Pure]
-        public static TimeSpan Subtract(this TimeSpan span, double amount, TimeUnit unit) {
-            return span - SpanOf(amount, unit);
-        }
-
-        [Pure]
-        public static DateTime Subtract(this DateTime date, double amount, TimeUnit unit) {
-            return date - SpanOf(amount, unit);
-        }
+        [Pure] public static TimeSpan Subtract(this TimeSpan span, double amount, TimeUnit unit) => span - SpanOf(amount, unit);
+        [Pure] public static DateTime Subtract(this DateTime date, double amount, TimeUnit unit) => date - SpanOf(amount, unit);
 
         #endregion
 
         #region Division
 
         /// <summary>
-        /// Mimics .NET Core's <a href="https://docs.microsoft.com/en-us/dotnet/api/system.timespan.divide">TimeSpan.Divide</a>.
-        /// Does this by converting the given <see cref="TimeSpan" />s into <see cref="TimeSpan.TotalSeconds" /> and performing the division on those.
+        /// A verbatim copy of the <c>/</c> operator in <a href="https://github.com/dotnet/runtime/blob/70652798a59474c2df73d7772f67e3fdb61b85a4/src/libraries/System.Private.CoreLib/src/System/TimeSpan.cs#L489-L493">newer versions of dotnet/runtime</a>.
         /// </summary>
         /// <remarks>
-        /// This originally performed the division on <see cref="TimeSpan.Ticks" /> rather than <see cref="TimeSpan.TotalSeconds" />, but this was actually slightly inaccurate due to the number of ticks being so large.
+        /// From <a href="https://github.com/dotnet/runtime/blob/70652798a59474c2df73d7772f67e3fdb61b85a4/src/libraries/System.Private.CoreLib/src/System/TimeSpan.cs#L489-L493">dotnet/runtime</a>:
+        /// <code>
+        /// Using floating-point arithmetic directly means that infinities can be returned, which is reasonable
+        /// if we consider TimeSpan.FromHours(1) / TimeSpan.Zero asks how many zero-second intervals there are in
+        /// an hour for which infinity is the mathematic[sic] correct answer. Having TimeSpan.Zero / TimeSpan.Zero return NaN
+        /// is perhaps less useful, but no less useful than an exception.
+        /// </code>
         ///
-        /// Update from Brandon on 8/15/2021: What did I mean? How was using <see cref="TimeSpan.Ticks"/> less accurate than <see cref="TimeSpan.TotalSeconds"/>...?
-        /// <br/>
+        /// <p/>
+        /// <b>Update from Brandon on 8/15/2021</b>:
         /// I would prefer to name this "DividedBy", by I named it "Divide" for parity with .NET Core's <a href="https://docs.microsoft.com/en-us/dotnet/api/system.timespan.divide">TimeSpan.Divide</a>.
+        /// <p/>
+        /// <b>Update from Brandon on 2/3/2022</b>:
+        /// I now know how to get the actual source code! <a href="https://github.com/dotnet/runtime/blob/70652798a59474c2df73d7772f67e3fdb61b85a4/src/libraries/System.Private.CoreLib/src/System/TimeSpan.cs#L478-L487">/src/System/TimeSpan.cs#L478-L487</a>
         /// </remarks>
-        /// <param name="dividend">the <see cref="TimeSpan"/> to be divided (i.e. top of the fraction)</param>
-        /// <param name="divisor">the <see cref="TimeSpan"/> by which the <paramref name="dividend" /> will be divided (i.e. the bottom of the fraction)</param>
-        /// <returns></returns>
-        /// <exception cref="DivideByZeroException">if the <see cref="divisor"/> is <see cref="TimeSpan.Zero"/></exception>
-        [Pure]
-        public static double Divide(this TimeSpan dividend, TimeSpan divisor) {
-            return dividend.Ticks / (double)divisor.Ticks;
-        }
+        [Pure] public static double Divide(this TimeSpan dividend, TimeSpan divisor) => dividend.Ticks / (double)divisor.Ticks;
 
         /// <summary>
         /// Divides <paramref name="dividend"/> by <paramref name="divisor"/>, returning a new <see cref="TimeSpan"/>.
         /// </summary>
+        /// <remarks>
+        /// Taken as verbatim as possible from <a href="https://github.com/dotnet/runtime/blob/70652798a59474c2df73d7772f67e3fdb61b85a4/src/libraries/System.Private.CoreLib/src/System/TimeSpan.cs#L478-L487">dotnet/runtime TimeSpan.cs</a></remarks>
         /// <param name="dividend">the <see cref="TimeSpan"/> to be divided (i.e. the top of the fraction)</param>
         /// <param name="divisor">the number to divide the <see cref="dividend"/> by (i.e. the bottom of the fraction)</param>
         /// <returns></returns>
         [Pure]
         public static TimeSpan Divide(this TimeSpan dividend, double divisor) {
-            return TimeSpan.FromTicks((long)(dividend.Ticks / divisor));
+            if (double.IsNaN(divisor))
+            {
+                throw new ArgumentException($"Cannot divide a {nameof(TimeSpan)} by {nameof(double.NaN)}!", nameof(divisor));
+            }
+
+            var ticks = Math.Round(dividend.Ticks / divisor);
+            return IntervalFromDoubleTicks(ticks);
         }
 
         /// <inheritdoc cref="Divide(System.TimeSpan,double)"/>
@@ -102,6 +99,7 @@ namespace FowlFever.BSharp.Chronic {
         /// This returns a <see cref="double"/> in order to support return values such as <see cref="double.PositiveInfinity"/>.
         ///
         /// TODO: I am beginning to question the value of this method...
+        /// TODO: Brandon on 2/3/2022: Still questioning this...
         /// </remarks>
         /// <param name="dividend">The number to be divided (i.e. top of the fraction)</param>
         /// <param name="divisor">The number by which <paramref name="dividend" /> will be divided (i.e. the bottom of the fraction)</param>
