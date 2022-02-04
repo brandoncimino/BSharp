@@ -1,98 +1,75 @@
 // ReSharper disable UseDeconstructionOnParameter
 
 using System;
+using System.Diagnostics.Contracts;
 
 using FowlFever.BSharp.Chronic;
+using FowlFever.BSharp.Enums;
 
 namespace FowlFever.BSharp {
     public static partial class Mathb {
-        public static int LerpInt(int start, int finish, double lerpAmount) {
-            if (lerpAmount <= 0) {
-                return start;
-            }
-            else if (lerpAmount >= 1) {
-                return finish;
-            }
-            else {
-                var dist   = finish - start;
-                var amount = (lerpAmount * dist).ToInt();
-                return start + amount;
-            }
-        }
+        [Pure]
+        public static int LerpInt(
+            int               start,
+            int               finish,
+            double            lerpAmount,
+            RoundingDirection roundingDirection = RoundingDirection.Floor
+        ) =>
+            lerpAmount switch {
+                <= 0 => start,
+                >= 1 => finish,
+                _    => start + (lerpAmount * (finish - start)).RoundToInt(roundingDirection),
+            };
 
-        public static long LerpInt(long start, long finish, double lerpAmount) {
-            if (lerpAmount <= 0) {
-                return start;
-            }
-            else if (lerpAmount >= 1) {
-                return finish;
-            }
-            else {
-                var dist   = finish - start;
-                var amount = (lerpAmount * dist).ToLong();
-                return start + amount;
-            }
-        }
+        [Pure]
+        public static long LerpInt(
+            long              start,
+            long              finish,
+            double            lerpAmount,
+            RoundingDirection roundingDirection = RoundingDirection.Floor
+        ) =>
+            lerpAmount switch {
+                <= 0 => start,
+                >= 1 => finish,
+                _    => start + ((finish - start) * lerpAmount).Round(roundingDirection).ToLong(),
+            };
 
-        public static float Lerp(float start, float finish, float lerpAmount) {
-            if (lerpAmount <= 0) {
-                return start;
-            }
-            else if (lerpAmount >= 1) {
-                return finish;
-            }
-            else {
-                var diff     = finish - start;
-                var lerpDiff = diff * lerpAmount;
-                return start + lerpDiff;
-            }
-        }
+        [Pure]
+        public static float Lerp(float start, float finish, float lerpAmount) =>
+            lerpAmount switch {
+                <= 0 => start,
+                >= 1 => finish,
+                _    => start + (finish - start) * lerpAmount,
+            };
 
-        public static double Lerp(double start, double finish, double lerpAmount) {
-            if (lerpAmount <= 0) {
-                return start;
-            }
-            else if (lerpAmount >= 1) {
-                return finish;
-            }
-            else {
-                var diff     = finish - start;
-                var lerpDiff = diff * lerpAmount;
-                return start + lerpDiff;
-            }
-        }
+        [Pure]
+        public static double Lerp(double start, double finish, double lerpAmount) =>
+            lerpAmount switch {
+                <= 0 => start,
+                >= 1 => finish,
+                _    => start + (finish - start) * lerpAmount,
+            };
 
-        public static decimal Lerp(decimal start, decimal finish, decimal lerpAmount) {
-            if (lerpAmount <= 0) {
-                return start;
-            }
-            else if (lerpAmount >= 1) {
-                return finish;
-            }
-            else {
-                var diff     = finish - start;
-                var lerpDiff = diff * lerpAmount;
-                return start + lerpDiff;
-            }
-        }
+        public static decimal Lerp(decimal start, decimal finish, decimal lerpAmount) =>
+            lerpAmount switch {
+                <= 0 => start,
+                >= 1 => finish,
+                _    => start + (finish - start) * lerpAmount,
+            };
 
-        public static TimeSpan Lerp(TimeSpan start, TimeSpan finish, double lerpAmount) {
-            var ticks = LerpInt(start.Ticks, finish.Ticks, lerpAmount);
-            return TimeSpan.FromTicks(ticks);
-        }
+        public static TimeSpan Lerp(TimeSpan start, TimeSpan finish, double lerpAmount) =>
+            lerpAmount switch {
+                <= 0 => start,
+                >= 1 => finish,
+                _    => start + (finish - start).Multiply(lerpAmount),
+            };
 
         public static DateTime Lerp(DateTime start, DateTime finish, double lerpAmount) {
-            if (lerpAmount <= 0) {
-                return start;
-            }
-            else if (lerpAmount >= 1) {
-                return finish;
-            }
-            else {
-                var dist   = finish - start;
-                var amount = dist.Multiply(lerpAmount);
-                return start + amount;
-            }
+            return lerpAmount switch {
+                <= 0 => start,
+                >= 1 => finish,
+                _    => start + (finish - start).Multiply(lerpAmount),
+            };
         }
 
         public static int      LerpInt(this (int start, int finish)           range, double  lerpAmount) => LerpInt(range.start, range.finish, lerpAmount);
