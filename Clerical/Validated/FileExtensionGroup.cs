@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.ObjectModel;
 using System.Text.RegularExpressions;
 
 using FluentValidation;
@@ -11,18 +12,15 @@ using FowlFever.Conjugal.Affixing;
 
 namespace FowlFever.Clerical.Validated;
 
-public record FileExtensionGroup(FileNamePart[] ExtensionParts) {
-    public FileExtensionGroup(
-        IEnumerable<FileNamePart> extensionParts
-    ) : this(
-        extensionParts as FileNamePart[] ?? extensionParts.ToArray()
-    ) { }
+public class FileExtensionGroup {
+    public IEnumerable<FileNamePart> ExtensionParts { get; }
 
-    public FileExtensionGroup(
-        IEnumerable<string> extensionParts
-    ) : this(
-        extensionParts.Select(it => new FileNamePart(it))
-    ) { }
+    public FileExtensionGroup(IEnumerable<FileNamePart> extensionParts) {
+        ExtensionParts = extensionParts;
+    }
+
+    public FileExtensionGroup(IEnumerable<string> extensionParts)
+        : this(extensionParts.Select(it => new FileNamePart(it))) { }
 
     public override string ToString() {
         return ExtensionParts.JoinString(".").Prefix(".");
