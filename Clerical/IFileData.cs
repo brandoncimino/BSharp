@@ -13,7 +13,7 @@ namespace FowlFever.Clerical;
 /// <summary>
 /// Combines a <see cref="FileInfo"/> with the deserialized <see cref="T"/> data that it contains.
 /// </summary>
-/// <typeparam name="T"></typeparam>
+/// <typeparam name="T">the <see cref="Type"/> that this data deserializes as</typeparam>
 public interface IFileData<out T> {
     /// <summary>
     /// The implementation-specific, "meaningful" data that this <see cref="IFileData{TData}"/> manages.
