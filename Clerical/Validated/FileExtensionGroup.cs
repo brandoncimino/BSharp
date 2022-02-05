@@ -11,16 +11,18 @@ using FowlFever.Conjugal.Affixing;
 
 namespace FowlFever.Clerical.Validated;
 
-public class FileExtensionGroup {
-    private IEnumerable<FileNamePart> ExtensionParts;
+public record FileExtensionGroup(FileNamePart[] ExtensionParts) {
+    public FileExtensionGroup(
+        IEnumerable<FileNamePart> extensionParts
+    ) : this(
+        extensionParts as FileNamePart[] ?? extensionParts.ToArray()
+    ) { }
 
-    public FileExtensionGroup(IEnumerable<string> extensionParts) {
-
-    }
-
-    public FileExtensionGroup(IEnumerable<FileNamePart> extensionParts) {
-        ExtensionParts = extensionParts;
-    }
+    public FileExtensionGroup(
+        IEnumerable<string> extensionParts
+    ) : this(
+        extensionParts.Select(it => new FileNamePart(it))
+    ) { }
 
     public override string ToString() {
         return ExtensionParts.JoinString(".").Prefix(".");
