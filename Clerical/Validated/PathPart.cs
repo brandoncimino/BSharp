@@ -13,7 +13,6 @@ namespace FowlFever.Clerical.Validated;
 /// Ensures that the <see cref="Value"/>:
 /// <ul>
 /// <li>Doesn't contain <see cref="DirectorySeparator"/>s</li>
-/// <li>Doesn't contain whitespace</li>
 /// <li>TODO: Doesn't contain any <see cref="Path.GetInvalidPathChars"/></li>
 /// <li>TODO: Doesn't contain any <see cref="Path.GetInvalidFileNameChars"/></li>
 /// </ul>
@@ -25,10 +24,10 @@ public class PathPart {
     public readonly string Value;
 
     public PathPart(string value) {
-        var whitespacePattern = new Regex(@"\s");
-        var arg               = new ArgInfo<string?>(value, nameof(Value), $"new {GetType().Name}");
-        Must.NotMatch(arg, whitespacePattern);
-        Must.NotMatch(arg, BPath.DirectorySeparatorPattern);
+        Must.NotMatch(
+            new ArgInfo<string?>(value, nameof(Value), $"new {GetType().Name}"),
+            BPath.DirectorySeparatorPattern
+        );
 
         Value = value;
     }
