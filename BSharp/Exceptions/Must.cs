@@ -22,6 +22,7 @@ using FowlFever.BSharp.Reflection;
 using FowlFever.BSharp.Strings;
 using FowlFever.BSharp.Strings.Prettifiers;
 using FowlFever.BSharp.Strings.Tabler;
+using FowlFever.Conjugal.Affixing;
 
 using JetBrains.Annotations;
 
@@ -60,7 +61,7 @@ public static class Must {
 
         reason ??= $"Predicate {InnerPretty.PrettifyDelegate(predicate, PrettificationSettings.Default)} failed!";
 
-        throw new ArgumentException(argInfo.GetMessage(reason), exc);
+        throw new ArgumentException(argInfo.WithReason(reason).GetLongMessage(), exc);
     }
 
     #endregion
@@ -183,11 +184,26 @@ public static class Must {
     ) => NotContain(new ArgInfo<string?>(actualValue, parameterName, methodName), unwantedString);
 
     public static string NotContain(ArgInfo<string?> argInfo, string unwantedString) {
-        if (argInfo.ActualValue?.Contains(unwantedString) == false) {
+        if (argInfo.ActualValue?.DoesNotContain(unwantedString) == true) {
             return argInfo.ActualValue;
         }
 
         throw argInfo.GetException($"Contained the substring \"{unwantedString}\"!");
+    }
+
+    public static string NotContain(ArgInfo<string?> argInfo, IEnumerable<string> unwantedStrings) {
+        NotBeNull(argInfo);
+
+        var badStrings = unwantedStrings.Where(it => argInfo.ActualValue?.Contains(it) == true)
+                                        .JoinString(", ");
+
+        if (badStrings.IsNotEmpty()) {
+            throw argInfo.GetException(
+                $"Contained disallowed substrings: [{badStrings}]"
+            );
+        }
+
+        return argInfo.ActualValue!;
     }
 
     #endregion
@@ -277,7 +293,8 @@ public static class Must {
             return argInfo.ActualValue;
         }
 
-        throw new FileNotFoundException(argInfo.GetMessage("Did not exist OR was empty!"));
+        string[] additionalReasons = new[] { "Did not exist OR was empty!" };
+        throw new FileNotFoundException(argInfo.WithReason(additionalReasons).GetLongMessage());
     }
 
     #endregion
@@ -349,24 +366,56 @@ public static class Must {
     #endregion
 }
 
-public record ArgInfo<T>(T ActualValue, string ParameterName, string MethodName) {
-    private const string Icon = "🚮";
+internal interface IArgInfo {
+    object? ValueAsObject { get; }
+}
 
-    public string GetPreamble() {
-        var    typeName    = typeof(T).Name;
-        var paramString = typeName.Equals(ParameterName, StringComparison.OrdinalIgnoreCase)
-                              ? $"[{ParameterName}]"
-                              : $"[{typeName}]{ParameterName}";
-        return $"{Icon} {MethodName}() 🙅 {paramString}";
+public record ArgInfo<T>(T ActualValue, string ParameterName, string MethodName, ISet<string>? Reasons = default) : IArgInfo {
+    public        object?      ValueAsObject => ActualValue;
+    private const string       Icon          = "🚮";
+    private const string       ReasonIcon    = "🙅";
+    private const string       DefaultReason = "<no reason 🤷>";
+    private       ISet<string> Reasons { get; } = Reasons ?? new HashSet<string>();
+
+    public string Preamble => $"{Icon} {MethodString}({ParamString})";
+
+    private string ParamString =>
+        typeof(T).Name.Equals(ParameterName, StringComparison.OrdinalIgnoreCase)
+            ? $"[{ParameterName}]"
+            : $"[{typeof(T).Name}]{ParameterName}";
+
+    private string MethodString => MethodName.EnsureEndingPattern(new Regex("(.*)"), "()", 1);
+
+    public ArgInfo<T> WithReason(string reason) {
+        return WithReason(new string[] { reason });
     }
 
-    public string GetMessage(string reason) {
-        reason = reason.IfBlank("<reason not specified 🤷>");
-        return $"{GetPreamble()}: {reason}";
+    public ArgInfo<T> WithReason(params string[] reasons) {
+        Reasons.UnionWith(reasons);
+        return this;
     }
+
+    public string GetLongMessage() {
+        return $"{Preamble} {ReasonString}";
+    }
+
+    public string GetShortMessage() {
+        return $"{Icon} {ParamString} {ReasonString}";
+    }
+
+    private string ReasonString =>
+        Reasons switch {
+            { Count: 0 } => DefaultReason,
+            { Count: 1 } => $"{ReasonIcon} {Reasons.Single()}",
+            _            => $"{ReasonIcon} {Reasons.Select(it => $"[{it}]").JoinString(" ")}",
+        };
 
     public ArgumentException GetException(string reason) {
-        return new ArgumentException(GetMessage(reason), ParameterName);
+        return new ArgumentException(WithReason(reason).GetLongMessage(), ParameterName);
+    }
+
+    public ArgumentException GetException() {
+        return new ArgumentException(GetLongMessage(), ParameterName);
     }
 }
 
@@ -390,11 +439,11 @@ internal static class RejectArgument {
     #region Nullity
 
     public static ArgumentNullException WasNull<T>(this ArgInfo<T> argInfo) {
-        return new ArgumentNullException(argInfo.ParameterName, argInfo.GetPreamble());
+        return new ArgumentNullException(argInfo.ParameterName, argInfo.Preamble);
     }
 
     public static ArgumentException WasNotNull<T>(this ArgInfo<T> argInfo) {
-        return new ArgumentException(argInfo.GetMessage(nameof(WasNotNull)));
+        return argInfo.WithReason(nameof(WasNotNull)).GetException();
     }
 
     #endregion
@@ -498,22 +547,22 @@ internal static class RejectArgument {
     #region Files
 
     public static FileNotFoundException DidNotExist<T>(this ArgInfo<T> argInfo) where T : FileSystemInfo? {
-        return new FileNotFoundException(argInfo.GetMessage(nameof(DidNotExist)));
+        return new FileNotFoundException(argInfo.WithReason(new[] { nameof(DidNotExist) }).GetLongMessage());
     }
 
     public static IOException AlreadyExisted<T>(this ArgInfo<T> argInfo)
         where T : FileSystemInfo? {
-        return new IOException(argInfo.GetMessage(nameof(AlreadyExisted)));
+        return new IOException(argInfo.WithReason(new[] { nameof(AlreadyExisted) }).GetLongMessage());
     }
 
     #region WasEmpty
 
     public static IOException HadLengthZero(this ArgInfo<FileInfo?> argInfo) {
-        return new IOException(argInfo.GetMessage($"Had a {nameof(FileInfo)}.{nameof(FileInfo.Length)}"));
+        return new IOException(argInfo.WithReason(new[] { $"Had a {nameof(FileInfo)}.{nameof(FileInfo.Length)}" }).GetLongMessage());
     }
 
     public static IOException HadNoContents(this ArgInfo<DirectoryInfo?> argInfo) {
-        return new IOException(argInfo.GetMessage($"{argInfo.ActualValue?.GetType().Name ?? nameof(DirectoryInfo)} didn't contain any files or subdirectories!"));
+        return new IOException(argInfo.WithReason(new[] { $"{argInfo.ActualValue?.GetType().Name ?? nameof(DirectoryInfo)} didn't contain any files or subdirectories!" }).GetLongMessage());
     }
 
     #endregion
@@ -521,11 +570,11 @@ internal static class RejectArgument {
     #region WasNotEmpty
 
     public static IOException WasNotEmpty(this ArgInfo<FileInfo> argInfo) {
-        return new IOException(argInfo.GetMessage($"Existed and had a {nameof(FileInfo.Length)} > 0!"));
+        return new IOException(argInfo.WithReason(new[] { $"Existed and had a {nameof(FileInfo.Length)} > 0!" }).GetLongMessage());
     }
 
     public static IOException WasNotEmpty(this ArgInfo<DirectoryInfo> argInfo) {
-        return new IOException(argInfo.GetMessage($"Existed and contained files or sub-directories!"));
+        return new IOException(argInfo.WithReason(new[] { $"Existed and contained files or sub-directories!" }).GetLongMessage());
     }
 
     #endregion
