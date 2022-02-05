@@ -19,4 +19,6 @@ public record FileName(
     public override string ToString() {
         return NameWithExtensions;
     }
+
+    public static FileName Random() => Clerk.GetRandomFileName();
 }
