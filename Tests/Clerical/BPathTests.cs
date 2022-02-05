@@ -46,10 +46,10 @@ public class BPathTests {
     [TestCase("/a/b",     "/a", "b")]
     [TestCase("//a//b//", "/",  "a", "", "b", "/")]
     [TestCase("/a//b/",   "/a", "",  "b/")]
-    [TestCase("/a//",     "/a", "")]
+    [TestCase("/a//",     "/a", "/")]
     public void SplitPath(string path, params string[] expectedParts) {
         Asserter.Against(path)
-                .And(it => it.SplitPath(), Is.EqualTo(expectedParts))
+                .And(BPath.SplitPath, Is.EqualTo(expectedParts))
                 .Invoke();
     }
 
