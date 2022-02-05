@@ -1412,9 +1412,11 @@ namespace FowlFever.BSharp.Collections {
             return Enumerable.Repeat(self!, (self != null).ToInt());
         }
 
-        [Pure]
-        public static List<T> AsList<T>(this IEnumerable<T> source) {
-            return source as List<T> ?? source.ToList();
-        }
+        #region As{x}
+
+        [Pure] public static List<T> AsList<T>(this  IEnumerable<T> source) => source as List<T> ?? source.ToList();
+        [Pure] public static T[]     AsArray<T>(this IEnumerable<T> source) => source as T[]     ?? source.ToArray();
+
+        #endregion
     }
 }
