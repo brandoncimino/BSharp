@@ -174,7 +174,7 @@ public static class Must {
         throw RejectArgument.WasEmpty(actualValue, parameterName, methodName);
     }
 
-    #region NotContain
+    #region NotContain (string, strings)
 
     public static string NotContain(
         string? actualValue,
@@ -205,6 +205,29 @@ public static class Must {
 
         return argInfo.ActualValue!;
     }
+
+    #region NotContain (string, chars)
+
+    public static string NotContain(
+        string?           actualValue,
+        IEnumerable<char> unwantedChars,
+        string            parameterName,
+        string            methodName
+    ) => NotContain(new ArgInfo<string?>(actualValue, parameterName, methodName), unwantedChars);
+
+    public static string NotContain(ArgInfo<string?> argInfo, IEnumerable<char> unwantedChars) {
+        NotBeNull(argInfo);
+
+        var badChars = unwantedChars.Where(it => argInfo.ActualValue?.Contains(it) == true).JoinString(", ");
+
+        if (badChars.IsNotEmpty()) {
+            throw argInfo.GetException($"Contained disallowed substrings: [{badChars}]");
+        }
+
+        return argInfo.ActualValue!;
+    }
+
+    #endregion
 
     #endregion
 
