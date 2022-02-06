@@ -7,8 +7,19 @@ using JetBrains.Annotations;
 
 namespace FowlFever.Clerical.Validated;
 
+/// <summary>
+/// Contains factory methods for <see cref="Validated"/> objects like <see cref="PathPart"/> and <see cref="FileName"/>.
+/// </summary>
 [PublicAPI]
 public static class Clerk {
+    public static PathPart GetPathPart(string pathPart) {
+        return new PathPart(pathPart);
+    }
+
+    public static IEnumerable<PathPart> SplitPath(string path) {
+        return BPath.SplitPath(path).Select(GetPathPart);
+    }
+
     public static FileExtensionGroup GetFileExtensions(string path) {
         return new FileExtensionGroup(BPath.GetExtensions(path));
     }
