@@ -10,16 +10,25 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <PackageReference Include="FluentValidation" Version="10.3.6" />
+      <PackageReference Include="IndexRange" Version="1.0.0" />
       <PackageReference Include="IsExternalInit" Version="1.0.2">
         <PrivateAssets>all</PrivateAssets>
         <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       </PackageReference>
       <PackageReference Include="JetBrains.Annotations" Version="2021.3.0" />
+      <PackageReference Include="Serialize.Linq" Version="2.0.0" />
       <PackageReference Include="System.Text.Json" Version="6.0.1" />
     </ItemGroup>
 
     <ItemGroup>
       <ProjectReference Include="..\BSharp\BSharp.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Compile Remove="ClericalExtensions.cs" />
+      <Compile Remove="ZeroLengthFileHandling.cs" />
+      <Compile Remove="ISaveFolder.cs" />
     </ItemGroup>
 
 </Project>
