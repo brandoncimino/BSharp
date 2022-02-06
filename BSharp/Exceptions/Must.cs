@@ -41,6 +41,8 @@ namespace FowlFever.BSharp.Exceptions;
 /// </remarks>
 [PublicAPI]
 public static class Must {
+    public static ArgInfo<T> GetArgInfo<T>(T argInfo, string parameterName, string methodName) => new ArgInfo<T>(argInfo, parameterName, methodName);
+
     #region Arbitration
 
     public static T Satisfy<T>(T? actualValue, Func<T,bool> predicate, string parameterName, string methodName, string? reason = default) {
@@ -250,7 +252,7 @@ public static class Must {
 
     #endregion
 
-    #region Contain
+    #region Contain (string, substring)
 
     public static string Contain(
         string? actualValue,
@@ -387,6 +389,43 @@ public static class Must {
     #endregion
 
     #endregion
+
+    #region Collections
+
+    #region Contain (Index)
+
+    public static T ContainIndex<T>(
+        ArgInfo<T> argInfo,
+        int       requiredIndex
+    ) where T : ICollection {
+        Must.BePositive(requiredIndex, nameof(requiredIndex), nameof(ContainIndex));
+        var size = argInfo.ActualValue?.Count;
+        if (requiredIndex >= 0 && requiredIndex < size) {
+            return argInfo.ActualValue!;
+        }
+
+        throw new ArgumentOutOfRangeException(argInfo.ParameterName, argInfo.ActualValue, argInfo.WithReason($"Collection of size {size} did not contain the index {requiredIndex}!").GetLongMessage());
+    }
+
+    public static T ContainIndex<T>(
+        ArgInfo<T?> argInfo,
+        Index      index
+    ) where T : ICollection {
+        NotBeNull(argInfo);
+        var count = argInfo.ActualValue!.Count;
+        var offset = index.GetOffset(count);
+
+        if(offset >= 0 && offset < count) {
+            return argInfo.ActualValue;
+        }
+
+        argInfo.WithReason($"The collection of length {count} didn't contain the index {index} (which would have an offset of {offset})!");
+        throw new ArgumentOutOfRangeException(argInfo.ParameterName, argInfo.ActualValue, argInfo.GetLongMessage());
+    }
+
+    #endregion
+
+    #endregion
 }
 
 internal interface IArgInfo {
@@ -401,6 +440,10 @@ public record ArgInfo<T>(T ActualValue, string ParameterName, string MethodName,
     private       ISet<string> Reasons { get; } = Reasons ?? new HashSet<string>();
 
     public string Preamble => $"{Icon} {MethodString}({ParamString})";
+
+    public static ArgInfo<T> For(T actualValue, string parameterName, string methodName) {
+        return new ArgInfo<T>(actualValue, parameterName, methodName);
+    }
 
     private string ParamString =>
         typeof(T).Name.Equals(ParameterName, StringComparison.OrdinalIgnoreCase)
