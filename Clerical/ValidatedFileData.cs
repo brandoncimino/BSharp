@@ -36,7 +36,7 @@ internal enum PersistenceState {
 /// <summary>
 /// An implementation of <see cref="IFileData{T}"/> that uses <see cref="IValidator{T}"/>s to determine <see cref="CanSerialize"/>, <see cref="CanDeserialize"/>, etc.
 /// </summary>
-/// <typeparam name="T"></typeparam>
+/// <inheritdoc/>
 [PublicAPI]
 public abstract class ValidatedFileData<T> : IFileData<T> {
     public   T?               Data             { get; protected set; }
