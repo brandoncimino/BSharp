@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -166,7 +167,6 @@ namespace FowlFever.BSharp.Randomization {
 
         #endregion
 
-
         internal static Random OrDefault(this Random? generator) {
             return generator ?? Gen;
         }
@@ -198,6 +198,24 @@ namespace FowlFever.BSharp.Randomization {
          * <remarks>Shorthand for <see cref="NextDoubleInclusive"/></remarks>
          */
         public static double Double(this Random? generator) => generator.NextDoubleInclusive();
+
+        #endregion
+
+        #region Ranges and Indices
+
+        public static int Index<T>(this Random? generator, ICollection<T> collection, Range range) => generator.Index(collection.Count, range);
+
+        public static int Index(this Random? generator, int collectionSize, Range range) {
+            var (o, l) = range.GetOffsetAndLength(collectionSize);
+            return o + generator.Int(l);
+        }
+
+        public static int Index(
+            this Random? generator,
+            int          collectionSize,
+            Index        start,
+            Index        end
+        ) => generator.Index(collectionSize, start..end);
 
         #endregion
     }
