@@ -25,7 +25,10 @@ namespace FowlFever.BSharp.Clerical;
 [PublicAPI]
 public class BPath {
     internal static readonly RegexGroup ExtensionGroup = new RegexGroup(nameof(ExtensionGroup), @"(\.[^.]+?)+$");
-    public static readonly ImmutableHashSet<char> Separators = Enum.GetValues(typeof(DirectorySeparator))
+
+    #region Character Sets
+
+    public static readonly ImmutableHashSet<char> SeparatorChars = Enum.GetValues(typeof(DirectorySeparator))
                                                                    .Cast<DirectorySeparator>()
                                                                    .Select(DirectorySeparatorExtensions.ToChar)
                                                                    .ToImmutableHashSet();
@@ -33,12 +36,24 @@ public class BPath {
     /// Combines <see cref="Path.GetInvalidPathChars"/> and <see cref="Path.GetInvalidFileNameChars"/> into a single <see cref="ImmutableHashSet{T}"/>.
     /// </summary>
     public static readonly ImmutableHashSet<char> InvalidChars = Path.GetInvalidPathChars().Union(Path.GetInvalidFileNameChars()).ToImmutableHashSet();
+
+    #endregion
+
+    #region Directory Separator Regex Patterns
+
     public static readonly   Regex  DirectorySeparatorPattern = new Regex(@"[\\\/]");
     public static readonly   Regex  OuterSeparatorPattern     = RegexPatterns.OuterMatch(DirectorySeparatorPattern);
     public static readonly   Regex  InnerSeparatorPattern     = RegexPatterns.InnerMatch(DirectorySeparatorPattern);
+
+    #endregion
+
+    #region Icons
+
     internal static readonly string OpenFolderIcon            = "📂";
     internal static readonly string ClosedFolderIcon          = "📁";
     internal static readonly string FileIcon                  = "📄";
+
+    #endregion
 
     public static Failable ValidatePath(string? maybePath) {
         Action<string> action = Validate.PathString;
