@@ -232,31 +232,6 @@ public class CollectionUtilsTests {
 
     #endregion
 
-    #region Copy
-
-    [Test]
-    public void Copy_Array() {
-        var original = new int[] { 1, 2, 3 };
-        var dupe     = original.Copy();
-
-        Asserter.Against(dupe)
-                .And(Is.EqualTo(original))
-                .And(Is.Not.SameAs(original))
-                .Invoke();
-
-        original[0]           = 99;
-        dupe[dupe.Length - 1] = -99;
-
-        Asserter.Against(dupe)
-                .And(original, Is.EqualTo(new[] { 99, 2, 3 }))
-                .And(Is.EqualTo(new[] { 1, 2, -99 }))
-                .And(Is.Not.EqualTo(original))
-                .And(Is.Not.SameAs(original))
-                .Invoke();
-    }
-
-    #endregion
-
     #region Finding
 
     [Test]
