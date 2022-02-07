@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
@@ -22,19 +23,31 @@ namespace FowlFever.BSharp.Clerical {
     /// </summary>
     [PublicAPI]
     public class BPath {
-        internal static readonly RegexGroup ExtensionGroup            = new RegexGroup(nameof(ExtensionGroup), @"(\.[^.]+?)+$");
-        internal static readonly char[]     Separators                = Enum.GetValues(typeof(DirectorySeparator)).Cast<DirectorySeparator>().Select(DirectorySeparatorExtensions.ToChar).ToArray();
-        public static readonly   Regex      DirectorySeparatorPattern = new Regex(@"[\\\/]");
-        public static readonly   Regex      OuterSeparatorPattern     = RegexPatterns.OuterMatch(DirectorySeparatorPattern);
-        public static readonly   Regex      InnerSeparatorPattern     = RegexPatterns.InnerMatch(DirectorySeparatorPattern);
-        internal static readonly string     OpenFolderIcon            = "📂";
-        internal static readonly string     ClosedFolderIcon          = "📁";
-        internal static readonly string     FileIcon                  = "📄";
+        internal static readonly RegexGroup ExtensionGroup = new RegexGroup(nameof(ExtensionGroup), @"(\.[^.]+?)+$");
+        public static readonly ImmutableHashSet<char> Separators = Enum.GetValues(typeof(DirectorySeparator))
+                                                                         .Cast<DirectorySeparator>()
+                                                                         .Select(DirectorySeparatorExtensions.ToChar)
+                                                                         .ToImmutableHashSet();
+        /// <summary>
+        /// Combines <see cref="Path.GetInvalidPathChars"/> and <see cref="Path.GetInvalidFileNameChars"/> into a single <see cref="ImmutableHashSet{T}"/>.
+        /// </summary>
+        public static readonly   ImmutableHashSet<char> InvalidChars              = Path.GetInvalidPathChars().Union(Path.GetInvalidFileNameChars()).ToImmutableHashSet();
+        public static readonly   Regex                  DirectorySeparatorPattern = new Regex(@"[\\\/]");
+        public static readonly   Regex                  OuterSeparatorPattern     = RegexPatterns.OuterMatch(DirectorySeparatorPattern);
+        public static readonly   Regex                  InnerSeparatorPattern     = RegexPatterns.InnerMatch(DirectorySeparatorPattern);
+        internal static readonly string                 OpenFolderIcon            = "📂";
+        internal static readonly string                 ClosedFolderIcon          = "📁";
+        internal static readonly string                 FileIcon                  = "📄";
 
         public static Failable ValidatePath(string? maybePath) {
             Action<string> action = Validate.PathString;
             return action!.Try(maybePath);
         }
+
+        /// <param name="input">the containing <see cref="string"/></param>
+        /// <returns>true if <paramref name="input"/> contains <b>any</b> <see cref="InvalidChars"/></returns>
+        [Pure]
+        public static bool ContainsInvalidChars(string input) => input.ContainsAny(InvalidChars);
 
         public static string[] SplitPath(string path) {
             return path.Split(InnerSeparatorPattern);
@@ -92,7 +105,6 @@ namespace FowlFever.BSharp.Clerical {
             return ValidatePath(maybePath).Failed == false;
         }
 
-
         /// <summary>
         /// This method is similar to <see cref="Path.GetExtension"/>, except that it can retrieve multiple extensions, i.e. <c>game.sav.json</c> -> <c>[.sav, .json]</c>
         /// </summary>
@@ -140,7 +152,7 @@ namespace FowlFever.BSharp.Clerical {
             return NormalizeSeparators(
                 (path?.Trim()
                      .TrimEnd(DirectorySeparatorPattern))
-                    .Suffix(separator.ToCharString()),
+                .Suffix(separator.ToCharString()),
                 separator
             );
         }
@@ -167,11 +179,8 @@ namespace FowlFever.BSharp.Clerical {
         }
 
         private enum JoinSeparatorOption {
-            Simple,
-            TrimAll,
-            TrimOne,
+            Simple, TrimAll, TrimOne,
         }
-
 
         /// <summary>
         /// Combines multiple <see cref="string"/>s into a <see cref="Path"/> <see cref="string"/>.
