@@ -395,7 +395,7 @@ public static class Must {
     #region Contain (Index)
 
     public static T ContainIndex<T>(
-        ArgInfo<T> argInfo,
+        ArgInfo<T?> argInfo,
         int       requiredIndex
     ) where T : ICollection {
         Must.BePositive(requiredIndex, nameof(requiredIndex), nameof(ContainIndex));
@@ -411,16 +411,31 @@ public static class Must {
         ArgInfo<T?> argInfo,
         Index      index
     ) where T : ICollection {
-        NotBeNull(argInfo);
-        var count = argInfo.ActualValue!.Count;
-        var offset = index.GetOffset(count);
+        var collection = Must.NotBeNull(argInfo);
+        var offset     = index.GetOffset(collection.Count);
 
-        if(offset >= 0 && offset < count) {
-            return argInfo.ActualValue;
+        if(offset >= 0 && offset < collection.Count) {
+            return collection;
         }
 
-        argInfo.WithReason($"The collection of length {count} didn't contain the index {index} (which would have an offset of {offset})!");
-        throw new ArgumentOutOfRangeException(argInfo.ParameterName, argInfo.ActualValue, argInfo.GetLongMessage());
+        throw argInfo.OutOfRange($"The collection of length {collection.Count} didn't contain the index {index} (which would have an offset of {offset})!");
+    }
+
+    #endregion
+
+    #region Contain (Range)
+
+    public static T ContainRange<T>(ArgInfo<T?> argInfo, Range range) where T : ICollection {
+        var collection = Must.NotBeNull(argInfo);
+        var collectionSize = collection.Count;
+
+        try {
+            _ = range.GetOffsetAndLength(collectionSize);
+            return collection;
+        }
+        catch (ArgumentOutOfRangeException) {
+            throw argInfo.OutOfRange($"The {range.GetType().Name} {range} was out-of-bounds!");
+        }
     }
 
     #endregion
@@ -457,7 +472,7 @@ public record ArgInfo<T>(T ActualValue, string ParameterName, string MethodName,
     }
 
     public ArgInfo<T> WithReason(params string[] reasons) {
-        Reasons.UnionWith(reasons);
+        Reasons.UnionWith(reasons.NonBlank());
         return this;
     }
 
@@ -482,6 +497,11 @@ public record ArgInfo<T>(T ActualValue, string ParameterName, string MethodName,
 
     public ArgumentException GetException() {
         return new ArgumentException(GetLongMessage(), ParameterName);
+    }
+
+    public ArgumentOutOfRangeException OutOfRange(string? reason = default) {
+        WithReason(reason!);
+        return new ArgumentOutOfRangeException(ParameterName, ActualValue, GetLongMessage());
     }
 }
 
