@@ -203,8 +203,6 @@ namespace FowlFever.BSharp.Randomization {
 
         #region Ranges and Indices
 
-        public static int Index<T>(this Random? generator, ICollection<T> collection, Range range) => generator.Index(collection.Count, range);
-
         public static int Index(this Random? generator, int collectionSize, Range range) {
             var (o, l) = range.GetOffsetAndLength(collectionSize);
             return o + generator.Int(l);
