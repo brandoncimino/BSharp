@@ -6,6 +6,8 @@ using FowlFever.Testing;
 
 using NUnit.Framework;
 
+using Is = FowlFever.Testing.Is;
+
 namespace BSharp.Tests.Clerical2;
 
 public class PathPartTests : BaseClericalTest {
@@ -24,5 +26,15 @@ public class PathPartTests : BaseClericalTest {
     [Test]
     public void PathPart_InvalidChar_Inside([ValueSource(nameof(GetInvalidPathPartChars))] char badChar) {
         Assert.That(() => new PathPart($"ab{badChar}cd"), Throws.Exception);
+    }
+
+    [Test]
+    [TestCase("a")]
+    [TestCase("Program Files")]
+    [TestCase(".ssh")]
+    public void PathPart_Valid(string part) {
+        Asserter.Against(() => new PathPart(part))
+                .And(it => it.ToString(), Is.EqualTo(part))
+                .Invoke();
     }
 }
