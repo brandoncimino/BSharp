@@ -63,29 +63,17 @@ namespace FowlFever.BSharp.Collections {
 
         #region Copying
 
-        [Pure]
-        [ContractAnnotation("null => null")]
-        [ContractAnnotation("notnull => notnull")]
-        public static IList<T> Copy<T>(this IList<T> oldList) {
-            return oldList.Select(it => it).ToList();
-        }
+        [Obsolete("Please use ToList() directly", true)]
+        public static IList<T> Copy<T>(this IList<T> oldList) => oldList.Select(it => it).ToList();
 
-        [Pure]
-        [ContractAnnotation("null => null")]
-        [ContractAnnotation("notnull => notnull")]
-        public static ICollection<T> Copy<T>(this ICollection<T> oldCollection) {
-            return oldCollection.Select(it => it).ToList();
-        }
+        [Obsolete("Please use ToList() directly", true)]
+        public static ICollection<T> Copy<T>(this ICollection<T> oldCollection) => oldCollection.ToList();
 
-        [Pure]
-        public static IEnumerable<T> Copy<T>(this IEnumerable<T> oldList) {
-            return oldList.Select(it => it);
-        }
+        [Obsolete("Please use AsEnumerable() directly", true)]
+        public static IEnumerable<T> Copy<T>(this IEnumerable<T> oldList) => oldList.AsEnumerable();
 
-        [Pure]
-        public static T[] Copy<T>(this T[] oldArray) {
-            return oldArray.ToArray();
-        }
+        [Obsolete("Please use ToArray() directly", true)]
+        public static T[] Copy<T>(this T[] oldArray) => oldArray.ToArray();
 
         /// <summary>
         /// Splits <paramref name="collection"/> into multiple <see cref="List{T}"/>s, whose sizes are determined by <paramref name="subGroups"/>.
