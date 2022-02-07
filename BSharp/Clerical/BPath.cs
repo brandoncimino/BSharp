@@ -55,11 +55,6 @@ public class BPath {
 
     #endregion
 
-    public static Failable ValidatePath(string? maybePath) {
-        Action<string> action = Validate.PathString;
-        return action!.Try(maybePath);
-    }
-
     /// <param name="input">the containing <see cref="string"/></param>
     /// <returns>true if <paramref name="input"/> contains <b>any</b> <see cref="InvalidChars"/></returns>
     [Pure]
@@ -67,6 +62,14 @@ public class BPath {
 
     public static string[] SplitPath(string path) {
         return path.Split(InnerSeparatorPattern);
+    }
+
+    #region ⚠ OBSOLETE ⚠ Validation
+
+    [Obsolete]
+    public static Failable ValidatePath(string? maybePath) {
+        Action<string> action = Validate.PathString;
+        return action!.Try(maybePath);
     }
 
     [Obsolete]
@@ -123,6 +126,10 @@ public class BPath {
         return ValidatePath(maybePath).Failed == false;
     }
 
+    #endregion
+
+    #region Extensions
+
     /// <summary>
     /// This method is similar to <see cref="Path.GetExtension"/>, except that it can retrieve multiple extensions, i.e. <c>game.sav.json</c> -> <c>[.sav, .json]</c>
     /// </summary>
@@ -150,6 +157,10 @@ public class BPath {
         var firstPeriod = fileName.IndexOf(".", StringComparison.Ordinal);
         return firstPeriod < 0 ? fileName : fileName.Substring(0, firstPeriod);
     }
+
+    #endregion
+
+    #region Separators
 
     /// <param name="path">a <see cref="Path"/> <see cref="string"/></param>
     /// <returns>true if the <see cref="string"/> <b>ends</b> with <b>any</b> <see cref="DirectorySeparator"/></returns>
@@ -181,8 +192,8 @@ public class BPath {
     /// <param name="path">the original <see cref="Path"/> <see cref="string"/></param>
     /// <returns>the original <see cref="string"/> with all of the leading <see cref="DirectorySeparator"/>s removed</returns>
     [Pure]
-    public static string StripLeadingSeparator(string? path) {
-        return path.TrimStart(DirectorySeparatorPattern) ?? "";
+    public static string StripLeadingSeparator(string path) {
+        return path.TrimStart(DirectorySeparatorPattern);
     }
 
     /// <summary>
@@ -195,6 +206,24 @@ public class BPath {
     public static string NormalizeSeparators(string? path, DirectorySeparator separator = DirectorySeparator.Universal) {
         return path.IsBlank() ? "" : DirectorySeparatorPattern.Replace(path!.Trim(), separator.ToCharString());
     }
+
+    [Pure]
+    public static DirectorySeparator? InferSeparator(string path) {
+        if (path is not { Length: > 0 }) {
+            return null;
+        }
+
+        var  hasWindows   = path.Contains(DirectorySeparator.Windows.ToChar());
+        var  hasUniversal = path.Contains(DirectorySeparator.Universal.ToChar());
+
+        return (hasWindows, hasUniversal) switch {
+            (true, false) => DirectorySeparator.Windows,
+            (false, true) => DirectorySeparator.Universal,
+            _             => null,
+        };
+    }
+
+    #endregion
 
     #region Joining
 
