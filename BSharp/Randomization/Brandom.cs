@@ -203,17 +203,20 @@ namespace FowlFever.BSharp.Randomization {
 
         #region Ranges and Indices
 
-        public static int Index(this Random? generator, int collectionSize, Range range) {
-            var (o, l) = range.GetOffsetAndLength(collectionSize);
+        /// <summary>
+        /// Generates an <see cref="int"/> index inside of the given <see cref="Range"/> for a collection of size <paramref name="length"/>.
+        /// </summary>
+        /// <param name="generator">a <see cref="Random"/> instance. Defaults to <see cref="Gen"/></param>
+        /// <param name="length">the (length / count / size) of the collection that the <see cref="Range"/> will be used with</param>
+        /// <param name="range">the <see cref="Range"/> we'd like to be between</param>
+        /// <returns>a valid <see cref="int"/> index inside of the <see cref="Range"/></returns>
+        /// <exception cref="ArgumentOutOfRangeException">if <paramref name="length"/> is negative</exception>
+        /// <exception cref="ArgumentOutOfRangeException">if the <see cref="Range"/> is outside of the <paramref name="length"/>'s scope</exception>
+        public static int Index(this Random? generator, [NonNegativeValue] int length, Range range) {
+            Must.BePositive(length, nameof(length), nameof(Index));
+            var (o, l) = range.GetOffsetAndLength(length);
             return o + generator.Int(l);
         }
-
-        public static int Index(
-            this Random? generator,
-            int          collectionSize,
-            Index        start,
-            Index        end
-        ) => generator.Index(collectionSize, start..end);
 
         #endregion
     }
