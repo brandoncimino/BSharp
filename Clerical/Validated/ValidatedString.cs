@@ -19,4 +19,10 @@ public abstract record ValidatedString(string Value) : IEquatable<string> {
     public static implicit operator string(ValidatedString self) {
         return self.Value;
     }
+
+    public static bool operator ==(ValidatedString a, string b) => a.Equals(b);
+    public static bool operator !=(ValidatedString a, string b) => !(a == b);
+
+    public static bool operator ==(string a, ValidatedString b) => a.Equals(b);
+    public static bool operator !=(string a, ValidatedString b) => !(a == b);
 }
