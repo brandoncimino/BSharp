@@ -74,6 +74,7 @@ namespace FowlFever.BSharp {
         [Pure]
         public static bool IsPositive<T>(T value) {
             return value switch {
+                null => false,
                 short s    => s.IsPositive(),
                 int i      => i.IsPositive(),
                 long l     => l.IsPositive(),
@@ -104,8 +105,9 @@ namespace FowlFever.BSharp {
         /// <returns>true if <paramref name="value"/> > 0</returns>
         /// <exception cref="ArgumentException">if <paramref name="value"/> isn't a type with an appropriate <see cref="IsStrictlyPositive(short)"/> method</exception>
         [Pure]
-        public static bool IsStrictlyPositive(object value) {
+        public static bool IsStrictlyPositive<T>(T value) {
             return value switch {
+                null       => false,
                 short s    => s.IsStrictlyPositive(),
                 int i      => i.IsStrictlyPositive(),
                 long l     => l.IsStrictlyPositive(),
@@ -136,8 +138,9 @@ namespace FowlFever.BSharp {
         /// <returns>true if <paramref name="value"/> <![CDATA[<]]> 0</returns>
         /// <exception cref="ArgumentException">if <paramref name="value"/> isn't a type with an appropriate <see cref="IsNegative(short)"/> method</exception>
         [Pure]
-        public static bool IsNegative(object value) {
+        public static bool IsNegative<T>(T value) {
             return value switch {
+                null => false,
                 short s    => s.IsNegative(),
                 int i      => i.IsNegative(),
                 long l     => l.IsNegative(),
