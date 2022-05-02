@@ -91,7 +91,7 @@ public static partial class Must {
     #region Contain (entry)
 
     public static T ContainAny<T, T2>(
-        T              actualValue,
+        T               actualValue,
         IEnumerable<T2> desiredValues,
         [CallerArgumentExpression("actualValue")]
         string? parameterName = default,
