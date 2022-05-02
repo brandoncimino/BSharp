@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
 using FowlFever.BSharp.Collections;
 using FowlFever.BSharp.Exceptions;
@@ -76,13 +77,22 @@ namespace FowlFever.BSharp.Enums {
         /// <param name="methodName">the method that caused this exception</param>
         /// <typeparam name="T">an <see cref="Enum"/> <see cref="Type"/></typeparam>
         /// <returns>a nice <see cref="System.ComponentModel.InvalidEnumArgumentException"/></returns>
-        /// <see cref="RejectArgument.UnhandledSwitchEnum{T}"/>
+        /// <seealso cref="RejectArgument.UnhandledSwitchEnum{T}"/>
         public static InvalidEnumArgumentException UnhandledSwitch<T>(
             T?     actualValue,
-            string parameterName,
-            string methodName
+            [CallerArgumentExpression("actualValue")]
+            string? parameterName = default,
+            [CallerMemberName]
+            string? methodName = default
         )
-            where T : Enum => RejectArgument.UnhandledSwitchEnum(actualValue, parameterName, methodName);
+            where T : Enum {
+            return Must.Reject<T, InvalidEnumArgumentException>(
+                actualValue,
+                parameterName,
+                methodName,
+                $"{typeof(T)}.{actualValue.OrNullPlaceholder()} was not handled by any switch branch!"
+            );
+        }
 
         #region Enum not in set
 
