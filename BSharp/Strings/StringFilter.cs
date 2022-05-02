@@ -14,9 +14,9 @@ namespace FowlFever.BSharp.Strings {
     /// </ul>
     /// </summary>
     public class StringFilter {
-        public readonly List<string>             Substrings = new List<string>();
-        public readonly List<Regex>              Patterns   = new List<Regex>();
-        public readonly List<Func<string, bool>> Predicates = new List<Func<string, bool>>();
+        public readonly List<string>              Substrings = new List<string>();
+        public readonly List<Regex>               Patterns   = new List<Regex>();
+        public readonly List<Func<string?, bool>> Predicates = new List<Func<string?, bool>>();
 
         /// <summary>
         /// Causes this <see cref="StringFilter"/> to match strings that <see cref="string.Contains"/> <see cref="substring"/>.
@@ -51,20 +51,20 @@ namespace FowlFever.BSharp.Strings {
         /// </summary>
         /// <param name="predicate">an arbitrary <see cref="Func{T,T}"/> predicate</param>
         /// <returns><see langword="this"/></returns>
-        public StringFilter PredicatedOn(Func<string, bool> predicate) {
+        public StringFilter PredicatedOn(Func<string?, bool> predicate) {
             Predicates.Add(predicate);
             return this;
         }
 
-        private bool TestContaining(string str) {
+        private bool TestContaining(string? str) {
             return Substrings.Any(str.Contains);
         }
 
-        private bool TestMatching(string str) {
+        private bool TestMatching(string? str) {
             return Patterns.Any(it => it.IsMatch(str));
         }
 
-        private bool TestPredicates(string stackTraceLine) {
+        private bool TestPredicates(string? stackTraceLine) {
             return Predicates.Any(it => it.Invoke(stackTraceLine));
         }
 
@@ -73,7 +73,7 @@ namespace FowlFever.BSharp.Strings {
         /// </summary>
         /// <param name="str">a <see cref="string"/> to compare against this <see cref="StringFilter"/></param>
         /// <returns>true if <b>any</b> of this <see cref="StringFilter"/>'s conditions match the given <see cref="string"/></returns>
-        public bool TestFilter(string str) {
+        public bool TestFilter(string? str) {
             return TestContaining(str) ||
                    TestMatching(str)   ||
                    TestPredicates(str);
