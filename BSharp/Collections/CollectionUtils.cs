@@ -564,7 +564,7 @@ namespace FowlFever.BSharp.Collections {
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
         [Pure]
-        public static bool ContainsAny<T>(this IEnumerable<T?> enumerable, IEnumerable<T?> others) {
+        public static bool ContainsAny<T>([InstantHandle] this IEnumerable<T?> enumerable, [InstantHandle] IEnumerable<T?> others) {
             return others.Any(enumerable.Contains);
         }
 
@@ -572,7 +572,7 @@ namespace FowlFever.BSharp.Collections {
          * <inheritdoc cref="ContainsAny{T}(System.Collections.Generic.IEnumerable{T},System.Collections.Generic.IEnumerable{T})"/>
          */
         [Pure]
-        public static bool ContainsAny<T>(this IEnumerable<T?> enumerable, params T?[] others) {
+        public static bool ContainsAny<T>([InstantHandle] this IEnumerable<T?> enumerable, params T?[] others) {
             return ContainsAny(enumerable, (IEnumerable<T?>)others);
         }
 
