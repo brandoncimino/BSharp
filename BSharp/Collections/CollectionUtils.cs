@@ -572,8 +572,8 @@ namespace FowlFever.BSharp.Collections {
          * <inheritdoc cref="ContainsAny{T}(System.Collections.Generic.IEnumerable{T},System.Collections.Generic.IEnumerable{T})"/>
          */
         [Pure]
-        public static bool ContainsAny<T>([InstantHandle] this IEnumerable<T?> enumerable, params T?[] others) {
-            return ContainsAny(enumerable, (IEnumerable<T?>)others);
+        public static bool ContainsAny<T>([InstantHandle] this IEnumerable<T> enumerable, T another, T andAnother, params T[] andMore) {
+            return ContainsAny(enumerable, andMore.Prepend(andAnother).Prepend(another));
         }
 
         /// <summary>
@@ -1402,7 +1402,7 @@ namespace FowlFever.BSharp.Collections {
         #region As{x}
 
         [Pure] public static IList<T> AsList<T>(this  IEnumerable<T> source) => source as IList<T> ?? source.ToList();
-        [Pure] public static T[]     AsArray<T>(this IEnumerable<T> source) => source as T[]     ?? source.ToArray();
+        [Pure] public static T[]      AsArray<T>(this IEnumerable<T> source) => source as T[]      ?? source.ToArray();
 
         #endregion
     }
