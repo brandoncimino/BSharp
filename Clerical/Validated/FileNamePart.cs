@@ -1,7 +1,4 @@
-using System.IO;
 using System.Text.RegularExpressions;
-
-using FluentValidation;
 
 using FowlFever.BSharp.Clerical;
 using FowlFever.BSharp.Exceptions;
@@ -18,15 +15,11 @@ namespace FowlFever.Clerical.Validated;
 /// <li>TODO: Doesn't contain any <see cref="Path.GetInvalidFileNameChars"/></li>
 /// </ul>
 /// </summary>
-public class FileNamePart {
-    public readonly string Value;
-
-    public FileNamePart(string value) {
+public record FileNamePart : PathPart {
+    public FileNamePart(string value) : base(value) {
         var whitespacePattern = new Regex(@"\s");
-        var arg = new ArgInfo<string?>(value, nameof(Value), $"new {GetType().Name}");
-        Must.NotMatch(arg, whitespacePattern);
-        Must.NotMatch(arg, BPath.DirectorySeparatorPattern);
-
-        Value = value;
+        var methodName        = $"new {GetType().Name}";
+        Must.NotMatch(value, whitespacePattern,               methodName: methodName);
+        Must.NotMatch(value, BPath.DirectorySeparatorPattern, methodName: methodName);
     }
 }
