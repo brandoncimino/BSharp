@@ -1,21 +1,8 @@
 using System;
-using System.Collections;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq.Expressions;
-using System.Reflection;
 using System.Runtime.CompilerServices;
 
-using FowlFever.BSharp.Clerical;
-using FowlFever.BSharp.Collections;
-using FowlFever.BSharp.Strings.Prettifiers;
-using FowlFever.BSharp.Strings.Tabler;
-
 using JetBrains.Annotations;
-
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace FowlFever.BSharp.Exceptions;
 
@@ -25,7 +12,7 @@ namespace FowlFever.BSharp.Exceptions;
 /// <remarks>
 /// Each of these methods should return the original value if their validation succeeds.
 /// <br/>
-/// <see cref="Exception"/> objects should be created by <see cref="RejectArgument"/> methods.
+/// <see cref="Exception"/> objects should be created by <see cref="Reject{T}"/> methods.
 /// </remarks>
 [PublicAPI]
 public static partial class Must {
@@ -51,7 +38,7 @@ public static partial class Must {
     [return: NotNullIfNotNull("predicate")]
     public static T Be<T>(
         [NotNullIfNotNull("predicate")]
-        T              actualValue,
+        T actualValue,
         Func<T, bool>? predicate,
         [CallerArgumentExpression("actualValue")]
         string? parameterName = default,
@@ -71,7 +58,7 @@ public static partial class Must {
         }
 
         NotBeNull(actualValue, parameterName, methodName);
-        
+
         Exception? exc = null;
 
         try {
@@ -87,7 +74,7 @@ public static partial class Must {
     }
 
     public static T NotBe<T>(
-        T            actualValue,
+        T actualValue,
         [InstantHandle]
         Func<T, bool> predicate,
         [CallerArgumentExpression("actualValue")]
@@ -125,7 +112,7 @@ public static partial class Must {
     }
 
     public static T MustNotBe<T>(
-        this T       actualValue,
+        this T actualValue,
         [InstantHandle]
         Func<T, bool> predicate,
         [CallerArgumentExpression("actualValue")]

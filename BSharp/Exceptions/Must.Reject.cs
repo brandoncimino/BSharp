@@ -1,30 +1,25 @@
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
+using System.Diagnostics.Contracts;
 using System.Runtime.CompilerServices;
 using System.Text;
 
-using BenchmarkDotNet.Engines;
-
-using FowlFever.BSharp.Reflection;
 using FowlFever.BSharp.Strings;
 
 namespace FowlFever.BSharp.Exceptions;
 
 public static partial class Must {
-    public const string RejectIcon = "🚮";
-    public const string ReasonIcon = "🙅";
-    private const int DefaultValueStringLimit = 30;
-    
+    public const  string RejectIcon              = "🚮";
+    public const  string ReasonIcon              = "🙅";
+    private const int    DefaultValueStringLimit = 30;
+
+    [Pure]
     public static ArgumentException Reject<T>(
         T? actualValue,
         [CallerArgumentExpression("actualValue")]
         string? parameterName = default,
         string? rejectedBy = default,
         [CallerMemberName]
-        string?    reason   = default,
+        string? reason = default,
         Exception? causedBy = default
     ) {
         return Reject<T, ArgumentException>(
@@ -36,6 +31,7 @@ public static partial class Must {
         );
     }
 
+    [Pure]
     private static string _GetRejectionMessage_ReasonFromCallerName<T>(
         T?      actualValue,
         string? parameterName,
@@ -47,6 +43,7 @@ public static partial class Must {
         return _GetRejectionMessage(actualValue, parameterName, rejectedBy, reason);
     }
 
+    [Pure]
     private static string _GetRejectionMessage<T>(
         T?      actualValue,
         string? parameterName,
@@ -64,27 +61,40 @@ public static partial class Must {
         return lines.ToString();
     }
 
+    [Pure]
     public static TExc Reject<T, TExc>(
-        T?                                 actualValue,
+        T? actualValue,
         [CallerArgumentExpression("actualValue")]
         string? parameterName = default,
         string? rejectedBy = default,
         [CallerMemberName]
         string? reason = default,
-        Exception?              causedBy           = default
+        Exception? causedBy = default
     )
         where TExc : Exception {
         var rejectionMessage = _GetRejectionMessage(actualValue, parameterName, rejectedBy, reason);
         return ExceptionUtils.ConstructException<TExc>(rejectionMessage, causedBy);
     }
 
+    [Pure]
     private static string GetActualValueString(object? actualValue, int maxLength) {
         var valStr = actualValue switch {
-            null => Prettification.DefaultNullPlaceholder,
+            null   => Prettification.DefaultNullPlaceholder,
             string => $"\"{actualValue}\"",
             _      => actualValue.ToString(),
         };
 
         return valStr.Truncate(maxLength);
+    }
+
+    [Pure]
+    public static ArgumentException RejectUnhandledSwitchType<T>(
+        T? actualValue,
+        [CallerArgumentExpression("actualValue")]
+        string? parameterName = default,
+        [CallerMemberName]
+        string? methodName = default
+    ) {
+        return Reject(actualValue, parameterName, methodName, $"Value of type {actualValue?.GetType() ?? typeof(T)} was unhandled by any switch branch!");
     }
 }

@@ -1,10 +1,8 @@
 using System;
-using System.Diagnostics.Contracts;
 
 using FowlFever.BSharp.Exceptions;
 
 using Pure = System.Diagnostics.Contracts.PureAttribute;
-using JetBrains.Annotations;
 
 namespace FowlFever.BSharp {
     public static partial class Mathb {
@@ -15,41 +13,48 @@ namespace FowlFever.BSharp {
         /**
          * <seealso cref="Math.Sign(short)"/>
          */
-        [Pure] public static int Sign(this short value) {
+        [Pure]
+        public static int Sign(this short value) {
             return Math.Sign(value);
         }
 
         /**
          * <seealso cref="Math.Sign(int)"/>
          */
-        [Pure] public static int Sign(this int integer) {
+        [Pure]
+        public static int Sign(this int integer) {
             return Math.Sign(integer);
         }
 
         /**
          * <seealso cref="Math.Sign(long)"/>
          */
-        [Pure] public static int Sign(this long value) => Math.Sign(value);
+        [Pure]
+        public static int Sign(this long value) => Math.Sign(value);
 
         /**
          * <seealso cref="Math.Sign(float)"/>
          */
-        [Pure] public static int Sign(this float value) => Math.Sign(value);
+        [Pure]
+        public static int Sign(this float value) => Math.Sign(value);
 
         /**
          * <seealso cref="Math.Sign(double)"/>
          */
-        [Pure] public static int Sign(this double value) => Math.Sign(value);
+        [Pure]
+        public static int Sign(this double value) => Math.Sign(value);
 
         /**
          * <seealso cref="Math.Sign(decimal)"/>
          */
-        [Pure] public static int Sign(this decimal value) {
+        [Pure]
+        public static int Sign(this decimal value) {
             return Math.Sign(value);
         }
 
         /// <returns><paramref name="value"/>.<see cref="TimeSpan.CompareTo(object)"/>(<see cref="TimeSpan.Zero"/>)</returns>
-        [Pure] public static int Sign(this TimeSpan value) {
+        [Pure]
+        public static int Sign(this TimeSpan value) {
             return value.CompareTo(TimeSpan.Zero);
         }
 
@@ -74,7 +79,7 @@ namespace FowlFever.BSharp {
         [Pure]
         public static bool IsPositive<T>(T value) {
             return value switch {
-                null => false,
+                null       => false,
                 short s    => s.IsPositive(),
                 int i      => i.IsPositive(),
                 long l     => l.IsPositive(),
@@ -82,7 +87,7 @@ namespace FowlFever.BSharp {
                 double d   => d.IsPositive(),
                 decimal d  => d.IsPositive(),
                 TimeSpan t => t.IsPositive(),
-                _ => throw RejectArgument.UnhandledSwitchType(value, nameof(value), nameof(IsPositive)),
+                _          => throw Must.RejectUnhandledSwitchType(value, nameof(value), nameof(IsPositive)),
             };
         }
 
@@ -115,7 +120,7 @@ namespace FowlFever.BSharp {
                 double d   => d.IsStrictlyPositive(),
                 decimal d  => d.IsStrictlyPositive(),
                 TimeSpan t => t.IsStrictlyPositive(),
-                _          => throw RejectArgument.UnhandledSwitchType(value, nameof(value), nameof(IsStrictlyPositive)),
+                _          => throw Must.RejectUnhandledSwitchType(value, nameof(value), nameof(IsStrictlyPositive)),
             };
         }
 
@@ -140,7 +145,7 @@ namespace FowlFever.BSharp {
         [Pure]
         public static bool IsNegative<T>(T value) {
             return value switch {
-                null => false,
+                null       => false,
                 short s    => s.IsNegative(),
                 int i      => i.IsNegative(),
                 long l     => l.IsNegative(),
@@ -148,7 +153,7 @@ namespace FowlFever.BSharp {
                 double d   => d.IsNegative(),
                 decimal d  => d.IsNegative(),
                 TimeSpan t => t.IsNegative(),
-                _          => throw RejectArgument.UnhandledSwitchType(value, nameof(value), nameof(IsNegative)),
+                _          => throw Must.RejectUnhandledSwitchType(value, nameof(value), nameof(IsNegative)),
             };
         }
 
