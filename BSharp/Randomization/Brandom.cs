@@ -213,7 +213,7 @@ namespace FowlFever.BSharp.Randomization {
         /// <exception cref="ArgumentOutOfRangeException">if <paramref name="length"/> is negative</exception>
         /// <exception cref="ArgumentOutOfRangeException">if the <see cref="Range"/> is outside of the <paramref name="length"/>'s scope</exception>
         public static int Index(this Random? generator, [NonNegativeValue] int length, Range range) {
-            Must.BePositive(length, nameof(length), nameof(Index));
+            Must.BePositive(length);
             var (o, l) = range.GetOffsetAndLength(length);
             return o + generator.Int(l);
         }
