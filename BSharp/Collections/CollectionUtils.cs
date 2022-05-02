@@ -592,8 +592,8 @@ namespace FowlFever.BSharp.Collections {
          * <inheritdoc cref="ContainsNone{T}(System.Collections.Generic.IEnumerable{T},System.Collections.Generic.IEnumerable{T})"/>
          */
         [Pure]
-        public static bool ContainsNone<T>(this IEnumerable<T?> enumerable, params T?[] others) {
-            return ContainsNone(enumerable, (IEnumerable<T?>)others);
+        public static bool ContainsNone<T>(this IEnumerable<T> enumerable, params T[] others) {
+            return ContainsNone(enumerable, (IEnumerable<T>)others);
         }
 
         /// <summary>
@@ -604,7 +604,7 @@ namespace FowlFever.BSharp.Collections {
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
         [Pure]
-        public static bool ContainsAll<T>(this IEnumerable<T?> superset, IEnumerable<T?> subset) {
+        public static bool ContainsAll<T>([InstantHandle] this IEnumerable<T> superset, [InstantHandle] IEnumerable<T> subset) {
             return subset.All(superset.Contains);
         }
 
@@ -612,8 +612,8 @@ namespace FowlFever.BSharp.Collections {
          * <inheritdoc cref="ContainsAll{T}(System.Collections.Generic.IEnumerable{T},System.Collections.Generic.IEnumerable{T})"/>
          */
         [Pure]
-        public static bool ContainsAll<T>(this IEnumerable<T?> enumerable, params T?[] others) {
-            return ContainsAll(enumerable, (IEnumerable<T?>)others);
+        public static bool ContainsAll<T>([InstantHandle] this IEnumerable<T> enumerable, params T[] others) {
+            return ContainsAll(enumerable, others.AsEnumerable());
         }
 
         /// <summary>
@@ -629,7 +629,7 @@ namespace FowlFever.BSharp.Collections {
         /// <seealso cref="ContainsAll{T}(System.Collections.Generic.IEnumerable{T},System.Collections.Generic.IEnumerable{T})"/>
         /// <seealso cref="IsSubsetOf{T}(System.Collections.Generic.IEnumerable{T},System.Collections.Generic.IEnumerable{T})"/>
         [Pure]
-        public static bool IsSupersetOf<T>(this IEnumerable<T?> superset, IEnumerable<T?> subset) {
+        public static bool IsSupersetOf<T>([InstantHandle] this IEnumerable<T> superset, [InstantHandle] IEnumerable<T> subset) {
             return ContainsAll(superset, subset);
         }
 
@@ -637,7 +637,7 @@ namespace FowlFever.BSharp.Collections {
          * <inheritdoc cref="IsSupersetOf{T}(System.Collections.Generic.IEnumerable{T},System.Collections.Generic.IEnumerable{T})"/>
          */
         [Pure]
-        public static bool IsSupersetOf<T>(this IEnumerable<T?> superset, params T?[] subset) {
+        public static bool IsSupersetOf<T>([InstantHandle] this IEnumerable<T> superset, params T[] subset) {
             return ContainsAll(superset, subset);
         }
 
@@ -744,10 +744,9 @@ namespace FowlFever.BSharp.Collections {
         }
 
         [LinqTunnel]
-        [ContractAnnotation("source:null => stop")]
-        public static IEnumerable<T?> Union<T>(
-            this   IEnumerable<T?> source,
-            params T?[]            others
+        public static IEnumerable<T> Union<T>(
+            this   IEnumerable<T> source,
+            params T[]            others
         ) {
             return source.Union(others.AsEnumerable());
         }
@@ -1402,7 +1401,7 @@ namespace FowlFever.BSharp.Collections {
 
         #region As{x}
 
-        [Pure] public static List<T> AsList<T>(this  IEnumerable<T> source) => source as List<T> ?? source.ToList();
+        [Pure] public static IList<T> AsList<T>(this  IEnumerable<T> source) => source as IList<T> ?? source.ToList();
         [Pure] public static T[]     AsArray<T>(this IEnumerable<T> source) => source as T[]     ?? source.ToArray();
 
         #endregion
