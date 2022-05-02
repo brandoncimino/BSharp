@@ -19,7 +19,6 @@ namespace FowlFever.BSharp.Enums {
             return enumType?.IsEnum == true ? enumType : throw new ArgumentException($"{enumType.PrettifyType(default)} is not an enum type!");
         }
 
-
         [ContractAnnotation("null => stop")]
         private static Type MustMatchTypeArgument<T>(this Type enumType) {
             return enumType == typeof(T) ? enumType : throw new ArgumentException($"The {nameof(enumType)} {enumType.Prettify()} was not the same as the type argument <{nameof(T)}> {typeof(T).Prettify()}!");
@@ -28,12 +27,13 @@ namespace FowlFever.BSharp.Enums {
         /// <typeparam name="T">an <see cref="Enum"/> type</typeparam>
         /// <returns>an array containing the <see cref="Type.GetEnumValues"/> of <typeparamref name="T"/>.</returns>
         /// <exception cref="ArgumentException">if <typeparamref name="T"/> is not an <see cref="Enum"/> type</exception>
-        public static T[] GetValues<T>() where T : struct, Enum {
+        public static T[] GetValues<T>()
+            where T : struct, Enum {
             return GetValues<T>(typeof(T));
         }
 
-
-        public static T[] GetValues<T>(Type enumType) where T : struct, Enum {
+        public static T[] GetValues<T>(Type enumType)
+            where T : struct, Enum {
             return enumType.MustBeEnumType()
                            .MustMatchTypeArgument<T>()
                            .GetEnumValues()
@@ -54,14 +54,16 @@ namespace FowlFever.BSharp.Enums {
             T       enumValue,
             [InstantHandle]
             IEnumerable<T>? allowedValues = default
-        ) where T : struct, Enum {
+        )
+            where T : struct, Enum {
             return new InvalidEnumArgumentException(argumentName, (int)(object)enumValue, typeof(T));
         }
 
         public static InvalidEnumArgumentException InvalidEnumArgumentException<T>(
             string? argumentName,
             T?      enumValue
-        ) where T : struct, Enum {
+        )
+            where T : struct, Enum {
             return new InvalidEnumArgumentException(argumentName, -1, typeof(T));
         }
 
@@ -69,17 +71,13 @@ namespace FowlFever.BSharp.Enums {
         /// Composes a nice <see cref="System.ComponentModel.InvalidEnumArgumentException"/> specifically for use when a
         /// <c>switch</c> statement didn't have a branch to account for <paramref name="actualValue"/>.
         /// </summary>
-        /// <remarks>
-        /// This method is identical to <see cref="RejectArgument.UnhandledSwitchEnum{T}"/>.
-        /// </remarks>
         /// <param name="actualValue">the <typeparamref name="T"/> value that didn't have a switch branch</param>
         /// <param name="parameterName">the parameter that caused this exception</param>
         /// <param name="methodName">the method that caused this exception</param>
         /// <typeparam name="T">an <see cref="Enum"/> <see cref="Type"/></typeparam>
         /// <returns>a nice <see cref="System.ComponentModel.InvalidEnumArgumentException"/></returns>
-        /// <seealso cref="RejectArgument.UnhandledSwitchEnum{T}"/>
         public static InvalidEnumArgumentException UnhandledSwitch<T>(
-            T?     actualValue,
+            T? actualValue,
             [CallerArgumentExpression("actualValue")]
             string? parameterName = default,
             [CallerMemberName]
@@ -123,12 +121,12 @@ namespace FowlFever.BSharp.Enums {
             }.JoinLines();
         }
 
-
         public static InvalidEnumArgumentException InvalidEnumArgumentException<T>(
             string?        argumentName,
             IEnumerable<T> checkedValues,
             IEnumerable<T> allowedValues
-        ) where T : struct, Enum {
+        )
+            where T : struct, Enum {
             return new InvalidEnumArgumentException(
                 BuildEnumNotInSetMessage(
                     argumentName,
@@ -139,12 +137,12 @@ namespace FowlFever.BSharp.Enums {
             );
         }
 
-
         public static InvalidEnumArgumentException InvalidEnumArgumentException<T>(
             string?         argumentName,
             IEnumerable<T?> checkedValues,
             IEnumerable<T?> allowedValues
-        ) where T : struct, Enum {
+        )
+            where T : struct, Enum {
             return new InvalidEnumArgumentException(
                 BuildEnumNotInSetMessage(
                     argumentName,
@@ -159,11 +157,13 @@ namespace FowlFever.BSharp.Enums {
 
         #region Max / Min
 
-        public static T Min<T>() where T : struct, Enum {
+        public static T Min<T>()
+            where T : struct, Enum {
             return GetValues<T>().Min();
         }
 
-        public static T Max<T>() where T : struct, Enum {
+        public static T Max<T>()
+            where T : struct, Enum {
             return GetValues<T>().Max();
         }
 
