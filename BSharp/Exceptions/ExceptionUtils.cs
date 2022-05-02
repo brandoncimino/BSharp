@@ -11,7 +11,7 @@ namespace FowlFever.BSharp.Exceptions {
             BindingFlags.Default |
             BindingFlags.Static  |
             BindingFlags.NonPublic
-        );
+        ) ?? throw new ArgumentNullException();
 
         private static T ModifyMessage_Internal<T>(T exception, string newMessage) where T : Exception {
             try {
@@ -71,7 +71,7 @@ namespace FowlFever.BSharp.Exceptions {
         /// <param name="additionalFilters"></param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public static string[] FilteredStackTrace<T>(this T exception, StringFilter filter, params StringFilter[] additionalFilters) where T : Exception {
+        public static string?[] FilteredStackTrace<T>(this T exception, StringFilter filter, params StringFilter[] additionalFilters) where T : Exception {
             return StringUtils.CollapseLines(exception.StackTrace.SplitLines(), filter, additionalFilters);
         }
     }
