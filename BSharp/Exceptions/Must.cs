@@ -112,7 +112,7 @@ public static partial class Must {
     }
 
     public static T MustBe<T>(
-        this T       actualValue,
+        this T        actualValue,
         Func<T, bool> predicate,
         [CallerArgumentExpression("actualValue")]
         string? parameterName = default,
