@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 
+using FowlFever.BSharp.Collections;
 using FowlFever.BSharp.Optional;
 using FowlFever.BSharp.Strings;
 using FowlFever.BSharp.Strings.Json;
@@ -13,7 +14,6 @@ using Newtonsoft.Json;
 using NUnit.Framework;
 
 using Is = FowlFever.Testing.Is;
-using List = FowlFever.BSharp.Collections.List;
 
 namespace BSharp.Tests.Collections; 
 
@@ -312,7 +312,7 @@ public class OptionalTests {
 
     [Test]
     public void SerializeOptional2() {
-        var ls   = List.Of(List.Of(5, 4, 3));
+        var ls   = Lists.Of(Lists.Of(5, 4, 3));
         var json = JsonConvert.SerializeObject(ls);
         Console.WriteLine($"json: {json}");
         Assert.That(json, Is.EqualTo("[[5,4,3]]"));

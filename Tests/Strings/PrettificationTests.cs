@@ -22,7 +22,6 @@ using FowlFever.Testing;
 using NUnit.Framework;
 
 using Is = NUnit.Framework.Is;
-using List = FowlFever.BSharp.Collections.List;
 
 namespace BSharp.Tests.Strings; 
 
@@ -208,7 +207,7 @@ two         BSharp.Tests.Reflection.Duckmobile";
 
     [Test]
     public void PrettifyTuple2_One() {
-        var tuple2 = (List.Of(1, double.PositiveInfinity, double.NegativeInfinity), "yolo");
+        var tuple2 = (Lists.Of(1, double.PositiveInfinity, double.NegativeInfinity), "yolo");
 
         Console.WriteLine(tuple2);
         Console.WriteLine(tuple2.Prettify());

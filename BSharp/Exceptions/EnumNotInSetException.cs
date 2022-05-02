@@ -49,7 +49,7 @@ namespace FowlFever.BSharp.Exceptions {
     [PublicAPI]
     public class EnumNotInSetException<T> : InvalidEnumArgumentException {
         private         string _baseMessage;
-        public override string Message       => List.Of(MessagePrefix, "", _baseMessage).NonNull().JoinLines();
+        public override string Message       => Lists.Of(MessagePrefix, "", _baseMessage).NonNull().JoinLines();
         public virtual  string MessagePrefix { get; }
 
         /// <inheritdoc cref="InvalidEnumArgumentException"/>
