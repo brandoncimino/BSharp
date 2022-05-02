@@ -64,6 +64,28 @@ namespace FowlFever.BSharp.Exceptions {
         }
 
         /// <summary>
+        /// Generates a new <typeparamref name="T"/> exception with the given <see cref="Exception.Message"/> and optional <see cref="Exception.InnerException"/>. 
+        /// </summary>
+        /// <param name="message">the desired <see cref="Exception.Message"/></param>
+        /// <param name="innerException">the desired <see cref="Exception.InnerException"/></param>
+        /// <typeparam name="T">the type of <see cref="Exception"/></typeparam>
+        /// <returns>a new <typeparamref name="T"/> instance</returns>
+        /// <exception cref="BrandonException">If we couldn't construct a <see cref="T"/> (likely because it lacked an appropriate <see cref="ConstructorInfo"/>)</exception>
+        /// <remarks>I would rather construct a parameterless <typeparamref name="T"/> and then modify its properties, rather than relying on specific constructor signatures to be present,
+        /// but unfortunately we can't, because <see cref="Exception"/> and <see cref="Exception.InnerException"/> don't have setters.</remarks>
+        /// TODO: utilize this in <see cref="ModifyMessage"/>, etc.ce
+        public static T ConstructException<T>(string message, Exception? innerException = default) where T : Exception {
+            try {
+                return innerException == null
+                           ? ReflectionUtils.Construct<T>(message)
+                           : ReflectionUtils.Construct<T>(message, innerException);
+            }
+            catch (Exception e) {
+                throw new BrandonException($"Unable to build an exception of type {typeof(T)} using {{message: '{message}', innerException: {innerException}", e);
+            }
+        }
+
+        /// <summary>
         /// Applies the given <see cref="StringFilter"/>s to the <see cref="Exception.StackTrace"/> of <paramref name="exception"/>
         /// </summary>
         /// <param name="exception"></param>
