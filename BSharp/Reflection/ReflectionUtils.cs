@@ -26,14 +26,6 @@ namespace FowlFever.BSharp.Reflection {
     /// </summary>
     [PublicAPI]
     public static class ReflectionUtils {
-        /// <summary>
-        /// Returns the <see cref="MethodInfo"/> for this method that <b><i>called <see cref="ThisMethod"/></i></b>.
-        /// </summary>
-        /// <returns></returns>
-        public static MethodInfo ThisMethod() {
-            throw new NotImplementedException("TBD - I need to stop getting distracted!");
-        }
-
         #region Binding Flags
 
         /// <summary>
@@ -716,9 +708,19 @@ namespace FowlFever.BSharp.Reflection {
          * <inheritdoc cref="IsChildOf(System.Type,System.Collections.Generic.IEnumerable{System.Type})"/>
          */
         [Pure]
-        [ContractAnnotation("child:null => stop")]
-        [ContractAnnotation("possibleParents:null => stop")]
-        public static bool IsChildOf(this Type child, Type possibleParent, params Type[] possibleParents) => IsChildOf(child, possibleParents.AsEnumerable().Prepend(possibleParent));
+        public static bool Extends(this Type child, [InstantHandle] IEnumerable<Type> possibleParents) => IsChildOf(child, possibleParents);
+
+        /**
+         * <inheritdoc cref="IsChildOf(System.Type,System.Collections.Generic.IEnumerable{System.Type})"/>
+         */
+        [Pure]
+        public static bool IsChildOf(this Type child, Type possibleParentType, params Type[] possibleParents) => IsChildOf(child, possibleParents.AsEnumerable().Prepend(possibleParentType));
+
+        /**
+         * <inheritdoc cref="IsChildOf(System.Type,System.Collections.Generic.IEnumerable{System.Type})"/>
+         */
+        [Pure]
+        public static bool Extends(this Type child, Type possibleParentType, params Type[] possibleParents) => IsChildOf(child, possibleParentType, possibleParents);
 
         /// <summary>
         /// Determines whether a <b>variable</b> of this <see cref="Type"/> is capable of holding a <b>value</b> of <paramref name="valueType"/>.
