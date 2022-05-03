@@ -1,13 +1,8 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
-using System.IO;
 using System.Linq;
-using System.Net.Http;
-using System.Reflection;
-using System.Text;
 using System.Text.RegularExpressions;
 
 using FowlFever.BSharp.Collections;
@@ -18,14 +13,12 @@ using FowlFever.Conjugal.Affixing;
 
 using JetBrains.Annotations;
 
-using Newtonsoft.Json;
-
 using Pure = System.Diagnostics.Contracts.PureAttribute;
 
 namespace FowlFever.BSharp.Strings {
     [PublicAPI]
     public static class StringUtils {
-        public const int DefaultIndentSize   = 2;
+        public const int    DefaultIndentSize   = 2;
         public const string DefaultIndentString = "  ";
 
         /// <summary>
@@ -82,23 +75,23 @@ namespace FowlFever.BSharp.Strings {
         /// <exception cref="ArgumentException">if <paramref name="indentString"/> <see cref="IsEmpty"/></exception>
         /// <returns>the indented <see cref="string"/></returns>
         /// <seealso cref="Indent(string,int,string,FowlFever.BSharp.Strings.StringUtils.IndentMode)"/>
-        public static IEnumerable<string> Indent(
+        public static IEnumerable<string?> Indent(
             this string toIndent,
-            int indentCount = 1,
-            string indentString = DefaultIndentString,
-            IndentMode indentMode = IndentMode.Relative
+            int         indentCount  = 1,
+            string      indentString = DefaultIndentString,
+            IndentMode  indentMode   = IndentMode.Relative
         ) {
             Must.NotBeEmpty(indentString, nameof(indentString), nameof(Indent));
             return Enumerable.Repeat(toIndent, 1).Indent(indentCount, indentString, indentMode);
         }
 
         public static IEnumerable<string> Indent(
-            this IEnumerable<string> toIndent,
-            int                indentCount  = 1,
-            string             indentString = DefaultIndentString,
-            IndentMode         indentMode   = IndentMode.Relative
+            this IEnumerable<string?> toIndent,
+            int                       indentCount  = 1,
+            string                    indentString = DefaultIndentString,
+            IndentMode                indentMode   = IndentMode.Relative
         ) {
-            indentString = Must.NotBeEmpty(indentString,nameof(indentString), nameof(Indent));
+            indentString = Must.NotBeEmpty(indentString, nameof(indentString), nameof(Indent));
 
             return indentMode switch {
                 IndentMode.Absolute => IndentAbsolute(toIndent, indentCount, indentString),
@@ -107,7 +100,7 @@ namespace FowlFever.BSharp.Strings {
             };
         }
 
-        public static IEnumerable<string> IndentRelative(IEnumerable<string> toIndent, int indentCount = 1, string indentString = DefaultIndentString) {
+        public static IEnumerable<string> IndentRelative(IEnumerable<string?> toIndent, int indentCount = 1, string indentString = DefaultIndentString) {
             return indentCount switch {
                 0   => toIndent.SplitLines(),
                 > 0 => toIndent.SplitLines().Select(it => it.Prefix(indentString.Repeat(indentCount))),
@@ -116,11 +109,12 @@ namespace FowlFever.BSharp.Strings {
         }
 
         public static IEnumerable<string> IndentAbsolute(
-            IEnumerable<string> toIndent,
+            IEnumerable<string?> toIndent,
             [NonNegativeValue]
             int indentCount = 1,
             string indentString = DefaultIndentString
         ) {
+            Must.Be(indentCount, Mathb.IsStrictlyPositive);
             Must.BePositive(indentCount, nameof(indentCount), nameof(IndentAbsolute));
             return toIndent.SplitLines().Select(it => it.ForceStartingString(indentString, indentCount));
         }
@@ -180,9 +174,12 @@ namespace FowlFever.BSharp.Strings {
         /// <param name="separator"></param>
         /// <returns></returns>
         public static string JoinNonBlank(this string? baseString, string? stringToJoin, string? separator = "") {
-            return baseString.IsBlank()
-                       ? stringToJoin.IsBlank() ? "" : stringToJoin!
-                       : string.Join(separator, baseString, stringToJoin);
+            return (baseString.IsBlank(), stringToJoin.IsBlank()) switch {
+                (true, true)   => "",
+                (true, false)  => stringToJoin!,
+                (false, true)  => baseString!,
+                (false, false) => string.Join(separator, baseString, stringToJoin),
+            };
         }
 
         /// <summary>
@@ -212,17 +209,17 @@ namespace FowlFever.BSharp.Strings {
         public static string JoinWith(
             this string? first,
             string?      second,
-            string      separator,
+            string       separator,
             int          min = 1,
             int          max = 1
         ) {
             //TODO: this will be very inefficient, but who cares!
-            var subExp       = $"(?<separators>{Regex.Escape(separator)})+";
+            var subExp = $"(?<separators>{Regex.Escape(separator)})+";
             Console.WriteLine($"subExp: {subExp}");
 
             var firstPattern = new Regex(@$"^(?<base>.*?){subExp}$");
             var firstMatch   = first?.Match(firstPattern);
-            Console.WriteLine("1 - "+firstMatch.Prettify());
+            Console.WriteLine("1 - " + firstMatch.Prettify());
             var firstBase  = firstMatch?.Groups["base"];
             var firstSep   = firstMatch?.Groups["separators"];
             var firstCount = firstSep?.Captures.Count;
@@ -230,7 +227,7 @@ namespace FowlFever.BSharp.Strings {
 
             var secondPattern = new Regex($"^{subExp}(?<base>.*)$");
             var secondMatch   = second?.Match(secondPattern);
-            Console.WriteLine("2 - "+secondMatch.Prettify());
+            Console.WriteLine("2 - " + secondMatch.Prettify());
             var secondBase  = secondMatch?.Groups["base"];
             var secondSep   = secondMatch?.Groups["separators"];
             var secondCount = secondSep?.Captures.Count;
@@ -269,30 +266,21 @@ namespace FowlFever.BSharp.Strings {
         /// <exception cref="ArgumentOutOfRangeException">if <paramref name="maxLength"/> is negative</exception>
         /// <exception cref="ArgumentOutOfRangeException">if <paramref name="trail"/> is longer than <paramref name="maxLength"/></exception>
         public static string Truncate(
-            this string? self,
+            this string self,
             [NonNegativeValue]
             int maxLength,
             string? trail = Ellipsis
         ) {
-            // ReSharper disable once ConditionIsAlwaysTrueOrFalse
-            if (maxLength < 0) {
-                throw new ArgumentOutOfRangeException(nameof(maxLength), "Must be positive");
+            trail ??= Ellipsis;
+            Must.BePositive(maxLength);
+            Must.Compare(trail.Length, ComparisonOperator.GreaterThanOrEqualTo, maxLength);
+
+            if (self.Length <= maxLength) {
+                return self;
             }
 
-            if (trail?.Length >= maxLength) {
-                throw new ArgumentOutOfRangeException(nameof(trail), $"{nameof(trail)}.{nameof(trail.Length)} [{trail?.Length}] must be less than {nameof(maxLength)} [{maxLength}]");
-            }
-
-            if (self == null || maxLength == 0) {
-                return "";
-            }
-
-            if (self.Length > maxLength) {
-                var shortened = self.Substring(0, maxLength - (trail?.Length ?? 0));
-                return $"{shortened}{trail}";
-            }
-
-            return self;
+            var shortened = self[..(maxLength - trail.Length)];
+            return $"{shortened}{trail}";
         }
 
         /// <summary>
@@ -478,7 +466,7 @@ namespace FowlFever.BSharp.Strings {
         /// <param name="numberToTrim">the maximum number of <paramref name="trimString"/>s to remove</param>
         /// <returns><paramref name="input"/> with some number of <paramref name="trimString"/>s removed from the <b>end</b></returns>
         [Pure]
-        public static string TrimEnd(this string input, string trimString, int? numberToTrim = default) {
+        public static string? TrimEnd(this string? input, string trimString, int? numberToTrim = default) {
             var trimPattern = new Regex(Regex.Escape(trimString));
             return TrimEnd(input, trimPattern, numberToTrim);
         }
@@ -628,10 +616,11 @@ namespace FowlFever.BSharp.Strings {
 
         [Pure]
         public static string EnsureEndingPattern(
-            this string            input,
-            Regex                  trimPattern,
-            string                 padString,
-            [NonNegativeValue] int minimumRequired
+            this string input,
+            Regex       trimPattern,
+            string      padString,
+            [NonNegativeValue]
+            int minimumRequired
         ) {
             return _ForcePattern(input, trimPattern, padString, minimumRequired, null, TrimFrom.End);
         }
@@ -721,7 +710,6 @@ namespace FowlFever.BSharp.Strings {
 
         #region Containment
 
-
         #region ContainsAny
 
         /// <summary>
@@ -772,7 +760,6 @@ namespace FowlFever.BSharp.Strings {
         public static bool DoesNotContainAny(this string str, params string[] substrings) {
             return !ContainsAny(str, substrings);
         }
-
 
         #endregion
 
@@ -829,6 +816,7 @@ namespace FowlFever.BSharp.Strings {
         /// <seealso cref="SplitLines(string,System.StringSplitOptions)"/>
         /// <seealso cref="ToStringLines"/>
         [Pure]
+        [LinqTunnel]
         public static IEnumerable<string> SplitLines(this IEnumerable<string?> multilineContents, StringSplitOptions options = default) {
             return multilineContents.SelectMany(content => content?.SplitLines(options) ?? Enumerable.Repeat<string>("", 1));
         }
@@ -845,7 +833,7 @@ namespace FowlFever.BSharp.Strings {
         }
 
         [Pure]
-        public static string TrimLines(this string? multilineString) {
+        public static string TrimLines(this string multilineString) {
             return multilineString.SplitLines().Select(it => it.Trim()).JoinLines();
         }
 
@@ -853,13 +841,15 @@ namespace FowlFever.BSharp.Strings {
 
         [Pure]
         [NonNegativeValue]
-        public static int LongestLine([InstantHandle] this IEnumerable<string?>? strings) {
-            return strings?.SelectMany(it => it.SplitLines()).Max(it => it.Length) ?? 0;
+        public static int LongestLine([InstantHandle] this IEnumerable<string?> strings) {
+            return strings
+                   .SelectMany(it => it?.SplitLines().OrEmpty())
+                   .Max(it => it.Length);
         }
 
         [Pure]
         [NonNegativeValue]
-        public static int LongestLine(this string? str) {
+        public static int LongestLine(this string str) {
             return str.SplitLines().Max(it => it.Length);
         }
 
@@ -869,7 +859,7 @@ namespace FowlFever.BSharp.Strings {
 
         [Pure]
         [NonNegativeValue]
-        public static int LineCount(this string? str) {
+        public static int LineCount(this string str) {
             return str.SplitLines().Length;
         }
 
@@ -903,7 +893,7 @@ namespace FowlFever.BSharp.Strings {
         /// <param name="lineCount"></param>
         /// <param name="includeMessage"></param>
         /// <returns></returns>
-        public static string[] TruncateLines(this IEnumerable<string> lines, int lineCount, bool includeMessage = true) {
+        public static string?[] TruncateLines(this IEnumerable<string?> lines, int lineCount, bool includeMessage = true) {
             var lns = lines.ToArray();
             if (lns.Length <= lineCount) {
                 return lns.ToArray();
@@ -920,12 +910,12 @@ namespace FowlFever.BSharp.Strings {
             }
         }
 
-        public static string[] TruncateLines(this string contentWithLines, int lineCount, bool includeMessage = true) {
+        public static string?[] TruncateLines(this string contentWithLines, int lineCount, bool includeMessage = true) {
             return TruncateLines(contentWithLines.SplitLines(), lineCount, includeMessage);
         }
 
-        public static string[] CollapseLines(string[] lines, Func<string, bool> predicate) {
-            var  filteredLines = new List<string>();
+        public static string?[] CollapseLines(string?[] lines, Func<string?, bool> predicate) {
+            var  filteredLines = new List<string?>();
             int? collapseFrom  = null;
             for (int i = 0; i < lines.Length; i++) {
                 var matches = predicate.Invoke(lines[i]);
@@ -964,7 +954,7 @@ namespace FowlFever.BSharp.Strings {
             return filteredLines.ToArray();
         }
 
-        public static string[] CollapseLines(string[] lines, StringFilter filter, params StringFilter[] additionalFilters) {
+        public static string?[] CollapseLines(string?[] lines, StringFilter filter, params StringFilter[] additionalFilters) {
             return CollapseLines(lines, str => additionalFilters.Prepend(filter).Any(it => it.TestFilter(str)));
         }
 
@@ -975,7 +965,7 @@ namespace FowlFever.BSharp.Strings {
         /// <param name="obj"></param>
         /// <param name="nullPlaceholder"></param>
         /// <returns></returns>
-        public static IEnumerable<string> ToStringLines(this object? obj, string nullPlaceholder = "") {
+        public static IEnumerable<string?> ToStringLines(this object? obj, string? nullPlaceholder = "") {
             if (obj is IEnumerable<object> e) {
                 return e.SelectMany(it => it.ToStringLines(nullPlaceholder)).SplitLines();
             }
@@ -1040,12 +1030,12 @@ namespace FowlFever.BSharp.Strings {
         /// <returns>this <see cref="string"/> or <paramref name="blankPlaceholder"/></returns>
         public static string IfBlank(this string? str, string? blankPlaceholder) {
             blankPlaceholder ??= "";
-            return str.IsBlank() ? blankPlaceholder : str!;
+            return str.IsBlank() ? blankPlaceholder : str;
         }
 
         /// <inheritdoc cref="IfBlank(string?,string?)"/>
         public static string IfBlank(this string? str, Func<string> blankPlaceholder) {
-            return str.IsBlank() ? blankPlaceholder.Invoke() : str!;
+            return str.IsBlank() ? blankPlaceholder.Invoke() : str;
         }
 
         [ContractAnnotation("null => stop")]
@@ -1073,7 +1063,7 @@ namespace FowlFever.BSharp.Strings {
         /// <param name="str">this <see cref="string"/></param>
         /// <returns><see cref="string.IsNullOrWhiteSpace"/></returns>
         [ContractAnnotation("null => true", true)]
-        public static bool IsNullOrWhiteSpace(this string? str) {
+        public static bool IsNullOrWhiteSpace([NotNullWhen(true)] this string? str) {
             return string.IsNullOrWhiteSpace(str);
         }
 
@@ -1091,7 +1081,7 @@ namespace FowlFever.BSharp.Strings {
         /// <param name="str">this <see cref="string"/></param>
         /// <returns>!<see cref="IsEmpty"/></returns>
         [ContractAnnotation("null => false")]
-        public static bool IsNotEmpty(this string? str) {
+        public static bool IsNotEmpty([NotNullWhen(true)] this string? str) {
             return !string.IsNullOrEmpty(str);
         }
 
@@ -1101,7 +1091,7 @@ namespace FowlFever.BSharp.Strings {
         /// <param name="str">a <see cref="string"/></param>
         /// <returns><see cref="IsNullOrWhiteSpace"/></returns>
         [ContractAnnotation("null => true", true)]
-        public static bool IsBlank(this string? str) {
+        public static bool IsBlank([NotNullWhen(false)] this string? str) {
             return str.IsNullOrWhiteSpace();
         }
 
@@ -1111,7 +1101,7 @@ namespace FowlFever.BSharp.Strings {
         /// <param name="str">a <see cref="string"/></param>
         /// <returns><see cref="IsNullOrWhiteSpace"/></returns>
         [ContractAnnotation("null => false", true)]
-        public static bool IsNotBlank(this string? str) {
+        public static bool IsNotBlank([NotNullWhen(true)] this string? str) {
             return !str.IsBlank();
         }
 
@@ -1119,23 +1109,19 @@ namespace FowlFever.BSharp.Strings {
 
         #region {x}IfMissing
 
-        public static string PrependIfMissing(this string? str, string? prefix) {
+        public static string PrependIfMissing(this string str, string prefix) {
             return PrefixIfMissing(str, prefix);
         }
 
-        public static string PrefixIfMissing(this string? str, string? prefix) {
-            str    ??= "";
-            prefix ??= "";
-            return str.StartsWith(prefix) == true ? str : str.Prefix(prefix);
+        public static string PrefixIfMissing(this string str, string prefix) {
+            return str.StartsWith(prefix) ? str : str.Prefix(prefix);
         }
 
-        public static string AppendIfMissing(this string? str, string? suffix) {
+        public static string AppendIfMissing(this string str, string suffix) {
             return SuffixIfMissing(str, suffix);
         }
 
-        public static string SuffixIfMissing(this string? str, string? suffix) {
-            str    ??= "";
-            suffix ??= "";
+        public static string SuffixIfMissing(this string str, string suffix) {
             return str.EndsWith(suffix) ? str : str.Suffix(suffix);
         }
 
@@ -1144,7 +1130,7 @@ namespace FowlFever.BSharp.Strings {
         #region Substrings
 
         [Pure]
-        public static string SubstringBefore(this string? str, string? splitter) {
+        public static string SubstringBefore(this string str, string splitter) {
             if (splitter.IsNullOrEmpty()) {
                 return "";
             }
@@ -1198,55 +1184,39 @@ namespace FowlFever.BSharp.Strings {
         ///
         /// Splits <paramref name="str"/> by the <b>first</b> occurrence of <paramref name="splitter"/>.
         ///
-        /// <c>null</c> is returned if <b>any</b> of the following is true:
-        /// <ul>
-        /// <li><b>either</b> <paramref name="str"/> or <paramref name="splitter"/> <see cref="IsNullOrEmpty"/></li>
-        /// <li><paramref name="str"/> didn't contain <paramref name="splitter"/></li>
-        /// </ul>
-        ///
+        /// If <paramref name="splitter"/> isn't found, then <c>(<paramref name="str"/>, <see cref="string.Empty"/>)</c>
         /// </summary>
         /// <param name="str">the original <see cref="string"/></param>
-        /// <param name="splitter">the <see cref="string"/> being used to split <paramref name="str"/>, which will <b>not</b> be included in the output</param>
-        /// <returns></returns>
-        [ContractAnnotation("str:null => null")]
-        [ContractAnnotation("splitter:null => null")]
-        public static (string, string)? Bisect(this string? str, string? splitter) {
-            if (str.IsNullOrEmpty() || splitter.IsNullOrEmpty()) {
-                return null;
-            }
-
+        /// <param name="splitter">the <see cref="string"/> being used to split <paramref name="str"/> (📎 will <b>not</b> be included in the output)</param>
+        /// <returns>the split <paramref name="str"/> if <paramref name="splitter"/> was found; otherwise, (<paramref name="str"/>, <see cref="string.Empty">""</see>)</returns>
+        public static (string before, string after) Bisect(this string str, string splitter) {
             var matchStart = str.IndexOf(splitter, StringComparison.Ordinal);
             if (matchStart < 0) {
-                return null;
+                return (str, "");
             }
 
             var matchEnd = matchStart + splitter.Length;
-            var before   = str.Substring(0, matchStart);
-            var after    = str.Substring(matchEnd);
+            var before   = str[..matchStart];
+            var after    = str[matchEnd..];
             return (before, after);
         }
 
         /// <summary>
         /// Similar to <see cref="Bisect"/>, except this splits by the <b>last</b> occurrence of <paramref name="splitter"/>.
         /// </summary>
-        /// <param name="str"></param>
-        /// <param name="splitter"></param>
-        /// <returns></returns>
-        [ContractAnnotation("str:null => null")]
-        [ContractAnnotation("splitter:null => null")]
-        public static (string, string)? BisectLast(this string? str, string? splitter) {
-            if (str.IsNullOrEmpty() || splitter.IsNullOrEmpty()) {
-                return null;
-            }
-
+        /// <param name="str">the original <see cref="string"/></param>
+        /// <param name="splitter">the <see cref="string"/> being used to split <paramref name="str"/> (📎 will <b>not</b> be included in the output)</param>
+        /// <returns>the split <paramref name="str"/> if <paramref name="splitter"/> was found; otherwise, (<see cref="string.Empty">""</see>, <paramref name="str"/>)</returns>
+        public static (string former, string latter) BisectLast(this string str, string splitter) {
             var matchStart = str.LastIndexOf(splitter, StringComparison.Ordinal);
+
             if (matchStart < 0) {
-                return null;
+                return ("", str);
             }
 
             var matchEnd = matchStart + splitter.Length;
-            var before   = str.Substring(0, matchStart);
-            var after    = str.Substring(matchEnd);
+            var before   = str[..matchStart];
+            var after    = str[matchEnd..];
             return (before, after);
         }
 
