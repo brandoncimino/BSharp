@@ -126,4 +126,30 @@ public static partial class Must {
     }
 
     #endregion
+
+    #region 2-arg Comparisons
+
+    public static (T first, T2 second) Compare<T, T2>(
+        T                  first,
+        ComparisonOperator comparison,
+        T2                 second,
+        [CallerArgumentExpression("first")]
+        string? firstName = default,
+        [CallerArgumentExpression("second")]
+        string? secondName = default,
+        [CallerMemberName]
+        string? methodName = default,
+        [CallerArgumentExpression("comparison")]
+        string? reason = default
+    ) {
+        return Be(
+            (first, second),
+            (tuple) => comparison.Predicate().Invoke(tuple.Item1, tuple.Item2),
+            (firstName, secondName).ToString(),
+            methodName,
+            $"must have {firstName} {comparison.Symbol()} {secondName}"
+        );
+    }
+
+    #endregion
 }

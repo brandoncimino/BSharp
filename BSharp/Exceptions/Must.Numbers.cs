@@ -1,7 +1,5 @@
-using System.Diagnostics.CodeAnalysis;
+using System;
 using System.Runtime.CompilerServices;
-
-using NotNullAttribute = System.Diagnostics.CodeAnalysis.NotNullAttribute;
 
 using JetBrains.Annotations;
 
@@ -12,7 +10,7 @@ public static partial class Must {
 
     [NonNegativeValue]
     public static T BePositive<T>(
-        [NotNull]
+        [System.Diagnostics.CodeAnalysis.NotNull]
         T actualValue,
         [CallerArgumentExpression("actualValue")]
         string? parameterName = default,
@@ -25,7 +23,7 @@ public static partial class Must {
 
     [NonNegativeValue]
     public static T BeStrictlyPositive<T>(
-        [NotNull]
+        [System.Diagnostics.CodeAnalysis.NotNull]
         T actualValue,
         [CallerArgumentExpression("actualValue")]
         string? parameterName = default,
@@ -35,9 +33,9 @@ public static partial class Must {
         NotBeNull(actualValue);
         return Be(actualValue, Mathb.IsStrictlyPositive, parameterName, methodName, reason: "must be strictly positive (x > 0)");
     }
-    
+
     public static T BeNegative<T>(
-        [NotNull]
+        [System.Diagnostics.CodeAnalysis.NotNull]
         T actualValue,
         [CallerArgumentExpression("actualValue")]
         string? parameterName = default,
@@ -46,6 +44,30 @@ public static partial class Must {
     ) {
         NotBeNull(actualValue);
         return Be(actualValue, Mathb.IsNegative, parameterName, methodName, reason: "must be negative (x < 0)");
+    }
+
+    public static T BeGreaterThan<T>(
+        [System.Diagnostics.CodeAnalysis.NotNull]
+        T firstValue,
+        [System.Diagnostics.CodeAnalysis.NotNull]
+        T secondValue,
+        [CallerArgumentExpression("firstValue")]
+        string? firstName = default,
+        [CallerArgumentExpression("secondValue")]
+        string? secondName = default,
+        [CallerMemberName]
+        string? methodName = default
+    )
+        where T : IComparable<T> {
+        return Compare(
+                firstValue,
+                ComparisonOperator.GreaterThan,
+                secondValue,
+                firstName,
+                secondName,
+                methodName
+            )
+            .first;
     }
 
     #endregion
