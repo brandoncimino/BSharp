@@ -2,9 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.IO;
-using System.Linq;
 
-using FowlFever.BSharp.Collections;
 using FowlFever.BSharp.Strings;
 using FowlFever.BSharp.Strings.Prettifiers;
 
@@ -15,6 +13,17 @@ using Pure = System.Diagnostics.Contracts.PureAttribute;
 namespace FowlFever.BSharp.Clerical {
     [PublicAPI]
     public static class FileSystemInfoExtensions {
+        /// <inheritdoc cref="FileSystemInfo.Refresh"/> 
+        /// <remarks>
+        /// This is a chainable version of <see cref="FileSystemInfo.Refresh"/>.
+        /// </remarks>
+        /// <returns>this, for method chaining</returns>
+        public static T Refreshed<T>(this T fileSystemInfo)
+            where T : FileSystemInfo {
+            fileSystemInfo.Refresh();
+            return fileSystemInfo;
+        }
+
         #region Uri
 
         [ContractAnnotation("null => null")]
@@ -141,7 +150,6 @@ namespace FowlFever.BSharp.Clerical {
 
         #endregion
 
-
         public static string GetChildPath(this DirectoryInfo parent, string? relativePath) {
             if (parent == null) {
                 throw new ArgumentNullException(nameof(parent));
@@ -177,7 +185,6 @@ namespace FowlFever.BSharp.Clerical {
                 throw new ArgumentNullException(nameof(child), $"{nameof(child)} was null, so it cannot possibly be contained by the {nameof(parent)} {parent.Prettify()}!");
             }
         }
-
 
         private static string FamilyString(DirectoryInfo parent, FileSystemInfo child) {
             Console.WriteLine(parent.Prettify());
