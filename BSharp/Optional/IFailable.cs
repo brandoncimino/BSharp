@@ -34,5 +34,8 @@ namespace FowlFever.BSharp.Optional {
         IReadOnlyCollection<Type> IgnoredExceptionTypes { get; }
 
         Exception? IgnoredException { get; }
+
+        //TODO: Add a Description pulled from [CallerArgumentExpression]
+        // public string? Description { get; }
     }
 }
