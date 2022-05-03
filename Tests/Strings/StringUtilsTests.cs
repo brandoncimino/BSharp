@@ -5,8 +5,6 @@ using System.Text.RegularExpressions;
 
 using FowlFever.BSharp;
 using FowlFever.BSharp.Collections;
-using FowlFever.BSharp.Enums;
-using FowlFever.BSharp.Exceptions;
 using FowlFever.BSharp.Strings;
 using FowlFever.Testing;
 
@@ -359,10 +357,12 @@ a
         string relativeString,
         string absoluteString
     ) {
-        Assert.Multiple(() => {
-            Assert.That(original.Indent(indentCount, indentString, StringUtils.IndentMode.Relative).Single(), Is.EqualTo(relativeString), "Relative");
-            Assert.That(original.Indent(indentCount, indentString, StringUtils.IndentMode.Absolute).Single(), Is.EqualTo(absoluteString), "Absolute");
-        });
+        Assert.Multiple(
+            () => {
+                Assert.That(original.Indent(indentCount, indentString, StringUtils.IndentMode.Relative).Single(), Is.EqualTo(relativeString), "Relative");
+                Assert.That(original.Indent(indentCount, indentString, StringUtils.IndentMode.Absolute).Single(), Is.EqualTo(absoluteString), "Absolute");
+            }
+        );
     }
 
     public class IndentExpectation {
