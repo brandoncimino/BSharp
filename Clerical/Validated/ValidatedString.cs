@@ -1,5 +1,3 @@
-using System;
-
 namespace FowlFever.Clerical.Validated;
 
 /// <summary>
@@ -13,7 +11,7 @@ namespace FowlFever.Clerical.Validated;
 /// and an <c>implicit operator</c> cast to <see cref="string"/>.
 /// </remarks>
 /// <param name="Value">the wrapped <see cref="string"/></param>
-public abstract record ValidatedString(string Value) : IEquatable<string> {
+public abstract record ValidatedString(string Value) : IEquatable<string>, IComparable<string>, IComparable {
     public bool Equals(string other) => Value == other;
 
     public static implicit operator string(ValidatedString self) {
@@ -25,4 +23,12 @@ public abstract record ValidatedString(string Value) : IEquatable<string> {
 
     public static bool operator ==(string a, ValidatedString b) => a.Equals(b);
     public static bool operator !=(string a, ValidatedString b) => !(a == b);
+
+    public int CompareTo(string other) {
+        return string.Compare(Value, other, StringComparison.Ordinal);
+    }
+
+    public int CompareTo(object obj) {
+        return Value.CompareTo(obj);
+    }
 }
