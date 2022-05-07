@@ -1,3 +1,5 @@
+using FowlFever.BSharp.Exceptions;
+
 namespace FowlFever.Clerical.Validated;
 
 /// <summary>
@@ -23,7 +25,7 @@ public abstract class ValidatedString : IEquatable<string>,
     /// </summary>
     public readonly string Value;
 
-    protected ValidatedString(string value) => Value = value;
+    protected ValidatedString(string value) => Value = Must.NotBeNull(value, methodName: $"new {GetType().Name}");
 
     #region Operators
 
