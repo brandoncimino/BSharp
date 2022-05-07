@@ -23,9 +23,7 @@ public abstract class ValidatedString : IEquatable<string>,
     /// </summary>
     public readonly string Value;
 
-    protected ValidatedString(string value) {
-        Value = value;
-    }
+    protected ValidatedString(string value) => Value = value;
 
     #region Operators
 
