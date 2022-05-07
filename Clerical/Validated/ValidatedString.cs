@@ -51,5 +51,6 @@ public abstract class ValidatedString : IEquatable<string>,
 
     #endregion
 
-    public override int GetHashCode() => Value.GetHashCode();
+    public override int    GetHashCode() => Value.GetHashCode();
+    public override string ToString()    => Value;
 }

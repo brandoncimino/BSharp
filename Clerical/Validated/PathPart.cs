@@ -6,7 +6,7 @@ using FowlFever.BSharp.Exceptions;
 namespace FowlFever.Clerical.Validated;
 
 /// <summary>
-/// Ensures that the <see cref="Value"/>:
+/// Ensures that the <see cref="PathPart.Value"/>:
 /// <ul>
 /// <li>Doesn't contain <see cref="DirectorySeparator"/>s</li>
 /// <li>Doesn't contain any <see cref="Path.GetInvalidPathChars"/></li>
@@ -16,7 +16,8 @@ namespace FowlFever.Clerical.Validated;
 /// <remarks>
 /// This is a less-strict version of <see cref="FileNamePart"/>.
 /// </remarks>
-public record PathPart : ValidatedString {
+/// <seealso cref="FileNamePart"/>
+public class PathPart : ValidatedString {
     public static readonly ImmutableHashSet<char> InvalidChars = Path.GetInvalidPathChars()
                                                                      .Union(Path.GetInvalidFileNameChars())
                                                                      .Union(BPath.SeparatorChars)
@@ -24,9 +25,5 @@ public record PathPart : ValidatedString {
 
     public PathPart(string value) : base(value) {
         Must.NotContain(value, InvalidChars, methodName: $"new {GetType().Name}");
-    }
-
-    public override string ToString() {
-        return Value;
     }
 }
