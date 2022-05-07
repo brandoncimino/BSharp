@@ -1,6 +1,5 @@
 using FowlFever.BSharp.Clerical;
 using FowlFever.BSharp.Collections;
-using FowlFever.BSharp.Strings;
 
 namespace FowlFever.Clerical.Validated;
 
@@ -10,14 +9,15 @@ namespace FowlFever.Clerical.Validated;
 /// TODO: Add validation when things like <see cref="BaseName"/> or <see cref="Extensions"/> are set
 /// TODO: Always strip periods from <see cref="Extensions"/>
 /// </summary>
-public record FileName(
-    FileNamePart    BaseName,
-    FileExtensionGroup Extensions
-) {
-    public string NameWithExtensions => $"{BaseName}{Extensions}";
+public class FileName : PathPart {
+    public FileNamePart    BaseName   { get; }
+    public FileExtension[] Extensions { get; }
 
-    public override string ToString() {
-        return NameWithExtensions;
+    public FileName(string value) : this(BPath.GetFileNameWithoutExtensions(value), BPath.GetExtensions(value)) { }
+
+    public FileName(string baseName, params string[] extensions) : base($"{baseName}{extensions.JoinString()}") {
+        BaseName   = new FileNamePart(baseName);
+        Extensions = extensions.Select(it => new FileExtension(it)).ToArray();
     }
 
     public static FileName Random() => Clerk.GetRandomFileName();
