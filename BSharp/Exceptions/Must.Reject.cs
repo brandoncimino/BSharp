@@ -51,7 +51,7 @@ public static partial class Must {
         string? reason
     ) {
         reason = reason.IfBlank("<reason not specified 🤷>");
-        var valueStr = GetActualValueString(actualValue, DefaultValueStringLimit);
+        var valueStr = _GetActualValueString(actualValue, DefaultValueStringLimit);
         var lines    = new StringBuilder();
         lines.AppendLine($"{RejectIcon} {rejectedBy} rejected the parameter {parameterName}!");
         lines.AppendLine($"Method:    {rejectedBy}");
@@ -77,14 +77,22 @@ public static partial class Must {
     }
 
     [Pure]
-    private static string GetActualValueString(object? actualValue, int maxLength) {
+    private static string _GetActualValueString(object? actualValue, int maxLength) {
         var valStr = actualValue switch {
             null   => Prettification.DefaultNullPlaceholder,
             string => $"\"{actualValue}\"",
             _      => actualValue.ToString(),
         };
 
-        return valStr.Truncate(maxLength);
+        if (valStr.Length <= maxLength) {
+            return valStr;
+        }
+
+        const string ellipsis    = "…";
+        var          truncLength = maxLength - ellipsis.Length;
+        valStr = valStr[..truncLength] + ellipsis;
+
+        return valStr;
     }
 
     [Pure]
