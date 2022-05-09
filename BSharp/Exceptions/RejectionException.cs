@@ -56,17 +56,6 @@ public class RejectionException : ArgumentException {
     }
 
     [Pure]
-    private static string GetValueString(object? value, int maxLength) {
-        var str = value switch {
-            null   => NullIcon,
-            string => $"\"{value}\"",
-            _      => value.ToString(),
-        };
-
-        return TruncateString(str, maxLength);
-    }
-
-    [Pure]
     [return: NotNullIfNotNull("valStr")]
     private static string? TruncateString(string? valStr, int maxLength) {
         if (valStr == null) {
