@@ -10,11 +10,11 @@ public static partial class Must {
         T? actualValue,
         [CallerArgumentExpression("actualValue")]
         string? parameterName = default,
-        string? rejectedBy = default,
-        string? reason     = default,
+        string?    rejectedBy = default,
+        string?    reason     = default,
+        Exception? causedBy   = default,
         [CallerMemberName]
-        string? caller = default,
-        Exception? causedBy = default
+        string? caller = default
     ) {
         return new RejectionException(
             actualValue,
