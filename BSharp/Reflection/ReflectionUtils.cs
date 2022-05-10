@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Linq;
@@ -25,7 +24,7 @@ namespace FowlFever.BSharp.Reflection {
     /// TODO: Split this class up. For example, the <see cref="Type"/> extensions should be in their own class
     /// </summary>
     [PublicAPI]
-    public static class ReflectionUtils {
+    public static partial class ReflectionUtils {
         #region Binding Flags
 
         /// <summary>
@@ -190,7 +189,7 @@ namespace FowlFever.BSharp.Reflection {
             var value = variableInfo switch {
                 PropertyInfo p => p.GetValue(obj),
                 FieldInfo f    => f.GetValue(obj),
-                _              => throw ReflectionException.NotAVariableException(variableInfo)
+                _              => throw ReflectionException.NotAVariableException(variableInfo),
             };
 
             try {
@@ -198,6 +197,22 @@ namespace FowlFever.BSharp.Reflection {
             }
             catch (InvalidCastException e) {
                 throw e.ModifyMessage($"A member for {variableInfo.Prettify(TypeNameStyle.Full)} was found on the [{obj.GetType().Name}]'{obj}', but it couldn't be cast to a {typeof(T).PrettifyType(default)}!");
+            }
+        }
+
+        [Pure]
+        public static T GetVariableValue<T>(this MemberInfo variableInfo, object obj) {
+            var value = variableInfo switch {
+                PropertyInfo p => p.GetValue(obj),
+                FieldInfo f    => f.GetValue(obj),
+                _              => throw ReflectionException.NotAVariableException(variableInfo),
+            };
+
+            try {
+                return (T)value;
+            }
+            catch (InvalidCastException e) {
+                throw e.ModifyMessage($"A member for {variableInfo.Prettify(TypeNameStyle.Full)} was found on the [{obj.GetType().Name}]'{obj}', but it couldn't be case to a {typeof(T).PrettifyType(default)}!");
             }
         }
 
@@ -915,102 +930,47 @@ namespace FowlFever.BSharp.Reflection {
 
         #endregion
 
-        #region Type Types
-
-        /// <remarks>
-        /// This is only necessary in .NET Standard 2.0, because in .NET Standard 2.1, an <a href="https://docs.microsoft.com/en-us/dotnet/api/System.Runtime.CompilerServices.ITuple?view=netframework-4.7.1">ITuple</a> interface is available.
-        /// </remarks>
-        /// <param name="type">this <see cref="Type"/></param>
-        /// <returns>true if this <see cref="Type"/> is one of the <see cref="Tuple{T}"/> or <see cref="ValueTuple{T1}"/> types</returns>
-        public static bool IsTupleType(this Type type) {
-            return type.IsGenericType && TupleTypes.Any(it => type.GetGenericTypeDefinition().IsAssignableFrom(it));
-        }
-
-        /// <param name="type">this <see cref="Type"/></param>
-        /// <returns>true if this <see cref="Type"/> inherits from <see cref="Exception"/></returns>
-        public static bool IsExceptionType(this Type type) {
-            return typeof(Exception).IsAssignableFrom(type);
-        }
-
-        public static bool IsNullable(this Type type) {
-            return type.IsNullableValueType() || type.IsNullableReferenceType();
-        }
-
-        public static bool IsNullableValueType(this Type type) {
-            return Nullable.GetUnderlyingType(type) != null;
-        }
-
-        private static readonly HashSet<string> NullableAttributes = new HashSet<string>() {
-            "System.Runtime.CompilerServices.NullableAttribute", "JetBrains.Annotations.CanBeNullAttribute"
-        };
-
-        public static bool IsNullableReferenceType(this Type type) {
-            return !type.IsValueType && (type._IsNullableAnnotated() || type._IsNullableAnnotated());
+        public static IDictionary<MemberInfo, object> ListVariables(object obj) {
+            return obj.GetType().GetVariables().ToDictionary(it => it, it => it.GetVariableValue<object>(obj));
         }
 
         /// <summary>
-        /// The comment <a href="https://stackoverflow.com/a/58454489">here</a> has some big check for constructor arguments and bytes instead of just the presence of the attribute...is that necessary at all...?
+        /// Returns a <see cref="Range"/> describing a <see cref="MethodBase"/>'s <a href="https://en.wikipedia.org/wiki/Arity">arity</a>.
         /// </summary>
-        /// <param name="memberInfo"></param>
+        /// <example>
+        /// <code><![CDATA[
+        /// | Parameters                    | Arity |
+        /// |-------------------------------|-------|
+        /// | (int a, int b)                | 2..2  |
+        /// | ()                            | 0..0  |
+        /// | (int a, int b = 0)            | 1..2  |
+        /// | (int a = 0, params int[] a)   | 1..^0 |
+        /// ]]></code>
+        /// </example>
+        /// <param name="method"></param>
         /// <returns></returns>
-        private static bool _IsNullableAnnotated(this MemberInfo memberInfo) {
-            var attributes = memberInfo.GetCustomAttributesData().ToList();
-            return attributes.FirstOrDefault(it => NullableAttributes.Contains(it.AttributeType.FullName))?._GetNullableByte() == 2;
-        }
+        public static Range Arity(this MethodBase method) {
+            var parameters = method.GetParameters();
 
-        private static bool _IsInsideNullableContext(this MemberInfo memberInfo) {
-            var outerAttributes = memberInfo.DeclaringType?.GetCustomAttributesData().ToList();
-            return outerAttributes?.FirstOrDefault(it => it.AttributeType.FullName == "System.Runtime.CompilerServices.NullableContextAttribute")?._GetNullableByte() == 2;
-        }
-
-        public static bool IsNullable(this ParameterInfo parameterInfo) {
-            if (parameterInfo.ParameterType.IsValueType) {
-                return parameterInfo.ParameterType.IsNullable();
+            if (parameters.Length == 0) {
+                return default;
             }
 
-            return parameterInfo.CustomAttributes.Any(it => NullableAttributes.Contains(it.AttributeType.FullName)) ||
-                   parameterInfo.ParameterType.IsNullable();
-        }
+            var  min = 0;
+            int? max = 0;
 
-        public static bool IsNullable(this MethodInfo methodInfo) {
-            if (methodInfo.ReturnParameter == null) {
-                return false;
+            foreach (var p in parameters) {
+                if (p.IsDefined(typeof(ParamArrayAttribute))) {
+                    max = null;
+                    continue;
+                }
+
+                max += 1;
+                var isOptional = p.Attributes.HasFlag(ParameterAttributes.Optional) || p.Attributes.HasFlag(ParameterAttributes.HasDefault);
+                min += isOptional ? 0 : 1;
             }
 
-            return methodInfo._IsNullableAnnotated()     ||
-                   methodInfo._IsInsideNullableContext() ||
-                   methodInfo.ReturnParameter.IsNullable();
+            return min..(max.HasValue ? Index.FromStart(max.Value) : Index.End);
         }
-
-        public static bool IsNullable(this MemberInfo memberInfo) {
-            if (memberInfo._IsNullableAnnotated() || memberInfo._IsInsideNullableContext()) {
-                return true;
-            }
-
-            return memberInfo switch {
-                FieldInfo f    => f.FieldType.IsNullable(),
-                PropertyInfo p => p.PropertyType.IsNullable(),
-                MethodInfo m   => m.ReturnType.IsNullable(),
-                Type t         => t.IsNullable(),
-                _              => false
-            };
-        }
-
-        private static byte? _GetNullableByte(this CustomAttributeData attribute) {
-            var arg = attribute.ConstructorArguments.FirstOrDefault();
-
-            if (arg.ArgumentType == typeof(byte)) {
-                return arg.Value as byte?;
-            }
-
-            if (arg.ArgumentType == typeof(byte[])) {
-                var argArgs = (ReadOnlyCollection<CustomAttributeTypedArgument>)arg.Value!;
-                return argArgs.FirstOrDefault().Value as byte?;
-            }
-
-            return null;
-        }
-
-        #endregion
     }
 }
