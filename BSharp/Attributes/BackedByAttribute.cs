@@ -6,10 +6,10 @@ namespace FowlFever.BSharp.Attributes {
     [PublicAPI]
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
     public class BackedByAttribute : BrandonAttribute {
-        public string BackingFieldName { get; }
+        public string BackerName { get; }
 
-        public BackedByAttribute(string backingFieldName) {
-            BackingFieldName = backingFieldName;
+        public BackedByAttribute(string backerName) {
+            BackerName = backerName;
         }
     }
 }
