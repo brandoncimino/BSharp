@@ -1,4 +1,7 @@
 using System;
+using System.CodeDom.Compiler;
+
+using FowlFever.BSharp.Reflection;
 
 using JetBrains.Annotations;
 
@@ -51,6 +54,18 @@ namespace FowlFever.BSharp {
         /// <returns>a new <see cref="Lazy{T}"/></returns>
         public static Lazy<T> Lazily<T>(this Func<T> valueFactory) {
             return new Lazy<T>(valueFactory);
+        }
+
+        /// <summary>
+        /// Shorthand for new <see cref="Lazy{T}"/>(() => <paramref name="valueFactory"/>, <paramref name="input"/>)
+        /// </summary>
+        /// <param name="valueFactory">a <see cref="Func{TResult}"/> that should only be executed once</param>
+        /// <param name="input">the input value to <paramref name="valueFactory"/></param>
+        /// <typeparam name="TIn">the type <paramref name="input"/></typeparam>
+        /// <typeparam name="TOut">the output type of <paramref name="valueFactory"/></typeparam>
+        /// <returns>a new <see cref="Lazy{T}"/></returns>
+        public static Lazy<TOut> Lazily<TIn, TOut>(this Func<TIn, TOut> valueFactory, TIn input) {
+            return new Lazy<TOut>(() => valueFactory(input));
         }
 
         #endregion
