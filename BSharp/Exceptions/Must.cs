@@ -2,6 +2,8 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
+using FowlFever.BSharp.Strings.Prettifiers;
+
 using JetBrains.Annotations;
 
 namespace FowlFever.BSharp.Exceptions;
@@ -124,6 +126,32 @@ public static partial class Must {
     ) {
         return NotBe(actualValue, predicate, parameterName, methodName, reason);
     }
+
+    #endregion
+
+    #region Types
+
+    public static T Be<T>(
+        object actualValue,
+        [CallerArgumentExpression("actualValue")]
+        string? parameterName = default,
+        [CallerMemberName]
+        string? rejectedBy = default
+    ) {
+        if (actualValue is T t) {
+            return t;
+        }
+
+        throw Reject(actualValue, parameterName, rejectedBy, reason: $"was not an instance of {typeof(T).PrettifyType(default)}");
+    }
+
+    public static T MustBe<T>(
+        this object actualValue,
+        [CallerArgumentExpression("actualValue")]
+        string? parameterName = default,
+        [CallerMemberName]
+        string? rejectedBy = default
+    ) => Be<T>(actualValue, parameterName, rejectedBy);
 
     #endregion
 
