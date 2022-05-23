@@ -40,4 +40,21 @@ public static partial class Must {
             reason: $"Value of type {actualValue?.GetType() ?? typeof(T)} was unhandled by any switch branch!"
         );
     }
+
+    [Pure]
+    public static RejectionException RejectWrongType<T>(
+        T?   actualValue,
+        Type desiredType,
+        [CallerArgumentExpression("actualValue")]
+        string? parameterName = default,
+        [CallerMemberName]
+        string? rejectedBy = default
+    ) {
+        return new RejectionException(
+            actualValue,
+            parameterName,
+            rejectedBy,
+            $"Value of type {actualValue?.GetType() ?? typeof(T)} was not {desiredType}!"
+        );
+    }
 }
