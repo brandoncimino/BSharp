@@ -1,26 +1,44 @@
 using System;
 using System.Runtime.Serialization;
 
-namespace FowlFever.BSharp.Exceptions {
-    public class BrandonException : SystemException {
-        public virtual  string BaseMessage   { get; } = "This was probably Brandon's fault. For support, call 203-481-1845.";
-        public          string CustomMessage { get; }
-        public override string Message       => FormatMessage(CustomMessage, BaseMessage);
+using FowlFever.BSharp.Collections;
 
-        public BrandonException() : base() {
-            CustomMessage = null;
+using JetBrains.Annotations;
+
+namespace FowlFever.BSharp.Exceptions {
+    [PublicAPI]
+    public class BrandonException : SystemException {
+        /// <summary>
+        /// The class-defined "default" message for this <see cref="Exception"/> type.
+        /// </summary>
+        /// <remarks>
+        /// This value shouldn't depend on the "message" parameter passed to constructors.
+        /// </remarks>
+        /// <seealso cref="CustomMessage"/>
+        protected virtual string BaseMessage { get; } = "This was probably Brandon's fault. For support, call 203-481-1845.";
+        /// <summary>
+        /// The caller-defined portion of the <see cref="Message"/>, which should be set constructor.
+        /// </summary>
+        protected string? CustomMessage { get; init; }
+
+        /// <inheritdoc cref="Exception.Message"/>
+        /// <remarks>
+        /// <see cref="BrandonException"/> implementations cannot <c>override</c> this directly. They should instead use <see cref="BaseMessage"/> and <see cref="CustomMessage"/>.
+        /// </remarks>
+        public sealed override string Message {
+            get {
+                return new[] {
+                    CustomMessage,
+                    "",
+                    BaseMessage,
+                }.JoinLines();
+            }
         }
 
-        public BrandonException(string message, Exception innerException = null) : base(message, innerException) {
+        public BrandonException(string? message = default, Exception? innerException = null) : base(message, innerException) {
             CustomMessage = message;
         }
 
         protected BrandonException(SerializationInfo info, StreamingContext context) : base(info, context) { }
-
-
-        // ReSharper disable once MemberCanBePrivate.Global
-        protected static string FormatMessage(string customMessage, string baseMessage) {
-            return customMessage == null ? baseMessage : $"{customMessage}\n{baseMessage}";
-        }
     }
 }
