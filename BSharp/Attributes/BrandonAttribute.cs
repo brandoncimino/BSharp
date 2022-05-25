@@ -16,7 +16,7 @@ namespace FowlFever.BSharp.Attributes {
     /// </remarks>
     public abstract class BrandonAttribute : Attribute {
         /// <remarks>
-        /// This is the overridable portion of <see cref="ValidateTarget"/>, which will catch and re-throw any <see cref="Exception"/>s thrown by <see cref="ValidateTarget_Hook"/>.
+        /// This is the overridable portion of <see cref="ValidateTarget"/>. Any <see cref="Exception"/>s raised here will be re-thrown as <see cref="InvalidAttributeTargetException"/>s.
         /// </remarks>
         /// <inheritdoc cref="ValidateTarget"/>
         [UsedImplicitly]
