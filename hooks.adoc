@@ -1,0 +1,30 @@
+= "Hook" Methods
+
+When a parent class wants to expose functionality that can be "partially" / "optionally" overloaded by children, rather than hoping that children will correctly call the `base` method, introduce a "hook" method.
+
+- The parent method should be non-`virtual`.
+- The parent method should be `public`.
+- The "hook" method should have the same name as the parent method with the `_Hook` suffix.
+- The "hook" method should be `virtual` or `abstract`.
+- The "hook" method should be `protected`.
+
+.Example
+[source,c#]
+----
+public class Vehicle {
+    public void Crash(){
+        Console.WriteLine($"{this} crashed!");
+        Crash_Hook();
+    }
+
+    protected virtual void Crash_Hook(){
+        // to be overridden by child classes
+    }
+}
+
+public class Car : Vehicle {
+    protected override void Crash_Hook(){
+        Console.WriteLine("Deploying airbags!");
+    }
+}
+----

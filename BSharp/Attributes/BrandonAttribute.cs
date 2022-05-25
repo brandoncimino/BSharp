@@ -15,24 +15,40 @@ namespace FowlFever.BSharp.Attributes {
     /// This mimics the setup of Unity's built-in attributes like <see cref="UnityEngine.HeaderAttribute"/> and <see cref="UnityEngine.RangeAttribute"/>, which are declared inside of <see cref="UnityEngine"/> rather than <see cref="UnityEditor"/>.
     /// </remarks>
     public abstract class BrandonAttribute : Attribute {
+        /// <remarks>
+        /// This is the overridable portion of <see cref="ValidateTarget"/>, which will catch and re-throw any <see cref="Exception"/>s thrown by <see cref="ValidateTarget_Hook"/>.
+        /// </remarks>
+        /// <inheritdoc cref="ValidateTarget"/>
+        [UsedImplicitly]
+        public virtual void ValidateTarget_Hook(MemberInfo target) {
+            // to be implemented by inheritors, if necessary
+        }
+
         /// <summary>
-        /// Throws an <see cref="InvalidAttributeTargetException{T}"/> if this <see cref="BrandonAttribute"/> is attached to an invalid <see cref="MemberInfo"/>.
+        /// Throws an <see cref="InvalidAttributeTargetException"/> if this <see cref="BrandonAttribute"/> is attached to an invalid <see cref="MemberInfo"/>.
+        /// <p/>
+        /// This enables "complex" validations, such as the number or types of <see cref="MethodBase.GetParameters"/>.
         /// </summary>
         /// <remarks>
-        /// This can allow for "complex" validations, such as the number or types of parameters in <see cref="MethodBase.GetParameters"/>.
-        /// <br/>
-        /// For example, <see cref="EditorInvocationButtonAttribute"/> uses <see cref="EditorInvocationButtonAttribute.ValidateTarget"/> to ensure that <paramref name="target"/> has exactly 0 parameters.
+        /// This method will re-throw any <see cref="Exception"/> raised by <see cref="ValidateTarget_Hook"/> as an <see cref="InvalidAttributeTargetException"/>.
         /// <p/>
+        /// 
         /// The primary use case for <see cref="ValidateTarget"/> is in an <a href="https://docs.unity3d.com/ScriptReference/Editor.OnInspectorGUI.html">Editor.OnInspectorGUI</a> call, which should be triggered whenever the developer focuses on the Unity application.
         ///
         /// <p/>
         /// <b>📎 Protip:</b> <see cref="Type"/> is a <see cref="MemberInfo"/>, too!
         /// </remarks>
-        /// <param name="target">the <see cref="MemberInfo"/> that this <see cref="BrandonAttribute"/> is applied to</param>
-        /// <exception cref="InvalidAttributeTargetException{T}">If <paramref name="target"/> fails validation.</exception>
+        /// <param name="target">the <see cref="MemberInfo"/> that this <see cref="BrandonAttribute"/> is attached to</param>
+        /// <exception cref="InvalidAttributeTargetException">If <paramref name="target"/> fails validation.</exception>
+        /// <seealso cref="ValidateTarget_Hook"/>
         [UsedImplicitly]
-        public virtual void ValidateTarget(MemberInfo target) {
-            // to be implemented by inheritors, if necessary
+        public void ValidateTarget(MemberInfo target) {
+            try {
+                ValidateTarget_Hook(target);
+            }
+            catch (Exception e) {
+                this.RejectInvalidTarget(target, innerException: e);
+            }
         }
     }
 }
