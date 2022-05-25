@@ -4,6 +4,8 @@ using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Linq;
 
+using FowlFever.BSharp.Exceptions;
+
 using JetBrains.Annotations;
 
 using Pure = System.Diagnostics.Contracts.PureAttribute;
@@ -160,6 +162,16 @@ namespace FowlFever.BSharp {
         public static bool    ToBool(this    object? obj) => Convert.ToBoolean(obj);
 
         #endregion
+
+        /// <summary>
+        /// A nicer way to chain <c>x as y</c>.
+        /// <p/>
+        /// For a chain-friendly hard-cast, see <see cref="Must.MustBe{T}(object,string?,string?)"/>.
+        /// </summary>
+        public static T? As<T>(this object self)
+            where T : class {
+            return self as T;
+        }
 
         #region Icons
 
