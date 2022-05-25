@@ -273,7 +273,7 @@ namespace FowlFever.BSharp.Strings {
         ) {
             trail ??= Ellipsis;
             Must.BePositive(maxLength);
-            Must.Compare(trail.Length, ComparisonOperator.GreaterThanOrEqualTo, maxLength);
+            Must.Compare(trail.Length, ComparisonOperator.LessThan, maxLength);
 
             if (self.Length <= maxLength) {
                 return self;
@@ -1062,8 +1062,7 @@ namespace FowlFever.BSharp.Strings {
         /// </summary>
         /// <param name="str">this <see cref="string"/></param>
         /// <returns><see cref="string.IsNullOrWhiteSpace"/></returns>
-        [ContractAnnotation("null => true", true)]
-        public static bool IsNullOrWhiteSpace([NotNullWhen(true)] this string? str) {
+        public static bool IsNullOrWhiteSpace([NotNullWhen(false)] this string? str) {
             return string.IsNullOrWhiteSpace(str);
         }
 
