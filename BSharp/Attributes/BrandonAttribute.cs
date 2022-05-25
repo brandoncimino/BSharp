@@ -20,7 +20,7 @@ namespace FowlFever.BSharp.Attributes {
         /// </remarks>
         /// <inheritdoc cref="ValidateTarget"/>
         [UsedImplicitly]
-        public virtual void ValidateTarget_Hook(MemberInfo target) {
+        protected virtual void ValidateTarget_Hook(MemberInfo target) {
             // to be implemented by inheritors, if necessary
         }
 
