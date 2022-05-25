@@ -77,4 +77,10 @@ public static partial class ReflectionUtils {
         return type.FindMembersWithAttribute<TMember, TAttribute>(bindingAttr)
                    .Select(it => new Annotated<TMember, TAttribute>(it));
     }
+
+    /// <inheritdoc cref="CustomAttributeExtensions.GetCustomAttributes{T}(MemberInfo, bool)"/>
+    public static Annotated<TMember, TAttribute> GetAnnotated<TMember, TAttribute>(this TMember member, bool inherit = true)
+        where TMember : MemberInfo
+        where TAttribute : Attribute
+        => new(member);
 }
