@@ -15,12 +15,10 @@ namespace FowlFever.BSharp.Optional {
      * <inheritdoc cref="IFailable"/>
      */
     public class Failable : IFailable {
-        protected const string                    SuccessIcon = "✅";
-        protected const string                    FailIcon    = "❌";
-        public          Exception?                Excuse                { get; }
-        public          bool                      Failed                => Excuse != null;
-        public          IReadOnlyCollection<Type> IgnoredExceptionTypes { get; }
-        public          Exception?                IgnoredException      { get; }
+        public Exception?                Excuse                { get; }
+        public bool                      Failed                => Excuse != null;
+        public IReadOnlyCollection<Type> IgnoredExceptionTypes { get; }
+        public Exception?                IgnoredException      { get; }
 
         protected Failable(
             Exception?         excuse,
@@ -64,7 +62,7 @@ namespace FowlFever.BSharp.Optional {
         }
 
         public override string ToString() {
-            return $"{(Failed ? $"{FailIcon} [{Excuse}]" : SuccessIcon)}";
+            return $"{(Failed ? $"{this.GetIcon()} [{Excuse}]" : this.GetIcon())}";
         }
     }
 }
