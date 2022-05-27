@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Linq;
 
@@ -536,8 +537,7 @@ namespace FowlFever.BSharp.Collections {
         /// <returns>the inverse of <see cref="Enumerable.Any{TSource}(System.Collections.Generic.IEnumerable{TSource})"/></returns>
         /// TODO: Experiment on whether it makes sense to have a special version of <see cref="IsEmpty{T}"/> as an <see cref="IOptional{T}"/> extension method, which would return the inverse of <see cref="IOptional{T}.HasValue"/>. The problem is that this method causes ambiguity with the <see cref="IEnumerable{T}"/> version of <see cref="IOptional{T}"/>
         [Pure]
-        [ContractAnnotation("null => true")]
-        public static bool IsEmpty<T>([InstantHandle] this IEnumerable<T?>? enumerable) {
+        public static bool IsEmpty<T>([NotNullWhen(false)] [InstantHandle] this IEnumerable<T>? enumerable) {
             return enumerable == null || !enumerable.Any();
         }
 
@@ -548,19 +548,18 @@ namespace FowlFever.BSharp.Collections {
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
         [Pure]
-        [ContractAnnotation("null => false")]
-        public static bool IsNotEmpty<T>(this IEnumerable<T?>? enumerable) {
+        public static bool IsNotEmpty<T>([NotNullWhen(true)] [InstantHandle] this IEnumerable<T>? enumerable) {
             return enumerable != null && enumerable.Any();
         }
 
-        /// <remarks>Negation of <see cref="Enumerable.Any{TSource}(System.Collections.Generic.IEnumerable{TSource})"/>.</remarks>
-        /// <param name="enumerable"></param>
-        /// <param name="predicate"></param>
-        /// <typeparam name="T"></typeparam>
-        /// <returns>true if none of the items in <paramref name="enumerable"/> satisfy <paramref name="predicate"/></returns>
+        /// <summary>
+        /// Negation of <see cref="Enumerable.Any{TSource}(System.Collections.Generic.IEnumerable{TSource})"/>.
+        /// </summary>
+        /// <inheritdoc cref="Enumerable.Any{TSource}(System.Collections.Generic.IEnumerable{TSource}, Func{TSource,bool})"/>
+        /// <returns>true if <b>none</b> of the items in <paramref name="source"/> satisfy <paramref name="predicate"/></returns>
         [Pure]
-        public static bool None<T>(this IEnumerable<T?> enumerable, Func<T?, bool> predicate) {
-            return !enumerable.Any(predicate);
+        public static bool None<T>(this IEnumerable<T> source, Func<T, bool> predicate) {
+            return !source.Any(predicate);
         }
 
         #region Containment
@@ -568,12 +567,12 @@ namespace FowlFever.BSharp.Collections {
         /// <summary>
         /// Returns true if the <see cref="IEnumerable{T}"/> contains <see cref="Enumerable.Any{TSource}(System.Collections.Generic.IEnumerable{TSource})"/> of the <paramref name="others"/>.
         /// </summary>
-        /// <param name="enumerable"></param>
-        /// <param name="others"></param>
-        /// <typeparam name="T"></typeparam>
-        /// <returns></returns>
+        /// <param name="enumerable">the containing stuff</param>
+        /// <param name="others">the stuff it might contain</param>
+        /// <typeparam name="T">the <see cref="Type"/> of stuff</typeparam>
+        /// <returns>true if the <see cref="IEnumerable{T}"/> contains <see cref="Enumerable.Any{TSource}(System.Collections.Generic.IEnumerable{TSource})"/> of the <paramref name="others"/></returns>
         [Pure]
-        public static bool ContainsAny<T>([InstantHandle] this IEnumerable<T?> enumerable, [InstantHandle] IEnumerable<T?> others) {
+        public static bool ContainsAny<T>([InstantHandle] this IEnumerable<T> enumerable, [InstantHandle] IEnumerable<T> others) {
             return others.Any(enumerable.Contains);
         }
 
@@ -594,12 +593,10 @@ namespace FowlFever.BSharp.Collections {
         /// <summary>
         /// Inverse of <see cref="ContainsAny{T}(System.Collections.Generic.IEnumerable{T},System.Collections.Generic.IEnumerable{T})"/>
         /// </summary>
-        /// <param name="enumerable"></param>
-        /// <param name="others"></param>
-        /// <typeparam name="T"></typeparam>
-        /// <returns></returns>
+        /// <inheritdoc cref="ContainsAny{T}(System.Collections.Generic.IEnumerable{T?},System.Collections.Generic.IEnumerable{T?})"/>
+        /// <returns>true if <see cref="ContainsAny{T}(System.Collections.Generic.IEnumerable{T?},System.Collections.Generic.IEnumerable{T?})"/> returns false</returns>
         [Pure]
-        public static bool ContainsNone<T>(this IEnumerable<T?> enumerable, IEnumerable<T?> others) {
+        public static bool ContainsNone<T>(this IEnumerable<T> enumerable, IEnumerable<T> others) {
             return others.None(enumerable.Contains);
         }
 
@@ -635,16 +632,20 @@ namespace FowlFever.BSharp.Collections {
         /// Returns true if the first <see cref="IEnumerable{T}"/> is a <a href="https://en.wikipedia.org/wiki/Superset">superset</a> of the second <see cref="IEnumerable{T}"/>.
         /// </summary>
         /// <remarks>
-        /// This method is <b>identical</b> to <see cref="ContainsAll{T}(System.Collections.Generic.IEnumerable{T},System.Collections.Generic.IEnumerable{T})"/>.
+        /// This method delegates to <see cref="ISet{T}.IsSupersetOf"/>, if possible; otherwise, it delegates to <see cref="ContainsAll{T}(System.Collections.Generic.IEnumerable{T},System.Collections.Generic.IEnumerable{T})"/>. 
         /// </remarks>
         /// <param name="superset">the <b>larger</b> set</param>
         /// <param name="subset">the <b>smaller</b> set</param>
         /// <typeparam name="T">the <see cref="Type"/> of each individual item</typeparam>
-        /// <returns></returns>
+        /// <returns>true if the first <see cref="IEnumerable{T}"/> is a <a href="https://en.wikipedia.org/wiki/Superset">superset</a> of the second <see cref="IEnumerable{T}"/></returns>
         /// <seealso cref="ContainsAll{T}(System.Collections.Generic.IEnumerable{T},System.Collections.Generic.IEnumerable{T})"/>
         /// <seealso cref="IsSubsetOf{T}(System.Collections.Generic.IEnumerable{T},System.Collections.Generic.IEnumerable{T})"/>
         [Pure]
         public static bool IsSupersetOf<T>([InstantHandle] this IEnumerable<T> superset, [InstantHandle] IEnumerable<T> subset) {
+            if (superset is ISet<T> set) {
+                return set.IsSupersetOf(subset);
+            }
+
             return ContainsAll(superset, subset);
         }
 
@@ -652,16 +653,12 @@ namespace FowlFever.BSharp.Collections {
          * <inheritdoc cref="IsSupersetOf{T}(System.Collections.Generic.IEnumerable{T},System.Collections.Generic.IEnumerable{T})"/>
          */
         [Pure]
-        public static bool IsSupersetOf<T>([InstantHandle] this IEnumerable<T> superset, params T[] subset) {
-            return ContainsAll(superset, subset);
-        }
+        public static bool IsSupersetOf<T>([InstantHandle] this IEnumerable<T> superset, params T[] subset) => superset.IsSupersetOf(subset.AsEnumerable());
 
         /// <summary>
         /// Inverse of <see cref="IsSupersetOf{T}(System.Collections.Generic.IEnumerable{T},System.Collections.Generic.IEnumerable{T})"/>.
         /// </summary>
-        /// <param name="superset"></param>
-        /// <param name="subset"></param>
-        /// <typeparam name="T"></typeparam>
+        /// <inheritdoc cref="IsSupersetOf{T}(System.Collections.Generic.IEnumerable{T},System.Collections.Generic.IEnumerable{T})"/>
         /// <returns>inverse of <see cref="IsSupersetOf{T}(System.Collections.Generic.IEnumerable{T},System.Collections.Generic.IEnumerable{T})"/></returns>
         [Pure]
         public static bool IsNotSupersetOf<T>(this IEnumerable<T?> superset, IEnumerable<T?> subset) {
@@ -674,31 +671,30 @@ namespace FowlFever.BSharp.Collections {
         /// <param name="subset">the <b>smaller</b> set</param>
         /// <param name="superset">the <b>larger</b> set</param>
         /// <typeparam name="T">the <see cref="Type"/> of each individual item</typeparam>
-        /// <returns></returns>
+        /// <returns>true if the first <see cref="IEnumerable{T}"/> is a <a href="https://en.wikipedia.org/wiki/Subset">subset</a> of the second <see cref="IEnumerable{T}"/></returns>
+        /// <remarks>This method delegates to <see cref="ISet{T}.IsSubsetOf"/>, if possible; otherwise, it delegates to <see cref="ContainsAll{T}(System.Collections.Generic.IEnumerable{T},System.Collections.Generic.IEnumerable{T})"/></remarks>
         [Pure]
-        public static bool IsSubsetOf<T>(this IEnumerable<T?> subset, IEnumerable<T?> superset) {
+        public static bool IsSubsetOf<T>(this IEnumerable<T> subset, IEnumerable<T> superset) {
+            if (subset is ISet<T> set) {
+                return set.IsSubsetOf(superset);
+            }
+
             return ContainsAll(superset, subset);
         }
 
         /// <summary>
         /// Inverse of <see cref="IsSubsetOf{T}(System.Collections.Generic.IEnumerable{T},System.Collections.Generic.IEnumerable{T})"/>
         /// </summary>
-        /// <param name="subset"></param>
-        /// <param name="superset"></param>
-        /// <typeparam name="T"></typeparam>
+        /// <inheritdoc cref="IsSubsetOf{T}(System.Collections.Generic.IEnumerable{T},System.Collections.Generic.IEnumerable{T})"/>
         /// <returns>inverse of <see cref="IsSubsetOf{T}(System.Collections.Generic.IEnumerable{T},System.Collections.Generic.IEnumerable{T})"/></returns>
         [Pure]
-        public static bool IsNotSubsetOf<T>(this IEnumerable<T?> subset, IEnumerable<T?> superset) {
-            return !IsSubsetOf(superset, subset);
-        }
+        public static bool IsNotSubsetOf<T>(this IEnumerable<T?> subset, IEnumerable<T?> superset) => !IsSubsetOf(superset, subset);
 
         /**
          * <inheritdoc cref="IsSubsetOf{T}(System.Collections.Generic.IEnumerable{T},System.Collections.Generic.IEnumerable{T})"/>
          */
         [Pure]
-        public static bool IsSubsetOf<T>(this IEnumerable<T?> subset, params T?[] superset) {
-            return ContainsAll(superset, subset);
-        }
+        public static bool IsSubsetOf<T>(this IEnumerable<T> subset, params T[] superset) => subset.IsSubsetOf(superset.AsEnumerable());
 
         /// <summary>
         /// A simple inverse of <see cref="Enumerable.Contains{TSource}(System.Collections.Generic.IEnumerable{TSource},TSource)"/>.
