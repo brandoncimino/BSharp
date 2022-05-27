@@ -127,7 +127,7 @@ public static class Validator {
         [CallerMemberName]
         string? rejectedBy = default
     ) {
-        var results = GetValidatorMethods<T>().Select(it => it.Asserter.Try(actual)).ToList();
+        var results = TryValidate(actual).AsList();
         if (results.Any(it => it.Failed)) {
             throw Must.Reject(
                 actual,
@@ -138,6 +138,16 @@ public static class Validator {
         }
 
         return actual;
+    }
+
+    /// <summary>
+    /// Invokes all of the <see cref="GetValidatorMethods{T}"/> from the type <typeparamref name="T"/> against <paramref name="actual"/>.
+    ///
+    /// Returns the results as a collection of <see cref="IFailable"/>s.
+    /// </summary>
+    /// <param name="actual">the object being validated</param>
+    public static IEnumerable<IFailable> TryValidate<T>(T actual) {
+        return GetValidatorMethods<T>().Select(it => it.Asserter.Try(actual)).ToList();
     }
 }
 
