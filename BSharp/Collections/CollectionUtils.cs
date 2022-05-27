@@ -229,12 +229,18 @@ namespace FowlFever.BSharp.Collections {
         /// An extension method version of <see cref="string.Join(string,System.Collections.Generic.IEnumerable{string})"/> that joins using the <c>\n</c> line break.
         /// </summary>
         /// <param name="enumerable">the <see cref="IEnumerable{T}"/> whose entries will be joined</param>
-        /// <param name="prefix">an optional <see cref="string"/> prepended to each line</param>
+        /// <param name="label">an optional label applied to the <b>first line</b> of each entry</param>
+        /// <param name="indent">an optional <see cref="string"/> prepended to each line</param>
         /// <typeparam name="T">the type of each <see cref="IEnumerable{T}"/> entry </typeparam>
         /// <returns>the result of <see cref="string.Join(string,System.Collections.Generic.IEnumerable{string})"/></returns>
-        public static string JoinLines<T>(this IEnumerable<T?> enumerable, string? prefix = default) {
-            var prefixed = enumerable.Select(it => it?.ToString().Prefix(prefix));
-            return string.Join("\n", prefixed);
+        public static string JoinLines<T>(
+            this IEnumerable<T> enumerable,
+            string?             label  = default,
+            string?             indent = default
+        ) {
+            return enumerable.SelectMany(it => it.ToStringLines().IndentWithLabel(label))
+                             .Select(it => it.Prefix(indent))
+                             .JoinString("\n");
         }
 
         /// <summary>
@@ -576,10 +582,11 @@ namespace FowlFever.BSharp.Collections {
          */
         [Pure]
         public static bool ContainsAny<T>(
-            [InstantHandle] this IEnumerable<T> enumerable,
-            T                                   another,
-            T                                   andAnother,
-            params T[]                          andMore
+            [InstantHandle]
+            this IEnumerable<T> enumerable,
+            T          another,
+            T          andAnother,
+            params T[] andMore
         ) {
             return ContainsAny(enumerable, andMore.Prepend(andAnother).Prepend(another));
         }
