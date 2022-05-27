@@ -9,6 +9,7 @@ using System.Linq;
 using FowlFever.BSharp.Enums;
 using FowlFever.BSharp.Optional;
 using FowlFever.BSharp.Strings;
+using FowlFever.Conjugal.Affixing;
 
 using JetBrains.Annotations;
 
@@ -228,10 +229,12 @@ namespace FowlFever.BSharp.Collections {
         /// An extension method version of <see cref="string.Join(string,System.Collections.Generic.IEnumerable{string})"/> that joins using the <c>\n</c> line break.
         /// </summary>
         /// <param name="enumerable">the <see cref="IEnumerable{T}"/> whose entries will be joined</param>
+        /// <param name="prefix">an optional <see cref="string"/> prepended to each line</param>
         /// <typeparam name="T">the type of each <see cref="IEnumerable{T}"/> entry </typeparam>
         /// <returns>the result of <see cref="string.Join(string,System.Collections.Generic.IEnumerable{string})"/></returns>
-        public static string JoinLines<T>(this IEnumerable<T?> enumerable) {
-            return string.Join("\n", enumerable.OrEmpty());
+        public static string JoinLines<T>(this IEnumerable<T?> enumerable, string? prefix = default) {
+            var prefixed = enumerable.Select(it => it?.ToString().Prefix(prefix));
+            return string.Join("\n", prefixed);
         }
 
         /// <summary>
@@ -572,7 +575,12 @@ namespace FowlFever.BSharp.Collections {
          * <inheritdoc cref="ContainsAny{T}(System.Collections.Generic.IEnumerable{T},System.Collections.Generic.IEnumerable{T})"/>
          */
         [Pure]
-        public static bool ContainsAny<T>([InstantHandle] this IEnumerable<T> enumerable, T another, T andAnother, params T[] andMore) {
+        public static bool ContainsAny<T>(
+            [InstantHandle] this IEnumerable<T> enumerable,
+            T                                   another,
+            T                                   andAnother,
+            params T[]                          andMore
+        ) {
             return ContainsAny(enumerable, andMore.Prepend(andAnother).Prepend(another));
         }
 
@@ -818,7 +826,8 @@ namespace FowlFever.BSharp.Collections {
         public static IEnumerable<T> AppendNonNull<T>(
             this IEnumerable<T>? source,
             T?                   valueThatMightBeNull
-        ) where T : struct {
+        )
+            where T : struct {
             source = source.EmptyIfNull();
             return valueThatMightBeNull.HasValue == false ? source : source.Append(valueThatMightBeNull.Value);
         }
@@ -831,7 +840,8 @@ namespace FowlFever.BSharp.Collections {
         public static IEnumerable<T> AppendNonNull<T>(
             this IEnumerable<T>? source,
             IEnumerable<T?>?     additionalValuesThatMightBeNull
-        ) where T : struct {
+        )
+            where T : struct {
             return source.EmptyIfNull().Concat(additionalValuesThatMightBeNull.NonNull());
         }
 
@@ -872,7 +882,8 @@ namespace FowlFever.BSharp.Collections {
         /// <typeparam name="TSource"></typeparam>
         /// <typeparam name="TElements"></typeparam>
         /// <returns></returns>
-        public static TSource AddNonNull<TSource, TElements>(this TSource source, TElements? valueThatMightBeNull) where TSource : ICollection<TElements> {
+        public static TSource AddNonNull<TSource, TElements>(this TSource source, TElements? valueThatMightBeNull)
+            where TSource : ICollection<TElements> {
             if (valueThatMightBeNull != null) {
                 source.Add(valueThatMightBeNull);
             }
@@ -883,7 +894,9 @@ namespace FowlFever.BSharp.Collections {
         /**
          * <inheritdoc cref="AddNonNull{TSource,TElements}(TSource,TElements)"/>
          */
-        public static TSource AddNonNull<TSource, TElements>(this TSource source, TElements? valueThatMightBeNull) where TSource : ICollection<TElements> where TElements : struct {
+        public static TSource AddNonNull<TSource, TElements>(this TSource source, TElements? valueThatMightBeNull)
+            where TSource : ICollection<TElements>
+            where TElements : struct {
             if (valueThatMightBeNull != null) {
                 source.Add(valueThatMightBeNull.Value);
             }
@@ -899,7 +912,8 @@ namespace FowlFever.BSharp.Collections {
         /// <typeparam name="TSource">the <see cref="ICollection{T}"/> type of <paramref name="source"/></typeparam>
         /// <typeparam name="TElements">the type of each entry in <paramref name="source"/></typeparam>
         /// <returns>the original <paramref name="source"/></returns>
-        public static TSource AddNonNull<TSource, TElements>(this TSource source, IEnumerable<TElements?>? additionalValuesThatMightBeNull) where TSource : ICollection<TElements> {
+        public static TSource AddNonNull<TSource, TElements>(this TSource source, IEnumerable<TElements?>? additionalValuesThatMightBeNull)
+            where TSource : ICollection<TElements> {
             if (additionalValuesThatMightBeNull == null) {
                 return source;
             }
@@ -916,7 +930,9 @@ namespace FowlFever.BSharp.Collections {
         /// <typeparam name="TSource">the <see cref="ICollection{T}"/> type of <paramref name="source"/></typeparam>
         /// <typeparam name="TElements">the <see cref="ValueType"/> of <paramref name="source"/>'s entries (which are <see cref="Nullable{T}"/> in <paramref name="nullableValues"/>)</typeparam>
         /// <returns>the original <paramref name="source"/></returns>
-        public static TSource AddNonNull<TSource, TElements>(this TSource source, [ItemNotNull] IEnumerable<TElements?>? nullableValues) where TSource : ICollection<TElements> where TElements : struct {
+        public static TSource AddNonNull<TSource, TElements>(this TSource source, [ItemNotNull] IEnumerable<TElements?>? nullableValues)
+            where TSource : ICollection<TElements>
+            where TElements : struct {
             if (nullableValues == null) {
                 return source;
             }
@@ -948,7 +964,8 @@ namespace FowlFever.BSharp.Collections {
          * The entries in the output will be "un-boxed", i.e. <typeparamref name="T"/> rather than <c>T?</c>
          * </remarks>
          */
-        public static IEnumerable<T> NonNull<T>(this IEnumerable<T?>? source) where T : struct {
+        public static IEnumerable<T> NonNull<T>(this IEnumerable<T?>? source)
+            where T : struct {
             return source == null ? Enumerable.Empty<T>() : source.Where(it => it.HasValue).Select(it => it!.Value);
         }
 
