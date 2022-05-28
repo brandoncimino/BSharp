@@ -8,6 +8,8 @@ namespace FowlFever.BSharp.Reflection;
 public static partial class ReflectionUtils {
     #region Attributes
 
+    private const BindingFlags LooseBindingFlags = BindingFlags.Default | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.InvokeMethod;
+
     /// <summary>
     /// A <see cref="MemberFilter"/> for members where a certain <see cref="Attribute"/> <see cref="MemberInfo.IsDefined"/>.
     /// </summary>
@@ -55,28 +57,32 @@ public static partial class ReflectionUtils {
     /// 
     /// </remarks>
     /// <param name="type">the original <see cref="Type"/></param>
-    /// <param name="bindingAttr">determines how the search is performed</param>
     /// <typeparam name="TMember">the <see cref="MemberTypes"/> you're searching for</typeparam>
     /// <typeparam name="TAttribute">the desired <see cref="Attribute"/></typeparam>
     /// <returns>the members with the specified <see cref="Attribute"/></returns>
-    public static IEnumerable<TMember> FindMembersWithAttribute<TMember, TAttribute>(this Type type, BindingFlags bindingAttr = default)
+    public static IEnumerable<TMember> FindMembersWithAttribute<TMember, TAttribute>(this Type type)
         where TMember : MemberInfo
         where TAttribute : Attribute {
-        return type.FindMembers(MemberTypesMap[typeof(TMember)], bindingAttr, FilterWithAttribute, typeof(TAttribute)).Select(it => (TMember)it);
+        return type.FindMembers(
+                       GetMemberInfoMemberTypes<TMember>(),
+                       GetMemberInfoBindingFlags<TMember>(),
+                       FilterWithAttribute,
+                       typeof(TAttribute)
+                   )
+                   .Select(it => (TMember)it);
     }
 
     /// <summary>
     /// Similar to <see cref="FindMembersWithAttribute{TMember,TAttribute}"/>, but returns the results as <see cref="Annotated{TMember,TAttribute}"/> instances.
     /// </summary>
     /// <param name="type">the original <see cref="Type"/></param>
-    /// <param name="bindingAttr">determines how the search is performed</param>
     /// <typeparam name="TMember">the <see cref="MemberTypes"/> you're searching for</typeparam>
     /// <typeparam name="TAttribute">the desired <see cref="Attribute"/></typeparam>
-    /// <returns></returns>
-    public static IEnumerable<Annotated<TMember, TAttribute>> FindAnnotated<TMember, TAttribute>(this Type type, BindingFlags bindingAttr = default)
+    /// <returns>the <see cref="Annotated{TMember,TAttribute}"/> members</returns>
+    public static IEnumerable<Annotated<TMember, TAttribute>> FindAnnotated<TMember, TAttribute>(this Type type)
         where TMember : MemberInfo
         where TAttribute : Attribute {
-        return type.FindMembersWithAttribute<TMember, TAttribute>(bindingAttr)
+        return type.FindMembersWithAttribute<TMember, TAttribute>()
                    .Select(it => new Annotated<TMember, TAttribute>(it));
     }
 

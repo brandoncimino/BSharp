@@ -609,14 +609,20 @@ namespace FowlFever.BSharp.Reflection {
         /// </summary>
         public static readonly MemberFilter FilterWithAttribute = (info, criteria) => info.IsDefined(criteria as Type ?? throw new InvalidOperationException($"{nameof(MemberFilter)} criteria [{criteria}] was not a {nameof(Type)}!"));
 
-        private static readonly IDictionary<Type, MemberTypes> MemberTypesMap = new Dictionary<Type, MemberTypes>() {
-            { typeof(MemberInfo), MemberTypes.All },
-            { typeof(ConstructorInfo), MemberTypes.Constructor },
-            { typeof(MethodInfo), MemberTypes.Method },
-            { typeof(FieldInfo), MemberTypes.Field },
-            { typeof(PropertyInfo), MemberTypes.Property },
-            { typeof(VariableInfo), MemberTypes.Property | MemberTypes.Property },
+        private static readonly IDictionary<Type, MemberTypes> MemberInfoType_To_MemberTypesFlag = new Dictionary<Type, MemberTypes>() {
+            [typeof(MemberInfo)]      = MemberTypes.All,
+            [typeof(ConstructorInfo)] = MemberTypes.Constructor,
+            [typeof(MethodInfo)]      = MemberTypes.Method,
+            [typeof(FieldInfo)]       = MemberTypes.Field,
+            [typeof(PropertyInfo)]    = MemberTypes.Property,
+            [typeof(VariableInfo)]    = MemberTypes.Property | MemberTypes.Property,
         };
+
+        private static MemberTypes GetMemberInfoMemberTypes<T>()
+            where T : MemberInfo => MemberInfoType_To_MemberTypesFlag[typeof(T)];
+
+        private static BindingFlags GetMemberInfoBindingFlags<T>()
+            where T : MemberInfo => GetMemberInfoMemberTypes<T>().GetBindingFlags();
 
         public static Type MustGetDeclaringType(this MemberInfo member, [CallerArgumentExpression("member")] string? parameterName = default) => member.DeclaringType ?? throw ReflectionException.NoDeclaringTypeException(member, parameterName);
         public static Type MustGetReflectedType(this MemberInfo member, [CallerArgumentExpression("member")] string? parameterName = default) => member.ReflectedType ?? throw ReflectionException.NoReflectedTypeException(member, parameterName);
