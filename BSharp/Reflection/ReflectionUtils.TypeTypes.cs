@@ -113,6 +113,27 @@ public static partial class ReflectionUtils {
         return method.ReturnType.IsBooly();
     }
 
+    public static ParameterInfo? GetSingleParameter(this MethodInfo method) {
+        try {
+            return method.GetParameters()
+                         .Single();
+        }
+        catch (InvalidOperationException) {
+            return null;
+        }
+    }
+
+    public static bool IsCheckpoint(this MethodInfo method) {
+        try {
+            return method.GetParameters()
+                         .Single()
+                         .ParameterType == method.ReturnType;
+        }
+        catch (InvalidOperationException) {
+            return false;
+        }
+    }
+
     public static bool IsVoid(this MethodInfo method) {
         return method.ReturnType == typeof(void);
     }
