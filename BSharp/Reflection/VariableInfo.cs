@@ -12,49 +12,48 @@ namespace FowlFever.BSharp.Reflection;
 /// Represents <b>either</b> a <see cref="PropertyInfo"/> or a <see cref="FieldInfo"/>.
 /// </summary>
 public class VariableInfo : MemberInfo {
-    private readonly MemberInfo    _member;
-    public           PropertyInfo? AsProp  => _member as PropertyInfo;
-    public           FieldInfo?    AsField => _member as FieldInfo;
+    /// <summary>
+    /// The actual <see cref="PropertyInfo"/> or <see cref="FieldInfo"/> that this <see cref="VariableInfo"/> represents.
+    /// </summary>
+    public readonly MemberInfo Member;
+    public PropertyInfo? AsProp  => Member as PropertyInfo;
+    public FieldInfo?    AsField => Member as FieldInfo;
 
-    public bool IsProperty => _member is PropertyInfo;
-    public bool IsField    => _member is FieldInfo;
+    public bool IsProperty => Member is PropertyInfo;
+    public bool IsField    => Member is FieldInfo;
 
     public VariableInfo(MemberInfo member) {
-        _member = member switch {
+        Member = member switch {
             PropertyInfo => member,
             FieldInfo    => member,
             _            => throw NotAVariableException(member),
         };
     }
 
-    public VariableInfo(PropertyInfo property) {
-        _member = property;
-    }
-
-    public VariableInfo(FieldInfo field) {
-        _member = field;
-    }
+    public VariableInfo(PropertyInfo property) => Member = property;
+    public VariableInfo(FieldInfo    field) => Member = field;
+    public VariableInfo(VariableInfo variable) => Member = variable.Member;
 
     public VariableInfo(Type type, string variableName, BindingFlags bindingFlags) {
         var foundMembers = type.GetMember(variableName, MemberTypes.Field | MemberTypes.Property, bindingFlags);
         if (foundMembers.Length == 1) {
-            _member = foundMembers.Single();
+            Member = foundMembers.Single();
         }
         else {
             throw ReflectionException.VariableNotFoundException(type, variableName);
         }
     }
 
-    public override object[] GetCustomAttributes(bool inherit) => _member.GetCustomAttributes(inherit);
+    public override object[] GetCustomAttributes(bool inherit) => Member.GetCustomAttributes(inherit);
 
-    public override object[] GetCustomAttributes(Type attributeType, bool inherit) => _member.GetCustomAttributes(attributeType, inherit);
+    public override object[] GetCustomAttributes(Type attributeType, bool inherit) => Member.GetCustomAttributes(attributeType, inherit);
 
-    public override bool IsDefined(Type attributeType, bool inherit) => _member.IsDefined(attributeType, inherit);
+    public override bool IsDefined(Type attributeType, bool inherit) => Member.IsDefined(attributeType, inherit);
 
-    public override Type?       DeclaringType => _member.DeclaringType;
-    public override MemberTypes MemberType    => _member.MemberType;
-    public override string      Name          => _member.Name;
-    public override Type?       ReflectedType => _member.ReflectedType;
+    public override Type?       DeclaringType => Member.DeclaringType;
+    public override MemberTypes MemberType    => Member.MemberType;
+    public override string      Name          => Member.Name;
+    public override Type?       ReflectedType => Member.ReflectedType;
 
     #region Stuff from PropertyInfo
 
@@ -85,10 +84,10 @@ public class VariableInfo : MemberInfo {
     /// <seealso cref="PropertyInfo.GetValue(object)">GetValue(object) // Properties</seealso>
     /// <seealso cref="FieldInfo.GetValue">GetValue(object) // Fields</seealso>
     public object? GetValue(object? obj) {
-        return _member switch {
+        return Member switch {
             PropertyInfo prop => prop.GetValue(obj),
             FieldInfo field   => field.GetValue(obj),
-            _                 => throw NotAVariableException(_member),
+            _                 => throw NotAVariableException(Member),
         };
     }
 
@@ -101,10 +100,10 @@ public class VariableInfo : MemberInfo {
     /// <returns>the value of this variable</returns>
     /// <exception cref="ArgumentException">if this <see cref="IsField"/></exception>
     public object? GetValue(object? obj, object[] index) {
-        return _member switch {
+        return Member switch {
             PropertyInfo prop => prop.GetValue(obj, index),
             FieldInfo field   => throw IndexedFieldException(field),
-            _                 => throw NotAVariableException(_member),
+            _                 => throw NotAVariableException(Member),
         };
     }
 
@@ -135,7 +134,7 @@ public class VariableInfo : MemberInfo {
     /// <seealso cref="PropertyInfo.SetValue(object,object)"/>
     /// <seealso cref="FieldInfo.SetValue(object,object)"/>
     public void SetValue(object? obj, object? value) {
-        switch (_member) {
+        switch (Member) {
             case PropertyInfo prop:
                 prop.SetValue(obj, value);
                 return;
@@ -143,7 +142,7 @@ public class VariableInfo : MemberInfo {
                 field.SetValue(obj, value);
                 return;
             default:
-                throw NotAVariableException(_member);
+                throw NotAVariableException(Member);
         }
     }
 
@@ -155,41 +154,35 @@ public class VariableInfo : MemberInfo {
     /// <exception cref="ArgumentException">if this <see cref="IsField"/></exception>
     /// <param name="index">the indexer variables used to access the variable</param>
     public void SetValue(object? obj, object? value, object[] index) {
-        switch (_member) {
+        switch (Member) {
             case PropertyInfo prop:
                 prop.SetValue(obj, value, index);
                 return;
             case FieldInfo field:
                 throw IndexedFieldException(field);
             default:
-                throw NotAVariableException(_member);
+                throw NotAVariableException(Member);
         }
     }
 
     #endregion
 
-    public bool CanRead => _member switch {
+    public bool CanRead => Member switch {
         PropertyInfo prop => prop.CanRead,
         FieldInfo field   => !field.IsAutoPropertyBackingField(),
-        _                 => throw NotAVariableException(_member),
+        _                 => throw NotAVariableException(Member),
     };
 
-    public bool CanWrite => _member switch {
+    public bool CanWrite => Member switch {
         PropertyInfo prop => prop.CanWrite,
         FieldInfo field   => field.IsInitOnly == false,
-        _                 => throw NotAVariableException(_member),
+        _                 => throw NotAVariableException(Member),
     };
 
-    public Type VariableType => _member switch {
+    public Type VariableType => Member switch {
         PropertyInfo prop => prop.PropertyType,
         FieldInfo field   => field.FieldType,
-        _                 => throw NotAVariableException(_member),
-    };
-
-    public FieldInfo? BackingField => _member switch {
-        PropertyInfo prop => prop.BackingField(),
-        FieldInfo field   => field,
-        _                 => throw NotAVariableException(_member),
+        _                 => throw NotAVariableException(Member),
     };
 
     public static implicit operator VariableInfo(FieldInfo    field)    => new VariableInfo(field);
