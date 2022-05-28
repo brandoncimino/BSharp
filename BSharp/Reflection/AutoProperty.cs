@@ -14,27 +14,17 @@ namespace FowlFever.BSharp.Reflection;
 public class AutoProperty : BackedProperty {
     private static readonly ConcurrentDictionary<MemberInfo, Lazy<AutoProperty?>> AutoPropertyCache = new(ReflectionUtils.MetadataTokenComparer.Instance);
 
-    // /// <summary>
-    // /// The actual <see cref="PropertyInfo"/>.
-    // /// </summary>
-    // public readonly PropertyInfo Property;
-
-    /// <summary>
-    /// The compiler-generated backing <see cref="FieldInfo"/> that stores the value of <see cref="BackedProperty.Property"/>.
-    /// </summary>
-    public FieldInfo BackingField => Backer.MustBeField();
-
-    private AutoProperty(PropertyInfo property, FieldInfo backingField) : base(property, backingField) {
-        if (property.DeclaringType == null) {
-            throw ReflectionException.NoDeclaringTypeException(property);
+    private AutoProperty(PropertyInfo front, VariableInfo back) : base(front, back) {
+        if (front.DeclaringType == null) {
+            throw ReflectionException.NoDeclaringTypeException(front);
         }
 
-        if (backingField.DeclaringType == null) {
-            throw ReflectionException.NoDeclaringTypeException(backingField);
+        if (back.DeclaringType == null) {
+            throw ReflectionException.NoDeclaringTypeException(back);
         }
 
-        if (property.DeclaringType != backingField.DeclaringType) {
-            throw new ArgumentException($"Couldn't construct [{GetType()}]: {nameof(property)}.{nameof(MemberInfo.DeclaringType)} != {nameof(backingField)}.{nameof(MemberInfo.DeclaringType)}!");
+        if (front.DeclaringType != back.DeclaringType) {
+            throw new ArgumentException($"Couldn't construct [{GetType()}]: {nameof(front)}.{nameof(MemberInfo.DeclaringType)} [{front.DeclaringType} != {nameof(back)}.{nameof(MemberInfo.DeclaringType)} [{back.DeclaringType}]!");
         }
     }
 
@@ -44,25 +34,22 @@ public class AutoProperty : BackedProperty {
         return prop == null ? null : new AutoProperty(prop, backingField);
     }
 
-    public static AutoProperty? FromBackingField(FieldInfo backingField) => AutoPropertyCache.GetOrAddLazily(backingField, _FromBackingField);
-
     private static AutoProperty? _FromProperty(PropertyInfo property) {
         var declaringType = property.DeclaringType ?? throw ReflectionException.NoDeclaringTypeException(property);
         var backingField  = declaringType.GetRuntimeField(FormatBackingFieldName(property.Name));
         return backingField == null ? null : new AutoProperty(property, backingField);
     }
 
-    public static AutoProperty? FromProperty(PropertyInfo property) => AutoPropertyCache.GetOrAddLazily(property, _FromProperty);
-
-    public static AutoProperty? FromMember(MemberInfo member) => member switch {
-        FieldInfo field   => FromBackingField(field),
-        PropertyInfo prop => FromProperty(prop),
-        _                 => null,
+    public static AutoProperty? AutoPropertyFrom(MemberInfo member) => member switch {
+        FieldInfo field    => AutoPropertyCache.GetOrAddLazily(field, _FromBackingField),
+        PropertyInfo prop  => AutoPropertyCache.GetOrAddLazily(prop,  _FromProperty),
+        VariableInfo varia => AutoPropertyFrom(varia.Member),
+        _                  => null,
     };
 
-    public static string FormatBackingFieldName(string propertyName) => $"<{propertyName}>k__BackingField";
+    private static string FormatBackingFieldName(string propertyName) => $"<{propertyName}>k__BackingField";
 
-    public static string GetBackedPropertyName(string backingFieldName) {
+    internal static string GetBackedPropertyName(string backingFieldName) {
         var match = ReflectionUtils.AutoPropertyBackingFieldNamePattern.Match(backingFieldName);
         return match.Success ? match.Groups[ReflectionUtils.PropertyCaptureGroupName].Value : throw new ArgumentException($"[{backingFieldName}] doesn't match the pattern for auto-property backing fields!");
     }
@@ -76,19 +63,21 @@ public class AutoProperty : BackedProperty {
 public static partial class ReflectionUtils {
     #region AutoProperty extensions
 
+    /// <param name="self">this <see cref="Type"/></param>
+    /// <returns>all of the <see cref="AutoProperty"/>s found in this <see cref="Type"/></returns>
     public static IEnumerable<AutoProperty> GetAutoProperties(this Type self) {
         return self.GetFields(AutoProperty.AutoPropertyBackingFieldBindingFlags)
-                   .Select(AutoProperty.FromBackingField)
+                   .Select(AutoProperty.AutoPropertyFrom)
                    .NonNull();
     }
 
     /// <param name="property">this <see cref="PropertyInfo"/></param>
     /// <returns><c>true</c> if this <see cref="PropertyInfo"/> is an <a href="https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/classes-and-structs/auto-implemented-properties">Auto-Property</a></returns>
-    public static bool IsAutoProperty(this PropertyInfo property) => AutoProperty.FromProperty(property) != null;
+    public static bool IsAutoProperty(this PropertyInfo property) => AutoProperty.AutoPropertyFrom(property) != null;
 
     /// <param name="field">this <see cref="FieldInfo"/></param>
     /// <returns><c>true</c> if this <see cref="FieldInfo"/> is an <a href="https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/classes-and-structs/auto-implemented-properties">Auto-Property</a> Backing Field</returns>
-    public static bool IsAutoPropertyBackingField(this FieldInfo field) => AutoProperty.FromBackingField(field) != null;
+    public static bool IsAutoPropertyBackingField(this FieldInfo field) => AutoProperty.AutoPropertyFrom(field) != null;
 
     #endregion
 }
