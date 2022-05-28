@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -16,16 +17,31 @@ namespace FowlFever.BSharp.Reflection;
 /// <remarks>
 /// Sources of <see cref="BackedProperty"/> relationships include, as of 5/27/2022:
 /// <ul>
-/// <li><see cref="AutoProperty"/>s</li>
+/// <li><a href="https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/classes-and-structs/auto-implemented-properties">Auto-Properties</a></li>
 /// <li><see cref="AttributeTargets.Property"/>s annotated with <see cref="BackedByAttribute"/></li>
 /// <li><see cref="AttributeTargets.Property"/>s <b>OR</b> <see cref="AttributeTargets.Field"/>s annotated with <see cref="BackerForAttribute"/></li>
 /// </ul>
 ///
 /// TODO: Derive <see cref="BackedProperty"/>s from <see cref="AccessedThroughPropertyAttribute"/>
 /// </remarks>
+/// <seealso cref="AutoProperty"/>
 public class BackedProperty : IEquatable<BackedProperty> {
+    /// <summary>
+    /// The <see cref="PropertyInfo"/> that exposes <see cref="Back"/>.
+    /// </summary>
     public PropertyInfo Front { get; }
-    public VariableInfo Back  { get; }
+    /// <summary>
+    /// The source of <see cref="Front"/>'s value.
+    /// </summary>
+    /// <remarks>
+    /// A backer can be:
+    /// <ul>
+    /// <li>A compiler-generated <see cref="AutoProperty"/> backing <see cref="FieldInfo"/></li>
+    /// <li>A <see cref="AttributeTargets.Field"/> or <see cref="AttributeTargets.Property"/> annotated with <see cref="BackerForAttribute"/></li>
+    /// <li>A <see cref="AttributeTargets.Field"/> or <see cref="AttributeTargets.Property"/> referenced by a <see cref="BackedByAttribute"/></li>
+    /// </ul>
+    /// </remarks>
+    public VariableInfo Back { get; }
 
     private static readonly IEqualityComparer<MemberInfo> MemberComparer = ReflectionUtils.MetadataTokenComparer.Instance;
 
@@ -195,4 +211,28 @@ public class BackedProperty : IEquatable<BackedProperty> {
     }
 
     #endregion
+}
+
+public static class BackedPropertyExtensions {
+    /// <summary>
+    /// Returns the <see cref="BackedProperty.Back">"backer"</see> for a <see cref="PropertyInfo"/>.
+    /// </summary>
+    /// <param name="propertyInfo">this <see cref="PropertyInfo"/></param>
+    /// <returns>the <see cref="VariableInfo"/> that backs this <see cref="PropertyInfo"/>, if found; otherwise, null</returns>
+    [Pure]
+    public static VariableInfo? GetBacker(this PropertyInfo propertyInfo) => BackedProperty.FromFront(propertyInfo)?.Back;
+
+    /// <summary>
+    /// Returns the <see cref="BackedProperty.Front"/>s that this <see cref="VariableInfo"/> is a <see cref="BackedProperty.Back"/> for.
+    /// </summary>
+    /// <param name="backer">this <see cref="VariableInfo"/></param>
+    /// <returns><b>all</b> of the <see cref="PropertyInfo"/>s that this is a <see cref="BackedProperty.Back"/> for</returns>
+    [Pure]
+    public static IEnumerable<PropertyInfo> GetBackedProperties(this VariableInfo backer) => BackedProperty.FromBack(backer).Select(it => it.Front);
+
+    /// <inheritdoc cref="GetBackedProperties(FowlFever.BSharp.Reflection.VariableInfo)"/>
+    public static IEnumerable<PropertyInfo> GetBackedProperties(this PropertyInfo backer) => BackedProperty.FromBack(backer).Select(it => it.Front);
+
+    /// <inheritdoc cref="GetBackedProperties(FowlFever.BSharp.Reflection.VariableInfo)"/>
+    public static IEnumerable<PropertyInfo> GetBackedProperties(this FieldInfo backer) => BackedProperty.FromBack(backer).Select(it => it.Front);
 }

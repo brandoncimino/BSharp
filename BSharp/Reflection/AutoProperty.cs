@@ -3,8 +3,10 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Text.RegularExpressions;
 
 using FowlFever.BSharp.Collections;
+using FowlFever.BSharp.Strings;
 
 namespace FowlFever.BSharp.Reflection;
 
@@ -12,7 +14,9 @@ namespace FowlFever.BSharp.Reflection;
 /// Represents an <a href="https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/classes-and-structs/auto-implemented-properties">Auto-Property</a>.
 /// </summary>
 public class AutoProperty : BackedProperty {
-    private static readonly ConcurrentDictionary<MemberInfo, Lazy<AutoProperty?>> AutoPropertyCache = new(ReflectionUtils.MetadataTokenComparer.Instance);
+    private static readonly RegexGroup                                            PropertyNameGroup                   = new RegexGroup("property", @"\w+");
+    private static readonly Regex                                                 AutoPropertyBackingFieldNamePattern = new Regex(@$"^<{PropertyNameGroup}>k__BackingField$");
+    private static readonly ConcurrentDictionary<MemberInfo, Lazy<AutoProperty?>> AutoPropertyCache                   = new(ReflectionUtils.MetadataTokenComparer.Instance);
 
     private AutoProperty(PropertyInfo front, VariableInfo back) : base(front, back) {
         if (front.DeclaringType == null) {
@@ -50,7 +54,7 @@ public class AutoProperty : BackedProperty {
     private static string FormatBackingFieldName(string propertyName) => $"<{propertyName}>k__BackingField";
 
     internal static string GetBackedPropertyName(string backingFieldName) {
-        var match = ReflectionUtils.AutoPropertyBackingFieldNamePattern.Match(backingFieldName);
+        var match = AutoPropertyBackingFieldNamePattern.Match(backingFieldName);
         return match.Success ? match.Groups[ReflectionUtils.PropertyCaptureGroupName].Value : throw new ArgumentException($"[{backingFieldName}] doesn't match the pattern for auto-property backing fields!");
     }
 
@@ -60,9 +64,7 @@ public class AutoProperty : BackedProperty {
         BindingFlags.NonPublic;
 }
 
-public static partial class ReflectionUtils {
-    #region AutoProperty extensions
-
+public static class AutoPropertyExtensions {
     /// <param name="self">this <see cref="Type"/></param>
     /// <returns>all of the <see cref="AutoProperty"/>s found in this <see cref="Type"/></returns>
     public static IEnumerable<AutoProperty> GetAutoProperties(this Type self) {
@@ -78,6 +80,4 @@ public static partial class ReflectionUtils {
     /// <param name="field">this <see cref="FieldInfo"/></param>
     /// <returns><c>true</c> if this <see cref="FieldInfo"/> is an <a href="https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/classes-and-structs/auto-implemented-properties">Auto-Property</a> Backing Field</returns>
     public static bool IsAutoPropertyBackingField(this FieldInfo field) => AutoProperty.AutoPropertyFrom(field) != null;
-
-    #endregion
 }
