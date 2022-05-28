@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 
 using FowlFever.BSharp.Collections;
@@ -28,12 +29,12 @@ namespace FowlFever.BSharp.Enums {
         /// <returns>an array containing the <see cref="Type.GetEnumValues"/> of <typeparamref name="T"/>.</returns>
         /// <exception cref="ArgumentException">if <typeparamref name="T"/> is not an <see cref="Enum"/> type</exception>
         public static T[] GetValues<T>()
-            where T : struct, Enum {
+            where T : Enum {
             return GetValues<T>(typeof(T));
         }
 
         public static T[] GetValues<T>(Type enumType)
-            where T : struct, Enum {
+            where T : Enum {
             return enumType.MustBeEnumType()
                            .MustMatchTypeArgument<T>()
                            .GetEnumValues()
@@ -84,12 +85,14 @@ namespace FowlFever.BSharp.Enums {
             string? methodName = default
         )
             where T : Enum {
-            return Must.Reject<T, InvalidEnumArgumentException>(
+            var rejection = new RejectionException(
                 actualValue,
                 parameterName,
                 methodName,
                 $"{typeof(T)}.{actualValue.OrNullPlaceholder()} was not handled by any switch branch!"
             );
+
+            return new InvalidEnumArgumentException(rejection.Message);
         }
 
         #region Enum not in set
@@ -165,6 +168,28 @@ namespace FowlFever.BSharp.Enums {
         public static T Max<T>()
             where T : struct, Enum {
             return GetValues<T>().Max();
+        }
+
+        #endregion
+
+        #region Flags
+
+        /// <param name="enumType">this <see cref="Type"/></param>
+        /// <returns><c>true</c> if the <see cref="FlagsAttribute"/> <see cref="MemberInfo.IsDefined"/></returns>
+        public static bool IsEnumFlags(this Type enumType) => enumType.IsDefined(typeof(FlagsAttribute));
+
+        /// <summary>
+        /// Iterates through the individual <see cref="Enum.HasFlag"/> values of an <see cref="Enum"/> value with the <see cref="FlagsAttribute"/>.
+        /// </summary>
+        /// <param name="flags">a value of an <see cref="Enum"/> that <see cref="IsEnumFlags"/></param>
+        /// <typeparam name="T">the <see cref="IsEnumFlags"/> type</typeparam>
+        /// <returns>each individual <see cref="Enum.HasFlag"/> value from <paramref name="flags"/></returns>
+        /// <exception cref="RejectionException">if <typeparamref name="T"/> isn't <see cref="IsEnumFlags"/></exception>
+        public static IEnumerable<T> EachFlag<T>(this T flags)
+            where T : Enum {
+            Must.Be(typeof(T), IsEnumFlags);
+            return GetValues<T>()
+                .Where(it => flags.HasFlag(it));
         }
 
         #endregion
