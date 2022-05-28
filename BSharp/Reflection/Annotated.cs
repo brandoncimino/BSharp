@@ -15,8 +15,8 @@ public class Annotated<TMember, TAttribute>
     public TMember                 Member     { get; }
     public IEnumerable<TAttribute> Attributes { get; }
 
-    public Annotated(TMember member, IEnumerable<TAttribute>? attributes = null) {
+    public Annotated(TMember member, IEnumerable<TAttribute>? attributes = null, bool inherit = true) {
         Member     = member;
-        Attributes = attributes ?? Member.GetCustomAttributes<TAttribute>();
+        Attributes = attributes ?? Member.GetCustomAttributes<TAttribute>(inherit);
     }
 }
