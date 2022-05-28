@@ -193,7 +193,7 @@ namespace BSharp.Tests.Reflection {
 
             var privacy = new Privacy<int>(setInt);
 
-            var val = ReflectionUtils.GetVariableValue<int>(privacy, expectedGettableVariable.Name);
+            var val = privacy.GetVariableValue<int>(expectedGettableVariable.Name);
             Assert.That(val, Is.EqualTo(setInt));
         }
 
@@ -209,9 +209,9 @@ namespace BSharp.Tests.Reflection {
 
             var privacy = new Privacy<int>(initialInt);
 
-            ReflectionUtils.SetVariableValue(privacy, expectedSettableVariable.Name, updatedInt);
-            Assert.That(ReflectionUtils.GetVariableValue(privacy, expectedSettableVariable.Name), Is.EqualTo(updatedInt));
-            Assert.That(ReflectionUtils.GetVariableValue(privacy, expectedSettableVariable.Name), Is.Not.EqualTo(initialInt));
+            VariableInfoExtensions.SetVariableValue(privacy, expectedSettableVariable.Name, updatedInt);
+            Assert.That(VariableInfoExtensions.GetVariableValue(privacy, expectedSettableVariable.Name), Is.EqualTo(updatedInt));
+            Assert.That(VariableInfoExtensions.GetVariableValue(privacy, expectedSettableVariable.Name), Is.Not.EqualTo(initialInt));
         }
 
         /// <summary>
@@ -257,7 +257,7 @@ namespace BSharp.Tests.Reflection {
 
             Console.WriteLine($"propInfo: {backingFieldInfo}");
             Console.WriteLine(backingFieldInfo.Name);
-            Assert.That(ReflectionUtils.Get_BackedAutoProperty_Name(backingFieldInfo), Is.EqualTo(propertyWithBackingField.Name));
+            Assert.That(AutoProperty.GetBackedPropertyName(backingFieldInfo.Name), Is.EqualTo(propertyWithBackingField.Name));
         }
 
         [Test]
@@ -270,7 +270,7 @@ namespace BSharp.Tests.Reflection {
 
             Assert.That(propertyInfo, Is.Not.Null, $"Couldn't retrieve a property info for {propertyWithBackingField}");
 
-            var backingField = propertyInfo.BackingField();
+            var backingField = propertyInfo?.GetBacker();
 
             Assert.That(backingField, Is.Not.Null, $"Couldn't retrieve a backing field for {propertyWithBackingField}");
 
@@ -289,8 +289,8 @@ namespace BSharp.Tests.Reflection {
             Assume.That(propertyWithBackingField.MemberType, Is.EqualTo(MemberTypes.Property));
             var backingFieldInfo = typeof(Privacy<int>).GetField(propertyWithBackingField.BackingFieldName, BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static);
 
-            Assert.That(backingFieldInfo,                Is.Not.Null);
-            Assert.That(backingFieldInfo.IsBackingField, Is.True);
+            Assert.That(backingFieldInfo,                             Is.Not.Null);
+            Assert.That(backingFieldInfo!.IsAutoPropertyBackingField, Is.True);
         }
 
         #endregion
