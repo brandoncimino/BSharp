@@ -11,7 +11,7 @@ using NUnit.Framework;
 
 using Is = NUnit.Framework.Is;
 
-namespace BSharp.Tests.Reflection; 
+namespace BSharp.Tests.Reflection;
 
 internal static class Validate {
     public static void HasAutoProperty(this object testClass, string propertyName) {
@@ -20,16 +20,16 @@ internal static class Validate {
 
     public static void IsAutoProperty(this PropertyInfo propertyInfo) {
         AssertAll.Of(
-            () => Assert.That(propertyInfo.BackingField(),                               Is.Not.Null),
-            () => Assert.That(propertyInfo.BackingField()?.IsAutoPropertyBackingField(), Is.True),
-            () => BacksProperty(propertyInfo.BackingField(), propertyInfo)
+            () => Assert.That(propertyInfo.GetBacker(),          Is.Not.Null),
+            () => Assert.That(propertyInfo.GetBacker()?.IsField, Is.True),
+            () => BacksProperty(propertyInfo.GetBacker(), propertyInfo)
         );
     }
 
     private static void IsBackedBy(this PropertyInfo? propertyInfo, FieldInfo? expectedBackingField) {
         AssertAll.Of(
             $"{propertyInfo.Prettify()} should have the backing field {expectedBackingField.Prettify()}",
-            () => Assert.That(propertyInfo?.BackingField(), Is.Not.Null.And.EqualTo(expectedBackingField)),
+            () => Assert.That(propertyInfo?.GetBacker(), Is.Not.Null.And.EqualTo(expectedBackingField)),
             () => BacksProperty(expectedBackingField, propertyInfo)
         );
     }
@@ -41,7 +41,7 @@ internal static class Validate {
             .Invoke();
     }
 
-    private static void BacksProperty(this FieldInfo? backingField, params PropertyInfo?[]? expectedBackedProperties) {
-        Assert.That(backingField?.BackedProperties(), Is.Not.Null.And.SupersetOf(expectedBackedProperties));
+    private static void BacksProperty(this VariableInfo? backer, params PropertyInfo?[]? expectedBackedProperties) {
+        Assert.That(backer?.GetBackedProperties(), Is.Not.Null.And.SupersetOf(expectedBackedProperties));
     }
 }
