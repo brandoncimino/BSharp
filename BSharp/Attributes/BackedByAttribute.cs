@@ -18,7 +18,7 @@ public class BackedByAttribute : BrandonAttribute {
     }
 
     public VariableInfo GetBacker(PropertyInfo annotatedProperty) {
-        return annotatedProperty.MustGetReflectedType().GetVariableInfo(BackerName);
+        return annotatedProperty.MustGetReflectedType().MustGetVariable(BackerName);
     }
 
     protected override void ValidateTarget_Hook(MemberInfo target) {
