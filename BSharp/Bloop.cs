@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+using FowlFever.BSharp.Optional;
+
 using JetBrains.Annotations;
 
 namespace FowlFever.BSharp {
@@ -33,11 +35,21 @@ namespace FowlFever.BSharp {
         /// <param name="actionWithIndex">an <see cref="Action{T1,T2}"/> that consumes a <typeparamref name="T"/> entry of <paramref name="enumerable"/> <b>AND</b> its <see cref="int"/> index</param>
         /// <typeparam name="T">the type of each entry in <paramref name="enumerable"/></typeparam>
         public static void ForEach<T>(this IEnumerable<T> enumerable, Action<T, int> actionWithIndex) {
-            var list = enumerable.ToList();
-            for (int i = 0; i < list.Count; i++) {
-                actionWithIndex(list[i], i);
+            var index = 0;
+            foreach (var e in enumerable) {
+                actionWithIndex(e, index);
+                index += 1;
             }
         }
+
+        #region Try{x} Variations
+
+        public static IEnumerable<Failable>         TryEach<T>(this       IEnumerable<T> enumerable, Action<T>        action)            => enumerable.Select(action.Try);
+        public static IEnumerable<Failable>         TryEach<T>(this       IEnumerable<T> enumerable, Action<T, int>   actionWithIndex)   => enumerable.Select(actionWithIndex.Try);
+        public static IEnumerable<FailableFunc<T2>> TrySelect<T, T2>(this IEnumerable<T> enumerable, Func<T, T2>      selector)          => enumerable.Select(selector.Try);
+        public static IEnumerable<FailableFunc<T2>> TrySelect<T, T2>(this IEnumerable<T> enumerable, Func<T, int, T2> selectorWithIndex) => enumerable.Select(selectorWithIndex.Try);
+
+        #endregion
 
         public static void ForEach<T1, T2>([InstantHandle] this                     IEnumerable<(T1, T2)>                     enumerable, [InstantHandle] Action<T1, T2>                     action) => enumerable.ForEach(it => action.Invoke(it));
         public static void ForEach<T1, T2, T3>([InstantHandle] this                 IEnumerable<(T1, T2, T3)>                 enumerable, [InstantHandle] Action<T1, T2, T3>                 action) => enumerable.ForEach(it => action.Invoke(it));
