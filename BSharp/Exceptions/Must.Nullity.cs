@@ -29,6 +29,38 @@ public static partial class Must {
         };
     }
 
+    public static T NotBeNull<T>(
+        [NotNull] T? actualValue,
+        [CallerArgumentExpression("actualValue")]
+        string? parameterName = default,
+        [CallerMemberName]
+        string? methodName = default
+    )
+        where T : struct {
+        return actualValue switch {
+            null => throw new ArgumentNullException(parameterName),
+            _    => actualValue.Value,
+        };
+    }
+
+    /// <inheritdoc cref="NotBeNull{T}"/>
+    public static T MustNotBeNull<T>(
+        [NotNull] this T? actualValue,
+        [CallerArgumentExpression("actualValue")]
+        string? parameterName = default,
+        [CallerMemberName]
+        string? methodName = default
+    ) => NotBeNull(actualValue, parameterName, methodName);
+
+    public static T MustNotBeNull<T>(
+        [NotNull] this T? actualValue,
+        [CallerArgumentExpression("actualValue")]
+        string? parameterName = default,
+        [CallerMemberName]
+        string? methodName = default
+    )
+        where T : struct => NotBeNull(actualValue, parameterName, methodName);
+
     /// <summary>
     /// 
     /// </summary>
@@ -49,6 +81,17 @@ public static partial class Must {
             null => actualValue,
             _    => throw Reject(actualValue, parameterName, methodName, "must be null"),
         };
+    }
+
+    /// <inheritdoc cref="BeNull{T}"/>
+    public static T? MustBeNull<T>(
+        this T? actualValue,
+        [CallerArgumentExpression("actualValue")]
+        string? parameterName = default,
+        [CallerMemberName]
+        string? methodName = default
+    ) {
+        return BeNull(actualValue, parameterName, methodName);
     }
 
     #endregion
