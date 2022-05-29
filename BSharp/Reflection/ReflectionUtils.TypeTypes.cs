@@ -107,12 +107,6 @@ public static partial class ReflectionUtils {
     /// <returns>true if this is <see cref="bool"/> or <see cref="Nullable{T}">bool?</see></returns>
     public static bool IsBooly(this Type type) => typeof(bool?).IsAssignableFrom(type);
 
-    /// <param name="method">this <see cref="MethodInfo"/></param>
-    /// <returns>true if this <see cref="MethodInfo"/> returns <see cref="bool"/> or <see cref="Nullable{T}">bool?</see></returns>
-    public static bool IsPredicate(this MethodInfo method) {
-        return method.ReturnType.IsBooly();
-    }
-
     public static ParameterInfo? GetSingleParameter(this MethodInfo method) {
         try {
             return method.GetParameters()
@@ -123,15 +117,71 @@ public static partial class ReflectionUtils {
         }
     }
 
+    /// <summary>
+    /// Inverse of <see cref="MethodBase.IsStatic"/>. Corresponds to <see cref="BindingFlags.Instance"/>.
+    /// </summary>
+    /// <param name="method">this method</param>
+    /// <returns><c>true</c> if this is <see cref="BindingFlags.Instance"/>; otherwise, <c>false</c></returns>
+    public static bool IsInstance(this MethodBase method) => !method.IsStatic;
+
+    /// <summary>
+    /// A "predicate" is either:
+    /// <ul>
+    /// <li>A <see cref="BindingFlags.Static"/> method with 1 parameter that returns <see cref="bool"/></li>
+    /// <li>An <see cref="BindingFlags.Instance"/> method with 0 parameters that returns <see cref="bool"/></li>
+    /// </ul>
+    /// </summary>
+    /// <param name="method">this <see cref="MethodInfo"/></param>
+    /// <returns>true if this <see cref="MethodInfo"/> returns <see cref="bool"/> or <see cref="Nullable{T}">bool?</see></returns>
+    public static bool IsPredicate(this MethodInfo method) {
+        return method.ReturnType.IsBooly() &&
+               method.GetParameters().Length == (method.IsStatic ? 1 : 0);
+    }
+
+    /// <summary>
+    /// A "chainable" method is an <see cref="BindingFlags.Instance"/> method that returns its own type.
+    /// </summary>
+    /// <remarks>
+    /// <see cref="IsChainable"/> does not imply that the returned value from the method is a <b>reference</b> to the same instance.
+    /// It only indicates that the returned value is the <b>same type</b>.
+    /// TODO: Improve the type checking to handle the <a href="https://en.wikipedia.org/wiki/Curiously_recurring_template_pattern">curiously recurring template pattern</a>
+    /// </remarks>
+    /// <param name="method">this <see cref="MethodInfo"/></param>
+    /// <returns>true if this <see cref="MethodInfo"/> returns an <b><i>instance</i></b> of itself</returns>
+    public static bool IsChainable(this MethodInfo method) {
+        return method.IsInstance() && (
+                                          method.ReturnType == method.DeclaringType ||
+                                          method.ReturnType == method.ReflectedType
+                                      );
+    }
+
+    /// <summary>
+    /// A "filter" method is a <see cref="BindingFlags.Static"/> method with a single <see cref="ParameterInfo.ParameterType"/> equal to its <see cref="MethodInfo.ReturnType"/>.
+    /// </summary>
+    /// <remarks>
+    /// An <see cref="IsFilter"/> method is equivalent to Java's <a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/UnaryOperator.html"><![CDATA[UnaryOperator<T>]]></a> interface.
+    /// <p/>
+    /// However, technically a <a href="https://en.wikipedia.org/wiki/Unary_operation">unary operation</a> does not imply anything about the method's output, only its input.
+    /// <p/>
+    /// In other words, an <see cref="IsFilter"/> is a specialized <a href="https://en.wikipedia.org/wiki/Unary_operation">unary operation</a>.
+    /// </remarks>
+    /// <param name="method">this method</param>
+    /// <returns><c>true</c> if this method has a single <see cref="ParameterInfo.ParameterType"/> equal to its <see cref="MethodInfo.ReturnType"/></returns>
+    public static bool IsFilter(this MethodInfo method) {
+        return method.IsStatic && method.GetSingleParameter()?.ParameterType == method.ReturnType;
+    }
+
+    /// <summary>
+    /// A "checkpoint" method is either:
+    /// <ul>
+    /// <li>A <see cref="BindingFlags.Static"/> method that <see cref="IsFilter"/></li>
+    /// <li>An <see cref="BindingFlags.Instance"/> method that <see cref="IsChainable"/></li>
+    /// </ul>
+    /// </summary>
+    /// <param name="method">this method</param>
+    /// <returns>true if this method <see cref="IsFilter"/> or <see cref="IsChainable"/></returns>
     public static bool IsCheckpoint(this MethodInfo method) {
-        try {
-            return method.GetParameters()
-                         .Single()
-                         .ParameterType == method.ReturnType;
-        }
-        catch (InvalidOperationException) {
-            return false;
-        }
+        return method.IsChainable() || method.IsFilter();
     }
 
     public static bool IsVoid(this MethodInfo method) {
