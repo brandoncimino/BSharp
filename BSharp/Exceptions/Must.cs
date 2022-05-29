@@ -156,12 +156,12 @@ public static partial class Must {
         [CallerArgumentExpression("expectedValue")]
         string? reason = default
     ) {
-        return Be(
-            actualValue: actualValue,
-            predicate: it => Equals(it, expectedValue),
-            parameterName: parameterName,
-            rejectedBy: rejectedBy,
-            reason: $"must equal {reason}"
+        return NotEqual(
+            actualValue,
+            expectedValue,
+            parameterName,
+            rejectedBy,
+            $"must equal {reason}"
         );
     }
 
@@ -177,10 +177,10 @@ public static partial class Must {
     ) {
         return Be(
             actualValue: actualValue,
-            predicate: it => Equals(it, expectedValue),
+            predicate: it => !Equals(it, expectedValue),
             parameterName: parameterName,
             rejectedBy: rejectedBy,
-            reason: $"must <b>NOT</b> equal {reason}"
+            reason: $"must NOT equal {reason}"
         );
     }
 
@@ -190,11 +190,11 @@ public static partial class Must {
         [CallerArgumentExpression("actualValue")]
         string? parameterName = default,
         [CallerMemberName]
-        string? methodName = default,
+        string? rejectedBy = default,
         [CallerArgumentExpression("predicate")]
         string? reason = null
     ) {
-        return Be(actualValue, predicate, parameterName, methodName, reason);
+        return Be(actualValue, predicate, parameterName, rejectedBy, reason);
     }
 
     public static T MustNotBe<T>(
@@ -204,11 +204,11 @@ public static partial class Must {
         [CallerArgumentExpression("actualValue")]
         string? parameterName = default,
         [CallerMemberName]
-        string? methodName = default,
+        string? rejectedBy = default,
         [CallerArgumentExpression("predicate")]
         string? reason = null
     ) {
-        return NotBe(actualValue, predicate, parameterName, methodName, reason);
+        return NotBe(actualValue, predicate, parameterName, rejectedBy, reason);
     }
 
     #endregion
@@ -250,7 +250,7 @@ public static partial class Must {
         [CallerArgumentExpression("second")]
         string? secondName = default,
         [CallerMemberName]
-        string? methodName = default,
+        string? rejectedBy = default,
         [CallerArgumentExpression("comparison")]
         string? reason = default
     ) {
@@ -258,7 +258,7 @@ public static partial class Must {
             (first, second),
             (tuple) => comparison.Predicate().Invoke(tuple.Item1, tuple.Item2),
             (firstName, secondName).ToString(),
-            methodName,
+            rejectedBy,
             $"must have {firstName} {comparison.Symbol()} {secondName}"
         );
     }
