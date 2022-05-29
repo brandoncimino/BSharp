@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Linq;
-using System.Runtime;
 
 using FowlFever.BSharp.Collections;
 using FowlFever.BSharp.Enums;
+using FowlFever.BSharp.Exceptions;
 using FowlFever.BSharp.Strings;
 
 using JetBrains.Annotations;
@@ -257,11 +257,32 @@ namespace FowlFever.BSharp.Optional {
         /// <returns>a <see cref="Failable"/> containing information about execution of the <paramref name="actionThatMightFail"/></returns>
         public static Failable Try([InstantHandle] this Action actionThatMightFail) => Failable.Invoke(actionThatMightFail);
 
-        public static Failable Try<T>([InstantHandle] this                  Action<T>                  actionThatMightFail, T  argument)                                 => Failable.Invoke(() => actionThatMightFail.Invoke(argument));
-        public static Failable Try<T1, T2>([InstantHandle] this             Action<T1, T2>             actionThatMightFail, T1 arg1, T2 arg2)                            => Failable.Invoke(() => actionThatMightFail.Invoke(arg1, arg2));
-        public static Failable Try<T1, T2, T3>([InstantHandle] this         Action<T1, T2, T3>         actionThatMightFail, T1 arg1, T2 arg2, T3 arg3)                   => Failable.Invoke(() => actionThatMightFail.Invoke(arg1, arg2, arg3));
-        public static Failable Try<T1, T2, T3, T4>([InstantHandle] this     Action<T1, T2, T3, T4>     actionThatMightFail, T1 arg1, T2 arg2, T3 arg3, T4 arg4)          => Failable.Invoke(() => actionThatMightFail.Invoke(arg1, arg2, arg3, arg4));
-        public static Failable Try<T1, T2, T3, T4, T5>([InstantHandle] this Action<T1, T2, T3, T4, T5> actionThatMightFail, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5) => Failable.Invoke(() => actionThatMightFail.Invoke(arg1, arg2, arg3, arg4, arg5));
+        public static Failable Try<T>([InstantHandle] this      Action<T>      actionThatMightFail, T  argument)      => Failable.Invoke(() => actionThatMightFail.Invoke(argument));
+        public static Failable Try<T1, T2>([InstantHandle] this Action<T1, T2> actionThatMightFail, T1 arg1, T2 arg2) => Failable.Invoke(() => actionThatMightFail.Invoke(arg1, arg2));
+
+        public static Failable Try<T1, T2, T3>(
+            [InstantHandle] this Action<T1, T2, T3> actionThatMightFail,
+            T1                                      arg1,
+            T2                                      arg2,
+            T3                                      arg3
+        ) => Failable.Invoke(() => actionThatMightFail.Invoke(arg1, arg2, arg3));
+
+        public static Failable Try<T1, T2, T3, T4>(
+            [InstantHandle] this Action<T1, T2, T3, T4> actionThatMightFail,
+            T1                                          arg1,
+            T2                                          arg2,
+            T3                                          arg3,
+            T4                                          arg4
+        ) => Failable.Invoke(() => actionThatMightFail.Invoke(arg1, arg2, arg3, arg4));
+
+        public static Failable Try<T1, T2, T3, T4, T5>(
+            [InstantHandle] this Action<T1, T2, T3, T4, T5> actionThatMightFail,
+            T1                                              arg1,
+            T2                                              arg2,
+            T3                                              arg3,
+            T4                                              arg4,
+            T5                                              arg5
+        ) => Failable.Invoke(() => actionThatMightFail.Invoke(arg1, arg2, arg3, arg4, arg5));
 
         /// <summary>
         /// Attempts to execute this <see cref="Action"/>, capturing <see cref="Exception"/>s and returning a <see cref="Timeable"/>
@@ -446,7 +467,8 @@ namespace FowlFever.BSharp.Optional {
         /**
          * <inheritdoc cref="IfPresent{T}(FowlFever.BSharp.Optional.IOptional{T}?,System.Action{T})"/>
          */
-        public static void IfPresent<T>(this T? nullable, Action<T> actionIfPresent) where T : struct {
+        public static void IfPresent<T>(this T? nullable, Action<T> actionIfPresent)
+            where T : struct {
             if (nullable.HasValue) {
                 actionIfPresent.Invoke(nullable.Value);
             }
@@ -459,14 +481,16 @@ namespace FowlFever.BSharp.Optional {
         /**
          * <inheritdoc cref="IfPresentOrElse{TIn,TOut}(IOptional{TIn},System.Func{TIn,TOut},System.Func{TOut})"/>
          */
-        public static TOut IfPresentOrElse<TIn, TOut>(this TIn? nullable, Func<TIn, TOut> ifPresent, Func<TOut> orElse) where TIn : struct {
+        public static TOut IfPresentOrElse<TIn, TOut>(this TIn? nullable, Func<TIn, TOut> ifPresent, Func<TOut> orElse)
+            where TIn : struct {
             return nullable.HasValue ? ifPresent.Invoke(nullable.Value) : orElse.Invoke();
         }
 
         /**
          * <inheritdoc cref="IfPresentOrElse{TIn,TOut}(IOptional{TIn},System.Func{TIn,TOut},System.Func{TOut})"/>
          */
-        public static void IfPresentOrElse<TIn>(this TIn? nullable, Action<TIn> ifPresent, Action orElse) where TIn : struct {
+        public static void IfPresentOrElse<TIn>(this TIn? nullable, Action<TIn> ifPresent, Action orElse)
+            where TIn : struct {
             if (nullable.HasValue) {
                 ifPresent.Invoke(nullable.Value);
             }
@@ -555,7 +579,8 @@ namespace FowlFever.BSharp.Optional {
         /// <returns></returns>
         /// <exception cref="Exception">if the <see cref="Nullable{T}"/> is empty</exception>
         [ContractAnnotation("nullable:null => stop")]
-        public static T OrElseThrow<T>(this T? nullable, Func<Exception>? exceptionProvider = default) where T : struct {
+        public static T OrElseThrow<T>(this T? nullable, Func<Exception>? exceptionProvider = default)
+            where T : struct {
             return nullable ?? throw (exceptionProvider?.Invoke() ?? NoCanHasValue<T?>());
         }
 
@@ -570,7 +595,8 @@ namespace FowlFever.BSharp.Optional {
         /// <returns>negation of <see cref="Nullable{T}.HasValue"/></returns>
         [ContractAnnotation("null => true")]
         [ContractAnnotation("notnull => false")]
-        public static bool IsEmpty<T>(this T? nullable) where T : struct {
+        public static bool IsEmpty<T>(this T? nullable)
+            where T : struct {
             return !nullable.HasValue;
         }
 
@@ -706,7 +732,8 @@ namespace FowlFever.BSharp.Optional {
         public static Optional<TResult> FirstWithValue<TDelegate, TResult>(
             IEnumerable<TDelegate> delegates,
             params object[]        inputs
-        ) where TDelegate : Delegate {
+        )
+            where TDelegate : Delegate {
             foreach (var dg in delegates) {
                 var result = dg.DynamicInvoke(inputs);
 
