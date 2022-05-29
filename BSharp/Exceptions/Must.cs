@@ -127,7 +127,7 @@ public static partial class Must {
         [CallerArgumentExpression("actualValue")]
         string? parameterName = default,
         [CallerMemberName]
-        string? methodName = default,
+        string? rejectedBy = default,
         [CallerArgumentExpression("predicate")]
         string? reason = default
     ) {
@@ -142,7 +142,46 @@ public static partial class Must {
             exc = e;
         }
 
-        throw Reject(actualValue, parameterName, methodName, reason, exc);
+        throw Reject(actualValue, parameterName, rejectedBy, reason, exc);
+    }
+
+    /// <inheritdoc cref="NotEqual{T}"/>
+    public static T NotBe<T>(
+        T actualValue,
+        T expectedValue,
+        [CallerArgumentExpression("actualValue")]
+        string? parameterName = default,
+        [CallerMemberName]
+        string? rejectedBy = default,
+        [CallerArgumentExpression("expectedValue")]
+        string? reason = default
+    ) {
+        return Be(
+            actualValue: actualValue,
+            predicate: it => Equals(it, expectedValue),
+            parameterName: parameterName,
+            rejectedBy: rejectedBy,
+            reason: $"must equal {reason}"
+        );
+    }
+
+    public static T NotEqual<T>(
+        T actualValue,
+        T expectedValue,
+        [CallerArgumentExpression("actualValue")]
+        string? parameterName = default,
+        [CallerMemberName]
+        string? rejectedBy = default,
+        [CallerArgumentExpression("expectedValue")]
+        string? reason = default
+    ) {
+        return Be(
+            actualValue: actualValue,
+            predicate: it => Equals(it, expectedValue),
+            parameterName: parameterName,
+            rejectedBy: rejectedBy,
+            reason: $"must <b>NOT</b> equal {reason}"
+        );
     }
 
     public static T MustBe<T>(
