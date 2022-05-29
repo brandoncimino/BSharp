@@ -31,7 +31,7 @@ public static partial class Must {
     /// <param name="actualValue">the <typeparamref name="T"/> value being validated</param>
     /// <param name="predicate">a condition that <paramref name="actualValue"/> must satisfy</param>
     /// <param name="parameterName">the name of the parameter with which <paramref name="actualValue"/> corresponds. 📎 Automatically populated with <paramref name="actualValue"/>'s expression via <see cref="CallerArgumentExpressionAttribute"/></param>
-    /// <param name="methodName">the entity that is doing the validation - usually a method. 📎 Automatically populated via <see cref="CallerMemberNameAttribute"/></param>
+    /// <param name="rejectedBy">the entity that is doing the validation - usually a method. 📎 Automatically populated via <see cref="CallerMemberNameAttribute"/></param>
     /// <param name="reason">a description of what we <b>wanted</b> to happen. 📎 Automatically populated with <paramref name="predicate"/> via <see cref="CallerArgumentExpressionAttribute"/></param>
     /// <typeparam name="T">the type of the <paramref name="actualValue"/></typeparam>
     /// <returns><paramref name="actualValue"/>, <b>if</b> it satisfies the <paramref name="predicate"/></returns>
@@ -45,7 +45,7 @@ public static partial class Must {
         [CallerArgumentExpression("actualValue")]
         string? parameterName = default,
         [CallerMemberName]
-        string? methodName = default,
+        string? rejectedBy = default,
         [CallerArgumentExpression("predicate")]
         string? reason = default
     ) {
@@ -56,10 +56,10 @@ public static partial class Must {
 
         switch (predicate, actualValue) {
             case (null, null):     return actualValue;
-            case (null, not null): throw Reject(actualValue, parameterName, methodName, "must be null");
+            case (null, not null): throw Reject(actualValue, parameterName, rejectedBy, "must be null");
         }
 
-        NotBeNull(actualValue, parameterName, methodName);
+        NotBeNull(actualValue, parameterName, rejectedBy);
 
         Exception? exc = null;
 
@@ -72,7 +72,52 @@ public static partial class Must {
             exc = e;
         }
 
-        throw Reject(actualValue, parameterName, methodName, reason, exc);
+        throw Reject(actualValue, parameterName, rejectedBy, reason, exc);
+    }
+
+    /// <inheritdoc cref="Be{T}(T,System.Func{T,bool}?,string?,string?,string?)"/>
+    public static T Be<T>(
+        T actualValue,
+        T expectedValue,
+        [CallerArgumentExpression("actualValue")]
+        string? parameterName = default,
+        [CallerMemberName]
+        string? rejectedBy = default,
+        [CallerArgumentExpression("expectedValue")]
+        string? reason = default
+    ) {
+        return Be(
+            actualValue: actualValue,
+            predicate: it => Equals(it, expectedValue),
+            parameterName: parameterName,
+            rejectedBy: rejectedBy,
+            reason: $"must equal {reason}"
+        );
+    }
+
+    /// <inheritdoc cref="Be{T}(T,System.Func{T,bool}?,string?,string?,string?)"/>
+    public static T Equal<T>(
+        T actualValue,
+        T expectedValue,
+        [CallerArgumentExpression("actualValue")]
+        string? parameterName = default,
+        [CallerMemberName]
+        string? rejectedBy = default,
+        [CallerArgumentExpression("expectedValue")]
+        string? reason = default
+    ) {
+        return Be(actualValue, expectedValue, parameterName, rejectedBy, reason);
+    }
+
+    /// <inheritdoc cref="Be{T}(object,string?,string?)"/>
+    public static void Be(
+        bool? predicateResult,
+        [CallerArgumentExpression("predicateResult")]
+        string? description = default,
+        [CallerMemberName]
+        string? rejectedBy = default
+    ) {
+        Be(predicateResult, true, description, rejectedBy);
     }
 
     public static T NotBe<T>(
