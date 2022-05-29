@@ -15,12 +15,10 @@ using JetBrains.Annotations;
 namespace FowlFever.BSharp.Enums {
     [PublicAPI]
     public static class BEnum {
-        [ContractAnnotation("null => stop")]
         private static Type MustBeEnumType(this Type enumType) {
-            return enumType?.IsEnum == true ? enumType : throw new ArgumentException($"{enumType.PrettifyType(default)} is not an enum type!");
+            return enumType.IsEnum ? enumType : throw new ArgumentException($"{enumType.PrettifyType(default)} is not an enum type!");
         }
 
-        [ContractAnnotation("null => stop")]
         private static Type MustMatchTypeArgument<T>(this Type enumType) {
             return enumType == typeof(T) ? enumType : throw new ArgumentException($"The {nameof(enumType)} {enumType.Prettify()} was not the same as the type argument <{nameof(T)}> {typeof(T).Prettify()}!");
         }
@@ -43,28 +41,34 @@ namespace FowlFever.BSharp.Enums {
         }
 
         /// <summary>
+        /// Creates an <see cref="InvalidEnumArgumentException{T}(T, string?)"/>, inferring the <paramref name="argumentName"/> using the <see cref="CallerArgumentExpressionAttribute"/>.
+        /// </summary>
+        /// <param name="enumValue">the bad <typeparamref name="T"/> value</param>
+        /// <param name="argumentName">see <see cref="CallerArgumentExpressionAttribute"/></param>
+        /// <typeparam name="T">an <see cref="Enum"/> type</typeparam>
+        /// <returns>a new <see cref="InvalidEnumArgumentException"/></returns>
+        public static InvalidEnumArgumentException InvalidEnumArgumentException<T>(
+            T enumValue,
+            [CallerArgumentExpression("enumValue")]
+            string? argumentName = default
+        )
+            where T : Enum {
+            return InvalidEnumArgumentException(argumentName, enumValue);
+        }
+
+        /// <summary>
         /// Creates an <see cref="System.ComponentModel.InvalidEnumArgumentException"/> using generics to infer the enum's <see cref="Type"/>.
         /// </summary>
         /// <param name="argumentName"></param>
         /// <param name="enumValue"></param>
-        /// <param name="allowedValues"></param>
         /// <typeparam name="T"></typeparam>
+        /// <remarks>You should generally use <see cref="InvalidEnumArgumentException{T}(T, string?)"/> instead, which takes advantage of <see cref="CallerArgumentExpressionAttribute"/>.</remarks>
         /// <returns></returns>
         public static InvalidEnumArgumentException InvalidEnumArgumentException<T>(
             string? argumentName,
-            T       enumValue,
-            [InstantHandle]
-            IEnumerable<T>? allowedValues = default
+            T       enumValue
         )
-            where T : struct, Enum {
-            return new InvalidEnumArgumentException(argumentName, (int)(object)enumValue, typeof(T));
-        }
-
-        public static InvalidEnumArgumentException InvalidEnumArgumentException<T>(
-            string? argumentName,
-            T?      enumValue
-        )
-            where T : struct, Enum {
+            where T : Enum {
             return new InvalidEnumArgumentException(argumentName, -1, typeof(T));
         }
 
