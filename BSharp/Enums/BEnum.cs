@@ -56,6 +56,15 @@ namespace FowlFever.BSharp.Enums {
             return InvalidEnumArgumentException(argumentName, enumValue);
         }
 
+        public static InvalidEnumArgumentException InvalidEnumArgumentException<T>(
+            T? enumValue,
+            [CallerArgumentExpression("enumValue")]
+            string? argumentName = default
+        )
+            where T : struct, Enum {
+            return new InvalidEnumArgumentException(argumentName, enumValue.HasValue ? (int)(object)enumValue : -1, typeof(T?));
+        }
+
         /// <summary>
         /// Creates an <see cref="System.ComponentModel.InvalidEnumArgumentException"/> using generics to infer the enum's <see cref="Type"/>.
         /// </summary>
@@ -68,7 +77,7 @@ namespace FowlFever.BSharp.Enums {
             string? argumentName,
             T       enumValue
         )
-            where T : Enum {
+            where T : Enum? {
             return new InvalidEnumArgumentException(argumentName, -1, typeof(T));
         }
 
@@ -88,7 +97,7 @@ namespace FowlFever.BSharp.Enums {
             [CallerMemberName]
             string? methodName = default
         )
-            where T : Enum {
+            where T : Enum? {
             var rejection = new RejectionException(
                 actualValue,
                 parameterName,

@@ -16,10 +16,7 @@ internal class OneTimeOnly<T> {
     private Optional<T?>       _explicitValue;
     private Optional<Lazy<T?>> _lazy;
 
-    private enum SetStyle {
-        Explicit,
-        Lazy
-    }
+    private enum SetStyle { Explicit, Lazy }
 
     private SetStyle? SetAs;
 
@@ -53,7 +50,7 @@ internal class OneTimeOnly<T> {
         return SetAs switch {
             SetStyle.Explicit => _explicitValue.Value,
             SetStyle.Lazy     => _lazy.Value.Value,
-            _                 => throw BEnum.InvalidEnumArgumentException(nameof(SetAs), SetAs)
+            _                 => throw BEnum.InvalidEnumArgumentException(SetAs),
         };
     }
 
