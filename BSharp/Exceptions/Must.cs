@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
@@ -17,6 +18,7 @@ namespace FowlFever.BSharp.Exceptions;
 /// <see cref="Exception"/> objects should be created by <see cref="Reject{T}"/> methods.
 /// </remarks>
 [PublicAPI]
+[StackTraceHidden]
 public static partial class Must {
     #region Arbitration
 
