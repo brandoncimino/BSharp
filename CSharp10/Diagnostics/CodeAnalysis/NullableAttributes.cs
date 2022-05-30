@@ -110,7 +110,7 @@ namespace System.Diagnostics.CodeAnalysis {
         /// </param>
         public MemberNotNullWhenAttribute(bool returnValue, string member) {
             ReturnValue = returnValue;
-            Members     = new[] { member };
+            Members = new[] { member };
         }
 
         /// <summary>Initializes the attribute with the specified return value condition and list of field and property members.</summary>
@@ -122,7 +122,7 @@ namespace System.Diagnostics.CodeAnalysis {
         /// </param>
         public MemberNotNullWhenAttribute(bool returnValue, params string[] members) {
             ReturnValue = returnValue;
-            Members     = members;
+            Members = members;
         }
 
         /// <summary>Gets the return value condition.</summary>
@@ -131,5 +131,5 @@ namespace System.Diagnostics.CodeAnalysis {
         /// <summary>Gets field or property member names.</summary>
         public string[] Members { get; }
     }
-}
 #endif
+}
