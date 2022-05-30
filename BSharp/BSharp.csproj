@@ -5,7 +5,7 @@
         <Nullable>enable</Nullable>
         <RootNamespace>FowlFever.BSharp</RootNamespace>
         <AssemblyName>FowlFever.BSharp</AssemblyName>
-        <TargetFramework>netstandard2.0</TargetFramework>
+        <TargetFrameworks>net6.0;netstandard2.0</TargetFrameworks>
     </PropertyGroup>
 
     <ItemGroup>
@@ -34,6 +34,7 @@
     <ItemGroup>
         <ProjectReference Include="..\CSharp10\CSharp10.csproj">
             <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </ProjectReference>
     </ItemGroup>
 
