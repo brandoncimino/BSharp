@@ -27,6 +27,9 @@
 
     <ItemGroup>
         <ProjectReference Include="..\BSharp\BSharp.csproj"/>
+        <ProjectReference Include="..\CSharp10\CSharp10.csproj">
+            <PrivateAssets>all</PrivateAssets>
+        </ProjectReference>
     </ItemGroup>
 
     <ItemGroup>

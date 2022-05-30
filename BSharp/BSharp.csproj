@@ -18,6 +18,7 @@
         </PackageReference>
         <PackageReference Include="JetBrains.Annotations" Version="2022.1.0" />
         <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+        <PackageReference Include="System.Collections.Concurrent" Version="4.3.0"/>
         <PackageReference Include="System.Text.Json" Version="6.0.1" />
         <PackageReference Include="TA.System.Runtime.CompilerServices.RuntimeHelpers.GetSubArray" Version="1.0.1">
           <PrivateAssets>all</PrivateAssets>
@@ -29,10 +30,11 @@
       <Compile Remove="Mathb.Logical.cs" />
     </ItemGroup>
 
-  
 
     <ItemGroup>
-      <ProjectReference Include="..\CSharp10\CSharp10.csproj" />
+        <ProjectReference Include="..\CSharp10\CSharp10.csproj">
+            <PrivateAssets>all</PrivateAssets>
+        </ProjectReference>
     </ItemGroup>
 
 </Project>
