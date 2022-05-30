@@ -1,7 +1,6 @@
 using System;
-using System.CodeDom.Compiler;
 
-using FowlFever.BSharp.Reflection;
+using FowlFever.BSharp.Strings;
 
 using JetBrains.Annotations;
 
@@ -24,27 +23,49 @@ namespace FowlFever.BSharp {
 
         #region Func with Tuple args
 
-        [Pure]
-        public static TResult Invoke<T1, T2, TResult>(this Func<T1, T2, TResult> func, (T1 arg1, T2 arg2) args) => func.Invoke(args.arg1, args.arg2);
+        [Pure] public static TResult Invoke<T1, T2, TResult>(this Func<T1, T2, TResult> func, (T1 arg1, T2 arg2) args) => func.Invoke(args.arg1, args.arg2);
 
-        [Pure]
-        public static TResult Invoke<T1, T2, T3, TResult>(this Func<T1, T2, T3, TResult> func, (T1 arg1, T2 arg2, T3 arg3) args) => func.Invoke(args.arg1, args.arg2, args.arg3);
+        [Pure] public static TResult Invoke<T1, T2, T3, TResult>(this Func<T1, T2, T3, TResult> func, (T1 arg1, T2 arg2, T3 arg3) args) => func.Invoke(args.arg1, args.arg2, args.arg3);
 
-        [Pure]
-        public static TResult Invoke<T1, T2, T3, T4, TResult>(this Func<T1, T2, T3, T4, TResult> func, (T1 arg1, T2 arg2, T3 arg3, T4 arg4) args) => func.Invoke(args.arg1, args.arg2, args.arg3, args.arg4);
+        [Pure] public static TResult Invoke<T1, T2, T3, T4, TResult>(this Func<T1, T2, T3, T4, TResult> func, (T1 arg1, T2 arg2, T3 arg3, T4 arg4) args) => func.Invoke(args.arg1, args.arg2, args.arg3, args.arg4);
 
-        [Pure]
-        public static TResult Invoke<T1, T2, T3, T4, T5, TResult>(this Func<T1, T2, T3, T4, T5, TResult> func, (T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5) args) => func.Invoke(args.arg1, args.arg2, args.arg3, args.arg4, args.arg5);
+        [Pure] public static TResult Invoke<T1, T2, T3, T4, T5, TResult>(this Func<T1, T2, T3, T4, T5, TResult> func, (T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5) args) => func.Invoke(args.arg1, args.arg2, args.arg3, args.arg4, args.arg5);
 
-        [Pure]
-        public static TResult Invoke<T1, T2, T3, T4, T5, T6, TResult>(this Func<T1, T2, T3, T4, T5, T6, TResult> func, (T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6) args) => func.Invoke(args.arg1, args.arg2, args.arg3, args.arg4, args.arg5, args.arg6);
+        [Pure] public static TResult Invoke<T1, T2, T3, T4, T5, T6, TResult>(this Func<T1, T2, T3, T4, T5, T6, TResult> func, (T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6) args) => func.Invoke(args.arg1, args.arg2, args.arg3, args.arg4, args.arg5, args.arg6);
 
-        [Pure]
-        public static TResult Invoke<T1, T2, T3, T4, T5, T6, T7, TResult>(this Func<T1, T2, T3, T4, T5, T6, T7, TResult> func, (T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7) args) => func.Invoke(args.arg1, args.arg2, args.arg3, args.arg4, args.arg5, args.arg6, args.arg7);
+        [Pure] public static TResult Invoke<T1, T2, T3, T4, T5, T6, T7, TResult>(this Func<T1, T2, T3, T4, T5, T6, T7, TResult> func, (T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7) args) => func.Invoke(args.arg1, args.arg2, args.arg3, args.arg4, args.arg5, args.arg6, args.arg7);
 
         #endregion
 
         #region Laziness
+
+        /// <summary>
+        /// Creates a <see cref="Lazy{T}"/> that will execute an <see cref="Action"/>.
+        /// </summary>
+        /// <remarks>
+        /// The output's <see cref="Lazy{T}.Value"/> - a <c>default</c> <see cref="byte"/> - is meaningless.
+        /// It is used because <see cref="Void"/> cannot be used as a type parameter.
+        /// </remarks>
+        /// <param name="oneTimeAction">an <see cref="Action"/> that will only be executed once</param>
+        /// <returns>a new <see cref="Lazy{T}"/></returns>
+        public static Lazy<byte> Lazily(this Action oneTimeAction) {
+            return new Lazy<byte>(
+                () => {
+                    oneTimeAction.Invoke();
+                    return default;
+                }
+            );
+        }
+
+        /// <inheritdoc cref="Lazily"/>
+        public static Lazy<byte> Lazily<T>(this Action<T> oneTimeAction, T input) {
+            return new Lazy<byte>(
+                () => {
+                    oneTimeAction.Invoke(input);
+                    return default;
+                }
+            );
+        }
 
         /// <summary>
         /// Shorthand for new <see cref="Lazy{T}"/>(<paramref name="valueFactory"/>).
@@ -66,6 +87,67 @@ namespace FowlFever.BSharp {
         /// <returns>a new <see cref="Lazy{T}"/></returns>
         public static Lazy<TOut> Lazily<TIn, TOut>(this Func<TIn, TOut> valueFactory, TIn input) {
             return new Lazy<TOut>(() => valueFactory(input));
+        }
+
+        #endregion
+
+        #region From "Assertion" (Action<T>)
+
+        public static Func<T, T> ToCheckpoint<T>(this Action<T> action) {
+            return it => {
+                action(it);
+                return it;
+            };
+        }
+
+        public static Func<T, bool> ToPredicate<T>(this Action<T> action) {
+            return it => {
+                try {
+                    action(it);
+                    return true;
+                }
+                catch {
+                    return false;
+                }
+            };
+        }
+
+        #endregion
+
+        #region From "Checkpoint" (Func<T,T>)
+
+        public static Action<T> ToAssertion<T>(this Func<T, T> checkpoint) => obj => checkpoint.Invoke(obj);
+
+        public static Func<T, bool> ToPredicate<T>(this Func<T, T> checkpoint) {
+            return it => {
+                try {
+                    checkpoint(it);
+                    return true;
+                }
+                catch {
+                    return false;
+                }
+            };
+        }
+
+        #endregion
+
+        #region From "Predicate" (Func<T, bool>)
+
+        public static Action<T> ToAssertion<T>(this Func<T, bool> predicate) {
+            return it => {
+                var result = predicate(it);
+                if (!result) {
+                    throw new ArgumentException($"{predicate.Prettify()} returned {result}!");
+                }
+            };
+        }
+
+        public static Func<T, T> ToCheckpoint<T>(this Func<T, bool> predicate) {
+            return it => {
+                predicate.ToCheckpoint().Invoke(it);
+                return it;
+            };
         }
 
         #endregion
