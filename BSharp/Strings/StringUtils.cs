@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 
 using FowlFever.BSharp.Collections;
 using FowlFever.BSharp.Enums;
 using FowlFever.BSharp.Exceptions;
-using FowlFever.BSharp.Optional;
 using FowlFever.Conjugal.Affixing;
 
 using JetBrains.Annotations;
@@ -17,7 +17,7 @@ using Pure = System.Diagnostics.Contracts.PureAttribute;
 
 namespace FowlFever.BSharp.Strings {
     [PublicAPI]
-    public static class StringUtils {
+    public static partial class StringUtils {
         public const int    DefaultIndentSize   = 2;
         public const string DefaultIndentString = "  ";
 
@@ -167,6 +167,23 @@ namespace FowlFever.BSharp.Strings {
         }
 
         /// <summary>
+        /// <see cref="Array.Reverse(System.Array)"/>s the order of each character in this <see cref="string"/>.
+        /// <p/>
+        /// TODO: This can probably be made more efficient by using <see cref="MemoryExtensions.AsSpan(string?)"/>
+        /// TODO: Handle certain sequences that shouldn't be reversed, like composite Emoji (📎 there's gotta be a library built to handle Emoji, right?)
+        /// </summary>
+        /// <remarks>
+        /// This was named "Backwards" to avoid ambiguity with <see cref="Enumerable.Reverse{TSource}"/>.
+        /// </remarks>
+        /// <param name="str">this <see cref="string"/></param>
+        /// <returns>this <see cref="string"/>...but backwards</returns>
+        public static string Backwards(this string str) {
+            var chars = str.ToCharArray();
+            Array.Reverse(chars);
+            return new string(chars);
+        }
+
+        /// <summary>
         ///     Joins together <paramref name="baseString" /> and <paramref name="stringToJoin" /> via <paramref name="separator" />,
         ///     <b>
         ///         <i>UNLESS</i>
@@ -277,429 +294,6 @@ namespace FowlFever.BSharp.Strings {
             // return string.Join(separator, first, second);
             return $"{firstValue}{trueCenter}{secondValue}";
         }
-
-        #region Padding, filling, truncating, trimming, and trailing
-
-        /// <summary>
-        /// Reduces <paramref name="self"/> to <paramref name="maxLength"/> characters, replacing the last bits with a <paramref name="trail"/> if specified.
-        ///
-        /// If the original <see cref="string.Length"/> is less than <paramref name="maxLength"/>, returns <paramref name="self"/>.
-        /// </summary>
-        /// <param name="self">the <see cref="string"/> being truncated</param>
-        /// <param name="maxLength">the <b>maximum</b> size of the final string</param>
-        /// <param name="trail">a <see cref="string"/> to replace the end bits of <paramref name="self"/> to show that it has been truncated. Defaults to an <see cref="Ellipsis"/></param>
-        /// <returns>a <see cref="string"/> no longer than <paramref name="maxLength"/></returns>
-        /// <exception cref="ArgumentOutOfRangeException">if <paramref name="maxLength"/> is negative</exception>
-        /// <exception cref="ArgumentOutOfRangeException">if <paramref name="trail"/> is longer than <paramref name="maxLength"/></exception>
-        public static string Truncate(
-            this string self,
-            [NonNegativeValue]
-            int maxLength,
-            string? trail = Ellipsis
-        ) {
-            trail ??= Ellipsis;
-            Must.BePositive(maxLength);
-            Must.Compare(trail.Length, ComparisonOperator.LessThan, maxLength);
-
-            if (self.Length <= maxLength) {
-                return self;
-            }
-
-            var shortened = self[..(maxLength - trail.Length)];
-            return $"{shortened}{trail}";
-        }
-
-        /// <summary>
-        /// Uses either <see cref="Truncate"/> or <see cref="FillRight"/> to get <paramref name="self"/> to be <paramref name="desiredLength"/> long.
-        /// </summary>
-        /// <param name="self">the original <see cref="string"/></param>
-        /// <param name="desiredLength">the <see cref="string.Length"/> that <paramref name="self"/> will have</param>
-        /// <param name="filler">the <see cref="string"/> used to <see cref="FillRight"/> if <paramref name="self"/> is shorter than <paramref name="desiredLength"/></param>
-        /// <param name="trail">the <see cref="string"/> used to indicated that <paramref name="self"/> has been <see cref="Truncate"/>d</param>
-        /// <returns>a <see cref="string"/> with a <see cref="string.Length"/> of <paramref name="desiredLength"/></returns>
-        /// <exception cref="ArgumentException"></exception>
-        public static string ForceToLength(
-            this string? self,
-            [ValueRange(0, long.MaxValue)]
-            int desiredLength,
-            string? filler = " ",
-            string? trail  = Ellipsis
-        ) {
-            self ??= "";
-
-            return self.Length.CompareTo(desiredLength).Sign() switch {
-                -1 => self.FillRight(desiredLength, filler),
-                0  => self,
-                1  => self.Truncate(desiredLength, trail),
-                _  => throw new ArgumentException($"This should be unreachable, because we used a {nameof(int.CompareTo)} function AND got the {nameof(Mathb.Sign)} of it, so we definitely should've only had the possibilities of -1, 0, or 1.")
-            };
-        }
-
-        #region Alignment
-
-        /// <summary>
-        /// Evenly <see cref="string.PadLeft(int)"/> and <see cref="string.PadRight(int)"/> so that <paramref name="input"/> is as long as <paramref name="lineWidth"/>.
-        /// </summary>
-        /// <param name="input"></param>
-        /// <param name="lineWidth"></param>
-        /// <param name="roundingDirection"></param>
-        /// <returns></returns>
-        /// <exception cref="ArgumentOutOfRangeException">if <paramref name="input"/> is longer than <paramref name="lineWidth"/></exception>
-        public static string Center(this string input, int lineWidth, RoundingDirection roundingDirection = RoundingDirection.Floor) {
-            Must.NotBeNull(input, nameof(input), nameof(Center));
-
-            if (input.Length > lineWidth) {
-                throw new ArgumentOutOfRangeException($"Unable to center the string because its length ({input.Length}) was greater than the {nameof(lineWidth)} {lineWidth} !");
-            }
-
-            var padAmount = lineWidth - input.Length;
-            var (leftPad, rightPad) = padAmount.Sperp(.5);
-            return input.PadLeft(leftPad).PadRight(rightPad);
-        }
-
-        #endregion
-
-        #region Filling
-
-        [ContractAnnotation("filler:null => stop")]
-        public static string FillRight(this string? self, [NonNegativeValue] int totalLength, string? filler = " ") {
-            (filler, totalLength) = _Validate_FillParameters(filler, totalLength);
-
-            self ??= "";
-
-            if (self.Length >= totalLength) {
-                return self;
-            }
-
-            var additionalLengthNeeded = totalLength - self.Length;
-            return self + filler.Fill(additionalLengthNeeded);
-        }
-
-        [ContractAnnotation("filler:null => stop")]
-        public static string FillLeft(this string? self, [NonNegativeValue] int totalLength, string filler) {
-            _Validate_FillParameters(filler, totalLength);
-
-            self ??= "";
-
-            if (self.Length >= totalLength) {
-                return self;
-            }
-
-            var additionalLengthNeeded = totalLength - self.Length;
-            return self + filler.Fill(additionalLengthNeeded).Reverse().JoinString();
-        }
-
-        [ContractAnnotation("filler:null => stop")]
-        public static string Fill(this string filler, [NonNegativeValue] int totalLength) {
-            _Validate_FillParameters(filler, totalLength);
-
-            var fullLength  = totalLength / filler.Length;
-            var extraLength = totalLength % filler.Length;
-            var filled      = filler.Repeat(fullLength) + filler.Substring(0, extraLength);
-            return filled;
-        }
-
-        [ContractAnnotation("filler:null => stop")]
-        private static (string filler, int totalLength) _Validate_FillParameters(string? filler, [NonNegativeValue] int totalLength) {
-            if (filler == null) {
-                throw new ArgumentNullException(nameof(filler));
-            }
-
-            if (string.IsNullOrEmpty(filler)) {
-                throw new ArgumentException($"Cannot fill with an empty string!", nameof(filler));
-            }
-
-            // ReSharper disable once ConditionIsAlwaysTrueOrFalse
-            if (totalLength < 0) {
-                throw new ArgumentOutOfRangeException(nameof(totalLength), "Must be positive");
-            }
-
-            return (filler, totalLength);
-        }
-
-        #endregion
-
-        public static string FormatHeading(string heading, string border = "=", string padding = " ") {
-            var middle = $"{border}{padding}{heading}{padding}{border}";
-            var hRule  = border.FillRight(middle.Length, border);
-            return $"{hRule}\n{middle}\n{hRule}";
-        }
-
-        [ContractAnnotation("input:null => null")]
-        [Pure]
-        public static string? Trim(this string? input, string trimString) {
-            if (input == null) {
-                return null;
-            }
-
-            var pattern = new Regex(Regex.Escape(trimString));
-            return Trim(input, pattern);
-        }
-
-        #region Trimming
-
-        [Pure]
-        public static string Trim(this string input, Regex trimPattern) {
-            var reg   = new Regex($"^({trimPattern})*(?<trimmed>.*?)({trimPattern})*$");
-            var match = reg.Match(input);
-
-            return match.Success ? match.Groups["trimmed"].Value : input;
-        }
-
-        private static string _GetTrimQuantifier(int? numberToTrim) {
-            return numberToTrim.IfPresentOrElse(it => $"{{0,{it}}}", () => "*");
-        }
-
-        /// <summary>
-        /// Removes up to <paramref name="numberToTrim"/> instances of <paramref name="trimString"/> from the <b>beginning</b> of <paramref name="input"/>.
-        /// </summary>
-        /// <remarks><inheritdoc cref="TrimEnd(string,string,System.Nullable{int})"/></remarks>
-        /// <param name="input">the original <see cref="string"/></param>
-        /// <param name="trimString">the <see cref="Regex"/> pattern to be removed</param>
-        /// <param name="numberToTrim">the maximum number of <paramref name="trimString"/>s to remove</param>
-        /// <returns><paramref name="input"/> with some number of <paramref name="trimString"/>s removed from the <b>beginning</b></returns>
-        [Pure]
-        public static string TrimStart(this string input, string trimString, int? numberToTrim = default) {
-            var pattern = new Regex(Regex.Escape(trimString));
-            return TrimStart(input, pattern, numberToTrim);
-        }
-
-        /// <summary>
-        /// Removes up to <paramref name="numberToTrim"/> instances of <paramref name="trimPattern"/> from the <b>beginning</b> of <paramref name="input"/>.
-        /// </summary>
-        /// <remarks><inheritdoc cref="TrimEnd(string,string,System.Nullable{int})"/></remarks>
-        /// <param name="input">the original <see cref="string"/></param>
-        /// <param name="trimPattern">the <see cref="Regex"/> pattern to be removed</param>
-        /// <param name="numberToTrim">the maximum number of <paramref name="trimPattern"/>s to remove</param>
-        /// <returns><paramref name="input"/> with some number of <paramref name="trimPattern"/>s removed from the <b>beginning</b></returns>
-        [Pure]
-        public static string TrimStart(this string input, Regex trimPattern, int? numberToTrim = default) {
-            var trimQuantifier = _GetTrimQuantifier(numberToTrim);
-            var reg            = new Regex(@$"^({trimPattern}){trimQuantifier}(?<trimmed>.*?)$");
-            var match          = reg.Match(input);
-
-            return match.Success ? match.Groups["trimmed"].Value : input;
-        }
-
-        /// <summary>
-        /// Removes up to <paramref name="numberToTrim"/> instances of <paramref name="trimString"/> from the <b>end</b> of <paramref name="input"/>.
-        /// </summary>
-        /// <remarks>
-        /// If <paramref name="numberToTrim"/> is null, then <b>all</b> instances are removed.
-        /// </remarks>
-        /// <param name="input">the original <see cref="string"/></param>
-        /// <param name="trimString">the <see cref="string"/> to be removed </param>
-        /// <param name="numberToTrim">the maximum number of <paramref name="trimString"/>s to remove</param>
-        /// <returns><paramref name="input"/> with some number of <paramref name="trimString"/>s removed from the <b>end</b></returns>
-        [Pure]
-        public static string? TrimEnd(this string? input, string trimString, int? numberToTrim = default) {
-            var trimPattern = new Regex(Regex.Escape(trimString));
-            return TrimEnd(input, trimPattern, numberToTrim);
-        }
-
-        /// <summary>
-        /// Removes up to <paramref name="numberToTrim"/> instances of <paramref name="trimPattern"/> from the <b>end</b> of <paramref name="input"/>.
-        /// </summary>
-        /// <remarks><inheritdoc cref="TrimEnd(string,string,System.Nullable{int})"/></remarks>
-        /// <param name="input">the original <see cref="string"/></param>
-        /// <param name="trimPattern">the <see cref="Regex"/> pattern to be removed</param>
-        /// <param name="numberToTrim">the maximum number of <paramref name="trimPattern"/>s to remove</param>
-        /// <returns><paramref name="input"/> with some number of <paramref name="trimPattern"/>s removed from the <b>end</b></returns>
-        [Pure]
-        public static string TrimEnd(this string input, Regex trimPattern, int? numberToTrim = default) {
-            var trimQuantifier = _GetTrimQuantifier(numberToTrim);
-            var reg            = new Regex($@"^(?<trimmed>.*?)({trimPattern}){trimQuantifier}$");
-            var match          = reg.Match(input);
-
-            return match.Success ? match.Groups["trimmed"].Value : input;
-        }
-
-        #endregion
-
-        #region Limiting
-
-        private static string _Limit(
-            string input,
-            Regex  trimPattern,
-            int    maxKept,
-            bool   fromStart
-        ) {
-            var keep = $"({trimPattern}){{{maxKept}}}";
-            var drop = $"({trimPattern})*";
-
-            var pattern = fromStart
-                              ? new Regex($"^{drop}(?<final>{keep}.*?)$", RegexOptions.RightToLeft)
-                              : new Regex($"^(?<final>.*?{keep}){drop}$");
-
-            var match = pattern.Match(input);
-            return match.Success ? match.Groups["final"].Value : input;
-        }
-
-        [Pure]
-        public static string Limit(
-            this string input,
-            Regex       trimPattern,
-            int         maxKept
-        ) {
-            return _Limit(input, trimPattern, maxKept, false);
-        }
-
-        [Pure]
-        public static string Limit(this string input, string trimString, int maxKept) {
-            return Limit(input, new Regex(Regex.Escape(trimString)), maxKept);
-        }
-
-        [Pure]
-        public static string LimitStart(
-            this string input,
-            Regex       trimPattern,
-            int         maxKept
-        ) {
-            return _Limit(input, trimPattern, maxKept, true);
-        }
-
-        [Pure]
-        public static string LimitStart(this string input, string trimString, int maxKept) {
-            return LimitStart(input, new Regex(Regex.Escape(trimString)), maxKept);
-        }
-
-        #endregion
-
-        #region "Forcing"
-
-        internal enum TrimFrom { End, Start }
-
-        private static string _ForcePattern(
-            this string input,
-            Regex       trimPattern,
-            string      padString,
-            [NonNegativeValue]
-            int? minKept,
-            [NonNegativeValue]
-            int? maxKept,
-            TrimFrom trimFrom
-        ) {
-            if (minKept < 0 || minKept > maxKept) {
-                throw new ArgumentOutOfRangeException(nameof(minKept), minKept, $"Must be >= 0 and <= {nameof(maxKept)} ({maxKept})");
-            }
-
-            if (maxKept <= 0 || maxKept < minKept) {
-                throw new ArgumentOutOfRangeException(nameof(maxKept), maxKept, $"Must be >= 0 and >= {nameof(minKept)} ({minKept})");
-            }
-
-            var pat = $"(?<chunks>{trimPattern})*";
-            pat = trimFrom == TrimFrom.Start ? $"^{pat}" : $"{pat}$";
-            var match = input.Match(pat);
-            var grp   = match.Groups["chunks"];
-
-            if (match.Success == false) {
-                return input;
-            }
-
-            var capCount = grp.Captures.Count;
-
-            if (capCount < minKept) {
-                var additional = padString.Repeat((int)minKept - capCount);
-                return trimFrom == TrimFrom.Start ? $"{additional}{input}" : $"{input}{additional}";
-            }
-
-            // ReSharper disable once InvertIf
-            if (capCount > maxKept) {
-                var numberToTrim = capCount - maxKept;
-                return trimFrom == TrimFrom.Start ? TrimStart(input, trimPattern, numberToTrim) : TrimEnd(input, trimPattern, numberToTrim);
-            }
-
-            throw new BrandonException("Shouldn't have been able to reach this");
-        }
-
-        /// <summary>
-        /// Ensures that there are between <paramref name="minKept"/> and <paramref name="maxKept"/> instances of <paramref name="trimPattern"/> at the <b>end</b>
-        /// of this <see cref="string"/>.
-        /// <br/>
-        /// If there are too many, they are removed.
-        /// <br/>
-        /// If there are too few, then <paramref name="padString"/> is repeated once for each missing <paramref name="trimPattern"/>.
-        /// </summary>
-        /// <param name="input">the original <see cref="string"/></param>
-        /// <param name="trimPattern">the <see cref="Regex"/> that should appear at the end of the <see cref="string"/></param>
-        /// <param name="padString">the <see cref="string"/> appended to <paramref name="input"/> if it doesn't have enough instances of <paramref name="trimPattern"/></param>
-        /// <param name="minKept">the <b>minimum</b> occurrences of <see cref="trimPattern"/>. Must be ≥ 0 and ≤ <paramref name="maxKept"/></param>
-        /// <param name="maxKept">the <b>maximum</b> occurrences of <see cref="trimPattern"/>. Must be ≥ <see cref="minKept"/> ≥ 0</param>
-        /// <returns>a new <see cref="string"/> with the desired ending</returns>
-        /// <exception cref="ArgumentOutOfRangeException">if <see cref="maxKept"/> ≥ <see cref="minKept"/> ≥ 0 isn't <c>true</c></exception>
-        [Pure]
-        public static string ForceEndingPattern(
-            this string input,
-            Regex       trimPattern,
-            string      padString,
-            [NonNegativeValue]
-            int? minKept,
-            [NonNegativeValue]
-            int? maxKept
-        ) {
-            return _ForcePattern(input, trimPattern, padString, minKept, maxKept, TrimFrom.End);
-        }
-
-        [Pure]
-        public static string EnsureEndingPattern(
-            this string input,
-            Regex       trimPattern,
-            string      padString,
-            [NonNegativeValue]
-            int minimumRequired
-        ) {
-            return _ForcePattern(input, trimPattern, padString, minimumRequired, null, TrimFrom.End);
-        }
-
-        [Pure]
-        public static string ForceStartingPattern(
-            this string input,
-            Regex       trimPattern,
-            string      padString,
-            [NonNegativeValue]
-            int? minKept,
-            [NonNegativeValue]
-            int? maxKept
-        ) {
-            return _ForcePattern(input, trimPattern, padString, minKept, maxKept, TrimFrom.Start);
-        }
-
-        [Pure]
-        public static string EnsureStartingPattern(
-            this string input,
-            Regex       trimPattern,
-            string      padString,
-            [NonNegativeValue]
-            int minimumRequired
-        ) {
-            return _ForcePattern(input, trimPattern, padString, minimumRequired, null, TrimFrom.Start);
-        }
-
-        [Pure]
-        public static string ForceStartingString(
-            this string input,
-            string      startingString,
-            [NonNegativeValue]
-            int startingStringRepetitions
-        ) {
-            return ForceStartingString(input, startingString, startingStringRepetitions, startingStringRepetitions);
-        }
-
-        [Pure]
-        public static string ForceStartingString(
-            this string input,
-            string      startingString,
-            [NonNegativeValue]
-            int minKept,
-            [NonNegativeValue]
-            int maxKept
-        ) {
-            return input.ForceStartingPattern(RegexPatterns.Escaped(startingString), startingString, minKept, maxKept);
-        }
-
-        #endregion
-
-        #endregion
 
         #region Splitex (splitting via a string treated as a Regex pattern)
 
@@ -897,12 +491,13 @@ namespace FowlFever.BSharp.Strings {
 
         #endregion
 
-        [ContractAnnotation("lines:null => null")]
-        public static IEnumerable<string>? IndentWithLabel(this IEnumerable<string>? lines, string? label, string? joiner = " ") {
-            if (lines == null) {
-                return null;
-            }
-
+        [Pure]
+        public static IEnumerable<string> IndentWithLabel(
+            [InstantHandle]
+            this IEnumerable<string?> lines,
+            string? label,
+            string? joiner = " "
+        ) {
             var firstLinePrefix = $"{label}{joiner}";
             var otherLinePrefix = $" ".Repeat(firstLinePrefix.Length);
             return lines.Select(

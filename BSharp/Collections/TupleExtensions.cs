@@ -394,5 +394,42 @@ namespace FowlFever.BSharp.Collections {
         #endregion
 
         #endregion
+
+        #region Select
+
+        /// <summary>
+        /// Applies a <see cref="Func{T,TResult}"/> to each item in this <see cref="Tuple{T1, T2}"/>.
+        /// </summary>
+        /// <remarks>Requires a homogenous tuple.</remarks>
+        /// <param name="tuple">the original <see cref="Tuple{T1,T2}"/></param>
+        /// <param name="selector">the transformation <see cref="Func{T,TResult}"/></param>
+        /// <typeparam name="T">the input type</typeparam>
+        /// <typeparam name="TOut">the output type</typeparam>
+        /// <returns>a new <see cref="Tuple"/> of <typeparamref name="TOut"/> values</returns>
+        public static (TOut, TOut) Select<T, TOut>(this (T, T) tuple, Func<T, TOut> selector) {
+            return (
+                       selector(tuple.Item1),
+                       selector(tuple.Item2)
+                   );
+        }
+
+        public static (TOut, TOut, TOut) Select<T, TOut>(this (T, T, T) tuple, Func<T, TOut> selector) {
+            return (
+                       selector(tuple.Item1),
+                       selector(tuple.Item2),
+                       selector(tuple.Item3)
+                   );
+        }
+
+        public static (TOut, TOut, TOut, TOut) Select<T, TOut>(this (T, T, T, T) tuple, Func<T, TOut> selector) {
+            return (
+                       selector(tuple.Item1),
+                       selector(tuple.Item2),
+                       selector(tuple.Item3),
+                       selector(tuple.Item4)
+                   );
+        }
+
+        #endregion
     }
 }
