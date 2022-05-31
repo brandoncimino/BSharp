@@ -141,6 +141,32 @@ namespace FowlFever.BSharp.Strings {
         }
 
         /// <summary>
+        /// Repeats a <see cref="string"/> until <see cref="desiredLength"/> is reached, with the last entry potentially being partial.
+        /// </summary>
+        /// <param name="toRepeat"></param>
+        /// <param name="desiredLength"></param>
+        /// <returns></returns>
+        public static string RepeatToLength(this string toRepeat, [NonNegativeValue] int desiredLength) {
+            var sb = new StringBuilder();
+            for (var i = 0; i < desiredLength; i++) {
+                sb.Append(toRepeat[i % toRepeat.Length]);
+            }
+
+            return sb.ToString();
+            // The following is an example implementation using `string.Create()`
+            // return string.Create(
+            //     desiredLength,
+            //     toRepeat,
+            //     (span, source) => {
+            //         for (int spanPos = 0; spanPos < desiredLength; spanPos++) {
+            //             var sourcePos = spanPos % source.Length;
+            //             span[spanPos] = source[sourcePos];
+            //         }
+            //     }
+            // );
+        }
+
+        /// <summary>
         ///     Joins together <paramref name="baseString" /> and <paramref name="stringToJoin" /> via <paramref name="separator" />,
         ///     <b>
         ///         <i>UNLESS</i>
