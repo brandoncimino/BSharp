@@ -7,6 +7,7 @@ using System.Linq;
 using FowlFever.BSharp.Enums;
 
 using JetBrains.Annotations;
+
 using Pure = System.Diagnostics.Contracts.PureAttribute;
 
 namespace FowlFever.BSharp.Chronic {
@@ -64,8 +65,12 @@ namespace FowlFever.BSharp.Chronic {
         /// <p/>
         /// <b>Update from Brandon on 2/3/2022</b>:
         /// I now know how to get the actual source code! <a href="https://github.com/dotnet/runtime/blob/70652798a59474c2df73d7772f67e3fdb61b85a4/src/libraries/System.Private.CoreLib/src/System/TimeSpan.cs#L478-L487">/src/System/TimeSpan.cs#L478-L487</a>
+        /// <p/>
+        /// <b>Update from Brandon on 5/31/2022</b>:
+        /// I have since implemented CONDITIONAL COMPILATION to support MULTI-TARGETING PLATFORMS!
         /// </remarks>
-        [Pure] public static double Divide(this TimeSpan dividend, TimeSpan divisor) => dividend.Ticks / (double)divisor.Ticks;
+        [Pure]
+        public static double Divide(this TimeSpan dividend, TimeSpan divisor) => dividend.Ticks / (double)divisor.Ticks;
 
         /// <summary>
         /// Divides <paramref name="dividend"/> by <paramref name="divisor"/>, returning a new <see cref="TimeSpan"/>.
@@ -77,13 +82,16 @@ namespace FowlFever.BSharp.Chronic {
         /// <returns></returns>
         [Pure]
         public static TimeSpan Divide(this TimeSpan dividend, double divisor) {
-            if (double.IsNaN(divisor))
-            {
+#if NETSTANDARD2_0
+            if (double.IsNaN(divisor)) {
                 throw new ArgumentException($"Cannot divide a {nameof(TimeSpan)} by {nameof(double.NaN)}!", nameof(divisor));
             }
 
             var ticks = Math.Round(dividend.Ticks / divisor);
             return IntervalFromDoubleTicks(ticks);
+#else
+            return dividend / divisor;
+#endif
         }
 
         /// <inheritdoc cref="Divide(System.TimeSpan,double)"/>
@@ -159,6 +167,9 @@ namespace FowlFever.BSharp.Chronic {
         /// <returns></returns>
         [Pure]
         public static TimeSpan Multiply(this TimeSpan timeSpan, double factor) {
+#if !NETSTANDARD2_0
+            return timeSpan.Multiply(factor);
+#else
             if (double.IsNaN(factor)) {
                 throw new ArgumentException($"Cannot multiply a {nameof(TimeSpan)} by {double.NaN}", nameof(factor));
             }
@@ -169,6 +180,7 @@ namespace FowlFever.BSharp.Chronic {
             // precision as possible, and so likely to have the least potential to surprise.
             double ticks = Math.Round(timeSpan.Ticks * factor);
             return IntervalFromDoubleTicks(ticks);
+#endif
         }
 
         /// <remarks>

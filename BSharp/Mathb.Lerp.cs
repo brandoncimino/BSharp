@@ -3,6 +3,7 @@
 using System;
 using System.Diagnostics.Contracts;
 
+using FowlFever.BSharp.Chronic;
 using FowlFever.BSharp.Enums;
 
 namespace FowlFever.BSharp {
