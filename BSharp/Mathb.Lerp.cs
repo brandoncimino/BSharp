@@ -3,7 +3,6 @@
 using System;
 using System.Diagnostics.Contracts;
 
-using FowlFever.BSharp.Chronic;
 using FowlFever.BSharp.Enums;
 
 namespace FowlFever.BSharp {
@@ -134,6 +133,10 @@ namespace FowlFever.BSharp {
             var leftPortion = LerpInt(start, finish, lerpAmount, leftPortionRounding);
             return (start + leftPortion, finish - leftPortion);
         }
+
+        /// <inheritdoc cref="Sperp(int,int,double,FowlFever.BSharp.Enums.RoundingDirection)"/>
+        /// <remarks><see cref="Bisect"/> is equivalent to <see cref="Sperp(int,double,FowlFever.BSharp.Enums.RoundingDirection)"/>-ing with <c>.5</c>.</remarks>
+        public static (int A, int B) Bisect(this int total, RoundingDirection leftPartitionRounding = default) => total.Sperp(.5);
 
         /// <inheritdoc cref="Sperp(int,int,double,FowlFever.BSharp.Enums.RoundingDirection)"/>
         public static (int A, int B) Sperp(this int total, double lerpAmount, RoundingDirection leftPortionRounding = default)
