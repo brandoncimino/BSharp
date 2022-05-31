@@ -63,19 +63,18 @@ namespace FowlFever.BSharp.Collections {
             return new List<T>(stuff);
         }
 
+        /// <summary>
+        /// Equivalent to <see cref="Enumerable.OrderBy{TSource,TKey}(System.Collections.Generic.IEnumerable{TSource},System.Func{TSource,TKey})"/> with each entry as the key.
+        /// </summary>
+        /// <param name="source">the original <see cref="IEnumerable{T}"/></param>
+        /// <param name="comparer">an optional <see cref="IComparer{T}"/> for instances of <typeparamref name="T"/>. Defaults to <see cref="Comparer.Default"/></param>
+        /// <typeparam name="T">the type of each element</typeparam>
+        /// <returns>an <see cref="IOrderedEnumerable{TElement}"/></returns>
+        [Pure]
+        [LinqTunnel]
+        public static IOrderedEnumerable<T> Sorted<T>([NoEnumeration] this IEnumerable<T> source, IComparer<T>? comparer = default) => source.OrderBy(it => it, comparer);
+
         #region Copying
-
-        [Obsolete("Please use ToList() directly", true)]
-        public static IList<T> Copy<T>(this IList<T> oldList) => oldList.Select(it => it).ToList();
-
-        [Obsolete("Please use ToList() directly", true)]
-        public static ICollection<T> Copy<T>(this ICollection<T> oldCollection) => oldCollection.ToList();
-
-        [Obsolete("Please use AsEnumerable() directly", true)]
-        public static IEnumerable<T> Copy<T>(this IEnumerable<T> oldList) => oldList.AsEnumerable();
-
-        [Obsolete("Please use ToArray() directly", true)]
-        public static T[] Copy<T>(this T[] oldArray) => oldArray.ToArray();
 
         /// <summary>
         /// Splits <paramref name="collection"/> into multiple <see cref="List{T}"/>s, whose sizes are determined by <paramref name="subGroups"/>.
@@ -1363,15 +1362,15 @@ namespace FowlFever.BSharp.Collections {
         #endregion
 
         /// <summary>
-        /// Lazily performs an <see cref="Action"/> on each item on <paramref name="source"/> <b>when it is actually enumerated</b>
+        /// Lazily performs an <see cref="Action"/> on each item on <paramref name="source"/> <b>when it is actually enumerated</b>.
         /// </summary>
-        /// <param name="source"></param>
-        /// <param name="action"></param>
-        /// <typeparam name="T"></typeparam>
-        /// <returns></returns>
+        /// <param name="source">the original <see cref="IEnumerable{T}"/></param>
+        /// <param name="action">some code performed on each entry</param>
+        /// <typeparam name="T">the type of entries in the source</typeparam>
+        /// <returns>an <see cref="IEnumerable{T}"/> containing the same elements as <paramref name="source"/></returns>
         [Pure]
         [LinqTunnel]
-        public static IEnumerable<T> Peek<T>(this IEnumerable<T> source, Action<T> action) {
+        public static IEnumerable<T> Peek<T>([NoEnumeration] this IEnumerable<T> source, Action<T> action) {
             return source.Select(
                 it => {
                     action.Invoke(it);
@@ -1379,6 +1378,8 @@ namespace FowlFever.BSharp.Collections {
                 }
             );
         }
+
+        public static IEnumerable<T> WriteLine<T>([NoEnumeration] this IEnumerable<T> source) => source.Peek(it => Console.WriteLine(it));
 
         /// <summary>
         /// Lazy tests a <paramref name="predicate"/> against each item in <paramref name="source"/> <b>when it is actually enumerated</b>, and throws an exception if the <paramref name="predicate"/> returns false.
