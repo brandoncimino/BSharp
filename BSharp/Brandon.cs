@@ -56,9 +56,11 @@ public record CallerInfo<T>(
     }
 
     public override string ToString() {
-        var calledBy = $"[{FileName}.{MemberName}]".ForceToLength(20, trail: $"{StringUtils.Ellipsis}]");
-        var exp      = $"{ArgumentExpression}".ForceToLength(30);
-        var value    = $"{Value.Prettify()}";
+        var calledBy = $"{FileName}.{MemberName}";
+        calledBy = calledBy.ForceToLength(30, alignment: StringAlignment.Right);
+        calledBy = $"[{calledBy}]";
+        var exp   = $"{ArgumentExpression}".ForceToLength(40);
+        var value = $"{Value.Prettify()}";
         return $"{calledBy} {exp} {value}";
     }
 }
