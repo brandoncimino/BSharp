@@ -14,6 +14,7 @@ using FowlFever.Conjugal.Affixing;
 using JetBrains.Annotations;
 
 using Pure = System.Diagnostics.Contracts.PureAttribute;
+using NotNull = System.Diagnostics.CodeAnalysis.NotNullAttribute;
 
 namespace FowlFever.BSharp.Strings {
     [PublicAPI]
@@ -623,21 +624,20 @@ namespace FowlFever.BSharp.Strings {
         /// <param name="str">this <see cref="string"/></param>
         /// <param name="emptyPlaceholder">the fallback string if <paramref name="str"/> <see cref="IsNullOrEmpty"/>. Defaults to <c>""</c></param>
         /// <returns>this <see cref="string"/> or <paramref name="emptyPlaceholder"/></returns>
-        [ContractAnnotation("emptyPlaceholder:notnull => notnull")]
-        [ContractAnnotation("emptyPlaceholder:null => canbenull")]
-        public static string? IfEmpty(this string? str, string emptyPlaceholder) {
-            if (emptyPlaceholder == null) {
-                throw new ArgumentNullException(nameof(emptyPlaceholder));
-            }
-
+        [return: NotNullIfNotNull("emptyPlaceholder")]
+        public static string? IfEmpty(this string? str, string? emptyPlaceholder) {
             return str.IsNullOrEmpty() ? emptyPlaceholder : str;
         }
 
+        /// <param name="obj">this <see cref="object"/></param>
+        /// <param name="nullPlaceholder">the output if this <see cref="Object"/> is <c>null</c>. Defaults to <see cref="Prettification.DefaultNullPlaceholder"/></param>
+        /// <returns><see cref="object.ToString"/> if this <see cref="Object"/> isn't <c>null</c>; otherwise, <paramref name="nullPlaceholder"/></returns>
         public static string OrNullPlaceholder(this object? obj, string? nullPlaceholder = Prettification.DefaultNullPlaceholder) {
             nullPlaceholder ??= Prettification.DefaultNullPlaceholder;
             return obj?.ToString() ?? nullPlaceholder;
         }
 
+        /// <inheritdoc cref="OrNullPlaceholder(object?,string?)"/>
         public static string OrNullPlaceholder(this object? obj, PrettificationSettings? settings) {
             settings ??= PrettificationSettings.Default;
             return OrNullPlaceholder(obj, settings.NullPlaceholder);
@@ -649,18 +649,25 @@ namespace FowlFever.BSharp.Strings {
         /// <param name="str">this <see cref="string"/></param>
         /// <param name="blankPlaceholder">the fallback string if <paramref name="str"/> <see cref="IsBlank"/>. Defaults to <c>""</c></param>
         /// <returns>this <see cref="string"/> or <paramref name="blankPlaceholder"/></returns>
-        public static string IfBlank(this string? str, string? blankPlaceholder) {
-            blankPlaceholder ??= "";
+        [return: NotNullIfNotNull("blankPlaceholder")]
+        public static string? IfBlank(this string? str, string? blankPlaceholder) {
             return str.IsBlank() ? blankPlaceholder : str;
         }
 
         /// <inheritdoc cref="IfBlank(string?,string?)"/>
         public static string IfBlank(this string? str, Func<string> blankPlaceholder) {
+            // 📎 This doesn't delegate to `IfBlank(blankPlaceholder.Invoke())` because that would require eagerly evaluating `blankPlaceholder`.
+            //    Using a conditional expression instead means that `blankPlaceholder` will only be invoked if `str` actually `IsBlank()`.
             return str.IsBlank() ? blankPlaceholder.Invoke() : str;
         }
 
-        [ContractAnnotation("null => stop")]
-        public static string MustNotBeBlank(this string? str) {
+        /// <summary>
+        /// TODO: move to <see cref="Must"/>
+        /// </summary>
+        /// <param name="str"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentException"></exception>
+        public static string MustNotBeBlank([NotNull] this string? str) {
             return str.IsNotBlank() ? str : throw new ArgumentException($"The string must not be blank! (Actual: [{str ?? Prettification.DefaultNullPlaceholder}]");
         }
 
@@ -671,12 +678,16 @@ namespace FowlFever.BSharp.Strings {
         /// <summary>
         /// An extension method for <see cref="string.IsNullOrEmpty"/>
         /// </summary>
-        /// <param name="str"></param>
+        /// <param name="str">this <see cref="string"/></param>
         /// <returns><see cref="string.IsNullOrEmpty"/></returns>
-        [ContractAnnotation("null => true", true)]
-        public static bool IsNullOrEmpty(this string? str) {
+        public static bool IsNullOrEmpty([NotNullWhen(false)] this string? str) {
             return string.IsNullOrEmpty(str);
         }
+
+        /**
+         * <inheritdoc cref="IsNullOrEmpty"/>
+         */
+        public static bool IsEmpty([NotNullWhen(false)] this string? str) => str.IsNullOrEmpty();
 
         /// <summary>
         /// An extension method for <see cref="string.IsNullOrWhiteSpace"/>
@@ -687,20 +698,11 @@ namespace FowlFever.BSharp.Strings {
             return string.IsNullOrWhiteSpace(str);
         }
 
-        /**
-         * <inheritdoc cref="IsNullOrEmpty"/>
-         */
-        [ContractAnnotation("null => true")]
-        public static bool IsEmpty(this string? str) {
-            return string.IsNullOrEmpty(str);
-        }
-
         /// <summary>
         /// The inverse of <see cref="IsEmpty"/>.
         /// </summary>
         /// <param name="str">this <see cref="string"/></param>
         /// <returns>!<see cref="IsEmpty"/></returns>
-        [ContractAnnotation("null => false")]
         public static bool IsNotEmpty([NotNullWhen(true)] this string? str) {
             return !string.IsNullOrEmpty(str);
         }
@@ -710,7 +712,6 @@ namespace FowlFever.BSharp.Strings {
         /// </summary>
         /// <param name="str">a <see cref="string"/></param>
         /// <returns><see cref="IsNullOrWhiteSpace"/></returns>
-        [ContractAnnotation("null => true", true)]
         public static bool IsBlank([NotNullWhen(false)] this string? str) {
             return str.IsNullOrWhiteSpace();
         }
@@ -720,7 +721,6 @@ namespace FowlFever.BSharp.Strings {
         /// </summary>
         /// <param name="str">a <see cref="string"/></param>
         /// <returns><see cref="IsNullOrWhiteSpace"/></returns>
-        [ContractAnnotation("null => false", true)]
         public static bool IsNotBlank([NotNullWhen(true)] this string? str) {
             return !str.IsBlank();
         }
