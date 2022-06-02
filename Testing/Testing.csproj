@@ -9,7 +9,11 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\BSharp\BSharp.csproj" />
+        <ProjectReference Include="..\BSharp\BSharp.csproj"/>
+        <ProjectReference Include="..\CSharp10\CSharp10.csproj">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </ProjectReference>
     </ItemGroup>
 
     <ItemGroup>

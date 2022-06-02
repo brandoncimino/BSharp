@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics.Contracts;
+using System.Runtime.CompilerServices;
 
 using FowlFever.BSharp.Strings;
 
@@ -66,13 +67,14 @@ namespace FowlFever.Testing {
         internal static IMultipleAsserter Against<TSelf, TOld, TNew>(
             MultipleAsserter<TSelf, TOld?> parent,
             Func<TOld?, TNew>              transformation
-        ) where TSelf : MultipleAsserter<TSelf, TOld?>, new() {
+        )
+            where TSelf : MultipleAsserter<TSelf, TOld?>, new() {
             return new Asserter<TNew>(() => transformation(parent.Actual.Value));
         }
 
         [Pure]
-        public static Asserter<T> Against<T>(T actual) {
-            return new Asserter<T>(actual);
+        public static Asserter<T> Against<T>(T actual, [CallerArgumentExpression("actual")] string? heading = default) {
+            return new Asserter<T>(actual).WithHeading(heading);
         }
 
         [Pure]
@@ -80,10 +82,8 @@ namespace FowlFever.Testing {
             return new Asserter<T>(actualValueDelegate);
         }
 
-        [Pure]
-        public static Asserter<object> WithHeading(string? heading) => new Asserter<object>().WithHeading(heading);
+        [Pure] public static Asserter<object> WithHeading(string? heading) => new Asserter<object>().WithHeading(heading);
 
-        [Pure]
-        public static Asserter<T> WithHeading<T>(string? heading) => new Asserter<T>().WithHeading(heading);
+        [Pure] public static Asserter<T> WithHeading<T>(string? heading) => new Asserter<T>().WithHeading(heading);
     }
 }
