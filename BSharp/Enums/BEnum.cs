@@ -240,7 +240,7 @@ namespace FowlFever.BSharp.Enums {
         /// <typeparam name="T">the <see cref="Enum"/> type</typeparam>
         /// <returns>the remaining flags</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static T RemoveFlag<T>(this T flags, T unwantedFlags)
+        public static T WithoutFlag<T>(this T flags, T unwantedFlags)
             where T : struct, Enum => flags.SetFlag(unwantedFlags, false);
 
         /// <summary>
