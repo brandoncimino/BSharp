@@ -178,7 +178,7 @@ namespace FowlFever.BSharp.Strings {
         /// </remarks>
         /// <param name="str">this <see cref="string"/></param>
         /// <returns>this <see cref="string"/>...but backwards</returns>
-        public static string Backwards(this string str) {
+        public static string Mirror(this string str) {
             var chars = str.ToCharArray();
             Array.Reverse(chars);
             return new string(chars);
