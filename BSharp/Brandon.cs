@@ -3,6 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
 using FowlFever.BSharp.Clerical;
+using FowlFever.BSharp.Exceptions;
 using FowlFever.BSharp.Strings;
 
 namespace FowlFever.BSharp;
@@ -56,11 +57,14 @@ public record CallerInfo<T>(
     }
 
     public override string ToString() {
-        var calledBy = $"{FileName}.{MemberName}";
-        calledBy = calledBy.ForceToLength(30, alignment: StringAlignment.Right);
-        calledBy = $"[{calledBy}]";
-        var exp   = $"{ArgumentExpression}".ForceToLength(40);
+        const int calledByLength = 30;
+        var       memberNameStr  = $"::{MemberName}";
+        var       remaining      = calledByLength - memberNameStr.Length;
+        var       fileNameStr    = FileName?.Truncate(remaining);
+        var       callerStr      = $"{fileNameStr}{memberNameStr}".Align(width: calledByLength, alignment: StringAlignment.Right);
+        Must.Equal(callerStr.Length, calledByLength);
+        var exp   = $"{ArgumentExpression}".Align(40);
         var value = $"{Value.Prettify()}";
-        return $"{calledBy} {exp} {value}";
+        return $"{callerStr}  {exp}  {value}";
     }
 }
