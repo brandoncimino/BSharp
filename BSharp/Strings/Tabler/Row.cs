@@ -10,11 +10,8 @@ using JetBrains.Annotations;
 namespace FowlFever.BSharp.Strings.Tabler;
 
 [PublicAPI]
-public record Row : IReadOnlyList<Cell>, IPrettifiable {
-    public enum RowStyle {
-        Normal,
-        Header
-    }
+public readonly record struct Row : IReadOnlyList<Cell>, IPrettifiable {
+    public enum RowStyle { Normal, Header, }
 
     private readonly IReadOnlyList<Cell> Cells;
     public           RowStyle            Style { get; init; }
@@ -22,7 +19,7 @@ public record Row : IReadOnlyList<Cell>, IPrettifiable {
     public Cell this[int index] => Cells[index];
 
     public Row(IEnumerable<Cell> cells, RowStyle style = default) {
-        Cells = cells.ToList();
+        Cells = cells.Select(it => it with { Style = style }).ToList();
         Style = style;
     }
 
@@ -30,7 +27,6 @@ public record Row : IReadOnlyList<Cell>, IPrettifiable {
 
     public Row(params Cell[]    cells) : this(cells.AsEnumerable()) { }
     public Row(params object?[] cells) : this(cells.AsEnumerable()) { }
-
 
     #region Factories
 
@@ -66,15 +62,12 @@ public record Row : IReadOnlyList<Cell>, IPrettifiable {
 
     public string Render(IEnumerable<int> widths, PrettificationSettings? settings = default) {
         var widthList = widths.AsList();
-        if (widthList.Count() != Cells.Count) {
-            throw new ArgumentException($"Provided {widthList.Count()} widths for {Cells.Count} cells!");
+        if (widthList.Count != Cells.Count) {
+            throw new ArgumentException($"Provided {widthList.Count} widths for {Cells.Count} cells!");
         }
 
-        settings = (settings ?? PrettificationSettings.Default) with { PreferredLineStyle = LineStyle.Single };
-
         return Cells.Select(it => it.Prettify(settings))
-                    .Select((it, i) => it.ForceToLength(widthList[i], trail: ""))
-                    .JoinString(settings.TableColumnSeparator);
+                    .JoinString(settings.Resolve().TableColumnSeparator);
     }
 
     public IEnumerator<Cell> GetEnumerator() {

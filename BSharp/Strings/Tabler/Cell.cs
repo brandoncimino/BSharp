@@ -1,3 +1,6 @@
+using System.Runtime.CompilerServices;
+
+using FowlFever.BSharp.Enums;
 using FowlFever.BSharp.Optional;
 
 using JetBrains.Annotations;
@@ -6,19 +9,27 @@ namespace FowlFever.BSharp.Strings.Tabler;
 
 [PublicAPI]
 public readonly record struct Cell : IPrettifiable {
-    public Optional<object?> Value    { get; }
-    public bool              IsHeader { get; }
+    public Optional<object?> Value { get; }
+    public Row.RowStyle      Style { get; init; }
+    public string?           Label { get; init; }
 
-    public Cell(object? value, bool isHeader = false) {
+    public Cell(object? value, Row.RowStyle style = Row.RowStyle.Normal, [CallerArgumentExpression("value")] string? label = default) {
         // this prevents nesting of cells, i.e. Cell(Cell(5)) => Cell(5)
-        Value    = value is Cell cell ? cell.Value : value;
-        IsHeader = isHeader;
+        Value = value is Cell cell ? cell.Value : value;
+        Style = style;
+        Label = label;
     }
 
     public string Prettify(PrettificationSettings? settings = default) {
         settings = settings.Resolve();
         settings = settings with { PreferredLineStyle = LineStyle.Single };
         return Value.Prettify(settings)
-                    .Align(IsHeader ? settings.TableHeaderAlignment : default);
+                    .Align(
+                        Style switch {
+                            Row.RowStyle.Header => settings.TableHeaderAlignment,
+                            Row.RowStyle.Normal => settings.FillerSettings.Alignment,
+                            _                   => throw BEnum.UnhandledSwitch(Style),
+                        }
+                    );
     }
 }
