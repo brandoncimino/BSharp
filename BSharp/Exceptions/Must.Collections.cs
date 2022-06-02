@@ -2,17 +2,11 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
-using System.Security.Cryptography;
 
 using FowlFever.BSharp.Collections;
 
-using NotNullAttribute = System.Diagnostics.CodeAnalysis.NotNullAttribute;
-
 using JetBrains.Annotations;
-
-using Microsoft.Diagnostics.Tracing.Parsers.IIS_Trace;
 
 namespace FowlFever.BSharp.Exceptions;
 
@@ -22,8 +16,8 @@ public static partial class Must {
     #region Contain (Index)
 
     public static T ContainIndex<T>(
-        [NotNull]
-        T   actualValue,
+        [System.Diagnostics.CodeAnalysis.NotNull]
+        T actualValue,
         [NonNegativeValue]
         int requiredIndex,
         [CallerArgumentExpression("actualValue")]
@@ -42,9 +36,9 @@ public static partial class Must {
     }
 
     public static T ContainIndex<T>(
-        [NotNull]
+        [System.Diagnostics.CodeAnalysis.NotNull]
         T actualValue,
-        Index           requiredIndex,
+        Index requiredIndex,
         [CallerArgumentExpression("actualValue")]
         string? parameterName = default,
         [CallerMemberName]
@@ -65,8 +59,8 @@ public static partial class Must {
     #region Contain (Range)
 
     public static T ContainRange<T>(
-        [NotNull]
-        T     actualValue,
+        [System.Diagnostics.CodeAnalysis.NotNull]
+        T actualValue,
         Range range,
         [CallerArgumentExpression("actualValue")]
         string? parameterName = default,
@@ -97,7 +91,8 @@ public static partial class Must {
         string? parameterName = default,
         [CallerMemberName]
         string? methodName = default
-    ) where T : IEnumerable<T2> {
+    )
+        where T : IEnumerable<T2> {
         return Be(
             actualValue,
             it => it.ContainsAny(desiredValues),
@@ -108,14 +103,16 @@ public static partial class Must {
 
     public static T NotContainAny<T, T2>(
         [InstantHandle]
-        T               actualValues,
+        T actualValues,
         [InstantHandle]
         IEnumerable<T2> badValues,
+        string? details = default,
         [CallerArgumentExpression("actualValues")]
         string? parameterName = default,
         [CallerMemberName]
         string? methodName = default
-    ) where T : IEnumerable<T2> {
+    )
+        where T : IEnumerable<T2> {
         badValues = badValues.AsList();
         if (!actualValues.ContainsAny(badValues)) {
             return actualValues;
@@ -123,10 +120,11 @@ public static partial class Must {
 
         var badNuts = actualValues.Union(badValues.AsEnumerable());
         throw Reject(
-            actualValues,
-            parameterName,
-            methodName,
-            $"contained the invalid {typeof(T2)}: {badNuts}"
+            actualValue: actualValues,
+            details,
+            parameterName: parameterName,
+            rejectedBy: methodName,
+            reason: $"contained the invalid {typeof(T2)}: {badNuts}"
         );
     }
 
@@ -135,21 +133,29 @@ public static partial class Must {
         T actualValues,
         [InstantHandle]
         IEnumerable<T2> requiredValues,
+        string? details = default,
         [CallerArgumentExpression("actualValues")]
         string? parameterName = default,
         [CallerMemberName]
         string? methodName = default
-    ) where T : IEnumerable<T2> {
+    )
+        where T : IEnumerable<T2> {
         requiredValues = requiredValues.AsList();
         if (actualValues.ContainsAll(requiredValues)) {
             return actualValues;
         }
 
         var missingNuts = actualValues.Except(requiredValues);
-        throw Reject(actualValues, parameterName, methodName, $"was missing the required {typeof(T2)} values {missingNuts}");
+        throw Reject(
+            actualValue: actualValues,
+            details: details,
+            parameterName: parameterName,
+            rejectedBy: methodName,
+            reason: $"was missing the required {typeof(T2)} values {missingNuts}"
+        );
     }
-    
+
     #endregion
-    
+
     #endregion
 }

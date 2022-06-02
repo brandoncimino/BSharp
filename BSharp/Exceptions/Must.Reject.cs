@@ -7,7 +7,8 @@ namespace FowlFever.BSharp.Exceptions;
 public static partial class Must {
     [Pure]
     public static RejectionException Reject<T>(
-        T? actualValue,
+        T?      actualValue,
+        string? details,
         [CallerArgumentExpression("actualValue")]
         string? parameterName = default,
         string?    rejectedBy = default,
@@ -18,6 +19,7 @@ public static partial class Must {
     ) {
         return new RejectionException(
             actualValue,
+            details,
             parameterName,
             rejectedBy,
             reason ?? $"must {caller}",

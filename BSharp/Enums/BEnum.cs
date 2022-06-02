@@ -87,7 +87,7 @@ namespace FowlFever.BSharp.Enums {
         /// </summary>
         /// <param name="actualValue">the <typeparamref name="T"/> value that didn't have a switch branch</param>
         /// <param name="parameterName">the parameter that caused this exception</param>
-        /// <param name="methodName">the method that caused this exception</param>
+        /// <param name="rejectedBy">the method that caused this exception</param>
         /// <typeparam name="T">an <see cref="Enum"/> <see cref="Type"/></typeparam>
         /// <returns>a nice <see cref="System.ComponentModel.InvalidEnumArgumentException"/></returns>
         public static InvalidEnumArgumentException UnhandledSwitch<T>(
@@ -95,14 +95,33 @@ namespace FowlFever.BSharp.Enums {
             [CallerArgumentExpression("actualValue")]
             string? parameterName = default,
             [CallerMemberName]
-            string? methodName = default
+            string? rejectedBy = default
         )
             where T : Enum? {
             var rejection = new RejectionException(
                 actualValue,
                 parameterName,
-                methodName,
+                rejectedBy,
                 $"{typeof(T)}.{actualValue.OrNullPlaceholder()} was not handled by any switch branch!"
+            );
+
+            return new InvalidEnumArgumentException(rejection.Message);
+        }
+
+        public static InvalidEnumArgumentException Unsupported<T>(
+            T?      actualValue,
+            string? details = default,
+            [CallerArgumentExpression("actualValue")]
+            string? parameterName = default,
+            [CallerMemberName]
+            string? rejectedBy = default
+        )
+            where T : Enum? {
+            var rejection = new RejectionException(
+                actualValue,
+                parameterName,
+                rejectedBy,
+                $"{typeof(T)}.{actualValue.OrNullPlaceholder()} isn't supported for {rejectedBy}!"
             );
 
             return new InvalidEnumArgumentException(rejection.Message);

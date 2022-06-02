@@ -43,7 +43,7 @@ public static partial class Must {
         };
     }
 
-    /// <inheritdoc cref="NotBeNull{T}"/>
+    /// <inheritdoc cref="NotBeNull{T}(T?,string?,string?)"/>
     public static T MustNotBeNull<T>(
         [NotNull] this T? actualValue,
         [CallerArgumentExpression("actualValue")]
@@ -65,13 +65,15 @@ public static partial class Must {
     /// 
     /// </summary>
     /// <param name="actualValue"></param>
+    /// <param name="details"></param>
     /// <param name="parameterName"></param>
     /// <param name="methodName"></param>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
     /// <exception cref="RejectionException"></exception>
     public static T? BeNull<T>(
-        T? actualValue,
+        T?      actualValue,
+        string? details = default,
         [CallerArgumentExpression("actualValue")]
         string? parameterName = default,
         [CallerMemberName]
@@ -79,7 +81,13 @@ public static partial class Must {
     ) {
         return actualValue switch {
             null => actualValue,
-            _    => throw Reject(actualValue, parameterName, methodName, "must be null"),
+            _ => throw Reject(
+                     actualValue: actualValue,
+                     details: details,
+                     parameterName: parameterName,
+                     rejectedBy: methodName,
+                     reason: "must be null"
+                 ),
         };
     }
 

@@ -1,8 +1,5 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 
@@ -17,8 +14,8 @@ public static partial class Must {
     #region Blankness
 
     public static string NotBeBlank(
-        [NotNull]
-        string? actualValue,
+        [NotNull] string? actualValue,
+        string?           details = default,
         [CallerArgumentExpression("actualValue")]
         string? parameterName = default,
         [CallerMemberName]
@@ -27,13 +24,13 @@ public static partial class Must {
         if (actualValue.IsNotBlank()) {
             return actualValue!;
         }
-        
-        throw Reject(actualValue, parameterName, methodName, nameof(NotBeBlank));
+
+        throw Reject(actualValue, details: details, parameterName: parameterName, rejectedBy: methodName, reason: nameof(NotBeBlank));
     }
 
     public static string NotBeEmpty(
-        [NotNull]
-        string? actualValue,
+        [NotNull] string? actualValue,
+        string?           details = default,
         [CallerArgumentExpression("actualValue")]
         string? parameterName = default,
         [CallerMemberName]
@@ -43,9 +40,9 @@ public static partial class Must {
             return actualValue;
         }
 
-        throw Reject(actualValue, parameterName, methodName, nameof(NotBeEmpty));
+        throw Reject(actualValue, details: details, parameterName: parameterName, rejectedBy: methodName, reason: nameof(NotBeEmpty));
     }
-    
+
     #endregion
 
     #region Containment
@@ -54,13 +51,14 @@ public static partial class Must {
     public static string? NotContain(
         string? actualValue,
         string  unwantedString,
+        string? details = default,
         [CallerArgumentExpression("actualValue")]
         string? parameterName = default,
         [CallerMemberName]
         string? methodName = default
     ) {
         if (actualValue?.Contains(unwantedString) == true) {
-            throw Reject(actualValue, parameterName, methodName, $"must NOT contain the substring \"{unwantedString}\"");
+            throw Reject(actualValue, details, parameterName: parameterName, rejectedBy: methodName, reason: $"must NOT contain the substring \"{unwantedString}\"");
         }
 
         return actualValue;
@@ -84,9 +82,9 @@ public static partial class Must {
     }
 
     public static string Contain(
-        [NotNull]
-        string? actualValue,
-        string  substring,
+        [NotNull] string? actualValue,
+        string            substring,
+        string?           details = default,
         [CallerArgumentExpression("actualValue")]
         string? parameterName = default,
         [CallerMemberName]
@@ -96,7 +94,7 @@ public static partial class Must {
             return actualValue;
         }
 
-        throw Reject(actualValue, parameterName, methodName, $"must contain the substring \"{substring}\"");
+        throw Reject(actualValue, details, parameterName: parameterName, rejectedBy: methodName, reason: $"must contain the substring \"{substring}\"");
     }
 
     #endregion
@@ -104,9 +102,9 @@ public static partial class Must {
     #region Matching
 
     public static string Match(
-        [NotNull]
-        string? actualValue,
-        Regex   pattern,
+        [NotNull] string? actualValue,
+        Regex             pattern,
+        string?           details = default,
         [CallerArgumentExpression("actualValue")]
         string? parameterName = default,
         [CallerMemberName]
@@ -116,13 +114,14 @@ public static partial class Must {
             return actualValue;
         }
 
-        throw Reject(actualValue, parameterName, methodName, $"must match the {nameof(Regex)} pattern /{pattern}/");
+        throw Reject(actualValue, details, parameterName: parameterName, rejectedBy: methodName, reason: $"must match the {nameof(Regex)} pattern /{pattern}/");
     }
-    
+
     [return: NotNullIfNotNull("actualValue")]
     public static string? NotMatch(
         string? actualValue,
         Regex   pattern,
+        string? details = default,
         [CallerArgumentExpression("actualValue")]
         string? parameterName = default,
         [CallerMemberName]
@@ -132,7 +131,7 @@ public static partial class Must {
             return actualValue;
         }
 
-        throw Reject(actualValue, parameterName, methodName, $"must NOT match the {nameof(Regex)} pattern /{pattern}/");
+        throw Reject(actualValue, details, parameterName: parameterName, rejectedBy: methodName, reason: $"must NOT match the {nameof(Regex)} pattern /{pattern}/");
     }
 
     #endregion

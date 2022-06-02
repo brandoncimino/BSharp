@@ -27,11 +27,12 @@ public static partial class Must {
     /// </summary>
     /// <remarks>
     /// 📎 An <paramref name="actualValue"/> of <c>null</c> will <b>always</b> fail, matching the behavior of <c>is</c> expressions.
-    ///
+    /// 
     /// Conversely, <see cref="BeNull{T}"/> will always <b>pass</b> for <c>null</c>. 
     /// </remarks>
     /// <param name="actualValue">the <typeparamref name="T"/> value being validated</param>
     /// <param name="predicate">a condition that <paramref name="actualValue"/> must satisfy</param>
+    /// <param name="details">user-provided additional details</param>
     /// <param name="parameterName">the name of the parameter with which <paramref name="actualValue"/> corresponds. 📎 Automatically populated with <paramref name="actualValue"/>'s expression via <see cref="CallerArgumentExpressionAttribute"/></param>
     /// <param name="rejectedBy">the entity that is doing the validation - usually a method. 📎 Automatically populated via <see cref="CallerMemberNameAttribute"/></param>
     /// <param name="reason">a description of what we <b>wanted</b> to happen. 📎 Automatically populated with <paramref name="predicate"/> via <see cref="CallerArgumentExpressionAttribute"/></param>
@@ -44,6 +45,7 @@ public static partial class Must {
         [NotNullIfNotNull("predicate")]
         T actualValue,
         Func<T, bool>? predicate,
+        string?        details = default,
         [CallerArgumentExpression("actualValue")]
         string? parameterName = default,
         [CallerMemberName]
@@ -74,10 +76,10 @@ public static partial class Must {
             exc = e;
         }
 
-        throw Reject(actualValue, parameterName, rejectedBy, reason, exc);
+        throw Reject(actualValue, details, parameterName, rejectedBy, reason, exc);
     }
 
-    /// <inheritdoc cref="Be{T}(T,System.Func{T,bool}?,string?,string?,string?)"/>
+    /// <inheritdoc cref="Be{T}(T,System.Func{T,bool}?,string?,string?,string?,string?)"/>
     public static T Be<T>(
         T actualValue,
         T expectedValue,
@@ -97,7 +99,7 @@ public static partial class Must {
         );
     }
 
-    /// <inheritdoc cref="Be{T}(T,System.Func{T,bool}?,string?,string?,string?)"/>
+    /// <inheritdoc cref="Be{T}(T,System.Func{T,bool}?,string?,string?,string?,string?)"/>
     public static T Equal<T>(
         T actualValue,
         T expectedValue,
@@ -126,6 +128,7 @@ public static partial class Must {
         T actualValue,
         [InstantHandle]
         Func<T, bool> predicate,
+        string? details = default,
         [CallerArgumentExpression("actualValue")]
         string? parameterName = default,
         [CallerMemberName]
@@ -144,7 +147,7 @@ public static partial class Must {
             exc = e;
         }
 
-        throw Reject(actualValue, parameterName, rejectedBy, reason, exc);
+        throw Reject(actualValue, details, parameterName, rejectedBy, reason, exc);
     }
 
     /// <inheritdoc cref="NotEqual{T}"/>
