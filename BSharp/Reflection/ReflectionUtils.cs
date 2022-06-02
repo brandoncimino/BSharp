@@ -177,7 +177,8 @@ namespace FowlFever.BSharp.Reflection {
         }
 
         private static readonly Type[] TupleTypes = {
-            typeof(ValueTuple),
+            typeof(ITuple),
+            // 📝 typeof(ValueTuple) is a static utility class
             typeof(ValueTuple<>),
             typeof(ValueTuple<,>),
             typeof(ValueTuple<,,>),
@@ -186,7 +187,7 @@ namespace FowlFever.BSharp.Reflection {
             typeof(ValueTuple<,,,,,>),
             typeof(ValueTuple<,,,,,,>),
             typeof(ValueTuple<,,,,,,,>),
-            // NOTE: typeof(Tuple) is a static utility class
+            // 📝 typeof(Tuple) is a static utility class
             typeof(Tuple<>),
             typeof(Tuple<,>),
             typeof(Tuple<,,>),
