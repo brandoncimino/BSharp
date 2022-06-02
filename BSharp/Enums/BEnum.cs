@@ -224,6 +224,92 @@ namespace FowlFever.BSharp.Enums {
                 .Where(it => flags.HasFlag(it));
         }
 
+        /// <summary>
+        /// Adds a flag to an <see cref="Enum"/> with the <see cref="FlagsAttribute"/>.
+        /// </summary>
+        /// <param name="flags">an <see cref="Enum"/> value with the <see cref="FlagsAttribute"/></param>
+        /// <param name="additionalFlags">additional values to be combined with the existing <paramref name="flags"/></param>
+        /// <typeparam name="T">the <see cref="Enum"/> type</typeparam>
+        /// <returns>the combined flags</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static T WithFlag<T>(this T flags, T additionalFlags)
+            where T : struct, Enum => flags.SetFlag(additionalFlags, true);
+
+        /// <param name="flags">an <see cref="Enum"/> value with the <see cref="FlagsAttribute"/></param>
+        /// <param name="unwantedFlags">additional values to be <b>removed</b> from the existing <paramref name="flags"/></param>
+        /// <typeparam name="T">the <see cref="Enum"/> type</typeparam>
+        /// <returns>the remaining flags</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static T RemoveFlag<T>(this T flags, T unwantedFlags)
+            where T : struct, Enum => flags.SetFlag(unwantedFlags, false);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="flags"></param>
+        /// <param name="flagToSet"></param>
+        /// <param name="on"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        /// <remarks>
+        /// Taken from <a href="https://github.com/dotnet/runtime/issues/14084#issuecomment-803638941">github user mburbea</a>.
+        /// <p/>
+        /// <p/>
+        /// I really, <i>really</i> don't like the way this code is written - it's written for computer architecture rather than logical programming.
+        /// <p/>
+        /// <b>It ends in an <c>else</c> statement</b>
+        /// <p>
+        /// The code should have an additional branch that fails if the "size" thingy isn't any of the values we expect.
+        /// My guess is helps the <see cref="MethodImplAttributes.AggressiveInlining"/> option, since as <a href="https://github.com/dotnet/runtime/issues/14084#issuecomment-557362093">mikernet</a> stated, <i>"The conditional branches are eliminated by the JIT."</i>
+        /// I imagine it would be less possible for the compiler to "eliminate the conditional branches" if the method has code both in and outside of the <c>if</c> statements.
+        /// <br/>
+        /// (📎 "JIT" means <a href="https://en.wikipedia.org/wiki/Just-in-time_compilation">just-in-time compilation</a>)  
+        /// </p>
+        /// <br/>
+        /// <b>It repeats <see cref="Unsafe.SizeOf{T}"/> in each branch instead of evaluating it once and using a <c>switch</c> statement</b>
+        /// <p>
+        /// My best / only guess is that this also helps with <see cref="MethodImplAttributes.AggressiveInlining"/>.
+        /// </p> 
+        /// <br/>
+        /// <b>It doesn't ensure that <typeparamref name="T"/> is a <see cref="FlagsAttribute"/> <see cref="Enum"/></b>
+        /// <p>
+        /// This is, theoretically, a limitation of the generic <see cref="Enum"/> type constraint.
+        /// I could overcome this by validating the <see cref="IsEnumFlags"/> variable, but:
+        /// <ul>
+        /// <li>The entire purpose of these hideous methods is "efficiency", which an assertion would probably undermine</li>
+        /// <li>The basic <see cref="Enum.HasFlag"/> method also doesn't check for the <see cref="FlagsAttribute"/></li>
+        /// </ul>
+        /// </p>
+        /// <p/>
+        /// Or, most likely, people who care about saving <see cref="Byte"/>s don't care about being good programmers.
+        /// </remarks>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static T SetFlag<T>(this T flags, T flagToSet, bool on)
+            where T : struct, Enum {
+            if (Unsafe.SizeOf<T>() == 1) {
+                var x = (byte)((Unsafe.As<T, byte>(ref flags)    & ~Unsafe.As<T, byte>(ref flagToSet))
+                               | (-Unsafe.As<bool, byte>(ref on) & Unsafe.As<T, byte>(ref flagToSet)));
+                return Unsafe.As<byte, T>(ref x);
+            }
+
+            if (Unsafe.SizeOf<T>() == 2) {
+                var x = (short)((Unsafe.As<T, short>(ref flags)   & ~Unsafe.As<T, short>(ref flagToSet))
+                                | (-Unsafe.As<bool, byte>(ref on) & Unsafe.As<T, short>(ref flagToSet)));
+                return Unsafe.As<short, T>(ref x);
+            }
+
+            if (Unsafe.SizeOf<T>() == 4) {
+                var x = (Unsafe.As<T, uint>(ref flags)          & ~Unsafe.As<T, uint>(ref flagToSet))
+                        | ((uint)-Unsafe.As<bool, byte>(ref on) & Unsafe.As<T, uint>(ref flagToSet));
+                return Unsafe.As<uint, T>(ref x);
+            }
+            else {
+                var x = (Unsafe.As<T, ulong>(ref flags)                & ~Unsafe.As<T, ulong>(ref flagToSet))
+                        | ((ulong)-(long)Unsafe.As<bool, byte>(ref on) & Unsafe.As<T, ulong>(ref flagToSet));
+                return Unsafe.As<ulong, T>(ref x);
+            }
+        }
+
         #endregion
     }
 }
