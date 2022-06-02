@@ -23,7 +23,7 @@ using NUnit.Framework;
 
 using Is = NUnit.Framework.Is;
 
-namespace BSharp.Tests.Strings; 
+namespace BSharp.Tests.Strings;
 
 //TODO: Split this into multiple files
 public partial class PrettificationTests {
@@ -701,7 +701,7 @@ List<int>[
         Assert.That(DayOfWeek.Monday.Prettify(settings), Is.EqualTo(expectedString));
     }
 
-    [Test]
+    [Test(Description = "this is an experiment")]
     public void DoInterfaceAndInheritFindDifferentPrettifiers([ValueSource(nameof(PrettyTypesWithInterfaces))] Type t) {
         var settings    = PrettificationSettings.Default with { PreferredLineStyle = LineStyle.Single };
         var iPrettifier = PrettifierFinders.FindInterfacePrettifier(Prettification.Prettifiers, t, settings);
@@ -722,7 +722,7 @@ List<int>[
             [$"-> {nameof(toStringMethod.ReflectedType)}"]             = toStringReflect,
         };
 
-        stuff.Select((k, v) => $"{k.Prettify(settings).ForceToLength(35)}{v.Prettify(settings)}").ToList().ForEach(Console.WriteLine);
+        stuff.Select((k, v) => $"{k.Prettify(settings).Align(35)}{v.Prettify(settings)}").ToList().ForEach(Console.WriteLine);
     }
 
     class ExtendsDBType : ParameterInfo {

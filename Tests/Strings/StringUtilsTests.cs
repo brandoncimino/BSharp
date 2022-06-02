@@ -71,7 +71,7 @@ public class StringUtilsTests {
     ) {
         Assert.Throws<ArgumentNullException>(() => "".FillRight(desiredLength, null!));
         Assert.Throws<ArgumentNullException>(() => "".FillLeft(desiredLength, null!));
-        Assert.Throws<ArgumentNullException>(() => StringUtils.Fill(null!, desiredLength));
+        Assert.Throws<ArgumentNullException>(() => default(string)!.Fill(desiredLength));
     }
 
     [Test]
