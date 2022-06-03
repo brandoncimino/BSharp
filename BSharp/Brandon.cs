@@ -5,6 +5,9 @@ using System.Runtime.CompilerServices;
 using FowlFever.BSharp.Clerical;
 using FowlFever.BSharp.Exceptions;
 using FowlFever.BSharp.Strings;
+using FowlFever.BSharp.Strings.Json;
+
+using Newtonsoft.Json.Serialization;
 
 namespace FowlFever.BSharp;
 
@@ -35,6 +38,33 @@ public static class Brandon {
     ) {
         var info = Info(value, argumentExpression, memberName, filePath, lineNumber);
         Console.WriteLine(info);
+    }
+
+    public static ConsoleTraceWriter Start([CallerMemberName] string? caller = default, string? owner = default, [CallerFilePath] string? callerFile = default) {
+        owner ??= BPath.GetFileNameWithoutExtensions(callerFile);
+        return ConsoleTraceWriter.Start(caller, owner);
+    }
+
+    public static void Trace(
+        Action<ITraceWriter>       code,
+        [CallerMemberName] string? caller     = default,
+        string?                    owner      = default,
+        [CallerFilePath] string?   callerFile = default
+    ) {
+        owner ??= BPath.GetFileNameWithoutExtensions(callerFile);
+        var tracer = Start(caller, owner);
+        code(tracer);
+        tracer.End();
+    }
+
+    public static void Trace(
+        Action                     code,
+        [CallerMemberName] string? caller     = default,
+        string?                    owner      = default,
+        [CallerFilePath] string?   callerFile = default
+    ) {
+        owner ??= BPath.GetFileNameWithoutExtensions(callerFile);
+        Trace(_ => code(), caller, owner);
     }
 }
 
