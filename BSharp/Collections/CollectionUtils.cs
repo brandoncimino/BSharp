@@ -971,6 +971,15 @@ namespace FowlFever.BSharp.Collections {
             return source == null ? Enumerable.Empty<T>() : source.Where(it => it.HasValue).Select(it => it!.Value);
         }
 
+        /// <summary>
+        /// Casts an <see cref="IEnumerable{T}"/> of <see cref="ValueType"/>s as <see cref="System.Nullable{T}"/>s.
+        /// </summary>
+        /// <param name="source">an <see cref="IEnumerable{T}"/> of <see cref="ValueType"/>s</param>
+        /// <typeparam name="T">a <see cref="ValueType"/></typeparam>
+        /// <returns>an <see cref="IEnumerable{T}"/> of <see cref="System.Nullable{T}"/>s</returns>
+        public static IEnumerable<T?> Nullable<T>(this IEnumerable<T> source)
+            where T : struct => source.Cast<T?>();
+
         #region NonBlank
 
         /// <summary>
