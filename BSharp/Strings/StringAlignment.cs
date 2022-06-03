@@ -113,6 +113,6 @@ public static class StringAlignmentExtensions {
         var leftFill  = fillAmounts.left == fillAmounts.right ? rightFill : filler.RepeatToLength(fillAmounts.left);
         leftFill = settings.MirrorPadding.ApplyTo(leftFill);
 
-        return $"{rightFill}{str}{leftFill}";
+        return $"{leftFill}{str}{rightFill}";
     }
 }
