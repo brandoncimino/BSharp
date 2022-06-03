@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
@@ -29,9 +30,9 @@ public class BPath {
     #region Character Sets
 
     public static readonly ImmutableHashSet<char> SeparatorChars = Enum.GetValues(typeof(DirectorySeparator))
-                                                                   .Cast<DirectorySeparator>()
-                                                                   .Select(DirectorySeparatorExtensions.ToChar)
-                                                                   .ToImmutableHashSet();
+                                                                       .Cast<DirectorySeparator>()
+                                                                       .Select(DirectorySeparatorExtensions.ToChar)
+                                                                       .ToImmutableHashSet();
     /// <summary>
     /// Combines <see cref="Path.GetInvalidPathChars"/> and <see cref="Path.GetInvalidFileNameChars"/> into a single <see cref="ImmutableHashSet{T}"/>.
     /// </summary>
@@ -41,17 +42,17 @@ public class BPath {
 
     #region Directory Separator Regex Patterns
 
-    public static readonly   Regex  DirectorySeparatorPattern = new Regex(@"[\\\/]");
-    public static readonly   Regex  OuterSeparatorPattern     = RegexPatterns.OuterMatch(DirectorySeparatorPattern);
-    public static readonly   Regex  InnerSeparatorPattern     = RegexPatterns.InnerMatch(DirectorySeparatorPattern);
+    public static readonly Regex DirectorySeparatorPattern = new Regex(@"[\\\/]");
+    public static readonly Regex OuterSeparatorPattern     = RegexPatterns.OuterMatch(DirectorySeparatorPattern);
+    public static readonly Regex InnerSeparatorPattern     = RegexPatterns.InnerMatch(DirectorySeparatorPattern);
 
     #endregion
 
     #region Icons
 
-    internal static readonly string OpenFolderIcon            = "📂";
-    internal static readonly string ClosedFolderIcon          = "📁";
-    internal static readonly string FileIcon                  = "📄";
+    internal static readonly string OpenFolderIcon   = "📂";
+    internal static readonly string ClosedFolderIcon = "📁";
+    internal static readonly string FileIcon         = "📄";
 
     #endregion
 
@@ -60,8 +61,9 @@ public class BPath {
     [Pure]
     public static bool ContainsInvalidChars(string input) => input.ContainsAny(InvalidChars);
 
-    public static string[] SplitPath(string path) {
-        return path.Split(InnerSeparatorPattern);
+    [Pure]
+    public static string[] SplitPath(string? path) {
+        return path?.Split(InnerSeparatorPattern) ?? Array.Empty<string>();
     }
 
     #region ⚠ OBSOLETE ⚠ Validation
@@ -136,26 +138,35 @@ public class BPath {
     /// <remarks>This uses the <see cref="ExtensionGroup"/> <see cref="RegexGroup"/> for matching.</remarks>
     /// <param name="path">a path or file name</param>
     /// <returns><b>all</b> of the extensions at the end of the <paramref name="path"/></returns>
-    public static string[] GetExtensions(string path) {
+    [Pure]
+    public static string[] GetExtensions(string? path) {
         return GetFullExtension(path)
-               .Split(new[] { '.' }, StringSplitOptions.RemoveEmptyEntries)
+               ?.Split(new[] { '.' }, StringSplitOptions.RemoveEmptyEntries)
                .Select(it => it.PrependIfMissing("."))
-               .ToArray();
+               .ToArray()
+               ?? Array.Empty<string>();
     }
 
     [Pure]
-    public static string GetFullExtension(string path) {
+    [return: NotNullIfNotNull("path")]
+    public static string? GetFullExtension(string? path) {
         return Path.GetFileName(path)
+                   ?
                    .Match(ExtensionGroup.Regex)
                    .Groups[ExtensionGroup.Name]
                    .Value;
     }
 
     [Pure]
-    public static string GetFileNameWithoutExtensions(string path) {
+    [return: NotNullIfNotNull("path")]
+    public static string? GetFileNameWithoutExtensions(string? path) {
+        if (path == null) {
+            return null;
+        }
+
         var fileName    = Path.GetFileName(path);
         var firstPeriod = fileName.IndexOf(".", StringComparison.Ordinal);
-        return firstPeriod < 0 ? fileName : fileName.Substring(0, firstPeriod);
+        return firstPeriod < 0 ? fileName : fileName[..firstPeriod];
     }
 
     #endregion
@@ -213,8 +224,8 @@ public class BPath {
             return null;
         }
 
-        var  hasWindows   = path.Contains(DirectorySeparator.Windows.ToChar());
-        var  hasUniversal = path.Contains(DirectorySeparator.Universal.ToChar());
+        var hasWindows   = path.Contains(DirectorySeparator.Windows.ToChar());
+        var hasUniversal = path.Contains(DirectorySeparator.Universal.ToChar());
 
         return (hasWindows, hasUniversal) switch {
             (true, false) => DirectorySeparator.Windows,
