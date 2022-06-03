@@ -261,27 +261,30 @@ namespace FowlFever.BSharp.Optional {
         public static Failable Try<T1, T2>([InstantHandle] this Action<T1, T2> actionThatMightFail, T1 arg1, T2 arg2) => Failable.Invoke(() => actionThatMightFail.Invoke(arg1, arg2));
 
         public static Failable Try<T1, T2, T3>(
-            [InstantHandle] this Action<T1, T2, T3> actionThatMightFail,
-            T1                                      arg1,
-            T2                                      arg2,
-            T3                                      arg3
+            [InstantHandle]
+            this Action<T1, T2, T3> actionThatMightFail,
+            T1 arg1,
+            T2 arg2,
+            T3 arg3
         ) => Failable.Invoke(() => actionThatMightFail.Invoke(arg1, arg2, arg3));
 
         public static Failable Try<T1, T2, T3, T4>(
-            [InstantHandle] this Action<T1, T2, T3, T4> actionThatMightFail,
-            T1                                          arg1,
-            T2                                          arg2,
-            T3                                          arg3,
-            T4                                          arg4
+            [InstantHandle]
+            this Action<T1, T2, T3, T4> actionThatMightFail,
+            T1 arg1,
+            T2 arg2,
+            T3 arg3,
+            T4 arg4
         ) => Failable.Invoke(() => actionThatMightFail.Invoke(arg1, arg2, arg3, arg4));
 
         public static Failable Try<T1, T2, T3, T4, T5>(
-            [InstantHandle] this Action<T1, T2, T3, T4, T5> actionThatMightFail,
-            T1                                              arg1,
-            T2                                              arg2,
-            T3                                              arg3,
-            T4                                              arg4,
-            T5                                              arg5
+            [InstantHandle]
+            this Action<T1, T2, T3, T4, T5> actionThatMightFail,
+            T1 arg1,
+            T2 arg2,
+            T3 arg3,
+            T4 arg4,
+            T5 arg5
         ) => Failable.Invoke(() => actionThatMightFail.Invoke(arg1, arg2, arg3, arg4, arg5));
 
         /// <summary>
@@ -561,6 +564,7 @@ namespace FowlFever.BSharp.Optional {
         /// <typeparam name="T">the underlying type of the <see cref="IOptional{T}"/></typeparam>
         /// <returns>the <see cref="IOptional{T}.Value"/></returns>
         /// <exception cref="Exception">if the <see cref="IOptional{T}"/> is empty</exception>
+        [Pure]
         public static T OrElseThrow<T>(this IOptional<T> optional, Func<Exception>? exceptionProvider = default) {
             return optional.HasValue ? optional.Value : throw (exceptionProvider?.Invoke() ?? NoCanHasValue(optional));
         }
@@ -578,7 +582,7 @@ namespace FowlFever.BSharp.Optional {
         /// <typeparam name="T">the underlying type of the <see cref="Nullable{T}"/></typeparam>
         /// <returns></returns>
         /// <exception cref="Exception">if the <see cref="Nullable{T}"/> is empty</exception>
-        [ContractAnnotation("nullable:null => stop")]
+        [Pure]
         public static T OrElseThrow<T>(this T? nullable, Func<Exception>? exceptionProvider = default)
             where T : struct {
             return nullable ?? throw (exceptionProvider?.Invoke() ?? NoCanHasValue<T?>());
