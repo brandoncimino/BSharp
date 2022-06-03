@@ -1435,5 +1435,25 @@ namespace FowlFever.BSharp.Collections {
         [Pure] public static T[]      AsArray<T>(this IEnumerable<T> source) => source as T[]      ?? source.ToArray();
 
         #endregion
+
+        /// <summary>
+        /// <i>(Efficiently?)</i> Returns the <see cref="Enumerable.Single{TSource}(System.Collections.Generic.IEnumerable{TSource})"/> element of the source
+        /// "safely", returning <c>null</c> if there are 0 or 2+ elements.
+        /// </summary>
+        /// <param name="source">the original <see cref="IEnumerable{T}"/></param>
+        /// <typeparam name="T">the type of the individual elements</typeparam>
+        /// <returns>the single <typeparamref name="T"/>, if there is exactly one; otherwise <c>null</c></returns>
+        /// <remarks>
+        /// This should only enumerate at most 2 entries of the <paramref name="source"/>.
+        /// </remarks>
+        public static T? FindSingle<T>(this IEnumerable<T> source) {
+            using var enumerator = source.GetEnumerator();
+
+            if (!enumerator.MoveNext()) {
+                return default;
+            }
+
+            return !enumerator.MoveNext() ? enumerator.Current : default;
+        }
     }
 }

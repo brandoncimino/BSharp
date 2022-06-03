@@ -4,6 +4,8 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reflection;
 
+using FowlFever.BSharp.Collections;
+
 namespace FowlFever.BSharp.Reflection;
 
 public static partial class ReflectionUtils {
@@ -107,15 +109,9 @@ public static partial class ReflectionUtils {
     /// <returns>true if this is <see cref="bool"/> or <see cref="Nullable{T}">bool?</see></returns>
     public static bool IsBooly(this Type type) => typeof(bool?).IsAssignableFrom(type);
 
-    public static ParameterInfo? GetSingleParameter(this MethodInfo method) {
-        try {
-            return method.GetParameters()
-                         .Single();
-        }
-        catch (InvalidOperationException) {
-            return null;
-        }
-    }
+    /// <param name="method">this <see cref="MethodInfo"/></param>
+    /// <returns>the single <see cref="ParameterInfo"/> from <see cref="MethodBase.GetParameters"/>, if there is exactly 1; otherwise, returns <c>null</c>.</returns>
+    public static ParameterInfo? GetSingleParameter(this MethodInfo method) => method.GetParameters().FindSingle();
 
     /// <summary>
     /// Inverse of <see cref="MethodBase.IsStatic"/>. Corresponds to <see cref="BindingFlags.Instance"/>.
