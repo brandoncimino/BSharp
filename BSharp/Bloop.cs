@@ -21,7 +21,7 @@ namespace FowlFever.BSharp {
         /// <param name="action">the <see cref="Action{T}"/> to be performed on each entry of <paramref name="enumerable"/></param>
         /// <typeparam name="T">the type of the entries of <paramref name="enumerable"/></typeparam>
         /// <seealso cref="List{T}.ForEach"/>
-        public static void ForEach<T>(this IEnumerable<T> enumerable, Action<T> action) {
+        public static void ForEach<T>([InstantHandle] this IEnumerable<T> enumerable, [InstantHandle] Action<T> action) {
             foreach (var e in enumerable) {
                 action.Invoke(e);
             }
@@ -34,7 +34,7 @@ namespace FowlFever.BSharp {
         /// <param name="enumerable">this <see cref="IEnumerable{T}"/></param>
         /// <param name="actionWithIndex">an <see cref="Action{T1,T2}"/> that consumes a <typeparamref name="T"/> entry of <paramref name="enumerable"/> <b>AND</b> its <see cref="int"/> index</param>
         /// <typeparam name="T">the type of each entry in <paramref name="enumerable"/></typeparam>
-        public static void ForEach<T>(this IEnumerable<T> enumerable, Action<T, int> actionWithIndex) {
+        public static void ForEach<T>([InstantHandle] this IEnumerable<T> enumerable, [InstantHandle] Action<T, int> actionWithIndex) {
             var index = 0;
             foreach (var e in enumerable) {
                 actionWithIndex(e, index);
