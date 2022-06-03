@@ -38,6 +38,16 @@ namespace FowlFever.BSharp.Reflection {
         /// </remarks>
         public const BindingFlags VariablesBindingFlags = VariableInfo.VariableBindingFlags;
 
+        /// <summary>
+        /// <see cref="BindingFlags"/> that can find <see cref="ConstructorInfo"/> methods.
+        /// </summary>
+        /// <remarks>
+        /// These are insanely stupid:
+        /// <ul>
+        /// <li>If you don't need <see cref="BindingFlags.CreateInstance"/> to find <see cref="ConstructorInfo"/>, what is it even for?!</li>
+        /// <li>How are constructors <see cref="BindingFlags.Instance"/> and not <see cref="BindingFlags.Static"/>?! You clearly don't have an instance yet!</li>
+        /// </ul>
+        /// </remarks>
         public const BindingFlags ConstructorBindingFlags =
             BindingFlags.Instance |
             BindingFlags.Public   |
@@ -76,17 +86,26 @@ namespace FowlFever.BSharp.Reflection {
         /// <returns></returns>
         /// <exception cref="MissingMethodException"></exception>
         [Pure]
-        public static ConstructorInfo EnsureConstructor(this Type type, params Type[] parameterTypes) {
+        public static ConstructorInfo MustGetConstructor(this Type type, params Type[] parameterTypes) {
             return type.GetConstructor(ConstructorBindingFlags, null, parameterTypes, null) ?? throw new MissingMethodException($"Could not retrieve a constructor for {type}");
         }
 
-        private static TOut Construct<TOut>(Type[] parameterTypes, object[] parametersValues) {
+        /// <summary>
+        /// Constructs a new instance of <typeparamref name="T"/>.
+        /// </summary>
+        /// <param name="parameterTypes"></param>
+        /// <param name="parametersValues"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
+        [Pure]
+        private static T Construct<T>(Type[] parameterTypes, object[] parametersValues) {
             try {
-                var constructor = typeof(TOut).EnsureConstructor(parameterTypes);
-                return (TOut)constructor.Invoke(parametersValues);
+                var constructor = typeof(T).MustGetConstructor(parameterTypes);
+                return (T)constructor.Invoke(parametersValues);
             }
             catch (Exception e) {
-                throw e.PrependMessage($"Could not construct an instance of {typeof(TOut).Name} with the parameters {parametersValues}!");
+                throw e.PrependMessage($"Could not construct an instance of {typeof(T).Name} with the parameters {parametersValues}!");
             }
         }
 
