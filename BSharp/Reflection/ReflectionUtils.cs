@@ -299,7 +299,7 @@ namespace FowlFever.BSharp.Reflection {
                    .Distinct();
         }
 
-        private static IEnumerable<Type> Ancestors(this Type type) {
+        private static IEnumerable<Type> GetAncestors(this Type type) {
             var ancestors = new List<Type>();
 
             while (type != null) {
