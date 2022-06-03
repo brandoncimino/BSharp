@@ -45,4 +45,11 @@ public static class FailableExtensions {
     private const string FailIcon    = "❌";
 
     public static string GetIcon(this IFailable failable) => failable.Failed ? FailIcon : SuccessIcon;
+
+    /// <summary>
+    /// TODO: replace this with a default implementation once I'm using .NET 6
+    /// </summary>
+    /// <param name="failable"></param>
+    /// <returns></returns>
+    public static bool Passed(this IFailable failable) => !failable.Failed;
 }
