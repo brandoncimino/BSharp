@@ -392,6 +392,13 @@ namespace FowlFever.BSharp.Reflection {
         [Pure]
         public static bool Extends(this Type child, Type possibleParentType, params Type[] possibleParents) => IsChildOf(child, possibleParentType, possibleParents);
 
+        /// <inheritdoc cref="Type.IsAssignableFrom"/>
+        /// <remarks>
+        /// This is an alias for <see cref="Type.IsAssignableFrom"/> that isn't horribly confusing.
+        /// </remarks>
+        [Pure]
+        public static bool IsParentOf(this Type parent, Type possibleChild) => parent.CanHoldValueOf(possibleChild);
+
         /// <summary>
         /// Determines whether a <b>variable</b> of this <see cref="Type"/> is capable of holding a <b>value</b> of <paramref name="valueType"/>.
         /// </summary>
