@@ -92,11 +92,11 @@ public static partial class ReflectionUtils {
         TCriteria                        filterCriteria
     )
         where TMember : MemberInfo {
-        var asMemberFilter = new MemberFilter(filter!);
+        bool AsMemberFilter(MemberInfo info, object criteria) => filter((TMember)info, (TCriteria)criteria);
         return type.FindAllMembers(
                        GetMemberInfoMemberTypes<TMember>(),
                        GetMemberInfoBindingFlags<TMember>(),
-                       asMemberFilter,
+                       AsMemberFilter,
                        filterCriteria
                    )
                    // 📝 NOTE: You must use Select with  an explicit cast from TMember to it, otherwise
