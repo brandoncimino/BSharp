@@ -1450,10 +1450,13 @@ public static partial class CollectionUtils {
     public static T? FindSingle<T>(this IEnumerable<T> source) {
         using var enumerator = source.GetEnumerator();
 
-        if (!enumerator.MoveNext()) {
+        if (enumerator.MoveNext()) {
+            var first = enumerator.Current;
+
+            return enumerator.MoveNext() ? default : first;
+        }
+        else {
             return default;
         }
-
-        return !enumerator.MoveNext() ? enumerator.Current : default;
     }
 }
