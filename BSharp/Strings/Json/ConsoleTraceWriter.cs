@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 
+using FowlFever.BSharp.Clerical;
 using FowlFever.BSharp.Collections;
 using FowlFever.BSharp.Enums;
 using FowlFever.BSharp.Strings.Indenter;
@@ -60,7 +61,8 @@ public class ConsoleTraceWriter : ISuperTraceWriter {
 
     public ConsoleTraceWriter(object? self) : this(self?.GetType()) { }
 
-    public static ConsoleTraceWriter Start([CallerMemberName] string? starting = default, string? nickname = default) {
+    public static ConsoleTraceWriter Start([CallerMemberName] string? starting = default, string? nickname = default, [CallerFilePath] string? callerFile = default) {
+        nickname = nickname.IfBlank(() => BPath.GetFileNameWithoutExtensions(callerFile ?? ""));
         var tracer = new ConsoleTraceWriter(nickname) {
             LabelFormatter = tracer => $"{tracer.Stack.Peek()}",
         };
