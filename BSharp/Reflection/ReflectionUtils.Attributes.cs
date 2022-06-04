@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
+using FowlFever.BSharp.Collections;
+using FowlFever.BSharp.Enums;
+
 namespace FowlFever.BSharp.Reflection;
 
 public static partial class ReflectionUtils {
@@ -37,6 +40,71 @@ public static partial class ReflectionUtils {
     }
 
     /// <summary>
+    /// Similar to the built-in <see cref="Type.FindMembers"/>, except that it is capable of discovering <see cref="BindingFlags.Static"/>
+    /// methods declared in <see cref="Type.BaseType"/>s <i>(parent classes)</i>
+    /// </summary>
+    /// <param name="type">this <see cref="Type"/></param>
+    /// <param name="memberType">the desired <see cref="MemberTypes"/></param>
+    /// <param name="bindingAttr">a bitmask comprised of one or more <see cref="BindingFlags"/> that specify how the search is conducted</param>
+    /// <param name="filter">a <see cref="MemberFilter"/> that will be applied to each potential <see cref="MemberInfo"/></param>
+    /// <param name="filterCriteria">an <see cref="object"/> passed to the <see cref="MemberFilter"/> to aid in comparisons</param>
+    /// <returns>all of the matching <see cref="MemberInfo"/>s</returns>
+    /// <remarks>
+    /// This method intentionally matches the method signature of <see cref="Type.FindMembers"/>.
+    /// For the more convenient, modern equivalent, see the generic <see cref="FindAllMembers{T,T}"/>.
+    /// </remarks>
+    internal static IEnumerable<MemberInfo> FindAllMembers(
+        this Type    type,
+        MemberTypes  memberType,
+        BindingFlags bindingAttr,
+        MemberFilter filter,
+        object?      filterCriteria
+    ) {
+        var found = type.FindMembers(memberType, bindingAttr, filter, filterCriteria);
+
+        if (!bindingAttr.HasFlag(BindingFlags.Static)) {
+            return found;
+        }
+
+        var sansStatic = bindingAttr.WithoutFlag(BindingFlags.Static);
+        found = type.GetAncestors()
+                    .Skip(1)
+                    .SelectMany(it => it.FindMembers(memberType, sansStatic, filter, filterCriteria))
+                    .PrependNonNull(found)
+                    .ToArray();
+
+        return found;
+    }
+
+    /// <summary>
+    /// Retrieves all of the <typeparamref name="TMember"/>s in this <see cref="Type"/> that satisfy the given <see cref="MemberFilter"/> and <paramref name="filterCriteria"/>.
+    /// </summary>
+    /// <param name="type">the <see cref="Type"/> that has the members</param>
+    /// <param name="filter">the "bi-predicate" that determines if a <see cref="MemberInfo"/> should be returned</param>
+    /// <param name="filterCriteria">the criteria object used by the <paramref name="filter"/></param>
+    /// <typeparam name="TMember">a <see cref="MemberInfo"/> type</typeparam>
+    /// <typeparam name="TCriteria">the type of the <paramref name="filterCriteria"/> object</typeparam>
+    /// <returns>all of the matching <see cref="TMember"/>s</returns>
+    /// <remarks>Slightly more extensive than <see cref="RuntimeReflectionExtensions"/> methods, because this method can recursively check for <see cref="BindingFlags.Static"/> members declared in <see cref="Type.BaseType"/>s (which are normally not accessible).</remarks>
+    public static IEnumerable<TMember> FindAllMembers<TMember, TCriteria>(
+        this Type                        type,
+        Func<TMember?, TCriteria?, bool> filter,
+        TCriteria                        filterCriteria
+    )
+        where TMember : MemberInfo {
+        var asMemberFilter = new MemberFilter(filter!);
+        return type.FindAllMembers(
+                       GetMemberInfoMemberTypes<TMember>(),
+                       GetMemberInfoBindingFlags<TMember>(),
+                       asMemberFilter,
+                       filterCriteria
+                   )
+                   // 📝 NOTE: You must use Select with  an explicit cast from TMember to it, otherwise
+                   //    `VariableInfo` wouldn't work properly 🤷‍
+                   .Select(it => (TMember)it);
+    }
+
+    /// <summary>
     /// 
     /// </summary>
     /// <remarks>
@@ -63,7 +131,7 @@ public static partial class ReflectionUtils {
     public static IEnumerable<TMember> FindMembersWithAttribute<TMember, TAttribute>(this Type type)
         where TMember : MemberInfo
         where TAttribute : Attribute {
-        return type.FindMembers(
+        return type.FindAllMembers(
                        GetMemberInfoMemberTypes<TMember>(),
                        GetMemberInfoBindingFlags<TMember>(),
                        FilterWithAttribute,
