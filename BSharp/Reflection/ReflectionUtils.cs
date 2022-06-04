@@ -6,7 +6,6 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 
 using FowlFever.BSharp.Collections;
-using FowlFever.BSharp.Exceptions;
 using FowlFever.BSharp.Strings;
 
 using JetBrains.Annotations;
@@ -91,48 +90,42 @@ namespace FowlFever.BSharp.Reflection {
         }
 
         /// <summary>
-        /// Constructs a new instance of <typeparamref name="T"/>.
+        /// <inheritdoc cref="Construct"/>
         /// </summary>
-        /// <param name="parameterTypes"></param>
-        /// <param name="parametersValues"></param>
-        /// <typeparam name="T"></typeparam>
-        /// <returns></returns>
-        /// <exception cref="Exception"></exception>
-        [Pure]
-        private static T Construct<T>(Type[] parameterTypes, object[] parametersValues) {
-            try {
-                var constructor = typeof(T).MustGetConstructor(parameterTypes);
-                return (T)constructor.Invoke(parametersValues);
-            }
-            catch (Exception e) {
-                throw e.PrependMessage($"Could not construct an instance of {typeof(T).Name} with the parameters {parametersValues}!");
-            }
+        /// <param name="parameters">the parameters of the constructor to be called</param>
+        /// <typeparam name="T">the desired <see cref="Type"/> to be constructed</typeparam>
+        /// <returns>an instance of <see cref="T"/> constructed with <paramref name="parameters"/></returns>
+        /// <remarks>
+        /// <inheritdoc cref="Construct"/>
+        /// </remarks>
+        public static T Construct<T>(params object?[] parameters) {
+            return (T)Construct(typeof(T), parameters);
         }
 
         /// <summary>
-        /// Constructs a new instance of <see cref="TOut"/> using a constructor that <b>exactly</b> matches the given <see cref="parameters"/>.
-        ///
-        /// <p/><b>NOTE:</b><br/>
-        /// This must match the desired constructor <b>EXACTLY</b> - that means that the parameter types must be exact, and that optional parameters must be present!
-        ///
+        /// Constructs a new instance of this <see cref="Type"/> using a <see cref="ConstructorInfo"/> that <b>exactly</b> matches the given <see cref="parameters"/>.
         /// </summary>
         /// <remarks>
-        /// I tried to make this an extension method of <see cref="Type"/>, but couldn't get it to work:
-        /// Unfortunately, I don't think it's possible, in C#, to go from a <see cref="Type"/> to a generic type parameter in a way that the
-        /// compiler knows about - i.e., in a way equivalent to Java's <![CDATA[Class<T>]]>.
-        ///
-        /// This means that making this a <see cref="Type"/> extension method is redundant with <typeparamref name="TOut"/>,
-        /// other than allowing this to be an extension method and thus giving you a way to find it that is semantically similar
-        /// to <see cref="Type.GetConstructor(System.Reflection.BindingFlags,System.Reflection.Binder,System.Reflection.CallingConventions,System.Type[],System.Reflection.ParameterModifier[])">Type.GetConstructor()</see>.
+        /// <ul>
+        /// <li>📎 This is based on <see cref="Activator.CreateInstance(System.Type)"/></li>
+        /// <li>📎 This can call <see cref="BindingFlags.NonPublic"/> constructors</li>
+        /// <li>⚠ Parameters can be <c>null</c>, however this is much more likely to cause an <see cref="AmbiguousMatchException"/></li>
+        /// <li>⚠ You <b>must</b> specify optional parameters</li>
+        /// </ul>
         /// </remarks>
+        /// <param name="type">the <see cref="Type"/> to be constructed</param>
         /// <param name="parameters">the parameters of the constructor to be called</param>
-        /// <typeparam name="TOut">the desired type to be constructed</typeparam>
-        /// <returns>an instance of <see cref="TOut"/> constructed with <paramref name="parameters"/></returns>
-        public static TOut Construct<TOut>(params object[] parameters) {
-            return Construct<TOut>(
-                parameters.Select(it => it.GetType()).ToArray(),
-                parameters
+        /// <returns>an instance of this <see cref="Type"/> constructed with <paramref name="parameters"/></returns>
+        public static object Construct(this Type type, params object?[]? parameters) {
+            parameters = parameters.OrEmpty();
+            var obj = Activator.CreateInstance(
+                type: type,
+                bindingAttr: ConstructorBindingFlags,
+                binder: null,
+                args: parameters,
+                culture: null
             );
+            return obj;
         }
 
         #endregion
@@ -236,43 +229,52 @@ namespace FowlFever.BSharp.Reflection {
             return commonInterfaces.FirstOrDefault() ?? typeof(object);
         }
 
-        internal static Type CommonBaseClass(IEnumerable<Type> types) {
-            Type? mostCommonType = default;
+        /// <summary>
+        /// Attempts to find the most specific <see cref="Type.BaseType"/> these <see cref="Type"/>s have in common. 
+        /// </summary>
+        /// <param name="a">a <see cref="Type"/></param>
+        /// <param name="b">another <see cref="Type"/></param>
+        /// <returns>the most specific <see cref="Type.BaseType"/> these <see cref="Type"/>s have in common</returns>
+        /// <remarks>
+        /// <b>⚠ WARNING ⚠</b>
+        /// <br/>
+        /// This is a fairly naive implementation, only going through <see cref="Type.BaseType"/>s.
+        /// In particular, it doesn't check for <see cref="CommonInterfaces(System.Type?,System.Type?)"/>,
+        /// which is still fairly experimental.</remarks>
+        public static Type CommonBaseClass(Type? a, Type? b) {
+            Type CommonAncestor(IEnumerable<Type> ancestors, Type y) {
+                foreach (var x in ancestors) {
+                    if (x.IsParentOf(y)) {
+                        return x;
+                    }
 
-            foreach (var t in types) {
-                mostCommonType = CommonBaseClass(mostCommonType, t);
-                if (mostCommonType == typeof(object)) {
-                    return mostCommonType;
+                    if (y.IsParentOf(x)) {
+                        return y;
+                    }
                 }
+
+                return typeof(object);
             }
 
-            return mostCommonType ?? typeof(object);
+            return (a, b) switch {
+                (null, null) => typeof(object),
+                (_, null)    => a,
+                (null, _)    => b,
+                _            => CommonAncestor(a.GetAncestors(), b),
+            };
         }
 
-        public static Type? CommonBaseClass(Type? a, Type? b) {
-            if (a == null || b == null) {
-                return a ?? b;
+        public static Type CommonBaseClass(IEnumerable<Type?> types) {
+            Type? mostCommonClass = default;
+
+            foreach (var t in types) {
+                mostCommonClass = CommonBaseClass(mostCommonClass, t);
+                if (mostCommonClass == typeof(object)) {
+                    return mostCommonClass;
+                }
             }
 
-            while (true) {
-                if (a == b) {
-                    return a;
-                }
-
-                if (a.IsAssignableFrom(b)) {
-                    return a;
-                }
-
-                if (b.IsAssignableFrom(a)) {
-                    return b;
-                }
-
-                if (a.BaseType == null) {
-                    return typeof(object);
-                }
-
-                a = a.BaseType;
-            }
+            return mostCommonClass ?? typeof(object);
         }
 
         // [CanBeNull]
@@ -338,19 +340,7 @@ namespace FowlFever.BSharp.Reflection {
         /// <exception cref="ArgumentNullException"></exception>
         [PublicAPI]
         [Pure]
-        [ContractAnnotation("valueType:null => stop")]
-        [ContractAnnotation("variableType:null => stop")]
-        public static bool CanBeAssignedTo(this Type valueType, Type variableType) {
-            if (valueType == null) {
-                throw new ArgumentNullException(nameof(valueType));
-            }
-
-            if (variableType == null) {
-                throw new ArgumentNullException(nameof(variableType));
-            }
-
-            return variableType.IsAssignableFrom(valueType);
-        }
+        public static bool CanBeAssignedTo(this Type valueType, Type variableType) => variableType.IsAssignableFrom(valueType);
 
         /// <summary>
         /// Determines whether this <see cref="Type"/> is an inheritor of any of the <paramref name="possibleParents"/> via <see cref="Type.IsAssignableFrom"/>
@@ -360,19 +350,7 @@ namespace FowlFever.BSharp.Reflection {
         /// <returns>true if any of the <paramref name="possibleParents"/> <see cref="Type.IsAssignableFrom"/> <paramref name="child"/></returns>
         /// <exception cref="ArgumentNullException">if <paramref name="child"/> or <paramref name="possibleParents"/> is null</exception>
         [Pure]
-        [ContractAnnotation("child:null => stop")]
-        [ContractAnnotation("possibleParents:null => stop")]
-        public static bool IsChildOf(this Type child, [InstantHandle] IEnumerable<Type> possibleParents) {
-            if (child == null) {
-                throw new ArgumentNullException(nameof(child));
-            }
-
-            if (possibleParents == null) {
-                throw new ArgumentNullException(nameof(possibleParents));
-            }
-
-            return possibleParents.Any(it => it.IsAssignableFrom(child));
-        }
+        public static bool IsChildOf(this Type child, [InstantHandle] IEnumerable<Type> possibleParents) => possibleParents.Any(it => it.IsAssignableFrom(child));
 
         /**
          * <inheritdoc cref="IsChildOf(System.Type,System.Collections.Generic.IEnumerable{System.Type})"/>
