@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.CompilerServices;
 
 using FowlFever.BSharp.Strings;
 
@@ -8,7 +9,7 @@ using NUnit.Framework.Constraints;
 namespace FowlFever.Testing {
     public class Assumer<T> : MultipleAsserter<Assumer<T>, T> {
         public Assumer() { }
-        public Assumer(T actual) : base(actual) { }
+        public Assumer(T actual, [CallerArgumentExpression("actual")] string? alias = default) : base(actual, alias) { }
 
         protected override void OnFailure(string results) => Assert.Inconclusive(results);
 

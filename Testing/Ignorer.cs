@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.CompilerServices;
 
 using NUnit.Framework;
 using NUnit.Framework.Constraints;
@@ -7,7 +8,7 @@ namespace FowlFever.Testing {
     public class Ignorer<T> : MultipleAsserter<Ignorer<T>, T> {
         public Ignorer() { }
 
-        public Ignorer(T actual) : base(actual) { }
+        public Ignorer(T actual, [CallerArgumentExpression("actual")] string? alias = default) : base(actual, alias) { }
 
         protected override void OnFailure(string results) => Assert.Ignore(results);
 

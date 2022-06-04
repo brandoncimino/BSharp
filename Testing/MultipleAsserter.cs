@@ -29,7 +29,8 @@ namespace FowlFever.Testing {
         // private Lazy<TActual> Actual => _actual ?? throw new InvalidOperationException("Actual is empty!");
         internal OneTimeOnly<TActual> Actual { get; init; } = new OneTimeOnly<TActual>();
 
-        public Func<string>? Heading { get; set; }
+        public Func<string>? Heading          { get; set; }
+        public string?       ActualValueAlias { get; }
 
         public int Indent { get; protected set; }
 
@@ -196,10 +197,14 @@ namespace FowlFever.Testing {
 
         protected MultipleAsserter() { }
 
-        protected MultipleAsserter(TActual actual) : this(() => actual) { }
+        protected MultipleAsserter(TActual actual, string? actualValueAlias) {
+            Actual.Set(actual);
+            ActualValueAlias = actualValueAlias;
+        }
 
-        protected MultipleAsserter(Func<TActual> actualValueDelegate) {
+        protected MultipleAsserter(Func<TActual> actualValueDelegate, string? actualValueAlias) {
             Actual.Set(actualValueDelegate);
+            ActualValueAlias = actualValueAlias;
         }
 
         #endregion
@@ -543,9 +548,9 @@ namespace FowlFever.Testing {
                 PreferredLineStyle = LineStyle.Single, LineLengthLimit = 30, TypeLabelStyle = TypeNameStyle.Short
             };
 
-            var countString = failures.IsNotEmpty() ? $"[{failures.Count}/{testResults.Count()}]" : $"All {testResults.Count()}";
-
-            var againstString = Actual.ToOptional().Select(it => $" against [{it}]").OrElse("");
+            var countString       = failures.IsNotEmpty() ? $"[{failures.Count}/{testResults.Count()}]" : $"All {testResults.Count()}";
+            var actualValueString = ActualValueAlias.IfBlank(Actual.Value?.ToString());
+            var againstString     = actualValueString.IsBlank() ? "" : $" against {actualValueString}";
 
             var summary = failures.IsNotEmpty()
                               ? $"💔 {countString} assertions{againstString} failed:"

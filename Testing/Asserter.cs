@@ -58,8 +58,8 @@ namespace FowlFever.Testing {
         protected override void OnFailure(string results) => Assert.Fail(results);
 
         public Asserter() { }
-        public Asserter(T       actual) : base(actual) { }
-        public Asserter(Func<T> actualValueDelegate) : base(actualValueDelegate) { }
+        public Asserter(T       actual,              [CallerArgumentExpression("actual")]              string? actualValueAlias = default) : base(actual, actualValueAlias) { }
+        public Asserter(Func<T> actualValueDelegate, [CallerArgumentExpression("actualValueDelegate")] string? actualValueAlias = default) : base(actualValueDelegate, actualValueAlias) { }
     }
 
     [PublicAPI]
@@ -73,13 +73,13 @@ namespace FowlFever.Testing {
         }
 
         [Pure]
-        public static Asserter<T> Against<T>(T actual, [CallerArgumentExpression("actual")] string? heading = default) {
-            return new Asserter<T>(actual).WithHeading(heading);
+        public static Asserter<T> Against<T>(T actual, [CallerArgumentExpression("actual")] string? actualValueAlias = default) {
+            return new Asserter<T>(actual, actualValueAlias);
         }
 
         [Pure]
-        public static Asserter<T> Against<T>(Func<T> actualValueDelegate) {
-            return new Asserter<T>(actualValueDelegate);
+        public static Asserter<T> Against<T>(Func<T> actualValueDelegate, [CallerArgumentExpression("actualValueDelegate")] string? actualValueAlias = default) {
+            return new Asserter<T>(actualValueDelegate, actualValueAlias);
         }
 
         [Pure] public static Asserter<object> WithHeading(string? heading) => new Asserter<object>().WithHeading(heading);
