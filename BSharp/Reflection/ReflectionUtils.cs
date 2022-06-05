@@ -107,10 +107,11 @@ namespace FowlFever.BSharp.Reflection {
         /// </summary>
         /// <remarks>
         /// <ul>
-        /// <li>📎 This is based on <see cref="Activator.CreateInstance(System.Type)"/></li>
-        /// <li>📎 This can call <see cref="BindingFlags.NonPublic"/> constructors</li>
-        /// <li>⚠ Parameters can be <c>null</c>, however this is much more likely to cause an <see cref="AmbiguousMatchException"/></li>
-        /// <li>⚠ You <b>must</b> specify optional parameters</li>
+        /// <li>📎 This is based on <see cref="Activator.CreateInstance(System.Type)"/>.</li>
+        /// <li>📎 This can call <see cref="BindingFlags.NonPublic"/> constructors.</li>
+        /// <li>⚠ Parameters can be <c>null</c>, however this is much more likely to cause an <see cref="AmbiguousMatchException"/>.</li>
+        /// <li>⚠ You <b>must</b> specify optional parameters.</li>
+        /// <li>📎 To construct a <see cref="Type.ContainsGenericParameters"/>, you must first assign the generic type parameters using <see cref="Type.MakeGenericType"/>.</li>
         /// </ul>
         /// </remarks>
         /// <param name="type">the <see cref="Type"/> to be constructed</param>
