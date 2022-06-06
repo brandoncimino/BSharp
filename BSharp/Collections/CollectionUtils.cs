@@ -245,6 +245,40 @@ public static partial class CollectionUtils {
     }
 
     /// <summary>
+    /// Similar to <see cref="JoinLines{T}(System.Collections.Generic.IEnumerable{T},string?,string?)"/>, but generates labels from a <see cref="Func{T,T,T}"/> that takes in
+    /// the current entry and its index.
+    /// </summary>
+    /// <param name="enumerable">the <see cref="IEnumerable{T}"/> whose entries will be joined</param>
+    /// <param name="labelFunction">a function to generate a "label" for each entry based on the entry and its index</param>
+    /// <param name="indent">an optional <see cref="string"/> prepended to each line</param>
+    /// <typeparam name="T">the type of each <see cref="IEnumerable{T}"/> entry</typeparam>
+    /// <returns>a single string where each entry is on a separate line</returns>
+    public static string JoinLabelled<T>(
+        this IEnumerable<T>  enumerable,
+        Func<T, int, string> labelFunction,
+        string?              indent = default
+    ) {
+        return enumerable.SelectMany((it, i) => it.ToStringLines().IndentWithLabel(labelFunction(it, i)))
+                         .Select(it => it.Prefix(indent))
+                         .JoinString("\n");
+    }
+
+    /// <summary>
+    /// Joins each entry in <paramref name="enumerable"/> with a number label on each line.
+    /// </summary>
+    /// <param name="enumerable">this <see cref="IEnumerable{T}"/></param>
+    /// <param name="numberFormat">the function that produces each number label</param>
+    /// <typeparam name="T">the type of each entry in this <see cref="IEnumerable{T}"/></typeparam>
+    /// <returns>all of the joined <see cref="string"/>s</returns>
+    public static string JoinLinesNumbered<T>(
+        this IEnumerable<T> enumerable,
+        Func<int, string>?  numberFormat = default
+    ) {
+        numberFormat ??= i => (..9).Contains(i) ? Emoji.Number(i) : $"[{i}]";
+        return enumerable.JoinLabelled((_, i) => numberFormat(i));
+    }
+
+    /// <summary>
     /// Similar to <see cref="JoinLines{T}"/>, except that this method will recur onto any entries in the <see cref="IEnumerable{T}"/>
     /// which are themselves <see cref="IEnumerable{T}"/>s - essentially "flattening" the result.
     /// </summary>
