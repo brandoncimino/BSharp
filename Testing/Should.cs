@@ -35,6 +35,21 @@ namespace FowlFever.Testing {
         /// Corresponds to <see cref="NUnit.Framework.Is"/>.<see cref="NUnit.Framework.Is.Not"/>.<see cref="ConstraintExpression.Null"/>.
         /// </summary>
         BeNotNull,
+        /// <summary>
+        /// Corresponds to <see cref="Throws"/>.<see cref="Throws.Exception"/>
+        /// </summary>
+        ThrowException,
+        /// <summary>
+        /// Corresponds to <see cref="Throws"/>.<see cref="Throws.Exception"/>
+        /// </summary>
+        ThrowNothing,
+    }
+
+    public enum ShouldStyle {
+        Default,
+        Boolean,
+        Exception,
+        Nullity,
     }
 
     [SuppressMessage("ReSharper", "AccessToStaticMemberViaDerivedType")]
@@ -47,23 +62,61 @@ namespace FowlFever.Testing {
             };
         }
 
-        public static Constraint Constrain(this Should should) {
+        public static IResolveConstraint ToNullConstraint(this Should should) {
             return should switch {
-                Should.Pass      => Is.True,
-                Should.Fail      => Is.False,
-                Should.BeNull    => Is.Null,
+                Should.Pass      => Is.Not.Null,
+                Should.Fail      => Is.Null,
                 Should.BeNotNull => Is.Not.Null,
-                _                => throw BEnum.InvalidEnumArgumentException(nameof(should), should)
+                Should.BeNull    => Is.Null,
+                _                => throw BEnum.UnhandledSwitch(should),
+            };
+        }
+
+        private static IResolveConstraint ToBooleanConstraint(this Should should) => should switch {
+            Should.Pass => Is.True,
+            Should.Fail => Is.False,
+            _           => throw BEnum.UnhandledSwitch(should),
+        };
+
+        private static IResolveConstraint ToThrowsConstraint(this Should should) => should switch {
+            Should.Pass           => Throws.Nothing,
+            Should.Fail           => Throws.Exception,
+            Should.ThrowNothing   => Throws.Nothing,
+            Should.ThrowException => Throws.Exception,
+            _                     => throw BEnum.UnhandledSwitch(should),
+        };
+
+        public static IResolveConstraint Constrain(this Should should, ShouldStyle style = ShouldStyle.Default) {
+            IResolveConstraint DefaultConstraint() {
+                return should switch {
+                    Should.Pass           => Is.True,
+                    Should.Fail           => Is.False,
+                    Should.BeNull         => Is.Null,
+                    Should.BeNotNull      => Is.Not.Null,
+                    Should.ThrowException => Throws.Exception,
+                    Should.ThrowNothing   => Throws.Nothing,
+                    _                     => throw BEnum.InvalidEnumArgumentException(nameof(should), should)
+                };
+            }
+
+            return style switch {
+                ShouldStyle.Default   => DefaultConstraint(),
+                ShouldStyle.Boolean   => should.ToBooleanConstraint(),
+                ShouldStyle.Nullity   => should.ToNullConstraint(),
+                ShouldStyle.Exception => should.ToThrowsConstraint(),
+                _                     => throw BEnum.InvalidEnumArgumentException(style),
             };
         }
 
         public static Should Inverse(this Should should) {
             return should switch {
-                Should.Pass      => Should.Fail,
-                Should.Fail      => Should.Pass,
-                Should.BeNull    => Should.BeNotNull,
-                Should.BeNotNull => Should.BeNull,
-                _                => throw BEnum.InvalidEnumArgumentException(nameof(should), should)
+                Should.Pass           => Should.Fail,
+                Should.Fail           => Should.Pass,
+                Should.BeNull         => Should.BeNotNull,
+                Should.BeNotNull      => Should.BeNull,
+                Should.ThrowException => Should.ThrowNothing,
+                Should.ThrowNothing   => Should.ThrowException,
+                _                     => throw BEnum.InvalidEnumArgumentException(nameof(should), should),
             };
         }
     }
