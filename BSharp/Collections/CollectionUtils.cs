@@ -274,7 +274,7 @@ public static partial class CollectionUtils {
         this IEnumerable<T> enumerable,
         Func<int, string>?  numberFormat = default
     ) {
-        numberFormat ??= i => (..9).Contains(i) ? Emoji.Number(i) : $"[{i}]";
+        numberFormat ??= i => $"[{i}]";
         return enumerable.JoinLabelled((_, i) => numberFormat(i));
     }
 

@@ -499,7 +499,11 @@ namespace FowlFever.BSharp.Strings {
             string? label,
             string? joiner = " "
         ) {
-            var firstLinePrefix = $"{label}{joiner}";
+            if (label == null) {
+                return lines.Select(it => $"{it}");
+            }
+
+            var firstLinePrefix = label.Suffix(joiner);
             var otherLinePrefix = $" ".Repeat(firstLinePrefix.Length);
             return lines.Select(
                 (line, i) => i == 0 ? $"{firstLinePrefix}{line}" : $"{otherLinePrefix}{line}"
