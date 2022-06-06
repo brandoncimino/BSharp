@@ -43,7 +43,7 @@ public class BackedProperty : IEquatable<BackedProperty> {
     /// </remarks>
     public VariableInfo Back { get; }
 
-    private static readonly IEqualityComparer<MemberInfo> MemberComparer = ReflectionUtils.MetadataTokenComparer.Instance;
+    private static readonly IEqualityComparer<MemberInfo> MemberComparer = MetadataTokenComparer.Instance;
 
     #region Constructors & Factories
 
@@ -156,7 +156,7 @@ public class BackedProperty : IEquatable<BackedProperty> {
     /// <summary>
     /// Holds all of the <see cref="BackedProperty"/>s we've ever found, indexed by their <see cref="BackedProperty.Front"/>
     /// </summary>
-    private static readonly ConcurrentDictionary<PropertyInfo, BackedProperty> BackerCache = new(ReflectionUtils.MetadataTokenComparer.Instance);
+    private static readonly ConcurrentDictionary<PropertyInfo, BackedProperty> BackerCache = new(MetadataTokenComparer.Instance);
 
     /// <summary>
     /// Holds all of the <see cref="Type"/>s that have been <see cref="BackerCache"/>d

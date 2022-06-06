@@ -16,7 +16,7 @@ namespace FowlFever.BSharp.Reflection;
 public class AutoProperty : BackedProperty {
     private static readonly RegexGroup                                            PropertyNameGroup                   = new RegexGroup("property", @"\w+");
     private static readonly Regex                                                 AutoPropertyBackingFieldNamePattern = new Regex(@$"^<{PropertyNameGroup}>k__BackingField$");
-    private static readonly ConcurrentDictionary<MemberInfo, Lazy<AutoProperty?>> AutoPropertyCache                   = new(ReflectionUtils.MetadataTokenComparer.Instance);
+    private static readonly ConcurrentDictionary<MemberInfo, Lazy<AutoProperty?>> AutoPropertyCache                   = new(MetadataTokenComparer.Instance);
 
     private AutoProperty(PropertyInfo front, VariableInfo back) : base(front, back) {
         if (front.DeclaringType == null) {
