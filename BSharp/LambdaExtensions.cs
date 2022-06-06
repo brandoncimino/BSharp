@@ -151,5 +151,27 @@ namespace FowlFever.BSharp {
         }
 
         #endregion
+
+        #region Parameter "Reduction" (pretty sure "binding" is the correct word)
+
+        public static Action Reduce<T>(this      Action<T>      action, T  arg)           => () => action(arg);
+        public static Action Reduce<T1, T2>(this Action<T1, T2> action, T1 arg1, T2 arg2) => () => action(arg1, arg2);
+
+        public static Action Reduce<T1, T2, T3>(
+            this Action<T1, T2, T3> action,
+            T1                      arg1,
+            T2                      arg2,
+            T3                      arg3
+        ) => () => action(arg1, arg2, arg3);
+
+        public static Action Reduce<T1, T2, T3, T4>(
+            this Action<T1, T2, T3, T4> action,
+            T1                          arg1,
+            T2                          arg2,
+            T3                          arg3,
+            T4                          arg4
+        ) => () => action(arg1, arg2, arg3, arg4);
+
+        #endregion
     }
 }
