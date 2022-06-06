@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 
 using FowlFever.Clerical.Validated;
-using FowlFever.Conjugal.Affixing;
 using FowlFever.Testing;
 
 using NUnit.Framework;
@@ -11,7 +10,7 @@ using Is = FowlFever.Testing.Is;
 namespace BSharp.Tests.Clerical2;
 
 public class PathPartTests : BaseClericalTest {
-    public static IEnumerable<char>  GetInvalidPathPartChars() => PathPart.InvalidChars;
+    public static IEnumerable<char> GetInvalidPathPartChars() => PathPart.InvalidChars;
 
     [Test]
     public void PathPart_InvalidChar_AtStart([ValueSource(nameof(GetInvalidPathPartChars))] char badChar) {
