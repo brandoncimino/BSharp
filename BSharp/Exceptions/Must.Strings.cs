@@ -68,16 +68,18 @@ public static partial class Must {
     public static string? NotContain(
         string?           actualValue,
         IEnumerable<char> unwantedCharacters,
+        string?           details = default,
         [CallerArgumentExpression("actualValue")]
         string? parameterName = default,
         [CallerMemberName]
-        string? methodName = default
+        string? rejectedBy = default
     ) {
         return Be(
             actualValue,
-            it => it?.ContainsAny(unwantedCharacters) == true,
+            it => it?.ContainsAny(unwantedCharacters) == false,
+            details,
             parameterName,
-            methodName
+            rejectedBy
         );
     }
 
