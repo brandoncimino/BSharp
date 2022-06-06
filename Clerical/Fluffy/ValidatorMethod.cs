@@ -1,5 +1,6 @@
 using System.Reflection;
 
+using FowlFever.BSharp.Reflection;
 using FowlFever.BSharp.Strings;
 using FowlFever.BSharp.Sugar;
 
@@ -11,7 +12,7 @@ namespace FowlFever.Clerical.Fluffy;
 /// The core implementation of <see cref="IValidatorMethod"/>.
 /// </summary>
 /// <typeparam name="T"></typeparam>
-public class ValidatorMethod<T> : IValidatorMethod, IPrettifiable {
+public class ValidatorMethod<T> : IValidatorMethod, IPrettifiable, IEquatable<IValidatorMethod>, IEquatable<MethodInfo> {
     private readonly Lazy<Action<T?>>     _assertion;
     private readonly Lazy<Func<T?, bool>> _predicate;
     private readonly Lazy<Func<T?, T?>>   _checkpoint;
@@ -40,48 +41,47 @@ public class ValidatorMethod<T> : IValidatorMethod, IPrettifiable {
     /// </summary>
     /// <param name="assertion">an <see cref="ValidatorStyle.Assertion"/> method</param>
     /// <returns>a new <see cref="ValidatorMethod{TIn}"/></returns>
-    public static ValidatorMethod<T> From(Action<T?> assertion) => new(
+    internal ValidatorMethod(Action<T?> assertion) : this(
         assertion.Method,
         ValidatorStyle.Assertion,
         assertion,
         assertion.ToPredicate(),
         assertion.ToCheckpoint()
-    );
+    ) { }
 
     /// <summary>
     /// Constructs a <see cref="ValidatorMethod{T}"/> from a <see cref="ValidatorStyle.Predicate"/>.
     /// </summary>
     /// <param name="predicate"></param>
     /// <returns></returns>
-    internal static ValidatorMethod<T> From(Func<T?, bool> predicate) => new(
+    internal ValidatorMethod(Func<T?, bool> predicate) : this(
         predicate.Method,
         ValidatorStyle.Predicate,
         predicate.ToAssertion(),
         predicate,
         predicate.ToCheckpoint()
-    );
+    ) { }
 
     /// <summary>
     /// Constructs a new <see cref="ValidatorMethod{T}"/> from a <see cref="ValidatorStyle.Checkpoint"/>.
     /// </summary>
     /// <param name="checkpoint"></param>
     /// <returns></returns>
-    internal static ValidatorMethod<T> From(Func<T?, T?> checkpoint) => new(
+    internal ValidatorMethod(Func<T?, T?> checkpoint) : this(
         checkpoint.Method,
         ValidatorStyle.Checkpoint,
         checkpoint.ToAssertion(),
         checkpoint.ToPredicate(),
         checkpoint
-    );
+    ) { }
 
-    internal static ValidatorMethod<T> From(Delegate delgato) {
-        return delgato switch {
-            Action<T?> asserter      => From(asserter),
-            Func<T?, bool> predicate => From(predicate),
-            Func<T?, T?> checkpoint  => From(checkpoint),
+    private static ValidatorMethod<T> From(Delegate delgato) =>
+        delgato switch {
+            Action<T?> asserter      => new ValidatorMethod<T>(asserter),
+            Func<T?, bool> predicate => new ValidatorMethod<T>(predicate),
+            Func<T?, T?> checkpoint  => new ValidatorMethod<T>(checkpoint),
             _                        => throw new ArgumentException($"{delgato.Prettify()} isn't an appropriate {nameof(ValidatorMethod<T>)}!"),
         };
-    }
 
     public static ValidatorMethod<T> From(MethodInfo method) {
         var delegateType = Validator.CreateDelegate(method);
@@ -104,13 +104,29 @@ public class ValidatorMethod<T> : IValidatorMethod, IPrettifiable {
 
     #region Casts
 
-    public static implicit operator ValidatorMethod<T>(Action<T?>     action)    => From(action);
-    public static implicit operator ValidatorMethod<T>(Func<T?, bool> predicate) => From(predicate);
-    public static implicit operator ValidatorMethod<T>(Func<T?, T?>   func)      => From(func);
+    public static implicit operator ValidatorMethod<T>(Action<T?>     action)    => new(action);
+    public static implicit operator ValidatorMethod<T>(Func<T?, bool> predicate) => new(predicate);
+    public static implicit operator ValidatorMethod<T>(Func<T?, T?>   func)      => new(func);
 
     public static implicit operator Action<T?>(ValidatorMethod<T?>     validator) => validator.Assert;
     public static implicit operator Func<T?, bool>(ValidatorMethod<T?> validator) => validator.Try;
     public static implicit operator Func<T?, T?>(ValidatorMethod<T?>   validator) => validator.Check;
+
+    #endregion
+
+    #region Equality
+
+    private readonly IEqualityComparer<MethodInfo?> MethodComparer = new MetadataTokenComparer();
+
+    public          bool Equals(IValidatorMethod? other) => MethodComparer.Equals(Method, other?.Method);
+    public          bool Equals(MethodInfo        other) => MethodComparer.Equals(Method, other);
+    public override bool Equals(object?           obj)   => MethodComparer.Equals(Method, obj as MethodInfo);
+    public override int  GetHashCode()                   => MethodComparer.GetHashCode();
+
+    public static bool operator ==(ValidatorMethod<T>? left, IValidatorMethod?   right) => Equals(left, right);
+    public static bool operator ==(IValidatorMethod?   left, ValidatorMethod<T>? right) => Equals(left, right);
+    public static bool operator !=(IValidatorMethod?   left, ValidatorMethod<T>? right) => !Equals(left, right);
+    public static bool operator !=(ValidatorMethod<T>? left, IValidatorMethod?   right) => !Equals(left, right);
 
     #endregion
 
@@ -122,7 +138,7 @@ public class ValidatorMethod<T> : IValidatorMethod, IPrettifiable {
 
     public override string ToString() {
         var staticString = Method.IsStatic ? "static" : "instance";
-        return $"[{GetType().Name} from {staticString} {Method.DeclaringType?.Name}.{Method.Name}]";
+        return $"[{nameof(ValidatorMethod<T>)}<{typeof(T).Name}> from {staticString} {Method.DeclaringType?.Name}.{Method.Name}]";
     }
 
     #endregion

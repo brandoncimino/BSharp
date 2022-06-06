@@ -40,5 +40,5 @@ public interface IValidatorMethod {
     ///
     /// This facilitates small modifications, such as <see cref="string.Trim()"/>ming white space, before passing the object on to the next <see cref="IValidatorMethod"/>.
     /// </remarks>
-    public object Check(object? value);
+    public object? Check(object? value);
 }
