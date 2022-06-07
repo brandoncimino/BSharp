@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 
 namespace FowlFever.BSharp.Optional {
     /// <summary>
@@ -11,12 +12,13 @@ namespace FowlFever.BSharp.Optional {
         public           Exception?                Excuse                => Execution.Excuse;
         public           bool                      Failed                => Execution.Failed;
         public           IReadOnlyCollection<Type> IgnoredExceptionTypes { get; } = new List<Type>();
-        public           Exception?                IgnoredException      { get; } = default;
+        public           Exception?                IgnoredException      => default;
+        public           string?                   Expression            => Execution.Expression;
         public           DateTime                  StartedAt             { get; }
         public           DateTime                  EndedAt               => StartedAt + Duration;
         public           TimeSpan                  Duration              { get; }
 
-        public Timeable(Action action) {
+        public Timeable(Action action, [CallerArgumentExpression("action")] string? expression = default) {
             StartedAt = DateTime.UtcNow;
             var sw = Stopwatch.StartNew();
             Execution = action.Try();

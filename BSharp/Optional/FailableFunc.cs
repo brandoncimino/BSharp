@@ -1,10 +1,11 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace FowlFever.BSharp.Optional;
 
-public class FailableFunc<TValue> : Failable, IFailableFunc<TValue>, IEquatable<IOptional<TValue>>, IEquatable<TValue> {
+public record FailableFunc<TValue> : Failable, IFailableFunc<TValue>, IEquatable<IOptional<TValue>>, IEquatable<TValue> {
     private readonly Optional<TValue> _value;
     public           int              Count         => _value.Count;
     public           bool             HasValue      => _value.HasValue;
@@ -13,54 +14,27 @@ public class FailableFunc<TValue> : Failable, IFailableFunc<TValue>, IEquatable<
 
     private FailableFunc(
         Optional<TValue> value,
-        Exception?       excuse
-    ) : base(excuse, default, default) {
+        Exception?       excuse,
+        string?          expression
+    ) : base(excuse, default, default, expression) {
         _value = value;
     }
 
-    public static FailableFunc<TValue> Invoke(Func<TValue> failableFunc) {
+    public static FailableFunc<TValue> Invoke(Func<TValue> failableFunc, [CallerArgumentExpression("failableFunc")] string? expression = default) {
         try {
-            return new FailableFunc<TValue>(Optional.Of(failableFunc.Invoke()), default);
+            return new FailableFunc<TValue>(Optional.Of(failableFunc.Invoke()), default, expression);
         }
         catch (Exception e) {
-            return new FailableFunc<TValue>(default, e);
+            return new FailableFunc<TValue>(default, e, expression);
         }
     }
 
-    public IEnumerator<TValue> GetEnumerator() {
-        return _value.GetEnumerator();
-    }
-
-    IEnumerator IEnumerable.GetEnumerator() {
-        return GetEnumerator();
-    }
-
-    public bool Equals(IOptional<TValue> other) {
-        return Optional.AreEqual(_value, other);
-    }
-
-    public bool Equals(TValue other) {
-        return Optional.AreEqual(_value, other);
-    }
-
-    /// <summary>
-    /// I don't <i>think</i> I want to override <see cref="object.GetHashCode"/> for this...but I dunno.
-    /// I should probably read stuff like <a href="https://docs.microsoft.com/en-us/previous-versions/dotnet/netframework-4.0/336aedhh(v=vs.100)">implementing the Equals method</a>
-    /// in more detail.
-    ///
-    /// Basically...the word <c>pragma</c> scares me.
-    /// </summary>
-    /// <param name="other"></param>
-    /// <returns></returns>
-    public override bool Equals(object other) {
-        return other switch {
-            TValue tv             => Equals(tv),
-            IOptional<TValue> opt => Equals(opt),
-            _                     => base.Equals(other) // this complains about reference equality...but why?
-        };
-    }
+    public IEnumerator<TValue> GetEnumerator()                 => _value.GetEnumerator();
+    IEnumerator IEnumerable.   GetEnumerator()                 => GetEnumerator();
+    public bool                Equals(IOptional<TValue> other) => Optional.AreEqual(_value, other);
+    public bool                Equals(TValue            other) => Optional.AreEqual(_value, other);
 
     public override string ToString() {
-        return $"{base.ToString()} => {ValueOrExcuse}";
+        return $"{Expression} => {this.GetIcon()} [{ValueOrExcuse}]";
     }
 }

@@ -2,8 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-using FowlFever.BSharp.Optional;
-
 using JetBrains.Annotations;
 
 namespace FowlFever.BSharp {
@@ -41,15 +39,6 @@ namespace FowlFever.BSharp {
                 index += 1;
             }
         }
-
-        #region Try{x} Variations
-
-        public static IEnumerable<Failable>         TryEach<T>(this       IEnumerable<T> enumerable, Action<T>        action)            => enumerable.Select(action.Try);
-        public static IEnumerable<Failable>         TryEach<T>(this       IEnumerable<T> enumerable, Action<T, int>   actionWithIndex)   => enumerable.Select(actionWithIndex.Try);
-        public static IEnumerable<FailableFunc<T2>> TrySelect<T, T2>(this IEnumerable<T> enumerable, Func<T, T2>      selector)          => enumerable.Select(selector.Try);
-        public static IEnumerable<FailableFunc<T2>> TrySelect<T, T2>(this IEnumerable<T> enumerable, Func<T, int, T2> selectorWithIndex) => enumerable.Select(selectorWithIndex.Try);
-
-        #endregion
 
         public static void ForEach<T1, T2>([InstantHandle] this                     IEnumerable<(T1, T2)>                     enumerable, [InstantHandle] Action<T1, T2>                     action) => enumerable.ForEach(it => action.Invoke(it));
         public static void ForEach<T1, T2, T3>([InstantHandle] this                 IEnumerable<(T1, T2, T3)>                 enumerable, [InstantHandle] Action<T1, T2, T3>                 action) => enumerable.ForEach(it => action.Invoke(it));

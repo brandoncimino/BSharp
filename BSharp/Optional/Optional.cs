@@ -4,7 +4,6 @@ using System.Diagnostics.Contracts;
 using System.Linq;
 
 using FowlFever.BSharp.Collections;
-using FowlFever.BSharp.Enums;
 using FowlFever.BSharp.Exceptions;
 using FowlFever.BSharp.Strings;
 
@@ -17,7 +16,7 @@ namespace FowlFever.BSharp.Optional {
     /// Utility and extension methods for <see cref="Optional{T}"/>.
     /// </summary>
     [PublicAPI]
-    public static class Optional {
+    public static partial class Optional {
         internal const string NullPlaceholder  = "⛔";
         internal const string EmptyPlaceholder = "🈳";
 
@@ -198,108 +197,6 @@ namespace FowlFever.BSharp.Optional {
                 return $"{prettyType}[{valueString}]";
             }
         }
-
-        #region Failables
-
-        #region FailableFunc
-
-        /// <summary>
-        /// Attempts to <see cref="Func{TResult}.Invoke"/> <see cref="functionThatMightFail"/>, returning a <see cref="FailableFunc{TValue}"/>
-        /// that contains either the successful result or the <see cref="IFailableFunc{TValue}.Excuse"/> for failure.
-        /// </summary>
-        /// <param name="functionThatMightFail"></param>
-        /// <typeparam name="T"></typeparam>
-        /// <returns></returns>
-        /// <example>
-        /// TODO: Add an example, but I'm tired right now and when I started writing one instead made <see cref="DayOfWeekExtensions.IsSchoolNight"/>
-        /// </example>
-        public static FailableFunc<T> Try<T>([InstantHandle] this Func<T> functionThatMightFail) {
-            if (functionThatMightFail == null) {
-                throw new ArgumentNullException(nameof(functionThatMightFail));
-            }
-
-            return FailableFunc<T>.Invoke(functionThatMightFail);
-        }
-
-        public static FailableFunc<TOut> Try<TIn, TOut>(
-            this Func<TIn, TOut> functionThatMightFail,
-            TIn                  input
-        ) {
-            return FailableFunc<TOut>.Invoke(() => functionThatMightFail.Invoke(input));
-        }
-
-        public static FailableFunc<TOut> Try<T1, T2, TOut>(
-            this Func<T1, T2, TOut> functionThatMightFail,
-            T1                      arg1,
-            T2                      arg2
-        ) {
-            return FailableFunc<TOut>.Invoke(() => functionThatMightFail.Invoke(arg1, arg2));
-        }
-
-        public static FailableFunc<TOut> Try<T1, T2, T3, TOut>(
-            this Func<T1, T2, T3, TOut> functionThatMightFail,
-            T1                          arg1,
-            T2                          arg2,
-            T3                          arg3
-        ) {
-            return FailableFunc<TOut>.Invoke(() => functionThatMightFail.Invoke(arg1, arg2, arg3));
-        }
-
-        #endregion
-
-        #region Failable Action
-
-        /// <summary>
-        /// Attempts to <see cref="Action.Invoke"/> <see cref="actionThatMightFail"/>, returning a <see cref="Failable"/>
-        /// that (might) contain the <see cref="IFailableFunc{TValue}.Excuse"/> for failure.
-        /// </summary>
-        /// <param name="actionThatMightFail">the <see cref="Action"/> being executed</param>
-        /// <returns>a <see cref="Failable"/> containing information about execution of the <paramref name="actionThatMightFail"/></returns>
-        public static Failable Try([InstantHandle] this Action actionThatMightFail) => Failable.Invoke(actionThatMightFail);
-
-        public static Failable Try<T>([InstantHandle] this      Action<T>      actionThatMightFail, T  argument)      => Failable.Invoke(() => actionThatMightFail.Invoke(argument));
-        public static Failable Try<T1, T2>([InstantHandle] this Action<T1, T2> actionThatMightFail, T1 arg1, T2 arg2) => Failable.Invoke(() => actionThatMightFail.Invoke(arg1, arg2));
-
-        public static Failable Try<T1, T2, T3>(
-            [InstantHandle]
-            this Action<T1, T2, T3> actionThatMightFail,
-            T1 arg1,
-            T2 arg2,
-            T3 arg3
-        ) => Failable.Invoke(() => actionThatMightFail.Invoke(arg1, arg2, arg3));
-
-        public static Failable Try<T1, T2, T3, T4>(
-            [InstantHandle]
-            this Action<T1, T2, T3, T4> actionThatMightFail,
-            T1 arg1,
-            T2 arg2,
-            T3 arg3,
-            T4 arg4
-        ) => Failable.Invoke(() => actionThatMightFail.Invoke(arg1, arg2, arg3, arg4));
-
-        public static Failable Try<T1, T2, T3, T4, T5>(
-            [InstantHandle]
-            this Action<T1, T2, T3, T4, T5> actionThatMightFail,
-            T1 arg1,
-            T2 arg2,
-            T3 arg3,
-            T4 arg4,
-            T5 arg5
-        ) => Failable.Invoke(() => actionThatMightFail.Invoke(arg1, arg2, arg3, arg4, arg5));
-
-        /// <summary>
-        /// Attempts to execute this <see cref="Action"/>, capturing <see cref="Exception"/>s and returning a <see cref="Timeable"/>
-        /// that describes what happened.
-        /// </summary>
-        /// <param name="actionThatMightFail"></param>
-        /// <returns></returns>
-        public static Timeable TryTimed([InstantHandle] this Action actionThatMightFail) {
-            return new Timeable(actionThatMightFail);
-        }
-
-        #endregion
-
-        #endregion
 
         #region GetValueOrDefault
 
