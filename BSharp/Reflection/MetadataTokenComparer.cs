@@ -8,17 +8,17 @@ namespace FowlFever.BSharp.Reflection;
 ///
 /// TODO: Would an extension method of "MetadataCompare" be useful? or is that silly when we could just write <c>a.MetadataToken.Equals(b.MetadataToken)</c>?
 /// </summary>
-public class MetadataTokenComparer : Comparer<MemberInfo>, IEqualityComparer<MemberInfo> {
-    public bool Equals(MemberInfo x, MemberInfo y) {
-        return x.MetadataToken == y.MetadataToken;
+public class MetadataTokenComparer : Comparer<MemberInfo?>, IEqualityComparer<MemberInfo?> {
+    public bool Equals(MemberInfo? x, MemberInfo? y) {
+        return x?.MetadataToken == y?.MetadataToken;
     }
 
-    public int GetHashCode(MemberInfo obj) {
-        return obj.MetadataToken.GetHashCode();
+    public int GetHashCode(MemberInfo? obj) {
+        return obj?.MetadataToken.GetHashCode() ?? 0;
     }
 
-    public override int Compare(MemberInfo x, MemberInfo y) {
-        return x.MetadataToken.CompareTo(y.MetadataToken);
+    public override int Compare(MemberInfo? x, MemberInfo? y) {
+        return Comparer<int?>.Default.Compare(x?.MetadataToken, y?.MetadataToken);
     }
 
     public static readonly MetadataTokenComparer Instance = new();
