@@ -12,28 +12,34 @@ namespace FowlFever.BSharp {
     public static class LambdaExtensions {
         #region Action with Tuple args
 
-        public static void Invoke<T1, T2>(this                     Action<T1, T2>                     action, (T1 arg1, T2 arg2)                                              args) => action.Invoke(args.arg1, args.arg2);
-        public static void Invoke<T1, T2, T3>(this                 Action<T1, T2, T3>                 action, (T1 arg1, T2 arg2, T3 arg3)                                     args) => action.Invoke(args.arg1, args.arg2, args.arg3);
-        public static void Invoke<T1, T2, T3, T4>(this             Action<T1, T2, T3, T4>             action, (T1 arg1, T2 arg2, T3 arg3, T4 arg4)                            args) => action.Invoke(args.arg1, args.arg2, args.arg3, args.arg4);
-        public static void Invoke<T1, T2, T3, T4, T5>(this         Action<T1, T2, T3, T4, T5>         action, (T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5)                   args) => action.Invoke(args.arg1, args.arg2, args.arg3, args.arg4, args.arg5);
-        public static void Invoke<T1, T2, T3, T4, T5, T6>(this     Action<T1, T2, T3, T4, T5, T6>     action, (T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6)          args) => action.Invoke(args.arg1, args.arg2, args.arg3, args.arg4, args.arg5, args.arg6);
-        public static void Invoke<T1, T2, T3, T4, T5, T6, T7>(this Action<T1, T2, T3, T4, T5, T6, T7> action, (T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7) args) => action.Invoke(args.arg1, args.arg2, args.arg3, args.arg4, args.arg5, args.arg6, args.arg7);
+        public static void Invoke<A, B>(this                Action<A, B>                action, (A a, B b)                          args) => action.Invoke(args.a, args.b);
+        public static void Invoke<A, B, C>(this             Action<A, B, C>             action, (A a, B b, C c)                     args) => action.Invoke(args.a, args.b, args.c);
+        public static void Invoke<A, B, C, D>(this          Action<A, B, C, D>          action, (A a, B b, C c, D d)                args) => action.Invoke(args.a, args.b, args.c, args.d);
+        public static void Invoke<A, B, C, D, E>(this       Action<A, B, C, D, E>       action, (A a, B b, C c, D d, E e)           args) => action.Invoke(args.a, args.b, args.c, args.d, args.e);
+        public static void Invoke<A, B, C, D, E, F>(this    Action<A, B, C, D, E, F>    action, (A a, B b, C c, D d, E e, F f)      args) => action.Invoke(args.a, args.b, args.c, args.d, args.e, args.f);
+        public static void Invoke<A, B, C, D, E, F, G>(this Action<A, B, C, D, E, F, G> action, (A a, B b, C c, D d, E e, F f, G g) args) => action.Invoke(args.a, args.b, args.c, args.d, args.e, args.f, args.g);
 
         #endregion
 
         #region Func with Tuple args
 
-        [Pure] public static TResult Invoke<T1, T2, TResult>(this Func<T1, T2, TResult> func, (T1 arg1, T2 arg2) args) => func.Invoke(args.arg1, args.arg2);
+        [System.Diagnostics.Contracts.Pure]
+        public static TResult Invoke<A, B, TResult>(this Func<A, B, TResult> func, (A a, B b) args) => func.Invoke(args.a, args.b);
 
-        [Pure] public static TResult Invoke<T1, T2, T3, TResult>(this Func<T1, T2, T3, TResult> func, (T1 arg1, T2 arg2, T3 arg3) args) => func.Invoke(args.arg1, args.arg2, args.arg3);
+        [System.Diagnostics.Contracts.Pure]
+        public static TResult Invoke<A, B, C, TResult>(this Func<A, B, C, TResult> func, (A a, B b, C c) args) => func.Invoke(args.a, args.b, args.c);
 
-        [Pure] public static TResult Invoke<T1, T2, T3, T4, TResult>(this Func<T1, T2, T3, T4, TResult> func, (T1 arg1, T2 arg2, T3 arg3, T4 arg4) args) => func.Invoke(args.arg1, args.arg2, args.arg3, args.arg4);
+        [System.Diagnostics.Contracts.Pure]
+        public static TResult Invoke<A, B, C, D, TResult>(this Func<A, B, C, D, TResult> func, (A a, B b, C c, D d) args) => func.Invoke(args.a, args.b, args.c, args.d);
 
-        [Pure] public static TResult Invoke<T1, T2, T3, T4, T5, TResult>(this Func<T1, T2, T3, T4, T5, TResult> func, (T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5) args) => func.Invoke(args.arg1, args.arg2, args.arg3, args.arg4, args.arg5);
+        [System.Diagnostics.Contracts.Pure]
+        public static TResult Invoke<A, B, C, D, E, TResult>(this Func<A, B, C, D, E, TResult> func, (A a, B b, C c, D d, E e) args) => func.Invoke(args.a, args.b, args.c, args.d, args.e);
 
-        [Pure] public static TResult Invoke<T1, T2, T3, T4, T5, T6, TResult>(this Func<T1, T2, T3, T4, T5, T6, TResult> func, (T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6) args) => func.Invoke(args.arg1, args.arg2, args.arg3, args.arg4, args.arg5, args.arg6);
+        [System.Diagnostics.Contracts.Pure]
+        public static TResult Invoke<A, B, C, D, E, F, TResult>(this Func<A, B, C, D, E, F, TResult> func, (A a, B b, C c, D d, E e, F f) args) => func.Invoke(args.a, args.b, args.c, args.d, args.e, args.f);
 
-        [Pure] public static TResult Invoke<T1, T2, T3, T4, T5, T6, T7, TResult>(this Func<T1, T2, T3, T4, T5, T6, T7, TResult> func, (T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7) args) => func.Invoke(args.arg1, args.arg2, args.arg3, args.arg4, args.arg5, args.arg6, args.arg7);
+        [System.Diagnostics.Contracts.Pure]
+        public static TResult Invoke<A, B, C, D, E, F, G, TResult>(this Func<A, B, C, D, E, F, G, TResult> func, (A a, B b, C c, D d, E e, F f, G g) args) => func.Invoke(args.a, args.b, args.c, args.d, args.e, args.f, args.g);
 
         #endregion
 
@@ -154,23 +160,42 @@ namespace FowlFever.BSharp {
 
         #region Parameter "Reduction" (pretty sure "binding" is the correct word)
 
-        public static Action Reduce<T>(this      Action<T>      action, T  arg)           => () => action(arg);
-        public static Action Reduce<T1, T2>(this Action<T1, T2> action, T1 arg1, T2 arg2) => () => action(arg1, arg2);
+        [System.Diagnostics.Contracts.Pure]
+        public static Action Reduce<T>(this Action<T> action, T arg) => () => action(arg);
 
-        public static Action Reduce<T1, T2, T3>(
-            this Action<T1, T2, T3> action,
-            T1                      arg1,
-            T2                      arg2,
-            T3                      arg3
-        ) => () => action(arg1, arg2, arg3);
+        [System.Diagnostics.Contracts.Pure]
+        public static Action Reduce<A, B>(this Action<A, B> action, A a, B b) => () => action(a, b);
 
-        public static Action Reduce<T1, T2, T3, T4>(
-            this Action<T1, T2, T3, T4> action,
-            T1                          arg1,
-            T2                          arg2,
-            T3                          arg3,
-            T4                          arg4
-        ) => () => action(arg1, arg2, arg3, arg4);
+        [System.Diagnostics.Contracts.Pure]
+        public static Action<A> Reduce<A, B>(this Action<A, B> action, B b) => a => action(a, b);
+
+        [System.Diagnostics.Contracts.Pure]
+        public static Action Reduce<A, B, C>(
+            this Action<A, B, C> action,
+            A                    a,
+            B                    b,
+            C                    c
+        ) => () => action(a, b, c);
+
+        [System.Diagnostics.Contracts.Pure]
+        public static Action<A> Reduce<A, B, C>(this Action<A, B, C> action, B b, C c) => a => action(a, b, c);
+
+        [System.Diagnostics.Contracts.Pure]
+        public static Action Reduce<A, B, C, D>(
+            this Action<A, B, C, D> action,
+            A                       a,
+            B                       b,
+            C                       c,
+            D                       d
+        ) => () => action(a, b, c, d);
+
+        [System.Diagnostics.Contracts.Pure]
+        public static Action<A> Reduce<A, B, C, D>(
+            this Action<A, B, C, D> action,
+            B                       b,
+            C                       c,
+            D                       d
+        ) => a => action(a, b, c, d);
 
         #endregion
     }
