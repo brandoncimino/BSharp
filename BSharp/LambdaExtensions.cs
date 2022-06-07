@@ -160,6 +160,8 @@ namespace FowlFever.BSharp {
 
         #region Parameter "Reduction" (pretty sure "binding" is the correct word)
 
+        #region Actions
+
         [System.Diagnostics.Contracts.Pure]
         public static Action Reduce<T>(this Action<T> action, T arg) => () => action(arg);
 
@@ -196,6 +198,60 @@ namespace FowlFever.BSharp {
             C                       c,
             D                       d
         ) => a => action(a, b, c, d);
+
+        #endregion
+
+        #region Functions
+
+        [System.Diagnostics.Contracts.Pure]
+        public static Func<TOut> Reduce<A, TOut>(this Func<A, TOut> func, A a) => () => func(a);
+
+        [System.Diagnostics.Contracts.Pure]
+        public static Func<TOut> Reduce<A, B, TOut>(this Func<A, B, TOut> func, A a, B b) => () => func(a, b);
+
+        [System.Diagnostics.Contracts.Pure]
+        public static Func<A, TOut> Reduce<A, B, TOut>(this Func<A, B, TOut> func, B b) => a => func(a, b);
+
+        [System.Diagnostics.Contracts.Pure]
+        public static Func<TOut> Reduce<A, B, C, TOut>(
+            this Func<A, B, C, TOut> func,
+            A                        a,
+            B                        b,
+            C                        c
+        ) => () => func(a, b, c);
+
+        [System.Diagnostics.Contracts.Pure]
+        public static Func<A, TOut> Reduce<A, B, C, TOut>(
+            this Func<A, B, C, TOut> func,
+            B                        b,
+            C                        c
+        ) => a => func(a, b, c);
+
+        #endregion
+
+        #region Discard (i.e. Func -> Action)
+
+        [System.Diagnostics.Contracts.Pure]
+        public static Action Discard<TOut>(this Func<TOut> func) => () => func.Invoke();
+
+        [System.Diagnostics.Contracts.Pure]
+        public static Action<A> Discard<A, TOut>(this Func<A, TOut> func) => a => func.Invoke(a);
+
+        [System.Diagnostics.Contracts.Pure]
+        public static Action<A, B> Discard<A, B, TOut>(this Func<A, B, TOut> func) => (a, b) => func.Invoke(a, b);
+
+        [System.Diagnostics.Contracts.Pure]
+        public static Action<A, B, C> Discard<A, B, C, TOut>(this Func<A, B, C, TOut> func) => (a, b, c) => func.Invoke(a, b, c);
+
+        [System.Diagnostics.Contracts.Pure]
+        public static Action<A, B, C, D> Discard<A, B, C, D, TOut>(this Func<A, B, C, D, TOut> func) => (
+            a,
+            b,
+            c,
+            d
+        ) => func.Invoke(a, b, c, d);
+
+        #endregion
 
         #endregion
     }
