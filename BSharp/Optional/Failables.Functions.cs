@@ -15,7 +15,7 @@ public static partial class Failables {
     /// that contains either the successful result or the <see cref="IFailableFunc{TValue}.Excuse"/> for failure.
     /// </summary>
     /// <param name="functionThatMightFail">the <see cref="Func{TResult}"/> being attempted</param>
-    /// <param name="expression">see <see cref="CallerArgumentExpressionAttribute"/></param>
+    /// <param name="description">see <see cref="CallerArgumentExpressionAttribute"/></param>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
     /// <example>
@@ -25,9 +25,9 @@ public static partial class Failables {
         [InstantHandle]
         this Func<T> functionThatMightFail,
         [CallerArgumentExpression("functionThatMightFail")]
-        string? expression = default
+        string? description = default
     ) {
-        return FailableFunc<T>.Invoke(functionThatMightFail, expression);
+        return FailableFunc<T>.Invoke(functionThatMightFail, description);
     }
 
     /// <inheritdoc cref="FailableFunc{TValue}"/>
@@ -35,8 +35,8 @@ public static partial class Failables {
         this Func<TIn, TOut> functionThatMightFail,
         TIn                  input,
         [CallerArgumentExpression("functionThatMightFail")]
-        string? expression = default
-    ) => FailableFunc<TOut>.Invoke(() => functionThatMightFail.Invoke(input), expression);
+        string? description = default
+    ) => FailableFunc<TOut>.Invoke(() => functionThatMightFail.Invoke(input), description);
 
     /// <inheritdoc cref="FailableFunc{TValue}"/>
     public static FailableFunc<TOut> Try<A, B, TOut>(
@@ -44,8 +44,8 @@ public static partial class Failables {
         A                     a,
         B                     b,
         [CallerArgumentExpression("functionThatMightFail")]
-        string? expression = default
-    ) => FailableFunc<TOut>.Invoke(() => functionThatMightFail.Invoke(a, b), expression);
+        string? description = default
+    ) => FailableFunc<TOut>.Invoke(() => functionThatMightFail.Invoke(a, b), description);
 
     /// <inheritdoc cref="FailableFunc{TValue}"/>
     public static FailableFunc<TOut> Try<A, B, C, TOut>(
@@ -54,8 +54,8 @@ public static partial class Failables {
         B                        b,
         C                        c,
         [CallerArgumentExpression("functionThatMightFail")]
-        string? expression = default
-    ) => FailableFunc<TOut>.Invoke(() => functionThatMightFail.Invoke(a, b, c), expression);
+        string? description = default
+    ) => FailableFunc<TOut>.Invoke(() => functionThatMightFail.Invoke(a, b, c), description);
 
     #region TryEach
 

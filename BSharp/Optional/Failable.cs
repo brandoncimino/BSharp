@@ -19,7 +19,7 @@ namespace FowlFever.BSharp.Optional {
         public bool                      Failed                => Excuse != null;
         public IReadOnlyCollection<Type> IgnoredExceptionTypes { get; }
         public Exception?                IgnoredException      { get; }
-        public string?                   Expression            { get; }
+        public string?                   Description           { get; }
 
         internal Failable(
             Exception?         excuse,
@@ -30,17 +30,17 @@ namespace FowlFever.BSharp.Optional {
             Excuse                = excuse;
             IgnoredException      = ignoredException;
             IgnoredExceptionTypes = ignoredExceptionTypes?.ToArray() ?? Array.Empty<Type>();
-            Expression            = expression;
+            Description           = expression;
         }
 
-        protected Failable(IFailable other) : this(other.Excuse, other.IgnoredExceptionTypes, other.IgnoredException, other.Expression) { }
+        protected Failable(IFailable other) : this(other.Excuse, other.IgnoredExceptionTypes, other.IgnoredException, other.Description) { }
 
         public static Failable Invoke(
             [InstantHandle]
             Action failableAction,
             IEnumerable<Type> ignoredExceptionTypes,
             [CallerArgumentExpression("failableAction")]
-            string? expression = default
+            string? description = default
         ) {
             ignoredExceptionTypes = ignoredExceptionTypes.Must(ReflectionUtils.IsExceptionType).ToArray();
 
@@ -50,15 +50,15 @@ namespace FowlFever.BSharp.Optional {
 
             try {
                 failableAction.Invoke();
-                return new Failable(default, ignoredExceptionTypes, default, expression);
+                return new Failable(default, ignoredExceptionTypes, default, description);
             }
             catch (Exception e) when (e.IsInstanceOf(ignoredExceptionTypes)) {
                 // Handling an ignored exception
-                return new Failable(default, ignoredExceptionTypes, e, expression);
+                return new Failable(default, ignoredExceptionTypes, e, description);
             }
             catch (Exception e) {
                 // Handling a non-ignored exception
-                return new Failable(e, ignoredExceptionTypes, default, expression);
+                return new Failable(e, ignoredExceptionTypes, default, description);
             }
         }
 
@@ -67,7 +67,7 @@ namespace FowlFever.BSharp.Optional {
         }
 
         public override string ToString() {
-            return $"{Expression} ⇒ {(Failed ? $"{this.GetIcon()} [{Excuse}]" : this.GetIcon())}";
+            return $"{Description} ⇒ {(Failed ? $"{this.GetIcon()} [{Excuse}]" : this.GetIcon())}";
         }
     }
 }

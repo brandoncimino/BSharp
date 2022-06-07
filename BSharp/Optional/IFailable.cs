@@ -37,10 +37,10 @@ public interface IFailable {
     Exception? IgnoredException { get; }
 
     /// <summary>
-    /// The "code expression" for the code that this <see cref="IFailable"/> represents.
+    /// A description of the code that this <see cref="IFailable"/> represents.
     /// </summary>
     /// <remarks>
     /// Should ideally be retrieved via <see cref="System.Runtime.CompilerServices.CallerArgumentExpressionAttribute"/>.
     /// </remarks>
-    public string? Expression { get; }
+    public string? Description { get; }
 }

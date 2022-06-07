@@ -35,6 +35,6 @@ public record FailableFunc<TValue> : Failable, IFailableFunc<TValue>, IEquatable
     public bool                Equals(TValue            other) => Optional.AreEqual(_value, other);
 
     public override string ToString() {
-        return $"{Expression} => {this.GetIcon()} [{ValueOrExcuse}]";
+        return $"{Description} => {this.GetIcon()} [{ValueOrExcuse}]";
     }
 }

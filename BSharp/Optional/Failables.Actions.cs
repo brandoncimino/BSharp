@@ -15,17 +15,17 @@ public partial class Failables {
     /// that (might) contain the <see cref="IFailableFunc{TValue}.Excuse"/> for failure.
     /// </summary>
     /// <param name="failableAction">the <see cref="Action"/> being executed</param>
-    /// <param name="expression">see <see cref="CallerArgumentExpressionAttribute"/></param>
+    /// <param name="description">see <see cref="CallerArgumentExpressionAttribute"/></param>
     /// <param name="ignoredExceptionTypes"><see cref="Exception"/> types that won't be considered a <see cref="Failable.Failed"/> execution</param>
     /// <returns>a <see cref="Failable"/> containing information about execution of the <paramref name="failableAction"/></returns>
     public static Failable Try(
         [InstantHandle]
         this Action failableAction,
         [CallerArgumentExpression("failableAction")]
-        string? expression = default,
+        string? description = default,
         params Type[] ignoredExceptionTypes
     ) {
-        return Failable.Invoke(failableAction, ignoredExceptionTypes, expression);
+        return Failable.Invoke(failableAction, ignoredExceptionTypes, description);
     }
 
     /// <inheritdoc cref="Try(System.Action,string?,System.Type[])"/>
@@ -34,10 +34,10 @@ public partial class Failables {
         this Action<T> failableAction,
         T arg,
         [CallerArgumentExpression("failableAction")]
-        string? expression = default,
+        string? description = default,
         params Type[] ignoredExceptionTypes
     ) {
-        return Failable.Invoke(failableAction.Reduce(arg), ignoredExceptionTypes, expression);
+        return Failable.Invoke(failableAction.Reduce(arg), ignoredExceptionTypes, description);
     }
 
     /// <inheritdoc cref="Try(System.Action,string?,System.Type[])"/>
@@ -47,10 +47,10 @@ public partial class Failables {
         A a,
         B b,
         [CallerArgumentExpression("failableAction")]
-        string? expression = default,
+        string? description = default,
         params Type[] ignoredExceptionTypes
     ) {
-        return Failable.Invoke(failableAction.Reduce(a, b), ignoredExceptionTypes, expression);
+        return Failable.Invoke(failableAction.Reduce(a, b), ignoredExceptionTypes, description);
     }
 
     /// <inheritdoc cref="Try(System.Action,string?,System.Type[])"/>
@@ -61,10 +61,10 @@ public partial class Failables {
         B b,
         C c,
         [CallerArgumentExpression("failableAction")]
-        string? expression = default,
+        string? description = default,
         params Type[] ignoredExceptionTypes
     ) {
-        return Failable.Invoke(failableAction.Reduce(a, b, c), ignoredExceptionTypes, expression);
+        return Failable.Invoke(failableAction.Reduce(a, b, c), ignoredExceptionTypes, description);
     }
 
     /// <inheritdoc cref="Try(System.Action,string?,System.Type[])"/>

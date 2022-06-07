@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.CompilerServices;
 
 using FowlFever.BSharp.Collections;
 using FowlFever.BSharp.Optional;
@@ -17,7 +18,7 @@ namespace FowlFever.Testing {
     ///
     /// TODO: Replace this with a builder-style class; maybe one o' them fancy new records I keep hearing about
     /// </summary>
-    public class Assertable : Failable, IAssertable {
+    public record Assertable : Failable, IAssertable {
         public Func<string> Nickname { get; }
 
         private Assertable(
@@ -31,9 +32,11 @@ namespace FowlFever.Testing {
 
         internal Assertable(
             Action       action,
-            Func<string> nickname
+            Func<string> nickname,
+            [CallerArgumentExpression("action")]
+            string? description = default
         ) : this(
-            Invoke(action, typeof(SuccessException)),
+            Invoke(action, description, typeof(SuccessException)),
             nickname
         ) { }
 
