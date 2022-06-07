@@ -17,6 +17,11 @@ public interface IValidatorMethod {
     public MethodInfo Method { get; }
 
     /// <summary>
+    /// A detailed description of this <see cref="IValidatorMethod"/>.
+    /// </summary>
+    public string? Description { get; }
+
+    /// <summary>
     /// Throws an <see cref="Exception"/> if the <see cref="object"/> is invalid.
     /// </summary>
     /// <param name="value">the <see cref="object"/> being validated</param>

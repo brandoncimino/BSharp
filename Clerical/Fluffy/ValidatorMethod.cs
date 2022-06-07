@@ -17,19 +17,22 @@ public class ValidatorMethod<T> : IValidatorMethod, IPrettifiable, IEquatable<IV
     private readonly Lazy<Func<T?, bool>> _predicate;
     private readonly Lazy<Func<T?, T?>>   _checkpoint;
 
-    public ValidatorStyle Style  { get; }
-    public MethodInfo     Method { get; }
+    public ValidatorStyle Style       { get; }
+    public MethodInfo     Method      { get; }
+    public string?        Description { get; }
 
     #region Constructors
 
     private ValidatorMethod(
         MethodInfo     method,
         ValidatorStyle style,
+        string?        description,
         Action<T?>     assertion,
         Func<T?, bool> predicate,
         Func<T?, T?>   checkpoint
     ) {
         Style       = style;
+        Description = description;
         Method      = method;
         _assertion  = Lazily.Get(assertion);
         _predicate  = Lazily.Get(predicate);
@@ -40,10 +43,12 @@ public class ValidatorMethod<T> : IValidatorMethod, IPrettifiable, IEquatable<IV
     /// Constructs an <see cref="IValidatorMethod"/> from an <see cref="ValidatorStyle.Assertion"/>.
     /// </summary>
     /// <param name="assertion">an <see cref="ValidatorStyle.Assertion"/> method</param>
+    /// <param name="description">an optional detailed description</param>
     /// <returns>a new <see cref="ValidatorMethod{TIn}"/></returns>
-    internal ValidatorMethod(Action<T?> assertion) : this(
+    internal ValidatorMethod(Action<T?> assertion, string? description = default) : this(
         assertion.Method,
         ValidatorStyle.Assertion,
+        description,
         assertion,
         assertion.ToPredicate(),
         assertion.ToCheckpoint()
@@ -52,11 +57,13 @@ public class ValidatorMethod<T> : IValidatorMethod, IPrettifiable, IEquatable<IV
     /// <summary>
     /// Constructs a <see cref="ValidatorMethod{T}"/> from a <see cref="ValidatorStyle.Predicate"/>.
     /// </summary>
-    /// <param name="predicate"></param>
-    /// <returns></returns>
-    internal ValidatorMethod(Func<T?, bool> predicate) : this(
+    /// <param name="predicate">a <see cref="ValidatorStyle.Predicate"/> method</param>
+    /// <param name="description">an optional detailed description</param>
+    /// <returns>a new <see cref="ValidatorMethod{T}"/></returns>
+    internal ValidatorMethod(Func<T?, bool> predicate, string? description = default) : this(
         predicate.Method,
         ValidatorStyle.Predicate,
+        description,
         predicate.ToAssertion(),
         predicate,
         predicate.ToCheckpoint()
@@ -66,39 +73,45 @@ public class ValidatorMethod<T> : IValidatorMethod, IPrettifiable, IEquatable<IV
     /// Constructs a new <see cref="ValidatorMethod{T}"/> from a <see cref="ValidatorStyle.Checkpoint"/>.
     /// </summary>
     /// <param name="checkpoint"></param>
+    /// <param name="description"></param>
     /// <returns></returns>
-    internal ValidatorMethod(Func<T?, T?> checkpoint) : this(
+    internal ValidatorMethod(Func<T?, T?> checkpoint, string? description = default) : this(
         checkpoint.Method,
         ValidatorStyle.Checkpoint,
+        description,
         checkpoint.ToAssertion(),
         checkpoint.ToPredicate(),
         checkpoint
     ) { }
 
-    private static ValidatorMethod<T> From(Delegate delgato) =>
+    private static ValidatorMethod<T> From(Delegate delgato, string? description = default) =>
         delgato switch {
-            Action<T?> asserter      => new ValidatorMethod<T>(asserter),
-            Func<T?, bool> predicate => new ValidatorMethod<T>(predicate),
-            Func<T?, T?> checkpoint  => new ValidatorMethod<T>(checkpoint),
+            Action<T?> asserter      => new ValidatorMethod<T>(asserter,   description),
+            Func<T?, bool> predicate => new ValidatorMethod<T>(predicate,  description),
+            Func<T?, T?> checkpoint  => new ValidatorMethod<T>(checkpoint, description),
             _                        => throw new ArgumentException($"{delgato.Prettify()} isn't an appropriate {nameof(ValidatorMethod<T>)}!"),
         };
 
-    public static ValidatorMethod<T> From(MethodInfo method) {
+    public static ValidatorMethod<T> From(MethodInfo method, string? description = default) {
         var delegateType = Validator.CreateDelegate(method);
-        return From(delegateType);
+        return From(delegateType, description.IfBlank(method.Name));
+    }
+
+    public static ValidatorMethod<T> From(Annotated<MethodInfo, ValidatorAttribute> annotatedMethod) {
+        return From(annotatedMethod.Member, annotatedMethod.Attributes.Single().Description);
     }
 
     #endregion
 
     #region Verbs
 
-    [PublicAPI] public void Assert(T actual) => Assert((object?)actual);
-    [PublicAPI] public bool Try(T    actual) => Try((object?)actual);
-    [PublicAPI] public T    Check(T  actual) => (T)Check((object?)actual)!;
+    [PublicAPI] public void Assert(T actual) => ((IValidatorMethod)this).Assert(actual);
+    [PublicAPI] public bool Try(T    actual) => ((IValidatorMethod)this).Try(actual);
+    [PublicAPI] public T    Check(T  actual) => (T)((IValidatorMethod)this).Check(actual)!;
 
-    [PublicAPI] public void    Assert(object? value) => _assertion.Value((T?)value);
-    [PublicAPI] public bool    Try(object?    value) => _predicate.Value((T?)value);
-    [PublicAPI] public object? Check(object?  value) => _checkpoint.Value((T?)value);
+    [PublicAPI] void IValidatorMethod.   Assert(object? value) => _assertion.Value((T?)value);
+    [PublicAPI] bool IValidatorMethod.   Try(object?    value) => _predicate.Value((T?)value);
+    [PublicAPI] object? IValidatorMethod.Check(object?  value) => _checkpoint.Value((T?)value);
 
     #endregion
 

@@ -17,13 +17,14 @@ namespace FowlFever.Clerical.Fluffy;
 /// Contains <see cref="BindingFlags.Static"/> and <see cref="ExtensionAttribute"/> methods to work with <see cref="IValidatorMethod"/>s.
 /// </summary>
 /// <remarks>
-/// TODO: This should have a cuter name! Both because I want one and also to avoid conflicts with <see cref="FluentValidation"/> stuff. 
+/// TODO: This should have a cuter name! Both because I want one and also to avoid conflicts with <see cref="FluentValidation"/> stuff.
+///     Maybe derived from "Approve"?
 /// </remarks>
 public static class Validator {
     private static readonly ConcurrentDictionary<Type, Lazy<IValidatorMethod[]>> Cache = new();
 
     private static IValidatorMethod[] _GetValidatorMethods(Type validatedType) {
-        return validatedType.FindMembersWithAttribute<MethodInfo, ValidatorAttribute>()
+        return validatedType.FindAnnotated<MethodInfo, ValidatorAttribute>()
                             .Select(Create)
                             .ToArray();
     }
@@ -70,25 +71,28 @@ public static class Validator {
     /// Returns the results as a collection of <see cref="IFailable"/>s.
     /// </summary>
     /// <param name="actual">the object being validated</param>
-    public static IEnumerable<IFailable> TryValidate<T>(T actual) => GetValidatorMethods(actual?.GetType()).Select(it => Failables.Try(it.Assert, actual as object)).ToList();
+    [PublicAPI]
+    public static IEnumerable<IFailable> TryValidate<T>(T actual) =>
+        GetValidatorMethods(actual?.GetType())
+            .Select(it => Failables.Try(it.Assert, actual as object, description: it.Method.Name))
+            .ToList();
 
     /// <summary>
     /// Constructs an <see cref="IValidatorMethod"/> from a <see cref="MethodInfo"/>.
     /// </summary>
     /// <param name="method">a <see cref="MethodInfo"/> that might be an <see cref="IValidatorMethod"/></param>
+    /// <param name="description"></param>
     /// <returns>a new <see cref="IValidatorMethod"/></returns>
     [PublicAPI]
-    public static IValidatorMethod Create(MethodInfo method) {
+    public static IValidatorMethod Create(MethodInfo method, string? description = default) {
         var validatedType = GetValidatedType(method);
         var validatorType = typeof(ValidatorMethod<>).MakeGenericType(validatedType);
         var delgato       = CreateDelegate(method);
-        // var factoryMethod = validatorType.GetRuntimeMethod(nameof(ValidatorMethod<object>.From), new[] { delgato.GetType() });
-        // Must.NotBeNull(delgato);
-        // Must.NotBeNull(factoryMethod);
-        // var built         = factoryMethod.Invoke(null, new object[] { delgato });
-        var built = validatorType.Construct(delgato);
+        var built         = validatorType.Construct(delgato, description);
         return Must.Be<IValidatorMethod>(built);
     }
+
+    [PublicAPI] public static IValidatorMethod Create(Annotated<MethodInfo, ValidatorAttribute> annotatedMethod) => Create(annotatedMethod.Member, annotatedMethod.Attributes.Single().Description);
 
     internal static ValidatorStyle InferValidatorStyle(MethodInfo methodInfo) {
         return BEnum.GetValues<ValidatorStyle>()
