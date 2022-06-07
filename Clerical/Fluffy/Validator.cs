@@ -70,7 +70,7 @@ public static class Validator {
     /// Returns the results as a collection of <see cref="IFailable"/>s.
     /// </summary>
     /// <param name="actual">the object being validated</param>
-    public static IEnumerable<IFailable> TryValidate<T>(T actual) => GetValidatorMethods(actual?.GetType()).Select(it => Optional.Try(it.Assert, actual as object)).ToList();
+    public static IEnumerable<IFailable> TryValidate<T>(T actual) => GetValidatorMethods(actual?.GetType()).Select(it => Failables.Try(it.Assert, actual as object)).ToList();
 
     /// <summary>
     /// Constructs an <see cref="IValidatorMethod"/> from a <see cref="MethodInfo"/>.
