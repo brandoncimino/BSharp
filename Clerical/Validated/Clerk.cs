@@ -1,7 +1,4 @@
-using System.IO;
-
 using FowlFever.BSharp.Clerical;
-using FowlFever.BSharp.Strings;
 
 using JetBrains.Annotations;
 
@@ -12,33 +9,19 @@ namespace FowlFever.Clerical.Validated;
 /// </summary>
 [PublicAPI]
 public static class Clerk {
-    public static PathPart GetPathPart(string pathPart) {
-        return new PathPart(pathPart);
-    }
+    public static PathPart                   GetPathPart(string       pathPart) => new PathPart(pathPart);
+    public static IEnumerable<PathPart>      SplitPath(string         path)     => BPath.SplitPath(path).Select(GetPathPart);
+    public static IEnumerable<FileExtension> GetFileExtensions(string path)     => BPath.GetExtensions(path).Select(it => new FileExtension(it));
+    public static FileName                   GetFileName(string       path)     => new FileName(Path.GetFileName(path));
 
-    public static IEnumerable<PathPart> SplitPath(string path) {
-        return BPath.SplitPath(path).Select(GetPathPart);
-    }
-
-    public static FileExtensionGroup GetFileExtensions(string path) {
-        return new FileExtensionGroup(BPath.GetExtensions(path));
-    }
-
-    public static FileName GetFileName(string path) {
-        var baseName     = BPath.GetFileNameWithoutExtensions(path);
-        var baseNamePart = new FileNamePart(baseName);
-        var extensions   = GetFileExtensions(path);
-        return new FileName(baseNamePart, extensions);
-    }
-
+    /// <summary>
+    /// Validates and creates a <see cref="DirectoryPath"/>.
+    /// </summary>
+    /// <param name="path"></param>
+    /// <param name="separator"></param>
+    /// <returns></returns>
     public static DirectoryPath GetDirectoryPath(string path, DirectorySeparator separator = default) {
-        var dirName = Path.GetDirectoryName(path);
-        var splitDir = dirName switch {
-            null => Enumerable.Empty<string>(),
-            _    => dirName.Split(BPath.DirectorySeparatorPattern),
-        };
-        var dirParts = splitDir.Select(it => new PathPart(it));
-        return new DirectoryPath(dirParts, separator);
+        return new DirectoryPath(separator, path);
     }
 
     public static FilePath GetFilePath(string path, DirectorySeparator separator = default) {
@@ -47,8 +30,9 @@ public static class Clerk {
         }
 
         return new FilePath(
-            GetDirectoryPath(path),
-            GetFileName(path),
+            "",
+            // GetDirectoryPath(path, separator),
+            // GetFileName(path),
             separator
         );
     }
@@ -57,17 +41,20 @@ public static class Clerk {
     /// The <see cref="DirectoryPath"/>-flavored version of <see cref="Path.GetTempPath"/>.
     /// </summary>
     /// <returns>a <see cref="DirectoryPath"/> equivalent of <see cref="Path.GetTempPath"/></returns>
-    [Pure] public static DirectoryPath GetTempDirectoryPath() => GetDirectoryPath(Path.GetTempPath());
+    [Pure]
+    public static DirectoryPath GetTempDirectoryPath() => GetDirectoryPath(Path.GetTempPath());
 
     /// <summary>
     /// The <see cref="FileName"/>-flavored version of <see cref="Path.GetTempFileName"/>.
     /// </summary>
     /// <returns>a <see cref="FileName"/> equivalent of <see cref="Path.GetTempFileName"/></returns>
-    [Pure] public static FileName CreateTempFileName() => GetFileName(Path.GetTempFileName());
+    [Pure]
+    public static FileName CreateTempFileName() => GetFileName(Path.GetTempFileName());
 
     /// <summary>
     /// <see cref="FileName"/>-flavored version of <see cref="Path.GetRandomFileName"/>.
     /// </summary>
     /// <returns>a <see cref="FileName"/> equivalent of <see cref="Path.GetRandomFileName"/></returns>
-    [Pure] public static FileName GetRandomFileName() => GetFileName(Path.GetRandomFileName());
+    [Pure]
+    public static FileName GetRandomFileName() => GetFileName(Path.GetRandomFileName());
 }
