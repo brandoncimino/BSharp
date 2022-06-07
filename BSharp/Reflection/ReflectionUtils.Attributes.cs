@@ -45,10 +45,10 @@ public static partial class ReflectionUtils {
             return found;
         }
 
-        var sansStatic = bindingAttr.WithoutFlag(BindingFlags.Static);
+        var staticOnly = bindingAttr.WithoutFlag(BindingFlags.Instance);
         found = type.GetAncestors()
                     .Skip(1)
-                    .SelectMany(it => it.FindMembers(memberType, sansStatic, filter, filterCriteria))
+                    .SelectMany(it => it.FindMembers(memberType, staticOnly, filter, filterCriteria))
                     .PrependNonNull(found)
                     .ToArray();
 
