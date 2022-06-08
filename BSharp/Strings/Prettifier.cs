@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 
+using FowlFever.BSharp.Collections;
 using FowlFever.BSharp.Reflection;
 using FowlFever.BSharp.Strings.Json;
 using FowlFever.BSharp.Strings.Prettifiers;
@@ -11,7 +12,7 @@ namespace FowlFever.BSharp.Strings {
 
         public Type PrettifierType { get; }
 
-        public Type PrimaryKey => PrettifierType;
+        Type IPrimaryKeyed<Type>.PrimaryKey => PrettifierType;
 
         #region Constructors
 
@@ -27,42 +28,18 @@ namespace FowlFever.BSharp.Strings {
         #region Prettifier Implementation
 
         public string Prettify(T? cinderella, PrettificationSettings? settings = default) {
-            return PrettificationFunction.Invoke(cinderella, settings);
+            settings = settings.Resolve();
+            return cinderella == null
+                       ? settings.Resolve().NullPlaceholder
+                       : PrettificationFunction.Invoke(cinderella, settings);
         }
 
-        public string PrettifySafely(T? cinderella, PrettificationSettings? settings = default) {
-            return PrettifySafely(cinderella as object, settings);
-        }
+        string IPrettifier.Prettify(object? cinderella, PrettificationSettings? settings) {
+            settings = settings.Resolve();
 
-        public string Prettify(object? cinderella, PrettificationSettings? settings = default) {
-            settings ??= PrettificationSettings.Default;
-
-            settings.TraceWriter.Verbose(() => $"⚠ DANGEROUSLY prettifying [{cinderella?.GetType().Name}]");
-
-            if (cinderella == null) {
-                return settings.NullPlaceholder;
-            }
-            else if (PrettifierType.IsGenericType) {
-                return PrettifyGeneric(cinderella, settings);
-            }
-            else {
-                return Prettify(TrySlipper(cinderella), settings);
-            }
-        }
-
-        public string PrettifySafely(object? cinderella, PrettificationSettings? settings = default) {
-            settings ??= PrettificationSettings.Default;
-
-            settings.TraceWriter.Verbose(() => $"🦺 SAFELY prettifying [{cinderella?.GetType().Name}]");
-
-            try {
-                return Prettify(cinderella, settings);
-            }
-            catch (Exception e) {
-                var str = $"🧨 Error during prettification of [{cinderella?.GetType().Name}]{cinderella}:\n{e})";
-                Console.WriteLine(str);
-                return Prettification.LastResortPrettifier(cinderella, settings);
-            }
+            return PrettifierType.IsGenericType
+                       ? PrettifyGeneric(cinderella, settings)
+                       : Prettify(TrySlipper(cinderella), settings);
         }
 
         public bool CanPrettify(Type cinderellaType) {
@@ -90,18 +67,15 @@ namespace FowlFever.BSharp.Strings {
 
         #region Helpers
 
-        private T TrySlipper(object cinderella) {
+        private T TrySlipper(object? cinderella) {
             if (cinderella is T princess) {
                 return princess;
             }
 
-            throw new InvalidCastException($"Couldn't prettify [{cinderella.GetType().PrettifyType(default)}]{cinderella} because it wasn't the right type, {PrettifierType.PrettifyType(default)}!");
+            throw new InvalidCastException($"Couldn't prettify [{cinderella?.GetType().PrettifyType(default)}]{cinderella} because it wasn't the right type, {PrettifierType.PrettifyType(default)}!");
         }
 
-
-        private string PrettifyGeneric(object? cinderella, PrettificationSettings? settings) {
-            settings ??= PrettificationSettings.Default;
-
+        private string PrettifyGeneric(object? cinderella, PrettificationSettings settings) {
             settings.TraceWriter.Verbose(() => $"🕵️ Using generic prettification for [{cinderella?.GetType()}");
 
             if (cinderella?.GetType().IsGenericType != true) {
@@ -115,7 +89,6 @@ namespace FowlFever.BSharp.Strings {
         }
 
         #endregion
-
 
         public override string ToString() {
             return $"{GetType().Name} for [{PrettifierType.Name}] via [{PrettificationFunction.Method.Name}]";

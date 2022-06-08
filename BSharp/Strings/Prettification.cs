@@ -17,17 +17,14 @@ namespace FowlFever.BSharp.Strings {
         internal const           string              DefaultNullPlaceholder = "⛔";
         internal static readonly IPrettifierDatabase Prettifiers            = PrettifierDatabase.GetDefaultPrettifiers();
 
-
         internal static readonly OptionalPrettifierFinder[] Finders = {
             PrettifierFinders.FindExactPrettifier,
             PrettifierFinders.FindToStringOverridePrettifier,
             PrettifierFinders.FindGenericallyTypedPrettifier,
-            PrettifierFinders.FindInheritedPrettifier
+            PrettifierFinders.FindInheritedPrettifier,
         };
 
-
         [Obsolete] public static PrettificationSettings DefaultPrettificationSettings => PrettificationSettings.Default;
-
 
         public static PrettificationSettings ResolveSettings(PrettificationSettings? settings) {
             return settings ?? PrettificationSettings.Default;
@@ -73,17 +70,25 @@ namespace FowlFever.BSharp.Strings {
 
             return prettifier
                 .IfPresentOrElse(
-                    it => it.PrettifySafely(cinderella, settings),
+                    it => _Safely(cinderella, it.Prettify, settings),
                     () => LastResortPrettifier(cinderella, settings)
                 );
         }
 
+        private static string _Safely<T>(T? cinderella, Func<T?, PrettificationSettings?, string> prettifyFunc, PrettificationSettings? settings) {
+            settings = settings.Resolve();
+            try {
+                return prettifyFunc(cinderella, settings);
+            }
+            catch (Exception e) {
+                settings.TraceWriter.Error(() => $"🧨 Error during prettification of [{cinderella?.GetType().Name}]{cinderella}!", exception: e);
+                return LastResortPrettifier(cinderella, settings);
+            }
+        }
 
         internal static string LastResortPrettifier(object? cinderella, PrettificationSettings? settings) {
-            settings ??= new PrettificationSettings();
-
+            settings = settings.Resolve();
             settings.TraceWriter.Verbose(() => $"⛑ Using the LAST RESORT prettifier for [{cinderella?.GetType()}]: {nameof(Convert.ToString)}!");
-
             return Convert.ToString(cinderella);
         }
     }

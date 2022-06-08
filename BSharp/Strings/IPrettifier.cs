@@ -19,14 +19,7 @@ namespace FowlFever.BSharp.Strings {
         /// <param name="settings">an optional <see cref="PrettificationSettings"/> instance</param>
         /// <returns>a pretty <see cref="string"/> representation of <paramref name="cinderella"/></returns>
         /// <exception cref="InvalidCastException">if <paramref name="cinderella"/> is not of the <see cref="PrettifierType"/></exception>
-        /// <seealso cref="PrettifySafely"/>
         string Prettify(object? cinderella, PrettificationSettings? settings = default);
-
-        /**
-         * <summary>Attempts to <see cref="Prettify"/> <paramref name="cinderella"/>, falling back to <see cref="Convert.ToString(object)"/> if an <see cref="Exception"/> occurs.</summary>
-         * <inheritdoc cref="Prettify"/>
-         */
-        string PrettifySafely(object? cinderella, PrettificationSettings? settings = default);
     }
 
     /**
@@ -37,10 +30,5 @@ namespace FowlFever.BSharp.Strings {
          * <inheritdoc cref="IPrettifier.Prettify"/>
          */
         string Prettify(T? cinderella, PrettificationSettings? settings = default);
-
-        /**
-         * <inheritdoc cref="IPrettifier.PrettifySafely"/>
-         */
-        string PrettifySafely(T? cinderella, PrettificationSettings? settings = default);
     }
 }
