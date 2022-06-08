@@ -148,18 +148,41 @@ namespace FowlFever.BSharp {
 
         #region Convert.To{x}
 
-        public static short   ToShort(this   object? obj) => Convert.ToInt16(obj);
-        public static ushort  ToUShort(this  object? obj) => Convert.ToUInt16(obj);
-        public static int     ToInt(this     object? obj) => Convert.ToInt32(obj);
-        public static uint    ToUInt(this    object? obj) => Convert.ToUInt32(obj);
-        public static long    ToLong(this    object? obj) => Convert.ToInt64(obj);
-        public static ulong   ToULong(this   object? obj) => Convert.ToUInt64(obj);
-        public static float   ToFloat(this   object? obj) => Convert.ToSingle(obj);
-        public static double  ToDouble(this  object? obj) => Convert.ToDouble(obj);
-        public static decimal ToDecimal(this object? obj) => Convert.ToDecimal(obj);
-        public static byte    ToByte(this    object? obj) => Convert.ToByte(obj);
-        public static sbyte   ToSByte(this   object? obj) => Convert.ToSByte(obj);
-        public static bool    ToBool(this    object? obj) => Convert.ToBoolean(obj);
+        public static short ToShort<T>(this T obj)
+            where T : struct => Convert.ToInt16(obj);
+
+        public static ushort ToUShort<T>(this T obj)
+            where T : struct => Convert.ToUInt16(obj);
+
+        public static int ToInt<T>(this T obj)
+            where T : struct => Convert.ToInt32(obj);
+
+        public static uint ToUInt<T>(this T obj)
+            where T : struct => Convert.ToUInt32(obj);
+
+        public static long ToLong<T>(this T obj)
+            where T : struct => Convert.ToInt64(obj);
+
+        public static ulong ToULong<T>(this T obj)
+            where T : struct => Convert.ToUInt64(obj);
+
+        public static float ToFloat<T>(this T obj)
+            where T : struct => Convert.ToSingle(obj);
+
+        public static double ToDouble<T>(this T obj)
+            where T : struct => Convert.ToDouble(obj);
+
+        public static decimal ToDecimal<T>(this T obj)
+            where T : struct => Convert.ToDecimal(obj);
+
+        public static byte ToByte<T>(this T obj)
+            where T : struct => Convert.ToByte(obj);
+
+        public static sbyte ToSByte<T>(this T obj)
+            where T : struct => Convert.ToSByte(obj);
+
+        public static bool ToBool<T>(this T obj)
+            where T : struct => Convert.ToBoolean(obj);
 
         #endregion
 
