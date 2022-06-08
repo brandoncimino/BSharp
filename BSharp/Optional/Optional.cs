@@ -213,18 +213,18 @@ namespace FowlFever.BSharp.Optional {
         /// <param name="optional">this <see cref="IOptional{T}"/></param>
         /// <param name="fallback">the return value if this <see cref="CollectionUtils.IsEmpty{T}"/></param>
         /// <returns><see cref="IOptional{T}.Value"/> if it this <see cref="IOptional{T}.HasValue"/>; otherwise, returns <see cref="fallback"/>.</returns>
-        public static T? GetValueOrDefault<T>(this IOptional<T?>? optional, T? fallback) {
+        public static T GetValueOrDefault<T>(this IOptional<T>? optional, T fallback) {
             return optional?.HasValue == true ? optional.Value : fallback;
         }
 
         /**
          * <inheritdoc cref="GetValueOrDefault{T}(FowlFever.BSharp.Optional.IOptional{T?}?,T?)"/>
          */
-        public static T? OrElse<T>(this IOptional<T?>? optional, T? fallback) {
+        public static T OrElse<T>(this IOptional<T>? optional, T fallback) {
             return optional.GetValueOrDefault(fallback);
         }
 
-        public static T? OrDefault<T>(this IOptional<T?>? optional) {
+        public static T? OrDefault<T>(this IOptional<T>? optional) {
             return optional.OrElse(default);
         }
 
