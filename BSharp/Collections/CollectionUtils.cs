@@ -103,6 +103,29 @@ public static partial class CollectionUtils {
         return splitGroups;
     }
 
+    /// <summary>
+    /// Counts the entries in <paramref name="source"/> that match the <paramref name="predicate"/>, returning the number of matches <b>and</b> the number of non-matches.
+    /// </summary>
+    /// <param name="source">this <see cref="IEnumerable{T}"/></param>
+    /// <param name="predicate">if <c>true</c>, we consider this a "match"; otherwise, it is a "leftover"</param>
+    /// <typeparam name="T">the type of the individual entries in this <see cref="IEnumerable{T}"/></typeparam>
+    /// <returns>the total number of entries in the <paramref name="source"/>, split into <c>(matches, leftovers)</c></returns>
+    public static (int matches, int leftovers) CountLeftovers<T>([InstantHandle] this IEnumerable<T> source, Func<T, bool> predicate) {
+        int matches   = 0;
+        int leftovers = 0;
+
+        foreach (var it in source) {
+            if (predicate(it)) {
+                matches += 1;
+            }
+            else {
+                leftovers += 1;
+            }
+        }
+
+        return (matches, leftovers);
+    }
+
     #region Dictionary Inversion
 
     public static IDictionary<TValue_Original, TKey_Original> Inverse_Internal<TKey_Original, TValue_Original>(IDictionary<TKey_Original, TValue_Original> dictionary) {
