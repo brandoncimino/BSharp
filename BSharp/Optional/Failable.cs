@@ -19,7 +19,7 @@ namespace FowlFever.BSharp.Optional {
         public bool                      Failed                => Excuse != null;
         public IReadOnlyCollection<Type> IgnoredExceptionTypes { get; }
         public Exception?                IgnoredException      { get; }
-        public string?                   Description           { get; }
+        public Supplied<string>          Description           { get; init; }
 
         internal Failable(
             Exception?         excuse,

@@ -13,7 +13,7 @@ namespace FowlFever.BSharp.Optional {
         public           bool                      Failed                => Execution.Failed;
         public           IReadOnlyCollection<Type> IgnoredExceptionTypes { get; } = new List<Type>();
         public           Exception?                IgnoredException      => default;
-        public           string?                   Description           => Execution.Description;
+        public           Supplied<string>          Description           => Execution.Description;
         public           DateTime                  StartedAt             { get; }
         public           DateTime                  EndedAt               => StartedAt + Duration;
         public           TimeSpan                  Duration              { get; }

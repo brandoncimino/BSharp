@@ -8,6 +8,9 @@ namespace FowlFever.BSharp.Optional;
 /// <summary>
 /// Represents something that <b><i>might</i></b> have failed.
 /// </summary>
+/// <remarks>
+/// TODO: A looser, cuter version of this called <c>ITried</c>, with <see cref="FailableOutcome"/> => <c>Verdict</c>, <see cref="FailableOutcome.Passed"/> => <c>Acquitted</c>, etc.!
+/// </remarks>
 [PublicAPI]
 public interface IFailable {
     /// <summary>
@@ -42,5 +45,5 @@ public interface IFailable {
     /// <remarks>
     /// Should ideally be retrieved via <see cref="System.Runtime.CompilerServices.CallerArgumentExpressionAttribute"/>.
     /// </remarks>
-    public string? Description { get; }
+    public Supplied<string>? Description { get; }
 }
