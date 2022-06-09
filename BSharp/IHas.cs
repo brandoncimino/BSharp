@@ -33,5 +33,9 @@ public static class HasExtensions {
 public interface IWrap<T> : IHas<T>,
                             IEquatable<T?>,
                             IEquatable<IHas<T?>?>,
+                            IEquatable<Func<T?>?>,
+                            IEquatable<Lazy<T?>?>,
                             IComparable<T?>,
-                            IComparable<IHas<T?>?> { }
+                            IComparable<IHas<T?>?>,
+                            IComparable<Func<T?>?>,
+                            IComparable<Lazy<T?>?> { }
