@@ -1,7 +1,5 @@
 using System;
 
-using FowlFever.BSharp.Sugar;
-
 namespace FowlFever.BSharp;
 
 /// <summary>
@@ -19,11 +17,11 @@ public record Supplied<T> : IHas<T> {
     public Supplied(T       value) => _explicit = value;
     public Supplied(Lazy<T> value) => _lazy = value;
     public Supplied(Func<T> supplier) : this(new Lazy<T>(supplier)) { }
-    public Supplied(IHas<T> wrapper) : this(wrapper.Lazily()) { }
+    public Supplied(IHas<T> wrapper) : this(new Lazy<T>(wrapper.Get)) { }
 
     public static implicit operator Supplied<T>(T          value)    => new(value);
     public static implicit operator Supplied<T>(Lazy<T>    lazy)     => new(lazy);
     public static implicit operator Supplied<T>(Func<T>    supplier) => new(supplier);
-    public static implicit operator Supplied<T>(Wrapped<T> wrapped)  => new(wrapped.Value);
+    public static implicit operator Supplied<T>(Wrapped<T> wrapped)  => new((IHas<T>)wrapped);
     public static implicit operator T(Supplied<T>          supplied) => supplied.Value;
 }
