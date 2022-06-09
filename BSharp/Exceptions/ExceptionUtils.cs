@@ -1,6 +1,9 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 
+using FowlFever.BSharp.Collections;
 using FowlFever.BSharp.Reflection;
 using FowlFever.BSharp.Strings;
 
@@ -119,5 +122,18 @@ namespace FowlFever.BSharp.Exceptions {
             where T : Exception {
             return StringUtils.CollapseLines(exception.StackTrace.SplitLines(), filter, additionalFilters);
         }
+
+        /// <summary>
+        /// Combines all of the non-null <see cref="Exception"/>s into an <see cref="AggregateException"/>. 
+        /// </summary>
+        /// <param name="exceptions">a bunch of <see cref="Exception"/>s</param>
+        /// <returns>a new <see cref="AggregateException"/>, if there were any non-<c>null</c> <see cref="Exception"/>s; otherwise, <c>null</c></returns>
+        public static AggregateException? Aggregate(IEnumerable<Exception?>? exceptions) {
+            var exc = exceptions.NonNull().ToArray();
+            return exc.IsEmpty() ? null : new AggregateException();
+        }
+
+        /// <inheritdoc cref="Aggregate(System.Collections.Generic.IEnumerable{System.Exception?}?)"/>
+        public static AggregateException? Aggregate(params Exception?[]? exceptions) => Aggregate(exceptions.AsEnumerable());
     }
 }
