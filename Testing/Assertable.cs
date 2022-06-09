@@ -9,25 +9,19 @@ using NUnit.Framework;
 using NUnit.Framework.Constraints;
 
 namespace FowlFever.Testing {
-    public interface IAssertable : IFailable {
-        public Func<string> Nickname { get; }
-    }
-
     /// <summary>
     /// A special implementation of <see cref="IFailable"/> that handles the special case of <see cref="NUnit.Framework.SuccessException"/>.
     ///
     /// TODO: Replace this with a builder-style class; maybe one o' them fancy new records I keep hearing about
     /// </summary>
-    public record Assertable : Failable, IAssertable {
-        public Func<string> Nickname { get; }
-
+    public record Assertable : Failable {
         private Assertable(
             IFailable    failable,
             Func<string> nickname
         ) : base(
             failable
         ) {
-            Nickname = nickname;
+            Description = nickname;
         }
 
         internal Assertable(
@@ -59,18 +53,16 @@ namespace FowlFever.Testing {
             nickname ?? GetNicknameSupplier(assertion, constraint)
         ) { }
 
-        public override string ToString() {
-            return this.FormatAssertable().JoinLines();
-        }
+        public override string ToString() => this.FormatAssertable().JoinLines();
 
         internal static Func<string> GetNicknameSupplier(object? actual, IResolveConstraint? constraint, PrettificationSettings? settings = default) {
-            return () => GetNickname(actual, constraint, settings);
-        }
+            static string GetNickname(object? actual, IResolveConstraint? constraint, PrettificationSettings? settings) {
+                var dName = actual?.Prettify(settings);
+                var cName = constraint?.Prettify(settings);
+                return dName.JoinNonBlank(cName, " 🗜 ");
+            }
 
-        private static string GetNickname(object? actual, IResolveConstraint? constraint, PrettificationSettings? settings) {
-            var dName = actual?.Prettify(settings);
-            var cName = constraint?.Prettify(settings);
-            return dName.JoinNonBlank(cName, " 🗜 ");
+            return () => GetNickname(actual, constraint, settings);
         }
     }
 }
