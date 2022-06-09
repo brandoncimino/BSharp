@@ -562,7 +562,8 @@ public static partial class CollectionUtils {
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
     [Pure]
-    public static IDictionary<T, int> Group<T>(this IEnumerable<T> enumerable) {
+    public static IDictionary<T, int> Group<T>(this IEnumerable<T> enumerable)
+        where T : notnull {
         return enumerable.GroupBy(it => it).ToDictionary(it => it.Key, it => it.Count());
     }
 
@@ -1504,13 +1505,13 @@ public static partial class CollectionUtils {
     /// <remarks>
     /// This should only enumerate at most 2 entries of the <paramref name="source"/>.
     /// </remarks>
-    public static T? FindSingle<T>(this IEnumerable<T> source) {
+    public static Optional<T> FindSingle<T>(this IEnumerable<T> source) {
         using var enumerator = source.GetEnumerator();
 
         if (enumerator.MoveNext()) {
             var first = enumerator.Current;
 
-            return enumerator.MoveNext() ? default : first;
+            return enumerator.MoveNext() ? default(Optional<T>) : first.ToOptional();
         }
         else {
             return default;
