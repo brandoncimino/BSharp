@@ -13,6 +13,19 @@ public interface IHas<out T> {
     T Value { get; }
 }
 
+public static class HasExtensions {
+    public static T? GetValueOrDefault<T>(this IHas<T>? self) {
+        return self == null ? default : self.Value;
+    }
+
+    /// <param name="self">this <see cref="IHas{T}"/></param>
+    /// <typeparam name="T">the type of the wrapped <see cref="IHas{T}.Value"/></typeparam>
+    /// <returns>this <see cref="IHas{T}"/>.<see cref="IHas{T}.Value"/></returns>
+    public static T Get<T>(this IHas<T> self) => self.Value;
+
+    public static Func<T> Supply<T>(this IHas<T> self) => self.Get;
+}
+
 /// <summary>
 /// Joins together <see cref="IHas{T}"/> with assorted other useful interfaces.
 /// </summary>
