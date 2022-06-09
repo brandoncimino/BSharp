@@ -43,7 +43,7 @@ namespace FowlFever.Testing {
             IResolveConstraint Constraint,
             Func<string>?      Message = default
         ) {
-            protected internal abstract IAssertable Test(MultipleAsserter<TSelf, TActual> asserter);
+            protected internal abstract IFailable Test(MultipleAsserter<TSelf, TActual> asserter);
         }
 
         internal record Action_AgainstAnything(
@@ -54,7 +54,7 @@ namespace FowlFever.Testing {
             Nickname   ?? Assertable.GetNicknameSupplier(Action, default),
             Constraint ?? Throws.Nothing
         ) {
-            protected internal override IAssertable Test(MultipleAsserter<TSelf, TActual> asserter) {
+            protected internal override IFailable Test(MultipleAsserter<TSelf, TActual> asserter) {
                 return new Assertable(
                     () => asserter.ResolveAction(Action, Constraint, Message),
                     Nickname
@@ -70,7 +70,7 @@ namespace FowlFever.Testing {
             Nickname   ?? Assertable.GetNicknameSupplier(Action, default),
             Constraint ?? Throws.Nothing
         ) {
-            protected internal override IAssertable Test(MultipleAsserter<TSelf, TActual> asserter) {
+            protected internal override IFailable Test(MultipleAsserter<TSelf, TActual> asserter) {
                 return new Assertable(
                     () => { asserter.ResolveAction(() => Action(asserter.Actual.Value), Constraint, Message); },
                     Nickname
@@ -85,7 +85,7 @@ namespace FowlFever.Testing {
             Nickname ?? Assertable.GetNicknameSupplier(default, Constraint),
             Constraint
         ) {
-            protected internal override IAssertable Test(MultipleAsserter<TSelf, TActual> asserter) {
+            protected internal override IFailable Test(MultipleAsserter<TSelf, TActual> asserter) {
                 return new Assertable(
                     () => asserter.ResolveActual(asserter.Actual.Value, Constraint, Nickname),
                     Nickname
@@ -101,7 +101,7 @@ namespace FowlFever.Testing {
             Nickname ?? Assertable.GetNicknameSupplier(Target, Constraint),
             Constraint
         ) {
-            protected internal override IAssertable Test(MultipleAsserter<TSelf, TActual> asserter) {
+            protected internal override IFailable Test(MultipleAsserter<TSelf, TActual> asserter) {
                 return new Assertable(
                     () => asserter.ResolveActual(Target, Constraint, Message),
                     Nickname
@@ -117,7 +117,7 @@ namespace FowlFever.Testing {
             Nickname ?? Assertable.GetNicknameSupplier(Target, Constraint),
             Constraint
         ) {
-            protected internal override IAssertable Test(MultipleAsserter<TSelf, TActual> asserter) {
+            protected internal override IFailable Test(MultipleAsserter<TSelf, TActual> asserter) {
                 return new Assertable(
                     () => asserter.ResolveFunc(Target, Constraint, Message),
                     Nickname
@@ -133,7 +133,7 @@ namespace FowlFever.Testing {
             Nickname ?? Assertable.GetNicknameSupplier(Transformation, Constraint),
             Constraint
         ) {
-            protected internal override IAssertable Test(MultipleAsserter<TSelf, TActual> asserter) {
+            protected internal override IFailable Test(MultipleAsserter<TSelf, TActual> asserter) {
                 return new Assertable(
                     () => asserter.ResolveFunc(() => Transformation.DynamicInvoke(asserter.Actual.Value), Constraint, Message),
                     // () => asserter.ResolveActual(Transformation.DynamicInvoke(asserter.Actual.Value), Constraint, Message),
@@ -501,7 +501,7 @@ namespace FowlFever.Testing {
 
         #region Executing Test Assertions
 
-        internal IAssertable Test_Asserter(IMultipleAsserter asserter) {
+        internal IFailable Test_Asserter(IMultipleAsserter asserter) {
             return new Assertable(
                 asserter.Heading,
                 asserter.Invoke,
@@ -521,7 +521,7 @@ namespace FowlFever.Testing {
 
         #endregion
 
-        private IEnumerable<IAssertable> TestEverything() {
+        private IEnumerable<IFailable> TestEverything() {
             return Subtests.Select(
                                it => {
                                    using (new TestExecutionContext.IsolatedContext()) {
@@ -540,7 +540,7 @@ namespace FowlFever.Testing {
 
         #region formatting
 
-        private IEnumerable<string> FormatFailures([InstantHandle] IEnumerable<IAssertable> testResults) {
+        private IEnumerable<string> FormatFailures([InstantHandle] IEnumerable<IFailable> testResults) {
             testResults = testResults.ToList();
             var failures = testResults.Where(it => it.Failed).ToList();
 
@@ -561,7 +561,7 @@ namespace FowlFever.Testing {
                    .Concat(testResults.SelectMany(it => it.FormatAssertable(((IMultipleAsserter)this).Indent + 1)));
         }
 
-        private string FormatMultipleAssertionMessage(IEnumerable<IAssertable> failures) {
+        private string FormatMultipleAssertionMessage(IEnumerable<IFailable> failures) {
             return new List<string>()
                    .Concat(FormatHeading())
                    .Concat(FormatShortCircuitException())
