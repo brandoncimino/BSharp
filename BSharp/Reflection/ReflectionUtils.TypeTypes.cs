@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 
 using FowlFever.BSharp.Collections;
+using FowlFever.BSharp.Optional;
 
 namespace FowlFever.BSharp.Reflection;
 
@@ -111,7 +112,7 @@ public static partial class ReflectionUtils {
 
     /// <param name="method">this <see cref="MethodInfo"/></param>
     /// <returns>the single <see cref="ParameterInfo"/> from <see cref="MethodBase.GetParameters"/>, if there is exactly 1; otherwise, returns <c>null</c>.</returns>
-    public static ParameterInfo? GetSingleParameter(this MethodInfo method) => method.GetParameters().FindSingle();
+    public static ParameterInfo? GetSingleParameter(this MethodInfo method) => method.GetParameters().FindSingle().OrDefault();
 
     /// <summary>
     /// Inverse of <see cref="MethodBase.IsStatic"/>. Corresponds to <see cref="BindingFlags.Instance"/>.
