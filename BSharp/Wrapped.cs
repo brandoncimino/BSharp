@@ -3,56 +3,54 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
+using FowlFever.BSharp.Strings;
+
+using JetBrains.Annotations;
+
 namespace FowlFever.BSharp;
 
 /// <summary>
 /// A base <c>record</c> for wrappers around a single <typeparamref name="T"/> value.
 /// </summary>
-/// <param name="Value">the actual <see cref="IHas{T}.Value"/></param>
-/// <inheritdoc cref="IWrap{T}"/>
 /// <remarks>
-/// This is the basic implementation of the <see cref="IWrap{T}"/> interface.
-/// <p/>
-/// <p/>
 /// The goal of this class is that working with a <see cref="Wrapped{T}"/> should be as close to working with a normal <typeparamref name="T"/>
 /// as possible.
 /// <br/>
-/// It should be fully interoperable with:
+/// It should be fully interoperable with anything supported by <see cref="LiaisonComparer{T}"/>, such as:
 /// <ul>
 /// <li>Other <see cref="Wrapped{T}"/>s <i>(already covered by being a <c>record</c> type)</i></li>
 /// <li>Basic <typeparamref name="T"/> instances</li>
 /// <li>Anything that <see cref="IHas{T}"/></li>
+/// <li><see cref="Func{TResult}"/> suppliers of <typeparamref name="T"/></li>
+/// <li><see cref="Lazy{T}"/> values of <typeparamref name="T"/></li>
 /// </ul>
-/// <p/>
-/// To this end, <see cref="Wrapped{T}"/> provides a simple <see cref="IEquatable{T}"/> implementation
-/// and an <c>implicit operator</c> cast to <typeparamref name="T"/>.
-/// <p/>
 /// 📎 We don't need to be exhaustive with our operator overloads like <c>==</c> and <c>!=</c> because of the implicit conversion to <typeparamref name="T"/>.
-/// However, we do have to specify <see cref="Equals(T?)"/>, <see cref="CompareTo(T?)"/>, etc. methods in order to satisfy the <see cref="IEquatable{T}"/> interfaces, etc.
+/// However, we do have to specify <see cref="Equals(T?)"/>, <see cref="CompareTo(T?)"/>, etc. methods in order to satisfy the <see cref="IEquatable{T}"/> and <see cref="IComparable{T}"/> interfaces.
 /// <p/>
 /// 📎 While the base <see cref="Wrapped{T}"/> class contains an implicit cast to <typeparamref name="T"/>, individual implementers must provide casts <b>FROM</b> <typeparamref name="T"/>.
-/// </remarks>>
-public abstract record Wrapped<T>(T Value) : IWrap<T> {
-    public T Value { get; } = Value;
+/// </remarks>
+[PublicAPI]
+public abstract record Wrapped<T> : IHas<T>,
+                                    IPrettifiable,
+                                    IEquatable<T?>,
+                                    IEquatable<IHas<T?>?>,
+                                    IEquatable<Func<T?>?>,
+                                    IEquatable<Lazy<T?>?>,
+                                    IComparable<T?>,
+                                    IComparable<IHas<T?>?>,
+                                    IComparable<Func<T?>?>,
+                                    IComparable<Lazy<T?>?> {
+    public abstract T Value { get; }
 
-    #region Equality
+    #region Comparers
 
     /// <summary>
-    /// Defines how the underlying <see cref="Value"/> should be compared for equality.
+    /// Defines how the underlying <see cref="Value"/> should be compared <b>for equality</b>.
     /// </summary>
     /// <remarks>
-    /// Defaults to <see cref="EqualityComparer{T}.Default"/>.</remarks>
-    protected virtual IEqualityComparer<T?> ValueEqualityComparer { get; } = EqualityComparer<T?>.Default;
-
-    public bool Equals(T?        other) => ValueEqualityComparer.Equals(Value, other);
-    public bool Equals(IHas<T?>? other) => other != null && ValueEqualityComparer.Equals(Value, other.Value);
-
-    public static bool operator ==(Wrapped<T?>? a, T? b) => Equals(a, b);
-    public static bool operator !=(Wrapped<T?>? a, T? b) => !(a == b);
-
-    #endregion
-
-    #region Comparison
+    /// Defaults to <see cref="EqualityComparer{T}.Default"/>.
+    /// </remarks>
+    protected virtual IEqualityComparer<T?>? CanonEquality => EqualityComparer<T?>.Default;
 
     /// <summary>
     /// Defines how the underlying <see cref="Value"/> should be sorted.
@@ -60,10 +58,47 @@ public abstract record Wrapped<T>(T Value) : IWrap<T> {
     /// <remarks>
     /// Defaults to <see cref="Comparer{T}.Default"/>.
     /// </remarks>
-    public virtual IComparer<T?> ValueComparer { get; } = Comparer<T?>.Default;
+    protected virtual IComparer<T?> CanonComparer => Comparer<T?>.Default;
 
-    public int CompareTo(T?        other) => ValueComparer.Compare(Value, other);
-    public int CompareTo(IHas<T?>? other) => ValueComparer.Compare(Value, other.GetValueOrDefault());
+    /// <summary>
+    /// Provides interoperability with other wrapper-like classes via <see cref="LiaisonExtensions"/>.
+    /// </summary>
+    private LiaisonComparer<T> LiaisonComparer => LiaisonComparer<T>.Create(CanonEquality, CanonComparer);
+
+    #endregion
+
+    #region Equality
+
+    [System.Diagnostics.Contracts.Pure]
+    public override int GetHashCode() => LiaisonComparer.GetHashCode(Value);
+
+    [System.Diagnostics.Contracts.Pure]
+    public bool Equals(T? other) => LiaisonComparer.Equals(Value, other);
+
+    [System.Diagnostics.Contracts.Pure]
+    public bool Equals(IHas<T?>? other) => LiaisonComparer.Equals(Value, other);
+
+    [System.Diagnostics.Contracts.Pure]
+    public bool Equals(Func<T?>? other) => LiaisonComparer.Equals(Value, other);
+
+    [System.Diagnostics.Contracts.Pure]
+    public bool Equals(Lazy<T?>? other) => LiaisonComparer.Equals(Value, other);
+
+    #endregion
+
+    #region Comparison
+
+    [System.Diagnostics.Contracts.Pure]
+    public int CompareTo(T? other) => LiaisonComparer.Compare(Value, other);
+
+    [System.Diagnostics.Contracts.Pure]
+    public int CompareTo(IHas<T?>? other) => LiaisonComparer.Compare(Value, other);
+
+    [System.Diagnostics.Contracts.Pure]
+    public int CompareTo(Func<T?>? other) => LiaisonComparer.Compare(Value, other);
+
+    [System.Diagnostics.Contracts.Pure]
+    public int CompareTo(Lazy<T?>? other) => LiaisonComparer.Compare(Value, other);
 
     #endregion
 
@@ -74,10 +109,13 @@ public abstract record Wrapped<T>(T Value) : IWrap<T> {
 
     #endregion
 
+    #region Formatting
+
     /// <returns>The <a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/record#built-in-formatting-for-display">built-in format</a> of this <c>record</c>.</returns>
     /// <remarks>
     /// This <see cref="string"/> is generated by <see cref="PrintMembers"/>.
     /// </remarks>
+    [System.Diagnostics.Contracts.Pure]
     public string Describe() {
         var sb = new StringBuilder();
         PrintMembers(sb);
@@ -90,5 +128,10 @@ public abstract record Wrapped<T>(T Value) : IWrap<T> {
     /// <p/>
     /// This method is <c>sealed</c> because, otherwise, compiler-generated <see cref="ToString"/> methods would <c>override</c> it.
     /// </remarks>
+    [System.Diagnostics.Contracts.Pure]
     public sealed override string ToString() => $"{Value}";
+
+    public string Prettify(PrettificationSettings? settings = default) => Describe();
+
+    #endregion
 }
