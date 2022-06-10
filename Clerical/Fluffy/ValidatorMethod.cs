@@ -1,5 +1,7 @@
 using System.Reflection;
 
+using FowlFever.BSharp;
+using FowlFever.BSharp.Optional;
 using FowlFever.BSharp.Reflection;
 using FowlFever.BSharp.Strings;
 using FowlFever.BSharp.Sugar;
@@ -12,14 +14,14 @@ namespace FowlFever.Clerical.Fluffy;
 /// The core implementation of <see cref="IValidatorMethod"/>.
 /// </summary>
 /// <typeparam name="T"></typeparam>
-public class ValidatorMethod<T> : IValidatorMethod, IPrettifiable, IEquatable<IValidatorMethod>, IEquatable<MethodInfo> {
+public record ValidatorMethod<T> : Wrapped<MethodInfo>, IValidatorMethod<T, T>, IPrettifiable {
     private readonly Lazy<Action<T?>>     _assertion;
     private readonly Lazy<Func<T?, bool>> _predicate;
     private readonly Lazy<Func<T?, T?>>   _checkpoint;
 
-    public ValidatorStyle Style       { get; }
-    public MethodInfo     Method      { get; }
-    public string?        Description { get; }
+    public          ValidatorStyle Style       { get; }
+    public          string?        Description { get; }
+    public override MethodInfo     Value       { get; }
 
     #region Constructors
 
@@ -33,7 +35,7 @@ public class ValidatorMethod<T> : IValidatorMethod, IPrettifiable, IEquatable<IV
     ) {
         Style       = style;
         Description = description;
-        Method      = method;
+        Value       = method;
         _assertion  = Lazily.Get(assertion);
         _predicate  = Lazily.Get(predicate);
         _checkpoint = Lazily.Get(checkpoint);
@@ -105,13 +107,16 @@ public class ValidatorMethod<T> : IValidatorMethod, IPrettifiable, IEquatable<IV
 
     #region Verbs
 
-    [PublicAPI] public void Assert(T actual) => ((IValidatorMethod)this).Assert(actual);
-    [PublicAPI] public bool Try(T    actual) => ((IValidatorMethod)this).Try(actual);
-    [PublicAPI] public T    Check(T  actual) => (T)((IValidatorMethod)this).Check(actual)!;
+    [PublicAPI] public void Assert(T? actual) => ((IValidatorMethod)this).Assert(actual);
+    [PublicAPI] public bool Try(T?    actual) => ((IValidatorMethod)this).Try(actual);
+    [PublicAPI] public T?   Check(T?  actual) => (T?)((IValidatorMethod)this).Check(actual);
 
     [PublicAPI] void IValidatorMethod.   Assert(object? value) => _assertion.Value((T?)value);
     [PublicAPI] bool IValidatorMethod.   Try(object?    value) => _predicate.Value((T?)value);
     [PublicAPI] object? IValidatorMethod.Check(object?  value) => _checkpoint.Value((T?)value);
+
+    public IFailableFunc<T?>   TryValidate(T?      actual) => Failables.Try(Check, actual, Description.IfBlank(Value.Name));
+    IFailable IValidatorMethod.TryValidate(object? value)  => TryValidate((T?)value);
 
     #endregion
 
@@ -129,12 +134,8 @@ public class ValidatorMethod<T> : IValidatorMethod, IPrettifiable, IEquatable<IV
 
     #region Equality
 
-    private readonly IEqualityComparer<MethodInfo?> MethodComparer = new MetadataTokenComparer();
-
-    public          bool Equals(IValidatorMethod? other) => MethodComparer.Equals(Method, other?.Method);
-    public          bool Equals(MethodInfo        other) => MethodComparer.Equals(Method, other);
-    public override bool Equals(object?           obj)   => MethodComparer.Equals(Method, obj as MethodInfo);
-    public override int  GetHashCode()                   => MethodComparer.GetHashCode();
+    protected override IComparer<MethodInfo?>         CanonComparer => MetadataTokenComparer.Instance;
+    protected override IEqualityComparer<MethodInfo?> CanonEquality => MetadataTokenComparer.Instance;
 
     public static bool operator ==(ValidatorMethod<T>? left, IValidatorMethod?   right) => Equals(left, right);
     public static bool operator ==(IValidatorMethod?   left, ValidatorMethod<T>? right) => Equals(left, right);
@@ -145,13 +146,8 @@ public class ValidatorMethod<T> : IValidatorMethod, IPrettifiable, IEquatable<IV
 
     #region Formatting
 
-    public string Prettify(PrettificationSettings? settings = default) {
-        return $"[{GetType().Prettify(settings)}]{Method.Prettify(settings)}";
-    }
-
-    public override string ToString() {
-        var staticString = Method.IsStatic ? "static" : "instance";
-        return $"[{nameof(ValidatorMethod<T>)}<{typeof(T).Name}> from {staticString} {Method.DeclaringType?.Name}.{Method.Name}]";
+    public override string Prettify(PrettificationSettings? settings = default) {
+        return $"[{GetType().Prettify(settings)}]{Value.Prettify(settings)}";
     }
 
     #endregion

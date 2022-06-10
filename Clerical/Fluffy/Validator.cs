@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
+using FowlFever.BSharp;
 using FowlFever.BSharp.Collections;
 using FowlFever.BSharp.Enums;
 using FowlFever.BSharp.Exceptions;
@@ -30,23 +31,29 @@ public static class Validator {
     }
 
     /// <summary>
-    /// Retrieves all of the <see cref="MethodInfo"/>s annotated with <see cref="ValidatorAttribute"/> on the given <see cref="Type"/> <i>or its <see cref="ReflectionUtils.Ancestors"/></i>.
+    /// Retrieves all of the <see cref="MethodInfo"/>s annotated with <see cref="ValidatorAttribute"/> on the given <see cref="Type"/> <i>or its <see cref="ReflectionUtils.GetAncestors"/></i>.
     /// </summary>
     /// <param name="validatedType">the <see cref="Type"/> to check for <see cref="ValidatorAttribute"/>s</param>
     /// <returns>all of the retrieved <see cref="IValidatorMethod"/>s</returns>
+    /// <remarks>
+    /// TODO: construct <see cref="ValidatorMethod{T}"/>s that apply to the is the <see cref="IHas{T}"/>.<see cref="IHas{T}.Value"/>
+    /// TODO: define <see cref="ValidatorMethod{T}"/>s using a <see cref="AttributeTargets.Class"/>-level <see cref="ValidatorAttribute"/>
+    /// </remarks>
     public static IEnumerable<IValidatorMethod> GetValidatorMethods(Type? validatedType) => validatedType == null ? Enumerable.Empty<IValidatorMethod>() : Cache.GetOrAddLazily(validatedType, _GetValidatorMethods);
 
     /// <summary>
     /// Invokes all of the <see cref="GetValidatorMethods"/> from the type <typeparamref name="T"/> against <paramref name="actual"/>.
     /// </summary>
     /// <param name="actual">the object being validated</param>
+    /// <param name="details">user-provided additional details</param>
     /// <param name="parameterName">see <see cref="CallerArgumentExpressionAttribute"/></param>
     /// <param name="rejectedBy">see <see cref="CallerMemberNameAttribute"/></param>
     /// <typeparam name="T">the type of the validated object</typeparam>
     /// <returns>the object (if it passes validation)</returns>
     /// <exception cref="RejectionException">if the object fails validation</exception>
     public static T Validate<T>(
-        T actual,
+        T       actual,
+        string? details = default,
         [CallerArgumentExpression("actual")]
         string? parameterName = default,
         [CallerMemberName]
@@ -56,6 +63,7 @@ public static class Validator {
         if (results.Any(it => it.Failed)) {
             throw Must.Reject(
                 actual,
+                details,
                 parameterName,
                 rejectedBy,
                 results.JoinLines(indent: "  ")
@@ -72,10 +80,11 @@ public static class Validator {
     /// </summary>
     /// <param name="actual">the object being validated</param>
     [PublicAPI]
-    public static IEnumerable<IFailable> TryValidate<T>(T actual) =>
-        GetValidatorMethods(actual?.GetType())
-            .Select(it => Failables.Try(it.Assert, actual as object, description: it.Method.Name))
-            .ToList();
+    public static RapSheet TryValidate<T>(T actual) {
+        var charges = GetValidatorMethods(actual?.GetType())
+            .Select(it => it.TryValidate(actual));
+        return new RapSheet(charges);
+    }
 
     /// <summary>
     /// Constructs an <see cref="IValidatorMethod"/> from a <see cref="MethodInfo"/>.
