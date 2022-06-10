@@ -7,7 +7,10 @@ namespace FowlFever.Clerical.Fluffy;
 /// </summary>
 /// <typeparam name="T">the type of the underlying <see cref="Wrapped{T}.Value"/></typeparam>
 public abstract record Validated<T> : Wrapped<T> {
-    public Validated(T value) : base(value) {
+    public override T Value { get; }
+
+    protected Validated(T value) {
         Validator.Validate(this);
+        Value = value;
     }
 }
