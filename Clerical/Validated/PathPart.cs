@@ -2,6 +2,7 @@ using System.Collections.Immutable;
 
 using FowlFever.BSharp.Clerical;
 using FowlFever.BSharp.Exceptions;
+using FowlFever.BSharp.Strings;
 using FowlFever.Clerical.Fluffy;
 
 namespace FowlFever.Clerical.Validated;
@@ -23,6 +24,12 @@ public record PathPart(string Value) : Validated<string>(Value) {
                                                                      .Union(Path.GetInvalidFileNameChars())
                                                                      .Union(BPath.SeparatorChars)
                                                                      .ToImmutableHashSet();
+
+    internal override string Fluff(string value) {
+        return base.Fluff(value)
+                   .TrimStart(BPath.DirectorySeparatorPattern, 1)
+                   .TrimEnd(BPath.DirectorySeparatorPattern, 1);
+    }
 
     public static implicit operator PathPart(string str) => new(str);
 
