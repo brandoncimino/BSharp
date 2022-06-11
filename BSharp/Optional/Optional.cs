@@ -16,16 +16,16 @@ namespace FowlFever.BSharp.Optional {
     /// Utility and extension methods for <see cref="Optional{T}"/>.
     /// </summary>
     [PublicAPI]
-    public static partial class Optional {
+    public static class Optional {
         internal const string NullPlaceholder  = "⛔";
         internal const string EmptyPlaceholder = "🈳";
 
         /// <summary>
         /// Creates an <see cref="Optional{T}"/> without ugly type parameters.
         /// </summary>
-        /// <param name="value"></param>
-        /// <typeparam name="T"></typeparam>
-        /// <returns></returns>
+        /// <param name="value">the underlying <see cref="IOptional{T}.Value"/></param>
+        /// <typeparam name="T">the type of the underlying <see cref="IOptional{T}.Value"/></typeparam>
+        /// <returns>a new <see cref="Optional{T}"/></returns>
         public static Optional<T> Of<T>(T value) {
             return new Optional<T>(value);
         }
@@ -106,7 +106,8 @@ namespace FowlFever.BSharp.Optional {
         /// Corresponds to Guava's <a href="https://guava.dev/releases/21.0/api/docs/com/google/common/collect/MoreCollectors.html#toOptional--">MoreCollectors.toOptional()</a>.
         /// </remarks>
         /// <exception cref="InvalidOperationException">if <paramref name="source"/> contains <b>more than one element</b>.</exception>
-        public static Optional<T?> ToOptional<T>([InstantHandle] this IEnumerable<T?>? source) {
+        [MustUseReturnValue]
+        public static Optional<T> ToOptional<T>([InstantHandle] this IEnumerable<T>? source) {
             if (source == null) {
                 return default;
             }
@@ -149,8 +150,20 @@ namespace FowlFever.BSharp.Optional {
 
         #endregion
 
+        #region IEnumerable<T> extension "overrides"
+
+        /// <summary>
+        /// Works similarly to <see cref="Enumerable.Select{TSource,TResult}(System.Collections.Generic.IEnumerable{TSource},System.Func{TSource,TResult})"/>,
+        /// but returns the result as an <see cref="IOptional{T}"/>.
+        /// </summary>
+        /// <param name="optional">this <see cref="IOptional{T}"/></param>
+        /// <param name="selector">the <see cref="Func{TResult}"/> that transforms the original <see cref="IOptional{T}.Value"/></param>
+        /// <typeparam name="TIn">the original <see cref="IOptional{T}.Value"/> type</typeparam>
+        /// <typeparam name="TOut">the new <see cref="IOptional{T}.Value"/> type</typeparam>
+        /// <returns>a new <see cref="IOptional{T}"/> containing the result of the <paramref name="selector"/></returns>
+        /// <remarks>This method operates on the <see cref="IOptional{T}"/> interface. For the concrete <see cref="Optional{T}"/> version, see <see cref="Optional{T}.Select{TNew}"/>.</remarks>
+        /// <seealso cref="Optional{T}.Select{TNew}"/>
         [Pure]
-        [LinqTunnel]
         public static IOptional<TOut> Select<TIn, TOut>(
             this IOptional<TIn> optional,
             Func<TIn, TOut>     selector
@@ -159,24 +172,50 @@ namespace FowlFever.BSharp.Optional {
         }
 
         /// <summary>
-        /// If this <typeparamref name="TIn"/> is <b>not</b> <c>null</c>, <see cref="Func{T,TResult}.Invoke"/> <paramref name="selector"/>.
-        ///
-        /// Otherwise, return a null <typeparamref name="TOut"/>.
+        /// Works similarly to <see cref="Select{TIn,TOut}(FowlFever.BSharp.Optional.IOptional{TIn},System.Func{TIn,TOut})"/>, but "flattens" the result - i.e.
+        /// the 
         /// </summary>
-        /// <remarks>
-        /// Intended to let you treat a nullable type (<see cref="ValueType"/> OR reference) as an <see cref="IOptional{T}"/>.
-        /// </remarks>
-        /// <param name="nullable">a <see cref="ValueType"/> that might be null</param>
-        /// <param name="selector">a <see cref="Func{TResult}"/> to apply to a <b>non-null</b> <typeparamref name="TIn"/></param>
-        /// <typeparam name="TIn">the original <see cref="Type"/></typeparam>
-        /// <typeparam name="TOut">the output <see cref="Type"/></typeparam>
-        /// <returns>a nullable <typeparamref name="TOut"/></returns>
-        [Pure]
-        public static TOut? SelectNullable<TIn, TOut>(
-            this TIn?       nullable,
-            Func<TIn, TOut> selector
+        /// <inheritdoc cref="Select{TIn,TOut}(FowlFever.BSharp.Optional.IOptional{TIn},System.Func{TIn,TOut})"/>
+        public static IOptional<TOut> Select<TIn, TOut>(
+            this IOptional<TIn>        optional,
+            Func<TIn, IOptional<TOut>> selector
         ) {
-            return nullable == null ? default : selector(nullable);
+            return optional.AsEnumerable().Select(selector).Single().MustNotBeNull();
+        }
+
+        [Pure]
+        public static Optional<TOut> Select<TIn, TOut>(
+            this Optional<TIn>        optional,
+            Func<TIn, Optional<TOut>> selector
+        ) {
+            return optional.AsEnumerable().Select(selector).Single();
+        }
+
+        /// <summary>
+        /// Converts an <see cref="Optional{T}"/> containing <c>null</c> into an empty <see cref="Optional{T}"/>.
+        /// </summary>
+        /// <param name="optional">this <see cref="Optional{T}"/></param>
+        /// <typeparam name="T">the type of the actual <see cref="Optional{T}"/> value</typeparam>
+        /// <returns>an <see cref="Optional{T}"/> with a non-null <typeparamref name="T"/> type</returns>
+        [Pure]
+        public static Optional<T> NonNull<T>(this Optional<T?> optional) => optional.Where(it => it != null)!;
+
+        /// <inheritdoc cref="NonNull{T}(FowlFever.BSharp.Optional.Optional{T?})"/>
+        /// <remarks>
+        /// This method will convert <see cref="Nullable{T}"/> <typeparamref name="T"/>? parameters into their non-null <see cref="ValueType"/> form.
+        /// </remarks>
+        [Pure]
+        public static Optional<T> NonNull<T>(this Optional<T?> optional)
+            where T : struct => optional.Select(it => it.ToOptional()).Flatten();
+
+        #endregion
+
+        public static Optional<TOut> SelectNullable<TIn, TOut>(this Optional<TIn?> optional, Func<TIn, TOut?> selector)
+            => optional.NonNull().Select(selector).NonNull();
+
+        public static IOptional<T, SELF> OrEmpty<T, SELF>(this IOptional<T, SELF>? optional2)
+            where SELF : IOptional<T, SELF>, new() {
+            return optional2 ?? new SELF();
         }
 
         /// <summary>
@@ -223,6 +262,8 @@ namespace FowlFever.BSharp.Optional {
         public static T OrElse<T>(this IOptional<T>? optional, T fallback) {
             return optional.GetValueOrDefault(fallback);
         }
+
+        public static Optional<T> OrElse<T>(this Optional<T> optional, Optional<T> fallback) => optional.HasValue ? optional : fallback;
 
         public static T? OrDefault<T>(this IOptional<T>? optional) {
             return optional.OrElse(default);
@@ -281,29 +322,9 @@ namespace FowlFever.BSharp.Optional {
         [ContractAnnotation("a:null, b:null => true")]
         [ContractAnnotation("a:null, b:notnull => false")]
         [ContractAnnotation("a:notnull, b:null => false")]
+        [Obsolete($"Please use {nameof(OptionalEqualityComparer<byte>)} instead")]
         public static bool AreEqual<T>(IOptional<T>? a, IOptional<T>? b) {
-            // return true if EITHER:
-            // - a & b are the same object, OR
-            // - a & b are both null
-            if (ReferenceEquals(a, b)) {
-                return true;
-            }
-
-            // since at this point we know that they can't _both_ be null, if _either_ of them is null, return false
-            if (ReferenceEquals(a, null) || ReferenceEquals(b, null)) {
-                return false;
-            }
-
-            // if a & b are both EITHER:
-            // - not empty, OR
-            // - empty
-            if (a.HasValue == b.HasValue) {
-                // if a is empty, then b is empty, and two empties are considered to match, so we return TRUE
-                // otherwise, we compare the actual values
-                return !a.HasValue || Equals(a.Value, b.Value);
-            }
-
-            return false;
+            return new OptionalEqualityComparer<T>().Equals(a, b);
         }
 
         /// <summary>
@@ -321,6 +342,7 @@ namespace FowlFever.BSharp.Optional {
         /// <seealso cref="AreEqual{T}(FowlFever.BSharp.Optional.IOptional{T}?,FowlFever.BSharp.Optional.IOptional{T}?)"/>
         /// <seealso cref="AreEqual{T}(T?,FowlFever.BSharp.Optional.IOptional{T}?)"/>
         [ContractAnnotation("a:null => false")]
+        [Obsolete($"Please use {nameof(OptionalEqualityComparer<byte>)} instead")]
         public static bool AreEqual<T>(IOptional<T>? a, T? b) {
             // this method compares the _value_ of `a` to `b`, which means a value has to exist
             if (a is not { HasValue: true }) {
@@ -343,6 +365,7 @@ namespace FowlFever.BSharp.Optional {
         /// <seealso cref="AreEqual{T}(FowlFever.BSharp.Optional.IOptional{T}?,FowlFever.BSharp.Optional.IOptional{T}?)"/>
         /// <seealso cref="AreEqual{T}(FowlFever.BSharp.Optional.IOptional{T}?,T?)"/>
         [ContractAnnotation("b:null => false")]
+        [Obsolete($"Please use {nameof(OptionalEqualityComparer<byte>)} instead")]
         public static bool AreEqual<T>(T? a, IOptional<T>? b) {
             return AreEqual(b, a);
         }
