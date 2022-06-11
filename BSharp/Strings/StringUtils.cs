@@ -636,13 +636,13 @@ namespace FowlFever.BSharp.Strings {
         /// <param name="obj">this <see cref="object"/></param>
         /// <param name="nullPlaceholder">the output if this <see cref="Object"/> is <c>null</c>. Defaults to <see cref="Prettification.DefaultNullPlaceholder"/></param>
         /// <returns><see cref="object.ToString"/> if this <see cref="Object"/> isn't <c>null</c>; otherwise, <paramref name="nullPlaceholder"/></returns>
-        public static string OrNullPlaceholder(this object? obj, string? nullPlaceholder = Prettification.DefaultNullPlaceholder) {
+        public static string OrNullPlaceholder<T>(this T? obj, string? nullPlaceholder = Prettification.DefaultNullPlaceholder) {
             nullPlaceholder ??= Prettification.DefaultNullPlaceholder;
             return obj?.ToString() ?? nullPlaceholder;
         }
 
-        /// <inheritdoc cref="OrNullPlaceholder(object?,string?)"/>
-        public static string OrNullPlaceholder(this object? obj, PrettificationSettings? settings) {
+        /// <inheritdoc cref="OrNullPlaceholder{T}(T?,string?)"/>
+        public static string OrNullPlaceholder<T>(this T? obj, PrettificationSettings? settings) {
             settings ??= PrettificationSettings.Default;
             return OrNullPlaceholder(obj, settings.NullPlaceholder);
         }
@@ -657,6 +657,10 @@ namespace FowlFever.BSharp.Strings {
         public static string? IfBlank(this string? str, string? blankPlaceholder) {
             return str.IsBlank() ? blankPlaceholder : str;
         }
+
+        /// <inheritdoc cref="IfBlank(string?,string?)"/>
+        [return: NotNullIfNotNull("blankPlaceholder")]
+        public static string? IfBlank(this IHas<string?>? str, string? blankPlaceholder) => (str?.Value).IfBlank(blankPlaceholder);
 
         /// <inheritdoc cref="IfBlank(string?,string?)"/>
         public static string IfBlank(this string? str, Func<string> blankPlaceholder) {
@@ -759,8 +763,8 @@ namespace FowlFever.BSharp.Strings {
                 return "";
             }
 
-            var first = str?.IndexOf(splitter, StringComparison.Ordinal);
-            return first > 0 ? str.Substring(0, first.Value) : "";
+            var first = str.IndexOf(splitter, StringComparison.Ordinal);
+            return first > 0 ? str[..first] : "";
         }
 
         [Pure]
