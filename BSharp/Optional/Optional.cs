@@ -208,15 +208,18 @@ namespace FowlFever.BSharp.Optional {
         public static Optional<T> NonNull<T>(this Optional<T?> optional)
             where T : struct => optional.Select(it => it.ToOptional()).Flatten();
 
-        #endregion
-
+        /// <summary>
+        /// <see cref="Optional{T}.Select{TNew}"/>s this <see cref="Optional{T}"/>, filtering out <c>null</c> values.
+        /// </summary>
+        /// <param name="optional">this <see cref="Optional{T}"/></param>
+        /// <param name="selector">the transforming <see cref="Func{T,TResult}"/>, which will <b>only</b> run if this <see cref="Optional{T}.Value"/> is non-<c>null</c></param>
+        /// <typeparam name="TIn">the original <see cref="Type"/></typeparam>
+        /// <typeparam name="TOut">the transformed <see cref="Type"/></typeparam>
+        /// <returns>a new <see cref="Optional{T}"/></returns>
         public static Optional<TOut> SelectNullable<TIn, TOut>(this Optional<TIn?> optional, Func<TIn, TOut?> selector)
             => optional.NonNull().Select(selector).NonNull();
 
-        public static IOptional<T, SELF> OrEmpty<T, SELF>(this IOptional<T, SELF>? optional2)
-            where SELF : IOptional<T, SELF>, new() {
-            return optional2 ?? new SELF();
-        }
+        #endregion
 
         /// <summary>
         /// Provides a "default" <see cref="object.ToString"/> method for <see cref="IOptional{T}"/> implementations to use.
@@ -263,8 +266,9 @@ namespace FowlFever.BSharp.Optional {
             return optional.GetValueOrDefault(fallback);
         }
 
-        public static Optional<T> OrElse<T>(this Optional<T> optional, Optional<T> fallback) => optional.HasValue ? optional : fallback;
-
+        ///<summary>
+        /// TODO: Is this necessary? Or is it redundant because we can say <code>optional.OrElse(default)</code>?
+        /// </summary>
         public static T? OrDefault<T>(this IOptional<T>? optional) {
             return optional.OrElse(default);
         }

@@ -46,6 +46,13 @@ namespace FowlFever.BSharp.Optional {
             HasValue = true;
         }
 
+        #region Logic / Filtering
+
+        public Optional<T> OrElse(Optional<T> fallback) => HasValue ? this : fallback;
+        public T           OrElse(T           fallback) => HasValue ? Value : fallback;
+
+        #endregion
+
         #region Implementations
 
         #region Enumeration
