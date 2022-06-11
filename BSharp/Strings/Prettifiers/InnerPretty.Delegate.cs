@@ -47,7 +47,7 @@ namespace FowlFever.BSharp.Strings.Prettifiers {
 
         private static string _Prettify_Lambda_Simple(Delegate del, PrettificationSettings settings) {
             var argString    = InnerPretty.PrettifyParameters(del.Method, settings);
-            var resultString = del.Method.ReturnType;
+            var resultString = del.Method.ReturnType.PrettifyType(settings);
             return $"{LambdaIcon} ({argString}) => {resultString}";
         }
     }
