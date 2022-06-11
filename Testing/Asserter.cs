@@ -16,7 +16,7 @@ namespace FowlFever.Testing {
         public override void ResolveFunc<T1>(
             Func<T1>           actual,
             IResolveConstraint constraint,
-            Func<string>?      message
+            Func<string?>?     message
         ) {
             var msg = message?.Invoke();
             var del = new ActualValueDelegate<T1>(actual);
@@ -31,7 +31,7 @@ namespace FowlFever.Testing {
         public override void ResolveAction(
             Action             action,
             IResolveConstraint constraint,
-            Func<string>?      message
+            Func<string?>?     message
         ) {
             var del = new TestDelegate(action);
             if (message == null) {
@@ -45,7 +45,7 @@ namespace FowlFever.Testing {
         public override void ResolveActual<T1>(
             T1                 actual,
             IResolveConstraint constraint,
-            Func<string>?      message
+            Func<string?>?     message
         ) {
             if (message == null) {
                 Assert.That(actual, constraint);
@@ -64,11 +64,11 @@ namespace FowlFever.Testing {
 
     [PublicAPI]
     public static class Asserter {
-        internal static IMultipleAsserter Against<TSelf, TOld, TNew>(
-            MultipleAsserter<TSelf, TOld?> parent,
-            Func<TOld?, TNew>              transformation
+        internal static Asserter<TNew> Against<TSelf, TOld, TNew>(
+            MultipleAsserter<TSelf, TOld> parent,
+            Func<TOld?, TNew>             transformation
         )
-            where TSelf : MultipleAsserter<TSelf, TOld?>, new() {
+            where TSelf : MultipleAsserter<TSelf, TOld>, new() {
             return new Asserter<TNew>(() => transformation(parent.Actual.Value));
         }
 

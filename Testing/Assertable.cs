@@ -1,9 +1,10 @@
 using System;
-using System.Runtime.CompilerServices;
 
+using FowlFever.BSharp;
 using FowlFever.BSharp.Collections;
 using FowlFever.BSharp.Optional;
 using FowlFever.BSharp.Strings;
+using FowlFever.BSharp.Sugar;
 
 using NUnit.Framework;
 using NUnit.Framework.Constraints;
@@ -16,22 +17,19 @@ namespace FowlFever.Testing {
     /// </summary>
     public record Assertable : Failable {
         private Assertable(
-            IFailable    failable,
-            Func<string> nickname
+            IFailable         failable,
+            Supplied<string>? description
         ) : base(
-            failable
-        ) {
-            Description = nickname;
-        }
+            failable,
+            description
+        ) { }
 
         internal Assertable(
-            Action       action,
-            Func<string> nickname,
-            [CallerArgumentExpression("action")]
-            string? description = default
+            Action            action,
+            Supplied<string>? description
         ) : this(
-            Invoke(action, description, typeof(SuccessException)),
-            nickname
+            Invoke(action, null, null, typeof(SuccessException)),
+            description
         ) { }
 
         /// <summary>
@@ -43,7 +41,7 @@ namespace FowlFever.Testing {
         /// <param name="message"></param>
         /// <param name="actionResolver"></param>
         internal Assertable(
-            Func<string>?                                     nickname,
+            Supplied<string>?                                 nickname,
             Action                                            assertion,
             IResolveConstraint                                constraint,
             Func<string>?                                     message,
@@ -55,14 +53,14 @@ namespace FowlFever.Testing {
 
         public override string ToString() => this.FormatAssertable().JoinLines();
 
-        internal static Func<string> GetNicknameSupplier(object? actual, IResolveConstraint? constraint, PrettificationSettings? settings = default) {
+        internal static Supplied<string> GetNicknameSupplier(object? actual, IResolveConstraint? constraint, PrettificationSettings? settings = default) {
             static string GetNickname(object? actual, IResolveConstraint? constraint, PrettificationSettings? settings) {
                 var dName = actual?.Prettify(settings);
                 var cName = constraint?.Prettify(settings);
                 return dName.JoinNonBlank(cName, " 🗜 ");
             }
 
-            return () => GetNickname(actual, constraint, settings);
+            return Lazily.Get(() => GetNickname(actual, constraint, settings));
         }
     }
 }

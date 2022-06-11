@@ -39,9 +39,9 @@ namespace FowlFever.Testing {
         #region Subtest Types
 
         internal abstract record Subtest(
-            Func<string>       Nickname,
+            Supplied<string>   Nickname,
             IResolveConstraint Constraint,
-            Func<string>?      Message = default
+            Supplied<string>?  Message = default
         ) {
             protected internal abstract IFailable Test(MultipleAsserter<TSelf, TActual> asserter);
         }
@@ -49,14 +49,14 @@ namespace FowlFever.Testing {
         internal record Action_AgainstAnything(
             Action              Action,
             IResolveConstraint? Constraint,
-            Func<string>?       Nickname
+            Supplied<string>?   Nickname
         ) : Subtest(
             Nickname   ?? Assertable.GetNicknameSupplier(Action, default),
             Constraint ?? Throws.Nothing
         ) {
             protected internal override IFailable Test(MultipleAsserter<TSelf, TActual> asserter) {
                 return new Assertable(
-                    () => asserter.ResolveAction(Action, Constraint, Message),
+                    () => asserter.ResolveAction(Action, Constraint, Message?.Supply()),
                     Nickname
                 );
             }
@@ -65,14 +65,14 @@ namespace FowlFever.Testing {
         internal record Action_AgainstActual(
             Action<TActual?>    Action,
             IResolveConstraint? Constraint,
-            Func<string>?       Nickname
+            Supplied<string>?   Nickname
         ) : Subtest(
             Nickname   ?? Assertable.GetNicknameSupplier(Action, default),
             Constraint ?? Throws.Nothing
         ) {
             protected internal override IFailable Test(MultipleAsserter<TSelf, TActual> asserter) {
                 return new Assertable(
-                    () => { asserter.ResolveAction(() => Action(asserter.Actual.Value), Constraint, Message); },
+                    () => { asserter.ResolveAction(() => Action(asserter.Actual.Value), Constraint, Message.GetValueOrDefault); },
                     Nickname
                 );
             }
@@ -80,14 +80,14 @@ namespace FowlFever.Testing {
 
         internal record Constraint_AgainstActual(
             IResolveConstraint Constraint,
-            Func<string>?      Nickname
+            Supplied<string>?  Nickname
         ) : Subtest(
             Nickname ?? Assertable.GetNicknameSupplier(default, Constraint),
             Constraint
         ) {
             protected internal override IFailable Test(MultipleAsserter<TSelf, TActual> asserter) {
                 return new Assertable(
-                    () => asserter.ResolveActual(asserter.Actual.Value, Constraint, Nickname),
+                    () => asserter.ResolveActual(asserter.Actual.Value, Constraint, Nickname.GetValueOrDefault),
                     Nickname
                 );
             }
@@ -96,14 +96,14 @@ namespace FowlFever.Testing {
         internal record Constraint_AgainstAnything(
             object?            Target,
             IResolveConstraint Constraint,
-            Func<string>?      Nickname
+            Supplied<string>?  Nickname
         ) : Subtest(
             Nickname ?? Assertable.GetNicknameSupplier(Target, Constraint),
             Constraint
         ) {
             protected internal override IFailable Test(MultipleAsserter<TSelf, TActual> asserter) {
                 return new Assertable(
-                    () => asserter.ResolveActual(Target, Constraint, Message),
+                    () => asserter.ResolveActual(Target, Constraint, Message.GetValueOrDefault),
                     Nickname
                 );
             }
@@ -112,14 +112,14 @@ namespace FowlFever.Testing {
         internal record Constraint_AgainstDelegate(
             Func<object?>      Target,
             IResolveConstraint Constraint,
-            Func<string>?      Nickname
+            Supplied<string>?  Nickname
         ) : Subtest(
             Nickname ?? Assertable.GetNicknameSupplier(Target, Constraint),
             Constraint
         ) {
             protected internal override IFailable Test(MultipleAsserter<TSelf, TActual> asserter) {
                 return new Assertable(
-                    () => asserter.ResolveFunc(Target, Constraint, Message),
+                    () => asserter.ResolveFunc(Target, Constraint, Message.GetValueOrDefault),
                     Nickname
                 );
             }
@@ -128,14 +128,14 @@ namespace FowlFever.Testing {
         internal record Constraint_AgainstTransformation(
             Delegate           Transformation,
             IResolveConstraint Constraint,
-            Func<string>?      Nickname
+            Supplied<string>?  Nickname
         ) : Subtest(
             Nickname ?? Assertable.GetNicknameSupplier(Transformation, Constraint),
             Constraint
         ) {
             protected internal override IFailable Test(MultipleAsserter<TSelf, TActual> asserter) {
                 return new Assertable(
-                    () => asserter.ResolveFunc(() => Transformation.DynamicInvoke(asserter.Actual.Value), Constraint, Message),
+                    () => asserter.ResolveFunc(() => Transformation.DynamicInvoke(asserter.Actual.Value), Constraint, Message.GetValueOrDefault),
                     // () => asserter.ResolveActual(Transformation.DynamicInvoke(asserter.Actual.Value), Constraint, Message),
                     Nickname
                 );
@@ -176,19 +176,19 @@ namespace FowlFever.Testing {
         public abstract void ResolveFunc<T>(
             Func<T>            actual,
             IResolveConstraint constraint,
-            Func<string>?      message
+            Func<string?>?     message
         );
 
         public abstract void ResolveAction(
             Action             action,
             IResolveConstraint constraint,
-            Func<string>?      message
+            Func<string?>?     message
         );
 
         public abstract void ResolveActual<T>(
             T                  actual,
             IResolveConstraint constraint,
-            Func<string>?      message
+            Func<string?>?     message
         );
 
         private Optional<Exception> ShortCircuitException;
@@ -267,10 +267,11 @@ namespace FowlFever.Testing {
 
         #region Actions_AgainstActual
 
-        private TSelf _Add_Action_AgainstActual(
-            Action<TActual?>    action,
-            IResolveConstraint? constraint,
-            Func<string>?       nickname
+        [MustUseReturnValue]
+        public TSelf And(
+            Action<TActual?>   action,
+            IResolveConstraint constraint,
+            Func<string>?      nickname = default
         ) {
             Subtests.Add(new Action_AgainstActual(action, constraint, nickname));
             return Self;
@@ -278,24 +279,12 @@ namespace FowlFever.Testing {
 
         [MustUseReturnValue]
         public TSelf And(
-            Action<TActual?>   action,
-            IResolveConstraint constraint,
-            Func<string>?      nickname = default
-        ) {
-            _Add_Action_AgainstActual(action, constraint, nickname);
-            return Self;
-        }
-
-        [MustUseReturnValue]
-        public TSelf And(
             Action<TActual?> action,
             Func<string>?    nickname = default
-        ) =>
-            _Add_Action_AgainstActual(
-                action,
-                default,
-                nickname
-            );
+        ) {
+            Subtests.Add(new Action_AgainstActual(action, default, nickname));
+            return Self;
+        }
 
         [MustUseReturnValue]
         public TSelf Satisfies(
@@ -307,8 +296,11 @@ namespace FowlFever.Testing {
         public TSelf And(
             Action<TActual?> action,
             string?          nickname
-        ) =>
-            _Add_Action_AgainstActual(action, default, AsFunc(nickname));
+        ) {
+            Func<string>? nickname1 = AsFunc(nickname);
+            Subtests.Add(new Action_AgainstActual(action, default, nickname1));
+            return Self;
+        }
 
         [MustUseReturnValue]
         public TSelf Satisfies(
@@ -348,22 +340,25 @@ namespace FowlFever.Testing {
 
         #region Constraints_AgainstAnything
 
-        private TSelf _Add_Constraint_AgainstAnything(object? target, IResolveConstraint constraint, Func<string>? nickname) {
-            Subtests.Add(new Constraint_AgainstAnything(target, constraint, nickname));
-            return Self;
-        }
-
         [MustUseReturnValue]
         public TSelf And(
             object?            target,
             IResolveConstraint constraint,
             Func<string>?      nickname = default
-        ) =>
-            _Add_Constraint_AgainstAnything(target, constraint, nickname);
+        ) {
+            Subtests.Add(new Constraint_AgainstAnything(target, constraint, nickname));
+            return Self;
+        }
 
         [MustUseReturnValue]
+        [Obsolete("ugly")]
         public TSelf And(IEnumerable<(object target, IResolveConstraint constraint)>? constraints) {
-            constraints?.ForEach(it => _ = _Add_Constraint_AgainstAnything(it.target, it.constraint, default));
+            constraints?.ForEach(
+                it => {
+                    Subtests.Add(new Constraint_AgainstAnything(it.target, it.constraint, default));
+                    _ = Self;
+                }
+            );
             return Self;
         }
 
@@ -372,46 +367,41 @@ namespace FowlFever.Testing {
             object?            target,
             IResolveConstraint constraint,
             string?            nickname
-        ) =>
-            _Add_Constraint_AgainstAnything(target, constraint, AsFunc(nickname));
+        ) {
+            Func<string>? nickname1 = AsFunc(nickname);
+            Subtests.Add(new Constraint_AgainstAnything(target, constraint, nickname1));
+            return Self;
+        }
 
         #endregion
 
         #region Constraints_AgainstDelegate
 
-        private TSelf _Add_Constraint_AgainstDelegate(Func<object> supplier, IResolveConstraint constraint, Func<string>? nickname) {
-            Subtests.Add(new Constraint_AgainstDelegate(supplier, constraint, nickname));
+        private TSelf _Add(Subtest subtest) {
+            Subtests.Add(subtest);
             return Self;
         }
 
         [MustUseReturnValue]
-        public TSelf And(Func<object> supplier, IResolveConstraint constraint, Func<string>? nickname = default) => _Add_Constraint_AgainstDelegate(supplier, constraint, nickname);
+        public TSelf And(Func<object> supplier, IResolveConstraint constraint, Func<string>? nickname = default) => _Add(new Constraint_AgainstDelegate(supplier, constraint, nickname));
 
         [MustUseReturnValue]
-        public TSelf And(Func<object> supplier, IResolveConstraint constraint, string? nickname) => _Add_Constraint_AgainstDelegate(supplier, constraint, AsFunc(nickname));
+        public TSelf And(Func<object> supplier, IResolveConstraint constraint, string? nickname) => _Add(new Constraint_AgainstDelegate(supplier, constraint, AsFunc(nickname)));
 
         #endregion
 
         #region Constraints_AgainstTransformation
 
-        private TSelf _Add_Constraint_AgainstTransformation<TNew>(Func<TActual, TNew> actualTransformation, IResolveConstraint constraint, Func<string>? nickname) {
-            Subtests.Add(new Constraint_AgainstTransformation(actualTransformation, constraint, nickname));
-            return Self;
-        }
+        [MustUseReturnValue]
+        public TSelf And<TNew>(Func<TActual, TNew> tf, IResolveConstraint constraint, Func<string>? nickname = default) => _Add(new Constraint_AgainstTransformation(tf, constraint, nickname));
 
         [MustUseReturnValue]
-        public TSelf And<TNew>(Func<TActual, TNew> tf, IResolveConstraint constraint, Func<string>? nickname = default) {
-            return _Add_Constraint_AgainstTransformation(tf, constraint, nickname);
-        }
+        public TSelf And<TNew>(Func<TActual, TNew> tf, IResolveConstraint constraint, string? nickname) => _Add(new Constraint_AgainstTransformation(tf, constraint, AsFunc(nickname)));
 
         [MustUseReturnValue]
-        public TSelf And<TNew>(Func<TActual, TNew> tf, IResolveConstraint constraint, string? nickname) {
-            return _Add_Constraint_AgainstTransformation(tf, constraint, AsFunc(nickname));
-        }
-
-        [MustUseReturnValue]
+        [Obsolete("ugly")]
         public TSelf And<TNew>(IEnumerable<(Func<TActual, TNew>, IResolveConstraint)>? constraints) {
-            constraints?.ForEach(it => _ = _Add_Constraint_AgainstTransformation(it.Item1, it.Item2, default));
+            constraints?.ForEach(it => _ = _Add(new Constraint_AgainstTransformation(it.Item1, it.Item2, default)));
             return Self;
         }
 
@@ -432,15 +422,9 @@ namespace FowlFever.Testing {
             Func<TActual?, TNew?>                  transformation,
             Func<Asserter<TNew?>, Asserter<TNew?>> ass
         ) {
-            var a2 = Asserter.Against(this!, transformation);
+            var a2 = Asserter.Against(this, transformation).WithPrettificationSettings(PrettificationSettings);
             _Add_Asserter(a2);
             return Self;
-        }
-
-        private Asserter<TNew> _Get_ChildAsserter<TNew>(Func<TActual?, TNew> transformation) {
-            TNew TfDelegate() => transformation(Actual.Get($"Could not create a child {typeof(Asserter<>).Name}"));
-            return Asserter.Against(TfDelegate)
-                           .WithPrettificationSettings(PrettificationSettings);
         }
 
         #endregion
@@ -457,7 +441,7 @@ namespace FowlFever.Testing {
 
         [MustUseReturnValue]
         public TSelf WithHeading(string? heading) {
-            Heading = heading.IsNotBlank() ? () => heading! : default;
+            Heading = heading.IsNotBlank() ? () => heading : default;
             return Self;
         }
 
@@ -542,23 +526,7 @@ namespace FowlFever.Testing {
 
         private IEnumerable<string> FormatFailures([InstantHandle] IEnumerable<IFailable> testResults) {
             testResults = testResults.ToList();
-            var failures = testResults.Where(it => it.Failed).ToList();
-
-            var prettySettings = PrettificationSettings.Default with {
-                PreferredLineStyle = LineStyle.Single, LineLengthLimit = 30, TypeLabelStyle = TypeNameStyle.Short
-            };
-
-            var countString       = failures.IsNotEmpty() ? $"[{failures.Count}/{testResults.Count()}]" : $"All {testResults.Count()}";
-            var actualValueString = ActualValueAlias.IfBlank(Actual.Value?.ToString());
-            var againstString     = actualValueString.IsBlank() ? "" : $" against {actualValueString}";
-
-            var summary = failures.IsNotEmpty()
-                              ? $"💔 {countString} assertions{againstString} failed:"
-                              : $"🎊 {countString} assertions{againstString} passed!";
-
-            return new List<string>()
-                   .Append(summary)
-                   .Concat(testResults.SelectMany(it => it.FormatAssertable(((IMultipleAsserter)this).Indent + 1)));
+            return new RapSheet(testResults).Prettify().SplitLines();
         }
 
         private string FormatMultipleAssertionMessage(IEnumerable<IFailable> failures) {
