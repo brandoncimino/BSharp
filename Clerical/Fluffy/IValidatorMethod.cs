@@ -30,20 +30,7 @@ public interface IValidatorMethod : IHas<MethodInfo> {
     /// </summary>
     /// <param name="value">the <see cref="object"/> being validated</param>
     /// <returns><c>true</c> if the <see cref="object"/> is valid; otherwise, <c>false</c></returns>
-    public bool Try(object? value);
-
-    /// <summary>
-    /// Validates the <see cref="object"/>, returning an equivalent <see cref="object"/> if it passes,
-    /// or throwing an <see cref="Exception"/> if it fails. 
-    /// </summary>
-    /// <param name="value">the <see cref="object"/> being validated</param>
-    /// <returns>an equivalent <see cref="object"/></returns>
-    /// <remarks>
-    /// The returned <see cref="object"/> may or may not be <see cref="object.ReferenceEquals"/> to the input <paramref name="value"/>.
-    ///
-    /// This facilitates small modifications, such as <see cref="string.Trim()"/>ming white space, before passing the object on to the next <see cref="IValidatorMethod"/>.
-    /// </remarks>
-    public object? Check(object? value);
+    public bool Test(object? value);
 
     /// <summary>
     /// Invokes this <see cref="IValidatorMethod"/> "safely", returning the result as an <see cref="IFailable"/>.
@@ -53,11 +40,8 @@ public interface IValidatorMethod : IHas<MethodInfo> {
     public IFailable TryValidate(object? value);
 }
 
-public interface IValidatorMethod<in T, out T2> : IValidatorMethod
-    where T2 : T {
-    public void Assert(T? actual);
-    public bool Try(T?    actual);
-    public T2?  Check(T?  actual);
-
-    public IFailableFunc<T2?> TryValidate(T? actual);
+public interface IValidatorMethod<in T> : IValidatorMethod {
+    public void      Assert(T?      actual);
+    public bool      Test(T?        actual);
+    public IFailable TryValidate(T? actual);
 }
