@@ -9,7 +9,7 @@ using NUnit.Framework;
 
 using Is = NUnit.Framework.Is;
 
-namespace BSharp.Tests.Collections; 
+namespace BSharp.Tests.Collections;
 
 public class FailableTests {
     #region Example methods
@@ -88,7 +88,7 @@ public class FailableTests {
 
     [Test]
     public void FailedFailable_Lambda() {
-        Validate.FailedFailable(Optional.Try(Fail));
+        Validate.FailedFailable(Failables.Try(Fail));
     }
 
     [Test]
@@ -99,7 +99,7 @@ public class FailableTests {
 
     [Test]
     public void PassedFailable_Lambda() {
-        Validate.PassedFailable(Optional.Try(Succeed));
+        Validate.PassedFailable(Failables.Try(Succeed));
     }
 
     [Test]
@@ -110,7 +110,7 @@ public class FailableTests {
 
     [Test]
     public void SuccessfulFailableEquality() {
-        var failable = Optional.Try(Succeed);
+        var failable = Failables.Try(Succeed);
         var optional = Optional.Of(Expected_Value);
         Asserter.Against(failable)
                 .And(Validate.Equality(failable, optional,       Should.Pass))
@@ -120,20 +120,20 @@ public class FailableTests {
 
     [Test]
     public void SuccessfulEqualsSelf() {
-        var failable = Optional.Try(Succeed);
+        var failable = Failables.Try(Succeed);
         Validate.Equality(failable, failable, Should.Pass).Invoke();
     }
 
     [Test]
     public void SuccessfulEqualsDuplicate() {
-        var a = Optional.Try(Succeed);
-        var b = Optional.Try(Succeed);
+        var a = Failables.Try(Succeed);
+        var b = Failables.Try(Succeed);
         Validate.Equality(a, b, Should.Pass).Invoke();
     }
 
     [Test]
     public void SuccessfulFailableInequality() {
-        var failable = Optional.Try(Succeed);
+        var failable = Failables.Try(Succeed);
         var optional = Optional.Of(Unexpected_Value);
         Asserter.Against(failable)
                 .And(Validate.Equality(failable, optional,         Should.Fail))
@@ -143,30 +143,30 @@ public class FailableTests {
 
     [Test]
     public void FailedFailableInequality() {
-        var failable = Optional.Try(Fail);
+        var failable = Failables.Try(Fail);
         var optional = Optional.Of(Expected_Value);
         Asserter.Against(failable)
-                .And(Validate.Equality(failable, optional,              Should.Fail))
-                .And(Validate.Equality(failable, Expected_Value,        Should.Fail))
-                .And(Validate.Equality(failable, Optional.Try(Succeed), Should.Fail))
+                .And(Validate.Equality(failable, optional,               Should.Fail))
+                .And(Validate.Equality(failable, Expected_Value,         Should.Fail))
+                .And(Validate.Equality(failable, Failables.Try(Succeed), Should.Fail))
                 .Invoke();
     }
 
     [Test]
     public void FailedFailableEquality() {
-        var failable = Optional.Try(Fail);
+        var failable = Failables.Try(Fail);
         var optional = new Optional<int>();
         Asserter.Against(failable)
-                .And(Validate.Equality(failable, optional,           Should.Pass))
-                .And(Validate.Equality(failable, failable,           Should.Pass))
-                .And(Validate.Equality(failable, Optional.Try(Fail), Should.Pass))
+                .And(Validate.Equality(failable, optional,            Should.Pass))
+                .And(Validate.Equality(failable, failable,            Should.Pass))
+                .And(Validate.Equality(failable, Failables.Try(Fail), Should.Pass))
                 .Invoke();
     }
 
     [Test]
     public void FailableSuccessObjectEquality() {
-        var failable  = Optional.Try(Succeed);
-        var failable2 = Optional.Try(Succeed);
+        var failable  = Failables.Try(Succeed);
+        var failable2 = Failables.Try(Succeed);
         Console.WriteLine($"int: {failable.Equals(5)}");
         Console.WriteLine($"obj: {failable.Equals((object)5)}");
         Console.WriteLine($"int-int: {5.Equals(5)}");
@@ -180,8 +180,8 @@ public class FailableTests {
 
     [Test]
     public void FailableSuccessObjectInequality() {
-        var failable  = Optional.Try(Succeed);
-        var failable2 = Optional.Try(UnexpectedSuccess);
+        var failable  = Failables.Try(Succeed);
+        var failable2 = Failables.Try(UnexpectedSuccess);
         Asserter.Against(failable)
                 .And(Validate.ObjectEquality(failable, Unexpected_Value, Should.Fail))
                 .And(Validate.ObjectEquality(failable, failable2,        Should.Fail))
