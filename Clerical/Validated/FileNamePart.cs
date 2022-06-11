@@ -18,7 +18,7 @@ namespace FowlFever.Clerical.Validated;
 /// ]]></code>
 /// </example>
 public record FileNamePart(string Value) : PathPart(Value) {
-    internal override string Fluff(string value) => base.Fluff(value).TrimStart(".", 1);
+    internal override string BeforeValidation(string value) => base.BeforeValidation(value).TrimStart(".", 1);
 
     [Validator] private void NoPeriods() => Must.NotContain(Value, ".");
 }

@@ -25,8 +25,8 @@ public record PathPart(string Value) : Validated<string>(Value) {
                                                                      .Union(Clerk.DirectorySeparatorChars)
                                                                      .ToImmutableHashSet();
 
-    internal override string Fluff(string value) {
-        return base.Fluff(value)
+    internal override string BeforeValidation(string value) {
+        return base.BeforeValidation(value)
                    .TrimStart(Clerk.DirectorySeparatorPattern, 1)
                    .TrimEnd(Clerk.DirectorySeparatorPattern, 1);
     }

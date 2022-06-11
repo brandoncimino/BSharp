@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+
 using FowlFever.BSharp;
 
 namespace FowlFever.Clerical.Fluffy;
@@ -9,11 +11,13 @@ namespace FowlFever.Clerical.Fluffy;
 public abstract record Validated<T> : Wrapped<T> {
     public override T Value { get; }
 
+    [SuppressMessage("ReSharper", "VirtualMemberCallInConstructor")]
     protected Validated(T value) {
-        // ReSharper disable once VirtualMemberCallInConstructor
-        Value = Fluff(value);
+        Value = BeforeValidation(value);
         Validator.Validate(this);
+        Value = AfterValidation(Value);
     }
 
-    internal virtual T Fluff(T value) => value;
+    internal virtual T BeforeValidation(T value) => value;
+    internal virtual T AfterValidation(T  value) => value;
 }
