@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Reflection;
 
 using FowlFever.BSharp;
@@ -14,10 +15,9 @@ namespace FowlFever.Clerical.Fluffy;
 /// The core implementation of <see cref="IValidatorMethod"/>.
 /// </summary>
 /// <typeparam name="T"></typeparam>
-public record ValidatorMethod<T> : Wrapped<MethodInfo>, IValidatorMethod<T, T>, IPrettifiable {
+public record ValidatorMethod<T> : Wrapped<MethodInfo>, IValidatorMethod<T> {
     private readonly Lazy<Action<T?>>     _assertion;
     private readonly Lazy<Func<T?, bool>> _predicate;
-    private readonly Lazy<Func<T?, T?>>   _checkpoint;
 
     public          ValidatorStyle Style       { get; }
     public          string?        Description { get; }
@@ -30,15 +30,13 @@ public record ValidatorMethod<T> : Wrapped<MethodInfo>, IValidatorMethod<T, T>, 
         ValidatorStyle style,
         string?        description,
         Action<T?>     assertion,
-        Func<T?, bool> predicate,
-        Func<T?, T?>   checkpoint
+        Func<T?, bool> predicate
     ) {
         Style       = style;
         Description = description;
         Value       = method;
         _assertion  = Lazily.Get(assertion);
         _predicate  = Lazily.Get(predicate);
-        _checkpoint = Lazily.Get(checkpoint);
     }
 
     /// <summary>
@@ -52,8 +50,7 @@ public record ValidatorMethod<T> : Wrapped<MethodInfo>, IValidatorMethod<T, T>, 
         ValidatorStyle.Assertion,
         description,
         assertion,
-        assertion.ToPredicate(),
-        assertion.ToCheckpoint()
+        assertion.ToPredicate()
     ) { }
 
     /// <summary>
@@ -67,8 +64,7 @@ public record ValidatorMethod<T> : Wrapped<MethodInfo>, IValidatorMethod<T, T>, 
         ValidatorStyle.Predicate,
         description,
         predicate.ToAssertion(),
-        predicate,
-        predicate.ToCheckpoint()
+        predicate
     ) { }
 
     /// <summary>
@@ -82,8 +78,7 @@ public record ValidatorMethod<T> : Wrapped<MethodInfo>, IValidatorMethod<T, T>, 
         ValidatorStyle.Checkpoint,
         description,
         checkpoint.ToAssertion(),
-        checkpoint.ToPredicate(),
-        checkpoint
+        checkpoint.ToPredicate()
     ) { }
 
     private static ValidatorMethod<T> From(Delegate delgato, string? description = default) =>
@@ -108,14 +103,17 @@ public record ValidatorMethod<T> : Wrapped<MethodInfo>, IValidatorMethod<T, T>, 
     #region Verbs
 
     [PublicAPI] public void Assert(T? actual) => ((IValidatorMethod)this).Assert(actual);
-    [PublicAPI] public bool Try(T?    actual) => ((IValidatorMethod)this).Try(actual);
-    [PublicAPI] public T?   Check(T?  actual) => (T?)((IValidatorMethod)this).Check(actual);
+    [PublicAPI] public bool Test(T?   actual) => ((IValidatorMethod)this).Test(actual);
 
-    [PublicAPI] void IValidatorMethod.   Assert(object? value) => _assertion.Value((T?)value);
-    [PublicAPI] bool IValidatorMethod.   Try(object?    value) => _predicate.Value((T?)value);
-    [PublicAPI] object? IValidatorMethod.Check(object?  value) => _checkpoint.Value((T?)value);
+    [StackTraceHidden]
+    [PublicAPI]
+    void IValidatorMethod.Assert(object? value) => _assertion.Value((T?)value);
 
-    public IFailableFunc<T?>   TryValidate(T?      actual) => Failables.Try(Check, actual, Description.IfBlank(Value.Name));
+    [StackTraceHidden]
+    [PublicAPI]
+    bool IValidatorMethod.Test(object? value) => _predicate.Value((T?)value);
+
+    public IFailable           TryValidate(T?      actual) => Failables.Try(Assert, actual, Description.IfBlank(Value.Name));
     IFailable IValidatorMethod.TryValidate(object? value)  => TryValidate((T?)value);
 
     #endregion
@@ -127,8 +125,7 @@ public record ValidatorMethod<T> : Wrapped<MethodInfo>, IValidatorMethod<T, T>, 
     public static implicit operator ValidatorMethod<T>(Func<T?, T?>   func)      => new(func);
 
     public static implicit operator Action<T?>(ValidatorMethod<T?>     validator) => validator.Assert;
-    public static implicit operator Func<T?, bool>(ValidatorMethod<T?> validator) => validator.Try;
-    public static implicit operator Func<T?, T?>(ValidatorMethod<T?>   validator) => validator.Check;
+    public static implicit operator Func<T?, bool>(ValidatorMethod<T?> validator) => validator.Test;
 
     #endregion
 
