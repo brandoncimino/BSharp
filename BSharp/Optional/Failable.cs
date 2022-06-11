@@ -19,30 +19,32 @@ namespace FowlFever.BSharp.Optional {
         public bool                      Failed                => Excuse != null;
         public IReadOnlyCollection<Type> IgnoredExceptionTypes { get; }
         public Exception?                IgnoredException      { get; }
-        public Supplied<string>          Description           { get; init; }
+        public Supplied<string?>?        Description           { get; }
 
         internal Failable(
             Exception?         excuse,
             IEnumerable<Type>? ignoredExceptionTypes,
             Exception?         ignoredException,
-            string?            expression
+            Supplied<string?>? description
         ) {
             Excuse                = excuse;
             IgnoredException      = ignoredException;
             IgnoredExceptionTypes = ignoredExceptionTypes?.ToArray() ?? Array.Empty<Type>();
-            Description           = expression;
+            Description           = description;
         }
 
-        protected Failable(IFailable other) : this(other.Excuse, other.IgnoredExceptionTypes, other.IgnoredException, other.Description) { }
+        protected Failable(IFailable other, Supplied<string>? description = default) : this(other.Excuse, other.IgnoredExceptionTypes, other.IgnoredException, description ?? other.Description) { }
 
         public static Failable Invoke(
             [InstantHandle]
             Action failableAction,
-            IEnumerable<Type> ignoredExceptionTypes,
+            IEnumerable<Type>  ignoredExceptionTypes,
+            Supplied<string?>? description = default,
             [CallerArgumentExpression("failableAction")]
-            string? description = default
+            string? expression = default
         ) {
             ignoredExceptionTypes = ignoredExceptionTypes.Must(ReflectionUtils.IsExceptionType).ToArray();
+            var resolvedDescription = description ?? expression;
 
             if (failableAction == null) {
                 throw new ArgumentNullException(nameof(failableAction), $"Unable to attempt a {nameof(Failable)} because the {nameof(failableAction)} was null!");
@@ -50,20 +52,27 @@ namespace FowlFever.BSharp.Optional {
 
             try {
                 failableAction.Invoke();
-                return new Failable(default, ignoredExceptionTypes, default, description);
+                return new Failable(default, ignoredExceptionTypes, default, resolvedDescription);
             }
             catch (Exception e) when (e.IsInstanceOf(ignoredExceptionTypes)) {
                 // Handling an ignored exception
-                return new Failable(default, ignoredExceptionTypes, e, description);
+                return new Failable(default, ignoredExceptionTypes, e, resolvedDescription);
             }
             catch (Exception e) {
                 // Handling a non-ignored exception
-                return new Failable(e, ignoredExceptionTypes, default, description);
+                return new Failable(e, ignoredExceptionTypes, default, expression);
             }
         }
 
-        public static Failable Invoke([InstantHandle] Action failableAction, [CallerArgumentExpression("failableAction")] string? expression = default, params Type[] ignoredExceptionTypes) {
-            return Invoke(failableAction, ignoredExceptionTypes, expression);
+        public static Failable Invoke(
+            [InstantHandle]
+            Action failableAction,
+            Supplied<string?>? description = default,
+            [CallerArgumentExpression("failableAction")]
+            string? expression = default,
+            params Type[] ignoredExceptionTypes
+        ) {
+            return Invoke(failableAction, ignoredExceptionTypes, description, expression);
         }
 
         public override string ToString() {

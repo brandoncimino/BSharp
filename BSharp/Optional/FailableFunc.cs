@@ -7,16 +7,16 @@ namespace FowlFever.BSharp.Optional;
 
 public record FailableFunc<TValue> : Failable, IFailableFunc<TValue>, IEquatable<IOptional<TValue>>, IEquatable<TValue> {
     private readonly Optional<TValue> _value;
-    public           int              Count         => _value.Count;
-    public           bool             HasValue      => _value.HasValue;
-    public           TValue           Value         => _value.HasValue ? _value.Value : throw FailableException.FailedException(this, Excuse);
-    public           object?          ValueOrExcuse => _value.HasValue ? _value.Value : Excuse;
+    int IReadOnlyCollection<TValue>.  Count         => ((IReadOnlyCollection<TValue>)_value).Count;
+    public bool                       HasValue      => _value.HasValue;
+    public TValue                     Value         => _value.HasValue ? _value.Value : throw FailableException.FailedException(this, Excuse);
+    public object?                    ValueOrExcuse => _value.HasValue ? _value.Value : Excuse;
 
     private FailableFunc(
         Optional<TValue> value,
         Exception?       excuse,
-        string?          expression
-    ) : base(excuse, default, default, expression) {
+        string?          description
+    ) : base(excuse, default, default, description) {
         _value = value;
     }
 
@@ -29,10 +29,12 @@ public record FailableFunc<TValue> : Failable, IFailableFunc<TValue>, IEquatable
         }
     }
 
-    public IEnumerator<TValue> GetEnumerator()                 => _value.GetEnumerator();
-    IEnumerator IEnumerable.   GetEnumerator()                 => GetEnumerator();
-    public bool                Equals(IOptional<TValue> other) => Optional.AreEqual(_value, other);
-    public bool                Equals(TValue            other) => Optional.AreEqual(_value, other);
+    private static readonly OptionalEqualityComparer<TValue> Comparer = new();
+
+    public IEnumerator<TValue> GetEnumerator()                   => _value.GetEnumerator();
+    IEnumerator IEnumerable.   GetEnumerator()                   => GetEnumerator();
+    public bool                Equals(IOptional<TValue?>? other) => Comparer.Equals(_value, other);
+    public bool                Equals(TValue?             other) => Comparer.Equals(_value, other);
 
     public override string ToString() {
         return $"{Description} => {this.GetIcon()} [{ValueOrExcuse}]";
