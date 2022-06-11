@@ -10,7 +10,10 @@ public abstract record Validated<T> : Wrapped<T> {
     public override T Value { get; }
 
     protected Validated(T value) {
+        // ReSharper disable once VirtualMemberCallInConstructor
+        Value = Fluff(value);
         Validator.Validate(this);
-        Value = value;
     }
+
+    internal virtual T Fluff(T value) => value;
 }
