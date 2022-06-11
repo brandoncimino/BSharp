@@ -20,7 +20,7 @@ namespace FowlFever.BSharp.Optional {
     /// </remarks>
     [PublicAPI]
     [JsonConverter(typeof(OptionalJsonConverter))]
-    public readonly struct Optional<T> : IOptional<T, Optional<T>>,
+    public readonly struct Optional<T> : IOptional<T>,
                                          IEquatable<T>,
                                          IEquatable<IHas<T>>,
                                          IEquatable<IOptional<T>>,
@@ -138,7 +138,5 @@ namespace FowlFever.BSharp.Optional {
         public static implicit operator Optional<T>(T value) {
             return new Optional<T>(value);
         }
-
-        public Optional<T> Self() => this;
     }
 }
