@@ -16,6 +16,8 @@ using NUnit.Framework;
 
 using Is = NUnit.Framework.Is;
 
+// ReSharper disable StaticMemberInGenericType
+
 // ReSharper disable MemberCanBePrivate.Local
 // ReSharper disable UnusedAutoPropertyAccessor.Local
 // ReSharper disable AutoPropertyCanBeMadeGetOnly.Local
@@ -26,9 +28,9 @@ namespace BSharp.Tests.Reflection {
 
         #region Variables
 
-        public class VariableInfo {
-            public string      Name;
-            public MemberTypes MemberType;
+        public record VariableExpectation {
+            public string      Name       { get; init; } = null!;
+            public MemberTypes MemberType { get; init; }
 
             private bool _gettable;
             public bool Gettable {
@@ -42,7 +44,7 @@ namespace BSharp.Tests.Reflection {
                 set => _settable = value;
             }
 
-            public string BackingFieldName => MemberType != MemberTypes.Property ? null : $"<{Name}>k__BackingField";
+            public string? BackingFieldName => MemberType != MemberTypes.Property ? null : $"<{Name}>k__BackingField";
 
             public override string ToString() {
                 return Name;
@@ -61,15 +63,14 @@ namespace BSharp.Tests.Reflection {
             public    T Prop_Mixed_Private_Setter { get;         private set; }
             public    T Prop_Get_Only             { get; }
 
-            public static    T Field_Static_Public;
-            private static   T Field_Static_Private;
-            protected static T Field_Static_Protected;
-
-            public static    T   Prop_Static_Public               { get;         set; }
-            private static   T   Prop_Static_Private              { get;         set; }
-            protected static T   Prop_Static_Protected            { get;         set; }
-            public static    T   Prop_Static_Mixed_Private_Getter { private get; set; }
-            public static    T   Prop_Static_Mixed_Private_Setter { get;         private set; }
+            public static    T?  Field_Static_Public;
+            private static   T?  Field_Static_Private;
+            protected static T?  Field_Static_Protected;
+            public static    T?  Prop_Static_Public               { get;         set; }
+            private static   T?  Prop_Static_Private              { get;         set; }
+            protected static T?  Prop_Static_Protected            { get;         set; }
+            public static    T?  Prop_Static_Mixed_Private_Getter { private get; set; }
+            public static    T?  Prop_Static_Mixed_Private_Setter { get;         private set; }
             public static    int Prop_Static_Get_Only             { get; } = Prop_Static_Get_Only_Default_Value;
 
             public Privacy(T value) {
@@ -95,31 +96,25 @@ namespace BSharp.Tests.Reflection {
                 Prop_Static_Mixed_Private_Setter = value;
             }
 
-            public static List<VariableInfo> VariableInfos() => new List<VariableInfo>() {
+            public static List<VariableExpectation> VariableInfos() => new List<VariableExpectation>() {
                 #region Instance Variables
 
                 #region Instance Fields
 
-                new VariableInfo() {
-                    Name = nameof(Field_Public), MemberType = MemberTypes.Field
-                },
-                new VariableInfo() {
-                    Name = nameof(Field_Private), MemberType = MemberTypes.Field
-                },
-                new VariableInfo() {
-                    Name = nameof(Field_Protected), MemberType = MemberTypes.Field
-                },
+                new() { Name = nameof(Field_Public), MemberType    = MemberTypes.Field },
+                new() { Name = nameof(Field_Private), MemberType   = MemberTypes.Field },
+                new() { Name = nameof(Field_Protected), MemberType = MemberTypes.Field },
 
                 #endregion
 
                 #region Instance Properties
 
-                new VariableInfo() { Name = nameof(Prop_Public), MemberType               = MemberTypes.Property, Gettable = true, Settable = true },
-                new VariableInfo() { Name = nameof(Prop_Private), MemberType              = MemberTypes.Property, Gettable = true, Settable = true },
-                new VariableInfo() { Name = nameof(Prop_Protected), MemberType            = MemberTypes.Property, Gettable = true, Settable = true },
-                new VariableInfo() { Name = nameof(Prop_Mixed_Private_Getter), MemberType = MemberTypes.Property, Gettable = true, Settable = true },
-                new VariableInfo() { Name = nameof(Prop_Mixed_Private_Setter), MemberType = MemberTypes.Property, Gettable = true, Settable = true },
-                new VariableInfo() { Name = nameof(Prop_Get_Only), MemberType             = MemberTypes.Property, Gettable = true, Settable = false },
+                new() { Name = nameof(Prop_Public), MemberType               = MemberTypes.Property, Gettable = true, Settable = true },
+                new() { Name = nameof(Prop_Private), MemberType              = MemberTypes.Property, Gettable = true, Settable = true },
+                new() { Name = nameof(Prop_Protected), MemberType            = MemberTypes.Property, Gettable = true, Settable = true },
+                new() { Name = nameof(Prop_Mixed_Private_Getter), MemberType = MemberTypes.Property, Gettable = true, Settable = true },
+                new() { Name = nameof(Prop_Mixed_Private_Setter), MemberType = MemberTypes.Property, Gettable = true, Settable = true },
+                new() { Name = nameof(Prop_Get_Only), MemberType             = MemberTypes.Property, Gettable = true, Settable = false },
 
                 #endregion
 
@@ -129,38 +124,20 @@ namespace BSharp.Tests.Reflection {
 
                 #region Static Fields
 
-                new VariableInfo() {
-                    Name = nameof(Field_Static_Public), MemberType = MemberTypes.Field
-                },
-                new VariableInfo() {
-                    Name = nameof(Field_Static_Private), MemberType = MemberTypes.Field
-                },
-                new VariableInfo() {
-                    Name = nameof(Field_Static_Protected), MemberType = MemberTypes.Field
-                },
+                new() { Name = nameof(Field_Static_Public), MemberType    = MemberTypes.Field },
+                new() { Name = nameof(Field_Static_Private), MemberType   = MemberTypes.Field },
+                new() { Name = nameof(Field_Static_Protected), MemberType = MemberTypes.Field },
 
                 #endregion
 
                 #region Static Properties
 
-                new VariableInfo() {
-                    Name = nameof(Prop_Static_Public), MemberType = MemberTypes.Property, Gettable = true, Settable = true
-                },
-                new VariableInfo() {
-                    Name = nameof(Prop_Static_Private), MemberType = MemberTypes.Property, Gettable = true, Settable = true
-                },
-                new VariableInfo() {
-                    Name = nameof(Prop_Static_Protected), MemberType = MemberTypes.Property, Gettable = true, Settable = true
-                },
-                new VariableInfo() {
-                    Name = nameof(Prop_Static_Mixed_Private_Getter), MemberType = MemberTypes.Property, Gettable = true, Settable = true
-                },
-                new VariableInfo() {
-                    Name = nameof(Prop_Static_Mixed_Private_Setter), MemberType = MemberTypes.Property, Gettable = true, Settable = true
-                },
-                new VariableInfo() {
-                    Name = nameof(Prop_Static_Get_Only), MemberType = MemberTypes.Property, Gettable = true, Settable = false
-                },
+                new() { Name = nameof(Prop_Static_Public), MemberType               = MemberTypes.Property, Gettable = true, Settable = true },
+                new() { Name = nameof(Prop_Static_Private), MemberType              = MemberTypes.Property, Gettable = true, Settable = true },
+                new() { Name = nameof(Prop_Static_Protected), MemberType            = MemberTypes.Property, Gettable = true, Settable = true },
+                new() { Name = nameof(Prop_Static_Mixed_Private_Getter), MemberType = MemberTypes.Property, Gettable = true, Settable = true },
+                new() { Name = nameof(Prop_Static_Mixed_Private_Setter), MemberType = MemberTypes.Property, Gettable = true, Settable = true },
+                new() { Name = nameof(Prop_Static_Get_Only), MemberType             = MemberTypes.Property, Gettable = true, Settable = false },
 
                 #endregion
 
@@ -171,23 +148,23 @@ namespace BSharp.Tests.Reflection {
         /// <summary>
         /// Returns the settable entries from <see cref="AllVariables"/>
         /// </summary>
-        public static List<VariableInfo> SettableVariables => Privacy<int>.VariableInfos().Where(it => it.Settable).ToList();
+        public static List<VariableExpectation> SettableVariables => Privacy<int>.VariableInfos().Where(it => it.Settable).ToList();
 
         /// <summary>
         /// Allows access to <see cref="Privacy{T}.VariableInfos"/> cleanly in <see cref="ValueSourceAttribute"/>s
         /// </summary>
-        public static List<VariableInfo> AllVariables => Privacy<int>.VariableInfos();
+        public static List<VariableExpectation> AllVariables => Privacy<int>.VariableInfos();
         public static List<string> AllVariableNames => AllVariables.Select(it => it.Name).ToList();
 
         /// <summary>
         /// Returns the <see cref="MemberTypes.Property"/> entries from <see cref="AllVariables"/>
         /// </summary>
-        public static List<VariableInfo> AllProperties => Privacy<int>.VariableInfos().Where(it => it.MemberType == MemberTypes.Property).ToList();
+        public static List<VariableExpectation> AllProperties => Privacy<int>.VariableInfos().Where(it => it.MemberType == MemberTypes.Property).ToList();
 
         [Test]
         public void GetVariable(
             [ValueSource(nameof(AllVariables))]
-            VariableInfo expectedGettableVariable
+            VariableExpectation expectedGettableVariable
         ) {
             var setInt = expectedGettableVariable.Name == nameof(Privacy<int>.Prop_Static_Get_Only) ? Prop_Static_Get_Only_Default_Value : new Random().Next();
 
@@ -200,7 +177,7 @@ namespace BSharp.Tests.Reflection {
         [Test]
         public void SetVariable(
             [ValueSource(nameof(SettableVariables))]
-            VariableInfo expectedSettableVariable
+            VariableExpectation expectedSettableVariable
         ) {
             Assume.That(expectedSettableVariable, Has.Property(nameof(expectedSettableVariable.Settable)).True);
 
@@ -245,7 +222,7 @@ namespace BSharp.Tests.Reflection {
         [Test]
         public void GetBackedPropertyName(
             [ValueSource(nameof(AllVariables))]
-            VariableInfo propertyWithBackingField
+            VariableExpectation propertyWithBackingField
         ) {
             if (propertyWithBackingField.MemberType != MemberTypes.Property) {
                 throw new IgnoreException($"{propertyWithBackingField} is not a {MemberTypes.Property}!");
@@ -263,7 +240,7 @@ namespace BSharp.Tests.Reflection {
         [Test]
         public void BackingField(
             [ValueSource(nameof(AllProperties))]
-            VariableInfo propertyWithBackingField
+            VariableExpectation propertyWithBackingField
         ) {
             Assume.That(propertyWithBackingField.MemberType, Is.EqualTo(MemberTypes.Property));
             var propertyInfo = typeof(Privacy<int>).GetProperty(propertyWithBackingField.Name, BindingFlags.Default | BindingFlags.Instance | BindingFlags.Public | BindingFlags.Static | BindingFlags.NonPublic);
@@ -284,7 +261,7 @@ namespace BSharp.Tests.Reflection {
         [Test]
         public void IsBackingField(
             [ValueSource(nameof(AllProperties))]
-            VariableInfo propertyWithBackingField
+            VariableExpectation propertyWithBackingField
         ) {
             Assume.That(propertyWithBackingField.MemberType, Is.EqualTo(MemberTypes.Property));
             var backingFieldInfo = typeof(Privacy<int>).GetField(propertyWithBackingField.BackingFieldName, BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static);
@@ -690,6 +667,43 @@ namespace BSharp.Tests.Reflection {
             Asserter.Against(expectation.Member)
                     .WithForgiveness("Detecting nullability is really messy, and apparently becomes a standard feature in C# 6")
                     .And(ReflectionUtils.IsNullable, Is.EqualTo(expectation.Nullability != TypeNullability.None), expectation.Nickname)
+                    .Invoke();
+        }
+
+        #endregion
+
+        #region Construction
+
+        private class StartPrivately {
+            public object Value           { get; }
+            public Type   ConstructorType { get; }
+
+            private StartPrivately(int i) {
+                Value           = i;
+                ConstructorType = typeof(int);
+            }
+
+            public StartPrivately(string s) {
+                Value           = s;
+                ConstructorType = typeof(string);
+            }
+
+            public StartPrivately(object o) {
+                Value           = o;
+                ConstructorType = typeof(object);
+            }
+        }
+
+        [Test]
+        [TestCase(5,        typeof(int))]
+        [TestCase("yolo",   typeof(string))]
+        [TestCase((short)5, typeof(int))]
+        [TestCase(6L,       typeof(object))]
+        public void UsePrivateConstructor(object value, Type constructorType) {
+            Asserter.Against(() => typeof(StartPrivately).Construct(value))
+                    .And(Is.Not.Null)
+                    .And(Has.Property(nameof(StartPrivately.Value)).EqualTo(value))
+                    .And(Has.Property(nameof(StartPrivately.ConstructorType)).EqualTo(constructorType))
                     .Invoke();
         }
 
