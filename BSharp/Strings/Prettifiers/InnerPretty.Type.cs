@@ -75,7 +75,12 @@ namespace FowlFever.BSharp.Strings.Prettifiers {
             };
         }
 
-        internal static string WithTypeLabel(this string? thing, Type labelType, PrettificationSettings settings, string joiner = "") {
+        internal static string WithTypeLabel(
+            this string?           thing,
+            Type                   labelType,
+            PrettificationSettings settings,
+            string                 joiner = " "
+        ) {
             return new[] { labelType.GetTypeLabel(settings), thing }.NonEmpty().JoinString(joiner);
         }
     }
