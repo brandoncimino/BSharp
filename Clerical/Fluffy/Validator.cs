@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
@@ -155,6 +156,7 @@ public static class Validator {
 
     #region From "Predicate" (Func<T, bool>)
 
+    [StackTraceHidden]
     internal static Action<T> ToAssertion<T>(this Func<T, bool> predicate) {
         return it => {
             var result = predicate(it);
@@ -164,6 +166,7 @@ public static class Validator {
         };
     }
 
+    [StackTraceHidden]
     internal static Func<T, T> ToCheckpoint<T>(this Func<T, bool> predicate) {
         return it => {
             predicate.ToCheckpoint().Invoke(it);
@@ -175,11 +178,13 @@ public static class Validator {
 
     #endregion
 
+    [StackTraceHidden]
     private static Type GetValidatedType(MethodInfo method) {
         var type = method.IsStatic ? method.GetSingleParameter()?.ParameterType : method.DeclaringType;
         return Must.NotBeNull(type);
     }
 
+    [StackTraceHidden]
     internal static Delegate CreateDelegate(MethodInfo method) {
         var style        = InferValidatorStyle(method);
         var delegateType = style.GetDelegateType(GetValidatedType(method));
