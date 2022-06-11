@@ -66,7 +66,7 @@ public class VariableInfo : MemberInfo {
     public static VariableInfo? From(MemberInfo member) => member switch {
         VariableInfo v => v,
         PropertyInfo p => new VariableInfo(p),
-        FieldInfo f    => new VariableInfo(f),
+        FieldInfo f    => f.IsAutoPropertyBackingField() ? null : new VariableInfo(f),
         _              => null,
     };
 

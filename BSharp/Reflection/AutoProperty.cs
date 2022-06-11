@@ -34,7 +34,12 @@ public class AutoProperty : BackedProperty {
 
     private static AutoProperty? _FromBackingField(FieldInfo backingField) {
         var declaringType = backingField.DeclaringType ?? throw ReflectionException.NoDeclaringTypeException(backingField);
-        var prop          = declaringType.GetRuntimeProperty(GetBackedPropertyName(backingField.Name));
+        var propName      = GetBackedPropertyName(backingField.Name);
+        if (propName == null) {
+            return null;
+        }
+
+        var prop = declaringType.GetRuntimeProperty(propName);
         return prop == null ? null : new AutoProperty(prop, backingField);
     }
 
@@ -53,9 +58,9 @@ public class AutoProperty : BackedProperty {
 
     private static string FormatBackingFieldName(string propertyName) => $"<{propertyName}>k__BackingField";
 
-    internal static string GetBackedPropertyName(string backingFieldName) {
+    internal static string? GetBackedPropertyName(string backingFieldName) {
         var match = AutoPropertyBackingFieldNamePattern.Match(backingFieldName);
-        return match.Success ? match.Groups[ReflectionUtils.PropertyCaptureGroupName].Value : throw new ArgumentException($"[{backingFieldName}] doesn't match the pattern for auto-property backing fields!");
+        return match.Success ? match.Groups[ReflectionUtils.PropertyCaptureGroupName].Value : null;
     }
 
     public const BindingFlags AutoPropertyBackingFieldBindingFlags =
@@ -79,5 +84,5 @@ public static class AutoPropertyExtensions {
 
     /// <param name="field">this <see cref="FieldInfo"/></param>
     /// <returns><c>true</c> if this <see cref="FieldInfo"/> is an <a href="https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/classes-and-structs/auto-implemented-properties">Auto-Property</a> Backing Field</returns>
-    public static bool IsAutoPropertyBackingField(this FieldInfo field) => AutoProperty.AutoPropertyFrom(field) != null;
+    public static bool IsAutoPropertyBackingField(this FieldInfo field) => AutoProperty.GetBackedPropertyName(field.Name).IsNotBlank();
 }
