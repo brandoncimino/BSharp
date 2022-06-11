@@ -5,6 +5,7 @@ using System.Runtime.CompilerServices;
 
 using FowlFever.BSharp.Collections;
 using FowlFever.BSharp.Reflection;
+using FowlFever.BSharp.Strings;
 
 using JetBrains.Annotations;
 
@@ -76,7 +77,7 @@ namespace FowlFever.BSharp.Optional {
         }
 
         public override string ToString() {
-            return $"{Description} ⇒ {(Failed ? $"{this.GetIcon()} [{Excuse}]" : this.GetIcon())}";
+            return $"{(Failed ? $"{this.GetIcon()} [{Excuse}]" : this.GetIcon())} {Description.IfBlank(GetType().Name)}";
         }
     }
 }
