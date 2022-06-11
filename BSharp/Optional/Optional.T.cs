@@ -20,22 +20,11 @@ namespace FowlFever.BSharp.Optional {
     /// </remarks>
     [PublicAPI]
     [JsonConverter(typeof(OptionalJsonConverter))]
-    public readonly struct Optional<T> : IEquatable<T>, IEquatable<Optional<T>>, IOptional<T> {
-        public override int GetHashCode() {
-            unchecked {
-                return (EqualityComparer<T>.Default.GetHashCode(_value) * 397) ^ HasValue.GetHashCode();
-            }
-        }
-
-        public override bool Equals(object obj) {
-            // this syntax...is scary
-            return obj switch {
-                Optional<T> optional when Equals(optional) => true,
-                T t when Equals(t)                         => true,
-                _                                          => false
-            };
-        }
-
+    public readonly struct Optional<T> : IOptional<T, Optional<T>>,
+                                         IEquatable<T>,
+                                         IEquatable<IHas<T>>,
+                                         IEquatable<IOptional<T>>,
+                                         IPrettifiable {
         private readonly T _value;
 
         /// <summary>
@@ -59,56 +48,12 @@ namespace FowlFever.BSharp.Optional {
 
         #region Implementations
 
-        public int Count => HasValue ? 1 : 0;
+        #region Enumeration
 
-        private IEnumerable<T> GetEnumerable() {
-            return Enumerable.Repeat(_value, Count);
-        }
-
-        public IEnumerator<T> GetEnumerator() {
-            return GetEnumerable().GetEnumerator();
-        }
-
-        IEnumerator IEnumerable.GetEnumerator() {
-            return ((IEnumerable)GetEnumerable()).GetEnumerator();
-        }
-
-        public bool Equals(T           other) => Optional.AreEqual(this, other);
-        public bool Equals(Optional<T> other) => Optional.AreEqual(this, other);
-
-        // 📝 NOTE: No longer considering IOptional<T> for comparisons because going between structs and interfaces is clunky and weird
-        [Pure]
-        public static bool operator ==(Optional<T> a, Optional<T> b) => Optional.AreEqual(a, b);
-
-        [Pure]
-        public static bool operator !=(Optional<T> a, Optional<T> b) => !Optional.AreEqual(a, b);
-
-        // NOTE: An equality comparator for a left-side IOptional isn't supported because it would cause ambiguity with other operators.
-        // public static bool operator ==(IOptional<T> a, Optional<T> b) => Optional.AreEqual(a, b);
-        // public static bool operator !=(IOptional<T> a, Optional<T> b) => !Optional.AreEqual(a, b);
-
-        [Pure]
-        public static bool operator ==(T? a, Optional<T> b) => Optional.AreEqual(a, b);
-
-        [Pure]
-        public static bool operator !=(T? a, Optional<T> b) => !Optional.AreEqual(a, b);
-
-        [Pure]
-        public static bool operator ==(Optional<T> a, T? b) => Optional.AreEqual(a, b);
-
-        [Pure]
-        public static bool operator !=(Optional<T> a, T? b) => !Optional.AreEqual(a, b);
-
-
-        public override string ToString() {
-            return Optional.ToString(this, new PrettificationSettings());
-        }
-
-        #endregion
-
-        public static implicit operator Optional<T>(T value) {
-            return new Optional<T>(value);
-        }
+        int IReadOnlyCollection<T>.Count           => HasValue ? 1 : 0;
+        private IEnumerable<T>     GetEnumerable() => Enumerable.Repeat(_value, HasValue ? 1 : 0);
+        public  IEnumerator<T>     GetEnumerator() => GetEnumerable().GetEnumerator();
+        IEnumerator IEnumerable.   GetEnumerator() => ((IEnumerable)GetEnumerable()).GetEnumerator();
 
         /// <summary>
         /// Works the same as <see cref="Enumerable.Select{TSource,TResult}(System.Collections.Generic.IEnumerable{TSource},System.Func{TSource,TResult})">Enumerable.Select</see>,
@@ -136,12 +81,64 @@ namespace FowlFever.BSharp.Optional {
         /// <param name="predicate"></param>
         /// <returns></returns>
         public Optional<T> Where(Func<T, bool> predicate) {
-            if (HasValue && predicate.Invoke(Value)) {
-                return this;
-            }
-            else {
-                return default;
-            }
+            return HasValue && predicate.Invoke(Value) ? this : default;
         }
+
+        #endregion
+
+        #region Equality
+
+        private static readonly OptionalEqualityComparer<T?> Comparer = new();
+
+        public override int GetHashCode() => Comparer.GetHashCode(this);
+
+        /// <remarks>
+        /// Is this necessary? I feel like the default <see cref="object.Equals(object?)"/> method should be able to use generic <see cref="IEquatable{T}"/> implementations automatically...
+        /// </remarks>
+        public override bool Equals(object? obj) {
+            return obj switch {
+                IOptional<T> optional => Equals(optional),
+                IHas<T> has           => Equals(has),
+                T t                   => Equals(t),
+                _                     => Equals(this, obj),
+            };
+        }
+
+        [Pure] public bool Equals(T?             other) => Comparer.Equals(this, other);
+        [Pure] public bool Equals(IOptional<T?>? other) => Comparer.Equals(this, other);
+        [Pure] public bool Equals(IHas<T?>?      other) => Comparer.Equals(this, other.GetValueOrDefault());
+
+        // 📝 NOTE: No longer considering IOptional<T> for OPERATOR comparisons because going between structs and interfaces is clunky and weird.
+        [Pure] public static bool operator ==(Optional<T> a, Optional<T> b) => Comparer.Equals(a, b);
+        [Pure] public static bool operator !=(Optional<T> a, Optional<T> b) => !Comparer.Equals(a, b);
+        [Pure] public static bool operator ==(T?          a, Optional<T> b) => Comparer.Equals(a, b);
+        [Pure] public static bool operator !=(T?          a, Optional<T> b) => !Comparer.Equals(a, b);
+        [Pure] public static bool operator ==(Optional<T> a, T?          b) => Comparer.Equals(a, b);
+        [Pure] public static bool operator !=(Optional<T> a, T?          b) => !Comparer.Equals(a, b);
+
+        #endregion
+
+        #region Formatting
+
+        public override string ToString() {
+            return this switch {
+                { HasValue: true }  => $"{Value}",
+                { HasValue: false } => Optional.EmptyPlaceholder,
+            };
+        }
+
+        public string Prettify(PrettificationSettings? settings = default) {
+            return Optional.ToString(this, new PrettificationSettings());
+        }
+
+        #endregion
+
+        #endregion
+
+        public static implicit operator Optional<T>(T value) {
+            return new Optional<T>(value);
+        }
+
+        public Optional<T> Self() => this;
     }
 }
