@@ -22,13 +22,13 @@ namespace FowlFever.Clerical.Validated;
 public record PathPart(string Value) : Validated<string>(Value) {
     public static readonly ImmutableHashSet<char> InvalidChars = Path.GetInvalidPathChars()
                                                                      .Union(Path.GetInvalidFileNameChars())
-                                                                     .Union(BPath.SeparatorChars)
+                                                                     .Union(Clerk.DirectorySeparatorChars)
                                                                      .ToImmutableHashSet();
 
     internal override string Fluff(string value) {
         return base.Fluff(value)
-                   .TrimStart(BPath.DirectorySeparatorPattern, 1)
-                   .TrimEnd(BPath.DirectorySeparatorPattern, 1);
+                   .TrimStart(Clerk.DirectorySeparatorPattern, 1)
+                   .TrimEnd(Clerk.DirectorySeparatorPattern, 1);
     }
 
     public static implicit operator PathPart(string str) => new(str);
