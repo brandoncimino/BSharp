@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 
 using FowlFever.BSharp.Strings;
 
@@ -163,6 +164,7 @@ namespace FowlFever.BSharp {
         #region Actions
 
         [System.Diagnostics.Contracts.Pure]
+        [StackTraceHidden]
         public static Action Reduce<T>(this Action<T> action, T arg) => () => action(arg);
 
         [System.Diagnostics.Contracts.Pure]
