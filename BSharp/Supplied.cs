@@ -1,7 +1,7 @@
 using System;
 
 using FowlFever.BSharp.Enums;
-using FowlFever.BSharp.Exceptions;
+using FowlFever.BSharp.Optional;
 
 namespace FowlFever.BSharp;
 
@@ -9,19 +9,21 @@ namespace FowlFever.BSharp;
 /// Contains either an <see cref="_explicit"/> <b>or</b> a <see cref="_lazy"/> value of <typeparamref name="T"/>.
 /// </summary>
 /// <typeparam name="T">the type of the actual value</typeparam>
-public record Supplied<T> : Wrapped<T>
-    where T : notnull {
+public record Supplied<T> : Wrapped<T?> {
     private enum SupplierStyle { Default, Explicit, Lazy }
     /// <summary>
     /// <c>default</c> with a <c>!</c>-suppressed nullability is used to prevent the need for <see cref="_explicit"/> to become a <see cref="Nullable{T}"/> when <typeparamref name="T"/> is a <see cref="ValueType"/>. 
     /// </summary>
-    private readonly T _explicit = default!;
-    private readonly Lazy<T>       _lazy = default!;
-    private readonly SupplierStyle Style;
-    public override T Value => Style switch {
-        SupplierStyle.Default  => Must.NotBeNull(default(T)),
+    private readonly Optional<T> _explicit;
+    private readonly Optional<Lazy<T>> _lazy;
+    private readonly SupplierStyle     Style;
+
+    public override T? Value => GetValue().OrElse(default);
+
+    private Optional<T> GetValue() => Style switch {
+        SupplierStyle.Default  => default,
         SupplierStyle.Explicit => _explicit,
-        SupplierStyle.Lazy     => _lazy.Value,
+        SupplierStyle.Lazy     => _lazy.Select(it => it.Value),
         _                      => throw BEnum.UnhandledSwitch(Style),
     };
 
@@ -44,7 +46,7 @@ public record Supplied<T> : Wrapped<T>
         _lazy = value;
     }
 
-    private Supplied(Func<T>? supplier) : this(supplier?.Lazily()) { }
+    public Supplied(Func<T>? supplier) : this(supplier?.Lazily()) { }
 
     public static implicit operator Supplied<T>(T        value)    => new(value);
     public static implicit operator Supplied<T>(Lazy<T>? lazy)     => new(lazy);

@@ -17,7 +17,7 @@ public class RapSheet : IEnumerable<IFailable>, IPrettifiable, IFailable {
     public enum Verdict { Passed, Failed, }
 
     private readonly ILookup<Verdict, IFailable> _charges;
-    public           IEnumerable<IFailable>      Charges => _charges.SelectMany(it => it);
+    public           IEnumerable<IFailable>      Charges => _charges.SelectMany(it => it.AsEnumerable());
 
     public IEnumerable<IFailable> this[Verdict outcome] => _charges[outcome];
 
@@ -50,7 +50,7 @@ public class RapSheet : IEnumerable<IFailable>, IPrettifiable, IFailable {
     public string PassIcon { get; init; } = "🎊";
 
     public  Func<RapSheet, string>?  SummaryFormatter   { get; set; }
-    public  Func<object, string>?    PlaintiffFormatter { get; set; }
+    public  Func<object?, string>?   PlaintiffFormatter { get; set; }
     public  Func<IFailable, string>? FailableFormatter  { get; set; }
     private string                   Icon               => Convictions.Any() ? FailIcon : PassIcon;
 
@@ -78,7 +78,7 @@ public class RapSheet : IEnumerable<IFailable>, IPrettifiable, IFailable {
 
     public string Prettify(PrettificationSettings? settings = default) {
         var lines = new List<string> { GetSummary() };
-        lines.AddRange(Convictions.Select(FormatFailable).Indent());
+        lines.AddRange(Charges.Select(FormatFailable).Indent());
         return lines.JoinLines();
     }
 

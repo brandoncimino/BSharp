@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Linq;
 
@@ -262,12 +263,15 @@ namespace FowlFever.BSharp.Optional {
         /**
          * <inheritdoc cref="GetValueOrDefault{T}(FowlFever.BSharp.Optional.IOptional{T?}?,T?)"/>
          */
-        public static T OrElse<T>(this IOptional<T>? optional, T fallback) {
+        [return: NotNullIfNotNull("fallback")]
+        public static T? OrElse<T>(this IOptional<T>? optional, T? fallback) {
             return optional.GetValueOrDefault(fallback);
         }
 
         ///<summary>
         /// TODO: Is this necessary? Or is it redundant because we can say <code>optional.OrElse(default)</code>?
+        /// EDIT: This is better at handling nullable types, which otherwise .OrElse() gets upset about
+        /// EDIT: NVM, I added <see cref="NotNullIfNotNullAttribute"/> to <see cref="OrElse{T}"/>
         /// </summary>
         public static T? OrDefault<T>(this IOptional<T>? optional) {
             return optional.OrElse(default);

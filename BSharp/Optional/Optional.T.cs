@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Linq;
 
@@ -49,7 +50,9 @@ namespace FowlFever.BSharp.Optional {
         #region Logic / Filtering
 
         public Optional<T> OrElse(Optional<T> fallback) => HasValue ? this : fallback;
-        public T           OrElse(T           fallback) => HasValue ? Value : fallback;
+
+        [return: NotNullIfNotNull("fallback")]
+        public T? OrElse(T? fallback) => HasValue ? Value : fallback;
 
         #endregion
 
