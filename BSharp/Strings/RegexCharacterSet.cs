@@ -4,11 +4,12 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Text.RegularExpressions;
 
+using FowlFever.BSharp.Collections;
 using FowlFever.BSharp.Enums;
 
 namespace FowlFever.BSharp.Strings;
 
-internal sealed record RegexCharacterSet(IEnumerable<char> Inclusions, IEnumerable<char> Exclusions) : RegexBuilder {
+internal sealed record RegexCharacterSet(IEnumerable<char>? Inclusions = default, IEnumerable<char>? Exclusions = default) : RegexBuilder {
     private ImmutableArray<string> _inclusions = EscapeChars(Inclusions).ToImmutableArray();
     private ImmutableArray<string> _exclusions = EscapeChars(Exclusions).ToImmutableArray();
 
@@ -24,8 +25,9 @@ internal sealed record RegexCharacterSet(IEnumerable<char> Inclusions, IEnumerab
         _                                             => throw new ArgumentException($"Must include 1+ {nameof(Inclusions)} or {nameof(Exclusions)}!"),
     };
 
-    private static IEnumerable<string> EscapeChars(IEnumerable<char> chars) {
-        return chars.Select(it => it.ToString())
+    private static IEnumerable<string> EscapeChars(IEnumerable<char>? chars) {
+        return chars.OrEmpty()
+                    .Select(it => it.ToString())
                     .Select(Regex.Escape);
     }
 
