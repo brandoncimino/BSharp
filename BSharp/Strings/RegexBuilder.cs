@@ -27,4 +27,6 @@ public abstract record RegexBuilder : IHas<Regex> {
     protected abstract string BuildPattern();
 
     public sealed override string ToString() => Pattern;
+
+    public static implicit operator Regex(RegexBuilder builder) => builder.Regex;
 }
