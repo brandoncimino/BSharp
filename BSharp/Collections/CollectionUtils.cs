@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
@@ -634,9 +635,7 @@ public static partial class CollectionUtils {
         return others.Any(enumerable.Contains);
     }
 
-    /**
-         * <inheritdoc cref="ContainsAny{T}(System.Collections.Generic.IEnumerable{T},System.Collections.Generic.IEnumerable{T})"/>
-         */
+    /// <inheritdoc cref="ContainsAny{T}(System.Collections.Generic.IEnumerable{T},System.Collections.Generic.IEnumerable{T})"/>
     [Pure]
     public static bool ContainsAny<T>(
         [InstantHandle]
@@ -858,7 +857,7 @@ public static partial class CollectionUtils {
         this IEnumerable<T?>? source,
         T?                    valueThatMightBeNull
     ) {
-        source = source.EmptyIfNull();
+        source = source.OrEmpty();
         return valueThatMightBeNull == null ? source : source.Append(valueThatMightBeNull);
     }
 
@@ -875,7 +874,7 @@ public static partial class CollectionUtils {
         this IEnumerable<T> source,
         IEnumerable<T?>?    additionalValuesThatMightBeNull
     ) {
-        source = source.EmptyIfNull();
+        source = source.OrEmpty();
         return additionalValuesThatMightBeNull == null ? source : source.Concat(additionalValuesThatMightBeNull.NonNull());
     }
 
@@ -889,7 +888,7 @@ public static partial class CollectionUtils {
         T?                   valueThatMightBeNull
     )
         where T : struct {
-        source = source.EmptyIfNull();
+        source = source.OrEmpty();
         return valueThatMightBeNull.HasValue == false ? source : source.Append(valueThatMightBeNull.Value);
     }
 
@@ -903,7 +902,7 @@ public static partial class CollectionUtils {
         IEnumerable<T?>?     additionalValuesThatMightBeNull
     )
         where T : struct {
-        return source.EmptyIfNull().Concat(additionalValuesThatMightBeNull.NonNull());
+        return source.OrEmpty().Concat(additionalValuesThatMightBeNull.NonNull());
     }
 
     #endregion
@@ -1108,7 +1107,7 @@ public static partial class CollectionUtils {
         [InstantHandle]
         Func<T?, bool>? predicate = default
     ) {
-        source = predicate == default ? source.EmptyIfNull() : source.EmptyIfNull().Where(predicate);
+        source = predicate == default ? source.OrEmpty() : source.OrEmpty().Where(predicate);
         return source.Take(1).ToOptional();
     }
 
@@ -1149,7 +1148,7 @@ public static partial class CollectionUtils {
     /// <typeparam name="T"></typeparam>
     /// <returns>the index of the first entry in the <paramref name="source"/> that satisfies the <paramref name="predicate"/>; or null if none was found</returns>
     public static int? FirstIndexOf<T>([InstantHandle] this IEnumerable<T>? source, [InstantHandle] Func<T, bool> predicate) {
-        var sourceArray = source.EmptyIfNull().ToArray();
+        var sourceArray = source.OrEmpty().ToArray();
         for (int i = 0; i < sourceArray.Length; i++) {
             if (predicate.Invoke(sourceArray[i])) {
                 return i;
@@ -1190,56 +1189,37 @@ public static partial class CollectionUtils {
     /// <param name="source">the <see cref="IEnumerable{T}"/> that might be null</param>
     /// <typeparam name="T">the type of the elements in <paramref name="source"/></typeparam>
     /// <returns><paramref name="source"/>, or an <see cref="Enumerable.Empty{TResult}"/> if <paramref name="source"/> was null</returns>
+    /// <remarks>
+    /// To facilitate easier work with <see cref="ImmutableArray{T}"/>, this will also replace <see cref="ImmutableArray{T}.IsDefault"/> with <see cref="ImmutableArray{T}.Empty"/>. 
+    /// </remarks>
     [Pure]
     [LinqTunnel]
-    public static IEnumerable<T> EmptyIfNull<T>([NoEnumeration] this IEnumerable<T>? source) {
-        return source ?? Enumerable.Empty<T>();
+    public static IEnumerable<T> OrEmpty<T>([NoEnumeration] this IEnumerable<T>? source) {
+        return source switch {
+            ImmutableArray<T> immer => immer.OrEmpty(),
+            _                       => source ?? Enumerable.Empty<T>(),
+        };
     }
 
-    /**
-         * <inheritdoc cref="EmptyIfNull{T}(System.Collections.Generic.IEnumerable{T})"/>
-         */
+    /// <inheritdoc cref="OrEmpty{T}(System.Collections.Generic.IEnumerable{T}?)"/>
     [Pure]
-    [LinqTunnel]
-    public static IEnumerable<T> OrEmpty<T>(this IEnumerable<T>? source) {
-        return source.EmptyIfNull();
-    }
+    public static ImmutableArray<T> OrEmpty<T>(this ImmutableArray<T> source) => source.IsDefault ? ImmutableArray<T>.Empty : source;
 
-    /**
-         * <inheritdoc cref="EmptyIfNull{T}(System.Collections.Generic.IEnumerable{T})"/>
-         */
+    /// <inheritdoc cref="OrEmpty{T}(System.Collections.Generic.IEnumerable{T}?)"/>
     [Pure]
-    [LinqTunnel]
-    public static T[] EmptyIfNull<T>(this T[]? source) {
-        return source ?? Array.Empty<T>();
-    }
+    public static ImmutableArray<T> OrEmpty<T>(this ImmutableArray<T>? source) => source.GetValueOrDefault().OrEmpty();
 
-    /**
-         * <inheritdoc cref="EmptyIfNull{T}(System.Collections.Generic.IEnumerable{T})"/>
-         */
+    /// <inheritdoc cref="OrEmpty{T}(System.Collections.Generic.IEnumerable{T}?)"/>
     [Pure]
-    [LinqTunnel]
-    public static T[] OrEmpty<T>(this T[]? source) {
-        return source.EmptyIfNull();
-    }
+    public static T[] OrEmpty<T>(this T[]? source) => source ?? Array.Empty<T>();
 
-    /**
-         * <inheritdoc cref="EmptyIfNull{T}(System.Collections.Generic.IEnumerable{T})"/>
-         */
+    /// <inheritdoc cref="OrEmpty{T}(System.Collections.Generic.IEnumerable{T}?)"/>
     [Pure]
-    [LinqTunnel]
-    public static IDictionary<TKey, TValue> EmptyIfNull<TKey, TValue>(this IDictionary<TKey, TValue>? source) {
-        return source ?? new Dictionary<TKey, TValue>();
-    }
+    public static List<T> OrEmpty<T>(this List<T>? source) => source ?? new List<T>();
 
-    /**
-         * <inheritdoc cref="EmptyIfNull{T}(System.Collections.Generic.IEnumerable{T})"/>
-         */
+    /// <inheritdoc cref="OrEmpty{T}(System.Collections.Generic.IEnumerable{T}?)"/>
     [Pure]
-    [LinqTunnel]
-    public static IDictionary<TKey, TValue> OrEmpty<TKey, TValue>(this IDictionary<TKey, TValue>? source) {
-        return source.EmptyIfNull();
-    }
+    public static IDictionary<TKey, TValue> OrEmpty<TKey, TValue>(this IDictionary<TKey, TValue>? source) => source ?? new Dictionary<TKey, TValue>();
 
     #endregion
 
