@@ -1,7 +1,9 @@
 using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
 
 using FowlFever.BSharp.Clerical;
+using FowlFever.BSharp.Strings;
 
 using JetBrains.Annotations;
 
@@ -31,10 +33,42 @@ public static class Clerk {
 
     #endregion
 
-    public static PathPart                   GetPathPart(string       pathPart) => new PathPart(pathPart);
-    public static IEnumerable<PathPart>      SplitPath(string         path)     => BPath.SplitPath(path).Select(GetPathPart);
-    public static IEnumerable<FileExtension> GetFileExtensions(string path)     => BPath.GetExtensions(path).Select(it => new FileExtension(it));
-    public static FileName                   GetFileName(string       path)     => new FileName(Path.GetFileName(path));
+    /// <summary>
+    /// Extracts the <see cref="Path.GetFileName"/> without <b>ANY</b> <see cref="FileExtension"/>s from the given <paramref name="path"/>.
+    /// <p/>
+    /// If the <paramref name="path"/> doesn't contain a base file name (for example, it <see cref="string.IsNullOrEmpty"/>, or begins with a period like <c>.ssh</c>),
+    /// then <c>null</c> is returned instead.
+    /// </summary>
+    /// <example>
+    /// <code><![CDATA[
+    /// a           => a  
+    /// a.txt       => a
+    /// a.b.txt     => a
+    /// a/b.txt     => b
+    /// a/.ssh      => null
+    /// ]]></code>
+    /// </example>
+    /// <param name="path">the full <see cref="Path"/></param>
+    /// <returns>the "base name" for the path, </returns>
+    public static FileNamePart? GetBaseName(string? path) {
+        [return: NotNullIfNotNull("_path")]
+        static string? _GetBaseName(string? _path) {
+            if (_path == null) {
+                return null;
+            }
+
+            var fileName    = Path.GetFileName(_path);
+            var firstPeriod = fileName.IndexOf(".", StringComparison.Ordinal);
+            return firstPeriod < 0 ? fileName : fileName[..firstPeriod];
+        }
+
+        var bn = _GetBaseName(path);
+        return bn.IsEmpty() ? null : new FileNamePart(bn);
+    }
+
+    public static IEnumerable<PathPart>      SplitPath(string         path) => BPath.SplitPath(path).Select(PathPart.From);
+    public static IEnumerable<FileExtension> GetFileExtensions(string path) => BPath.GetExtensions(path).Select(it => new FileExtension(it));
+    public static FileName                   GetFileName(string       path) => new FileName(Path.GetFileName(path));
 
     /// <summary>
     /// Validates and creates a <see cref="DirectoryPath"/>.
