@@ -12,7 +12,9 @@ using NUnit.Framework;
 
 using Is = FowlFever.Testing.Is;
 
-namespace BSharp.Tests; 
+// ReSharper disable AccessToStaticMemberViaDerivedType
+
+namespace BSharp.Tests;
 
 public class BrandomTests {
     [Test]
@@ -38,7 +40,9 @@ public class BrandomTests {
     private static IDictionary<T, double> BuildWeightedPortion<T, T2>(
         [InstantHandle]
         IEnumerable<(T choice, T2 weight)> weighted
-    ) {
+    )
+        where T2 : struct
+        where T : notnull {
         weighted = weighted.ToList();
         var totalWeight = weighted.Select(it => it.Item2)
                                   .Sum(it => it.ToDouble());
@@ -55,19 +59,19 @@ public class BrandomTests {
     }
 
     private static void AssertPicks(
-        IReadOnlyCollection<string?>? picks,
+        IReadOnlyCollection<string?> picks,
         [InstantHandle]
         IEnumerable<(string choice, int weight)> weighted
     ) {
-        weighted = weighted?.ToArray();
+        weighted = weighted.ToArray();
         var choices = weighted.Select(it => it.choice);
-        Assert.That(picks?.Distinct(), Is.EquivalentTo(choices.Distinct()), "All of the choices were picked at least once, and all of the picks were choices");
+        Assert.That(picks.Distinct(), Is.EquivalentTo(choices.Distinct()), "All of the choices were picked at least once, and all of the picks were choices");
 
-        var groups = picks.Group();
+        var groups = picks.NonNull().Group();
         var expectedHits = BuildWeightedPortion(weighted)
             .ToDictionary(
                 it => it.Key,
-                it => picks?.Count * it.Value
+                it => picks.Count * it.Value
             );
 
         foreach (var g in groups) {
