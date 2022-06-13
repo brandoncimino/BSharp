@@ -112,7 +112,7 @@ public static partial class ReflectionUtils {
 
     /// <param name="method">this <see cref="MethodInfo"/></param>
     /// <returns>the single <see cref="ParameterInfo"/> from <see cref="MethodBase.GetParameters"/>, if there is exactly 1; otherwise, returns <c>null</c>.</returns>
-    public static ParameterInfo? GetSingleParameter(this MethodInfo method) => method.GetParameters().FindSingle().OrDefault();
+    public static ParameterInfo? FindSingleParameter(this MethodInfo method) => method.GetParameters().FindSingle().OrDefault();
 
     /// <summary>
     /// Inverse of <see cref="MethodBase.IsStatic"/>. Corresponds to <see cref="BindingFlags.Instance"/>.
@@ -165,7 +165,7 @@ public static partial class ReflectionUtils {
     /// <param name="method">this method</param>
     /// <returns><c>true</c> if this method has a single <see cref="ParameterInfo.ParameterType"/> equal to its <see cref="MethodInfo.ReturnType"/></returns>
     public static bool IsFilter(this MethodInfo method) {
-        return method.IsStatic && method.GetSingleParameter()?.ParameterType == method.ReturnType;
+        return method.IsStatic && method.FindSingleParameter()?.ParameterType == method.ReturnType;
     }
 
     /// <summary>
