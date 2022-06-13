@@ -7,7 +7,7 @@ using NUnit.Framework.Internal;
 
 using Is = NUnit.Framework.Is;
 
-namespace BSharp.Tests.Testing; 
+namespace BSharp.Tests.Testing;
 
 public class MultipleAsserterTests {
     [Test]
@@ -56,7 +56,8 @@ public class MultipleAsserterTests {
         ValidateMultiAss_NoFailures<Ignorer<object>>();
     }
 
-    private static void ValidateMultiAss_NoFailures<TAsserter>() where TAsserter : MultipleAsserter<TAsserter, object>, new() {
+    private static void ValidateMultiAss_NoFailures<TAsserter>()
+        where TAsserter : MultipleAsserter<TAsserter, object>, new() {
         var asserter = new TAsserter()
                        .Against("yolo")
                        .And(Is.Not.EqualTo("swag"))
@@ -85,14 +86,13 @@ public class MultipleAsserterTests {
     public void AssumeAll_WithFailures() {
         Assert.Throws<InconclusiveException>(
             () =>
-                AssumeAll.Of(
-                    5,
-                    Is.EqualTo("b"),
-                    Is.Zero,
-                    Is.GreaterThan(double.MinValue),
-                    Has.Member("yolo"),
-                    Is.EqualTo(2)
-                )
+                Assumer.Against(5)
+                       .And(Is.EqualTo("b"))
+                       .And(Is.Zero)
+                       .And(Is.GreaterThan(double.MinValue))
+                       .And(Has.Member("yolo"))
+                       .And(Is.EqualTo(2))
+                       .Invoke()
         );
     }
 
