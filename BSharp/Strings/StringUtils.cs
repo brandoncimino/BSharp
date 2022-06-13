@@ -702,50 +702,50 @@ namespace FowlFever.BSharp.Strings {
         /// </summary>
         /// <param name="str">this <see cref="string"/></param>
         /// <returns><see cref="string.IsNullOrEmpty"/></returns>
+        [Obsolete($"ugly!!! use {nameof(IsEmpty)} instead!")]
         public static bool IsNullOrEmpty([NotNullWhen(false)] this string? str) {
-            return string.IsNullOrEmpty(str);
+            return str.IsEmpty();
         }
 
-        /**
-         * <inheritdoc cref="IsNullOrEmpty"/>
-         */
-        public static bool IsEmpty([NotNullWhen(false)] this string? str) => str.IsNullOrEmpty();
+        /// <summary>
+        /// An extension method for <see cref="string.IsNullOrEmpty"/>
+        /// </summary>
+        /// <param name="str">this <see cref="string"/></param>
+        /// <returns><see cref="string.IsNullOrEmpty"/></returns>
+        public static bool IsEmpty([NotNullWhen(false)] this string? str) => string.IsNullOrEmpty(str);
+
+        /// <inheritdoc cref="IsEmpty(string?)"/>
+        public static bool IsEmpty(this IHas<string?>? str) => (str?.Value).IsEmpty();
 
         /// <summary>
-        /// An extension method for <see cref="string.IsNullOrWhiteSpace"/>
+        /// The inverse of <see cref="IsEmpty(string?)"/>.
+        /// </summary>
+        /// <param name="str">this <see cref="string"/></param>
+        /// <returns>!<see cref="IsEmpty(string?)"/></returns>
+        public static bool IsNotEmpty([NotNullWhen(true)] this string? str) => !string.IsNullOrEmpty(str);
+
+        /// <inheritdoc cref="IsNotEmpty(string?)"/>
+        public static bool IsNotEmpty(this IHas<string?>? str) => (str?.Value).IsEmpty() == false;
+
+        /// <summary>
+        /// An extension method for <see cref="string.IsNullOrWhiteSpace"/> matching Java's <a href="https://commons.apache.org/proper/commons-lang/apidocs/org/apache/commons/lang3/StringUtils.html#isBlank-java.lang.CharSequence-">StringUtils.isBlank()</a>
         /// </summary>
         /// <param name="str">this <see cref="string"/></param>
         /// <returns><see cref="string.IsNullOrWhiteSpace"/></returns>
-        public static bool IsNullOrWhiteSpace([NotNullWhen(false)] this string? str) {
-            return string.IsNullOrWhiteSpace(str);
-        }
+        public static bool IsBlank([NotNullWhen(false)] this string? str) => string.IsNullOrWhiteSpace(str);
+
+        /// <inheritdoc cref="IsBlank(string?)"/>
+        public static bool IsBlank(IHas<string?>? str) => (str?.Value).IsBlank();
 
         /// <summary>
-        /// The inverse of <see cref="IsEmpty"/>.
+        /// The inverse of <see cref="IsBlank(string?)"/>
         /// </summary>
         /// <param name="str">this <see cref="string"/></param>
-        /// <returns>!<see cref="IsEmpty"/></returns>
-        public static bool IsNotEmpty([NotNullWhen(true)] this string? str) {
-            return !string.IsNullOrEmpty(str);
-        }
+        /// <returns><b>NOT</b> <see cref="string.IsNullOrWhiteSpace"/></returns>
+        public static bool IsNotBlank([NotNullWhen(true)] this string? str) => !str.IsBlank();
 
-        /// <summary>
-        /// An alias for <see cref="IsNullOrWhiteSpace"/> matching Java's <a href="https://commons.apache.org/proper/commons-lang/apidocs/org/apache/commons/lang3/StringUtils.html#isBlank-java.lang.CharSequence-">StringUtils.isBlank()</a>
-        /// </summary>
-        /// <param name="str">a <see cref="string"/></param>
-        /// <returns><see cref="IsNullOrWhiteSpace"/></returns>
-        public static bool IsBlank([NotNullWhen(false)] this string? str) {
-            return str.IsNullOrWhiteSpace();
-        }
-
-        /// <summary>
-        /// An alias for <see cref="IsNullOrWhiteSpace"/> matching Java's <a href="https://commons.apache.org/proper/commons-lang/apidocs/org/apache/commons/lang3/StringUtils.html#isBlank-java.lang.CharSequence-">StringUtils.isBlank()</a>
-        /// </summary>
-        /// <param name="str">a <see cref="string"/></param>
-        /// <returns><see cref="IsNullOrWhiteSpace"/></returns>
-        public static bool IsNotBlank([NotNullWhen(true)] this string? str) {
-            return !str.IsBlank();
-        }
+        /// <inheritdoc cref="IsNotBlank(string?)"/>
+        public static bool IsNotBlank(this IHas<string?>? str) => (str?.Value).IsNotBlank();
 
         #endregion
 
