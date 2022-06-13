@@ -34,7 +34,7 @@ public class RapSheet : IEnumerable<IFailable>, IPrettifiable, IFailable {
         );
     }
 
-    public RapSheet(object? plaintiff, IEnumerable<Failable> charges) : this(charges) => Plaintiff = plaintiff;
+    public RapSheet(Optional<object?> plaintiff, IEnumerable<IFailable> charges) : this(charges) => Plaintiff = plaintiff;
 
     #region IEnumerable<> Implementation
 
@@ -66,7 +66,7 @@ public class RapSheet : IEnumerable<IFailable>, IPrettifiable, IFailable {
         return $"{Icon} {CountString()} charges {AgainstString()}{VerdictString()}!";
     }
 
-    private static string FormatPlaintiff_Default(object? plaintiff) => $"{plaintiff}";
+    private static string FormatPlaintiff_Default(object? plaintiff) => $"against `{plaintiff}` ";
 
     private static string FormatFailable_Default(IFailable failable) => $"{failable}";
 
