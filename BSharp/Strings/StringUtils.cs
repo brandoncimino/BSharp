@@ -211,14 +211,14 @@ namespace FowlFever.BSharp.Strings {
         }
 
         /// <summary>
-        /// Similar to <see cref="Join"/>, but only joins <see cref="IsNotBlank"/> strings.
+        /// Joins two <see cref="string"/>s together <b>IF</b> they both <see cref="IsNotBlank(string?)"/>.
         /// </summary>
-        /// <param name="baseString"></param>
-        /// <param name="stringToJoin"></param>
-        /// <param name="separator"></param>
-        /// <returns></returns>
+        /// <param name="baseString">this <see cref="string"/></param>
+        /// <param name="stringToJoin">another <see cref="string"/></param>
+        /// <param name="separator">an optional separator to interpose betwixt <paramref name="baseString"/> and <paramref name="stringToJoin"/></param>
+        /// <returns>the combined <see cref="string"/></returns>
         public static string JoinNonBlank(this string? baseString, string? stringToJoin, string? separator = "") {
-            return (baseString.IsBlank(), stringToJoin.IsBlank()) switch {
+            return (baseString, stringToJoin).Select(IsBlank) switch {
                 (true, true)   => "",
                 (true, false)  => stringToJoin!,
                 (false, true)  => baseString!,
@@ -659,18 +659,11 @@ namespace FowlFever.BSharp.Strings {
         }
 
         /// <inheritdoc cref="IfBlank(string?,string?)"/>
-        [return: NotNullIfNotNull("blankPlaceholder")]
-        public static string? IfBlank(this IHas<string?>? str, string? blankPlaceholder) => (str?.Value).IfBlank(blankPlaceholder);
-
-        /// <inheritdoc cref="IfBlank(string?,string?)"/>
         public static string IfBlank(this string? str, Func<string> blankPlaceholder) {
             // 📎 This doesn't delegate to `IfBlank(blankPlaceholder.Invoke())` because that would require eagerly evaluating `blankPlaceholder`.
             //    Using a conditional expression instead means that `blankPlaceholder` will only be invoked if `str` actually `IsBlank()`.
             return str.IsBlank() ? blankPlaceholder.Invoke() : str;
         }
-
-        /// <inheritdoc cref="IfBlank(string?,string?)"/>
-        public static string IfBlank(this IHas<string?> str, Func<string> blankPlaceholder) => (str?.Value).IfBlank(blankPlaceholder);
 
         /// <summary>
         /// Applies a transformation <see cref="Func{TResult}"/> to a <see cref="string"/> if and only if the <see cref="string"/> <see cref="IsNotBlank"/>.
@@ -680,9 +673,6 @@ namespace FowlFever.BSharp.Strings {
         /// <returns>the modified <see cref="string"/></returns>
         [return: NotNullIfNotNull("str")]
         public static string? IfNotBlank(this string? str, Func<string, string> transformation) => str.IsBlank() ? str : transformation(str);
-
-        /// <inheritdoc cref="IfNotBlank(string?,System.Func{string,string})"/>
-        public static string? IfNotBlank(this IHas<string?>? str, Func<string, string> transformation) => (str?.Value).IfNotBlank(transformation);
 
         /// <summary>
         /// TODO: move to <see cref="Must"/>
@@ -735,7 +725,7 @@ namespace FowlFever.BSharp.Strings {
         public static bool IsBlank([NotNullWhen(false)] this string? str) => string.IsNullOrWhiteSpace(str);
 
         /// <inheritdoc cref="IsBlank(string?)"/>
-        public static bool IsBlank(IHas<string?>? str) => (str?.Value).IsBlank();
+        public static bool IsBlank(this IHas<string?>? str) => (str?.Value).IsBlank();
 
         /// <summary>
         /// The inverse of <see cref="IsBlank(string?)"/>
