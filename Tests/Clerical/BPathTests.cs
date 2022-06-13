@@ -13,7 +13,7 @@ using static FowlFever.Testing.Should;
 
 using Is = NUnit.Framework.Is;
 
-namespace BSharp.Tests.Clerical; 
+namespace BSharp.Tests.Clerical;
 
 public class BPathTests {
     [Test]
@@ -82,7 +82,7 @@ public class BPathTests {
             Asserter.Against(path)
                     .WithHeading($"{nameof(IsValidFilename)}: {path}")
                     .And(BPath.IsValidPath,  should.Constrain())
-                    .And(BPath.ValidatePath, Has.Property(nameof(Failable.Failed)).EqualTo(should.Inverse().Boolean()), () => BPath.ValidatePath(path).Excuse.ToString())
+                    .And(BPath.ValidatePath, Has.Property(nameof(Failable.Failed)).EqualTo(should.Inverse().Boolean()))
                     .Invoke();
         }
         catch (Exception e) {
