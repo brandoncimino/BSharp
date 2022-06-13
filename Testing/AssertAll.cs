@@ -53,12 +53,6 @@ namespace FowlFever.Testing {
             Of(null, assertions);
         }
 
-        public static void Of(params (object, IResolveConstraint)[] assertions) {
-            Asserter.WithHeading(null)
-                    .And(assertions)
-                    .Invoke();
-        }
-
         public static void Of<T>(T actual, params (Func<T, object>, IResolveConstraint)[] transformativeConstraints) {
             Asserter.Against(actual)
                     .And(transformativeConstraints)

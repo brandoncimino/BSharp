@@ -10,7 +10,7 @@ using NUnit.Framework.Constraints;
 
 namespace FowlFever.Testing {
     /// <summary>
-    /// The equivalent to <see cref="AssertAll"/> and <see cref="AssumeAll"/>, but for <see cref="IgnoreException"/>s.
+    /// The equivalent to <see cref="AssertAll"/>, but for <see cref="IgnoreException"/>s.
     ///
     /// There are 2 main groups of methods: <see cref="If{T}(T,NUnit.Framework.Constraints.IResolveConstraint)"/> and <see cref="Unless{T}(T,NUnit.Framework.Constraints.IResolveConstraint)"/>.
     /// <p/>
@@ -23,7 +23,7 @@ namespace FowlFever.Testing {
     /// Describes an <see cref="IResolveConstraint"/> that, if satisfied, will throw an <see cref="IgnoreException"/>.
     /// </summary>
     /// <remarks>
-    /// The syntax of these methods is <i>slightly</i> different than that of <see cref="AssertAll"/> and <see cref="AssumeAll"/> because of the grammar of the word "ignore".
+    /// The syntax of these methods is <i>slightly</i> different than that of <see cref="AssertAll"/> because of the grammar of the word "ignore".
     /// </remarks>
     [PublicAPI]
     public static class Ignore {
