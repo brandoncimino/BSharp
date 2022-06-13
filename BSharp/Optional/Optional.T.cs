@@ -94,6 +94,19 @@ namespace FowlFever.BSharp.Optional {
             return HasValue && predicate.Invoke(Value) ? this : default;
         }
 
+        /// <summary>
+        /// <see cref="Enumerable.Cast{TResult}"/>s this <see cref="Value"/> to <typeparamref name="T2"/>.
+        /// </summary>
+        /// <typeparam name="T2">the destination <see cref="Type"/></typeparam>
+        /// <returns>a new <see cref="Optional{T2}"/> of <typeparamref name="T2"/></returns>
+        /// <seealso cref="Enumerable.Cast{TResult}"/>
+        /// <remarks>The redundant-seeming <c>Cast</c> to <typeparamref name="T2"/> is to account for the nullability of <typeparamref name="T2"/>.
+        /// TODO: Experiment on whether or not <see cref="Enumerable.Cast{TResult}"/> actually respects <typeparamref name="T2"/>'s nullability
+        /// </remarks>
+        public Optional<T2> Cast<T2>() {
+            return this.AsEnumerable().Select(it => (T2?)(object?)it).Cast<T2>().ToOptional();
+        }
+
         #endregion
 
         #region Equality
