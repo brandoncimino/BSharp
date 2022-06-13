@@ -6,9 +6,7 @@ using FowlFever.Testing;
 
 using NUnit.Framework;
 
-using Is = FowlFever.Testing.Is;
-
-namespace BSharp.Tests.Strings; 
+namespace BSharp.Tests.Strings;
 
 public class RegexGroupTests {
     [TestCase(
@@ -76,27 +74,19 @@ public class RegexGroupTests {
                 .Invoke();
     }
 
-    [Test]
-    public void Lookahead_Positive_Match() => throw new NotImplementedException("Needs to be written");
+    [Test] public void Lookahead_Positive_Match() => throw new NotImplementedException("Needs to be written");
 
-    [Test]
-    public void Lookahead_Positive_NoMatch() => throw new NotImplementedException("Needs to be written");
+    [Test] public void Lookahead_Positive_NoMatch() => throw new NotImplementedException("Needs to be written");
 
-    [Test]
-    public void Lookahead_Negative_Match() => throw new NotImplementedException("Needs to be written");
+    [Test] public void Lookahead_Negative_Match() => throw new NotImplementedException("Needs to be written");
 
-    [Test]
-    public void Lookahead_Negative_NoMatch() => throw new NotImplementedException("Needs to be written");
+    [Test] public void Lookahead_Negative_NoMatch() => throw new NotImplementedException("Needs to be written");
 
-    [Test]
-    public void Lookbehind_Positive_Match() => throw new NotImplementedException("Needs to be written");
+    [Test] public void Lookbehind_Positive_Match() => throw new NotImplementedException("Needs to be written");
 
-    [Test]
-    public void Lookbehind_Positive_NoMatch() => throw new NotImplementedException("Needs to be written");
+    [Test] public void Lookbehind_Positive_NoMatch() => throw new NotImplementedException("Needs to be written");
 
-    [Test]
-    public void Lookbehind_Negative_Match() => throw new NotImplementedException("Needs to be written");
+    [Test] public void Lookbehind_Negative_Match() => throw new NotImplementedException("Needs to be written");
 
-    [Test]
-    public void Lookbehind_Negative_NoMatch() => throw new NotImplementedException("Needs to be written");
+    [Test] public void Lookbehind_Negative_NoMatch() => throw new NotImplementedException("Needs to be written");
 }

@@ -7,15 +7,10 @@ using FowlFever.Testing;
 
 using NUnit.Framework;
 
-using Is = NUnit.Framework.Is;
-
-namespace BSharp.Tests.Collections; 
+namespace BSharp.Tests.Collections;
 
 public class EnumSetTests {
-    public enum Should {
-        Pass,
-        Fail
-    }
+    public enum Should { Pass, Fail }
 
     public enum EnumWithDuplicates {
         Red,

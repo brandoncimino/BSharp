@@ -10,9 +10,7 @@ using Newtonsoft.Json;
 
 using NUnit.Framework;
 
-using Is = FowlFever.Testing.Is;
-
-namespace BSharp.Tests.Testing; 
+namespace BSharp.Tests.Testing;
 
 [SuppressMessage("ReSharper", "AccessToStaticMemberViaDerivedType")]
 public class TestUtilsTests {
@@ -24,7 +22,13 @@ public class TestUtilsTests {
         private readonly Type   Expected_Type;
         private readonly Type   Threshold_Type;
 
-        public ApproximationExpectation(Type actual_type, Type expectedType, Type thresholdType, double actual = 20, double threshold = 5) {
+        public ApproximationExpectation(
+            Type   actual_type,
+            Type   expectedType,
+            Type   thresholdType,
+            double actual    = 20,
+            double threshold = 5
+        ) {
             _actual        = actual;
             _threshold     = threshold;
             Expected_Type  = expectedType;

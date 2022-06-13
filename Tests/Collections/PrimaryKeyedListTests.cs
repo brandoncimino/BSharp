@@ -9,9 +9,7 @@ using Newtonsoft.Json;
 
 using NUnit.Framework;
 
-using Is = NUnit.Framework.Is;
-
-namespace BSharp.Tests.Collections; 
+namespace BSharp.Tests.Collections;
 
 public class PrimaryKeyedListTests {
     private class NoInterface : IEquatable<NoInterface> {

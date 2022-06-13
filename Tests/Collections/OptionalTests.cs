@@ -13,9 +13,7 @@ using Newtonsoft.Json;
 
 using NUnit.Framework;
 
-using Is = FowlFever.Testing.Is;
-
-namespace BSharp.Tests.Collections; 
+namespace BSharp.Tests.Collections;
 
 [SuppressMessage("ReSharper", "AccessToStaticMemberViaDerivedType")]
 public class OptionalTests {

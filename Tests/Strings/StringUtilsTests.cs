@@ -11,8 +11,6 @@ using FowlFever.Testing;
 using NUnit.Framework;
 using NUnit.Framework.Constraints;
 
-using Is = NUnit.Framework.Is;
-
 namespace BSharp.Tests.Strings;
 
 public class StringUtilsTests {

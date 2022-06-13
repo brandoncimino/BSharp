@@ -11,8 +11,6 @@ using NUnit.Framework;
 
 using static FowlFever.Testing.Should;
 
-using Is = NUnit.Framework.Is;
-
 namespace BSharp.Tests.Clerical;
 
 public class BPathTests {

@@ -7,9 +7,7 @@ using FowlFever.Testing;
 
 using NUnit.Framework;
 
-using Is = NUnit.Framework.Is;
-
-namespace BSharp.Tests; 
+namespace BSharp.Tests;
 
 public class CoercivelyTests {
     private static readonly Type[] OtherCoerciveTypes = {

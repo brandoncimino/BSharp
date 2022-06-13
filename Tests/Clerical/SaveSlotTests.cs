@@ -7,9 +7,7 @@ using FowlFever.Testing;
 
 using NUnit.Framework;
 
-using Is = NUnit.Framework.Is;
-
-namespace BSharp.Tests.Clerical; 
+namespace BSharp.Tests.Clerical;
 
 public class SaveSlotTests {
     private static readonly SaveFolder TestFolder = new SaveFolder(Path.GetTempPath(), nameof(SaveSlotTests));

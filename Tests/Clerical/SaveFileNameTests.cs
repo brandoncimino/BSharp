@@ -6,9 +6,7 @@ using FowlFever.Testing;
 
 using NUnit.Framework;
 
-using Is = NUnit.Framework.Is;
-
-namespace BSharp.Tests.Clerical; 
+namespace BSharp.Tests.Clerical;
 
 [TestOf(nameof(SaveFileName))]
 public class SaveFileNameTests {
@@ -18,7 +16,12 @@ public class SaveFileNameTests {
         public string   Extension;
         public string   RenderedName;
 
-        public SaveFileNameExpectation(string nickname, long timeStamp_ticks, string extension, string renderedName) {
+        public SaveFileNameExpectation(
+            string nickname,
+            long   timeStamp_ticks,
+            string extension,
+            string renderedName
+        ) {
             Nickname     = nickname;
             TimeStamp    = new DateTime(timeStamp_ticks);
             Extension    = extension;

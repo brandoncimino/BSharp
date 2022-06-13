@@ -9,9 +9,7 @@ using FowlFever.Testing;
 using NUnit.Framework;
 using NUnit.Framework.Constraints;
 
-using Is = NUnit.Framework.Is;
-
-namespace BSharp.Tests.Chronic; 
+namespace BSharp.Tests.Chronic;
 
 public class TimeTests {
     private static double[] ValuesInSeconds = {

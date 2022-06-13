@@ -8,9 +8,7 @@ using FowlFever.Testing;
 
 using NUnit.Framework;
 
-using Is = NUnit.Framework.Is;
-
-namespace BSharp.Tests; 
+namespace BSharp.Tests;
 
 /// <summary>
 /// Tests for <see cref="Bloop"/>s
@@ -38,7 +36,12 @@ public class BloopTests {
         public List<float>  Expected_F { get; }
         public List<double> Expected_D => Expected_F.Select(it => (double)it).ToList();
 
-        public RangeTestParameters(float min_f, float max_f, int stepCount, List<float> expected_f) {
+        public RangeTestParameters(
+            float       min_f,
+            float       max_f,
+            int         stepCount,
+            List<float> expected_f
+        ) {
             Min_F      = min_f;
             Max_F      = max_f;
             StepCount  = stepCount;
@@ -49,7 +52,12 @@ public class BloopTests {
     [Test]
     [TestCase(0, 6, 3, 0, 2,    4)]
     [TestCase(1, 2, 5, 1, 1.2f, 1.4f, 1.6f, 1.8f)]
-    public void StepExclusive(float min, float max, int stepCount, params float[] expectedResults) {
+    public void StepExclusive(
+        float          min,
+        float          max,
+        int            stepCount,
+        params float[] expectedResults
+    ) {
         var steps = Bloop.StepExclusive(min, max, stepCount);
         AssertAll.Of(
             () => Assert.That(steps, Is.EqualTo(expectedResults)),

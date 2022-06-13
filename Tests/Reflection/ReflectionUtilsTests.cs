@@ -14,8 +14,6 @@ using FowlFever.Testing;
 
 using NUnit.Framework;
 
-using Is = NUnit.Framework.Is;
-
 // ReSharper disable StaticMemberInGenericType
 
 // ReSharper disable MemberCanBePrivate.Local

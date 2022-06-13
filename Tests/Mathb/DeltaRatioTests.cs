@@ -2,9 +2,7 @@ using System;
 
 using NUnit.Framework;
 
-using Is = FowlFever.Testing.Is;
-
-namespace BSharp.Tests.Mathb; 
+namespace BSharp.Tests.Mathb;
 
 public class DeltaRatioTests {
     [Test]

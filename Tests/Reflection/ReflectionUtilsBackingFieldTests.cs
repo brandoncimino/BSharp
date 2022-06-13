@@ -9,8 +9,6 @@ using FowlFever.Testing;
 
 using NUnit.Framework;
 
-using Is = FowlFever.Testing.Is;
-
 namespace BSharp.Tests.Reflection;
 
 /// <summary>

@@ -10,8 +10,6 @@ using JetBrains.Annotations;
 
 using NUnit.Framework;
 
-using Is = FowlFever.Testing.Is;
-
 // ReSharper disable AccessToStaticMemberViaDerivedType
 
 namespace BSharp.Tests;
@@ -37,6 +35,7 @@ public class BrandomTests {
         return weights.Select((it, i) => (i.ToString(), it));
     }
 
+    [Pure]
     private static IDictionary<T, double> BuildWeightedPortion<T, T2>(
         [InstantHandle]
         IEnumerable<(T choice, T2 weight)> weighted

@@ -14,11 +14,9 @@ using FowlFever.Testing;
 using NUnit.Framework;
 using NUnit.Framework.Constraints;
 
-using Is = FowlFever.Testing.Is;
-
 // ReSharper disable AccessToStaticMemberViaDerivedType
 
-namespace BSharp.Tests.Chronic; 
+namespace BSharp.Tests.Chronic;
 
 public class ExecutionTimeTests {
     [Test]

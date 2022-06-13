@@ -5,8 +5,6 @@ using FowlFever.Testing;
 using NUnit.Framework;
 using NUnit.Framework.Internal;
 
-using Is = NUnit.Framework.Is;
-
 namespace BSharp.Tests.Testing;
 
 public class MultipleAsserterTests {

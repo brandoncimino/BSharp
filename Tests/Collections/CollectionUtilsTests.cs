@@ -12,11 +12,9 @@ using Newtonsoft.Json;
 
 using NUnit.Framework;
 
-using Is = NUnit.Framework.Is;
-
 // ReSharper disable ReturnValueOfPureMethodIsNotUsed
 
-namespace BSharp.Tests.Collections; 
+namespace BSharp.Tests.Collections;
 
 [TestOf(typeof(CollectionUtils))]
 public class CollectionUtilsTests {
