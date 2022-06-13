@@ -5,6 +5,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 
 using BSharp.Tests.Reflection;
 
@@ -228,7 +229,7 @@ two         BSharp.Tests.Reflection.Duckmobile";
 
     [Test]
     public void PrettifyKeyedList() {
-        var prettifier = new Prettifier<KeyedList<object, object>>(InnerPretty.PrettifyKeyedList);
+        var prettifier = new Prettifier<KeyedList<int, ITuple>>(InnerPretty.PrettifyKeyedList);
 
         var keyedList = new KeyedList<int, (int, string)>(it => it.Item1) { (1, "one"), (2, "two"), (99, "ninety-nine") };
 
@@ -238,7 +239,7 @@ int (int, string)
 1   (1, one)           
 2   (2, two)         
 99  (99, ninety-nine)";
-        var actualPrettifiedString = prettifier.Prettify(keyedList);
+        var actualPrettifiedString = ((IPrettifier)prettifier).Prettify(keyedList);
         Console.WriteLine($"{nameof(actualPrettifiedString)}:\n{actualPrettifiedString}");
         Console.WriteLine($"{nameof(expectedString)}:\n{expectedString}");
         Assert.That(actualPrettifiedString.SplitLines(StringSplitOptions.RemoveEmptyEntries).TrimLines(), Is.EqualTo(expectedString.SplitLines(StringSplitOptions.RemoveEmptyEntries).TrimLines()));
