@@ -1,18 +1,17 @@
 using System;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Runtime.CompilerServices;
 
-using FowlFever.BSharp.Clerical;
 using FowlFever.BSharp.Exceptions;
 using FowlFever.BSharp.Strings;
 using FowlFever.BSharp.Strings.Json;
 
-using Newtonsoft.Json.Serialization;
-
 namespace FowlFever.BSharp;
 
 [SuppressMessage("ReSharper", "ExplicitCallerInfoArgument")]
-public static class Brandon {
+internal static class Brandon {
     public static CallerInfo<T> Info<T>(
         T value,
         [CallerArgumentExpression("value")]
@@ -40,31 +39,16 @@ public static class Brandon {
         Console.WriteLine(info);
     }
 
-    public static ConsoleTraceWriter Start([CallerMemberName] string? caller = default, string? owner = default, [CallerFilePath] string? callerFile = default) {
-        owner ??= BPath.GetFileNameWithoutExtensions(callerFile);
-        return ConsoleTraceWriter.Start(caller, owner);
-    }
-
-    public static void Trace(
-        Action<ITraceWriter>       code,
-        [CallerMemberName] string? caller     = default,
-        string?                    owner      = default,
-        [CallerFilePath] string?   callerFile = default
+    internal static ConsoleTraceWriter Start(
+        TraceLevel level = TraceLevel.Info,
+        [CallerMemberName]
+        string? caller = default,
+        string? owner = default,
+        [CallerFilePath]
+        string? callerFile = default
     ) {
-        owner ??= BPath.GetFileNameWithoutExtensions(callerFile);
-        var tracer = Start(caller, owner);
-        code(tracer);
-        tracer.End();
-    }
-
-    public static void Trace(
-        Action                     code,
-        [CallerMemberName] string? caller     = default,
-        string?                    owner      = default,
-        [CallerFilePath] string?   callerFile = default
-    ) {
-        owner ??= BPath.GetFileNameWithoutExtensions(callerFile);
-        Trace(_ => code(), caller, owner);
+        owner ??= Path.GetFileNameWithoutExtension(callerFile);
+        return ConsoleTraceWriter.Start(level, caller, owner);
     }
 }
 
@@ -80,7 +64,7 @@ public record CallerInfo<T>(
     int LineNumber = default
 ) {
     public Type    Type     => typeof(T);
-    public string? FileName => FilePath == null ? null : BPath.GetFileNameWithoutExtensions(FilePath);
+    public string? FileName => Path.GetFileNameWithoutExtension(FilePath);
 
     public static implicit operator CallerInfo<T>(T obj) {
         return new CallerInfo<T>(obj);
