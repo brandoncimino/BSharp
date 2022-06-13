@@ -36,9 +36,9 @@ public class FailableTests {
             Asserter.Against(failableFunc)
                     .And(Has.Property(nameof(failableFunc.HasValue)).False)
                     .And(Has.Property(nameof(failableFunc.Failed)).True)
-                    .Satisfies(it => _ = it!.Value,  Throws.Exception)
-                    .Satisfies(it => _ = it!.Excuse, Throws.Nothing)
-                    .Satisfies(it => _ = it!.ValueOrExcuse)
+                    .And(it => _ = it!.Value,  Throws.Exception)
+                    .And(it => _ = it!.Excuse, Throws.Nothing)
+                    .And(it => _ = it!.ValueOrExcuse)
                     .Invoke();
         }
 
