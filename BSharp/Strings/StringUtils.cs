@@ -669,15 +669,29 @@ namespace FowlFever.BSharp.Strings {
             return str.IsBlank() ? blankPlaceholder.Invoke() : str;
         }
 
+        /// <inheritdoc cref="IfBlank(string?,string?)"/>
+        public static string IfBlank(this IHas<string?> str, Func<string> blankPlaceholder) => (str?.Value).IfBlank(blankPlaceholder);
+
+        /// <summary>
+        /// Applies a transformation <see cref="Func{TResult}"/> to a <see cref="string"/> if and only if the <see cref="string"/> <see cref="IsNotBlank"/>.
+        /// </summary>
+        /// <param name="str">this <see cref="string"/></param>
+        /// <param name="transformation">a transformation to apply to this <see cref="string"/></param>
+        /// <returns>the modified <see cref="string"/></returns>
+        [return: NotNullIfNotNull("str")]
+        public static string? IfNotBlank(this string? str, Func<string, string> transformation) => str.IsBlank() ? str : transformation(str);
+
+        /// <inheritdoc cref="IfNotBlank(string?,System.Func{string,string})"/>
+        public static string? IfNotBlank(this IHas<string?>? str, Func<string, string> transformation) => (str?.Value).IfNotBlank(transformation);
+
         /// <summary>
         /// TODO: move to <see cref="Must"/>
         /// </summary>
         /// <param name="str"></param>
         /// <returns></returns>
         /// <exception cref="ArgumentException"></exception>
-        public static string MustNotBeBlank([NotNull] this string? str) {
-            return str.IsNotBlank() ? str : throw new ArgumentException($"The string must not be blank! (Actual: [{str ?? Prettification.DefaultNullPlaceholder}]");
-        }
+        [Obsolete]
+        public static string MustNotBeBlank([NotNull] this string? str) => Must.NotBeBlank(str);
 
         #endregion
 
