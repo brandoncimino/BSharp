@@ -34,7 +34,7 @@ namespace FowlFever.BSharp.Optional {
             Description           = description;
         }
 
-        protected Failable(IFailable other, Supplied<string>? description = default) : this(other.Excuse, other.IgnoredExceptionTypes, other.IgnoredException, description ?? other.Description) { }
+        protected Failable(IFailable other, Supplied<string?>? description = default) : this(other.Excuse, other.IgnoredExceptionTypes, other.IgnoredException, description ?? other.Description) { }
 
         public static Failable Invoke(
             [InstantHandle]
@@ -77,7 +77,7 @@ namespace FowlFever.BSharp.Optional {
         }
 
         public override string ToString() {
-            return $"{(Failed ? $"{this.GetIcon()} [{Excuse}]" : this.GetIcon())} {Description.IfBlank(GetType().Name)}";
+            return $"{(Failed ? $"{this.GetIcon()} [{Excuse}]" : this.GetIcon())} {Description.GetValueOrDefault().IfBlank(GetType().Name)}";
         }
     }
 }
