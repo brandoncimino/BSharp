@@ -1497,16 +1497,16 @@ public static partial class CollectionUtils {
 
     #region Indexes & Ranges
 
-    public static int                LastIndex(this        ICollection    source)              => source.Count - 1;
-    public static int                LastIndex<T>(this     ICollection<T> source)              => source.Count - 1;
-    public static (int min, int max) IndexRange(this       ICollection    source)              => (0, source.LastIndex());
-    public static (int min, int max) IndexRange<T>(this    ICollection<T> source)              => (0, source.LastIndex());
-    public static bool               ContainsIndex(this    ICollection    source, int   index) => index >= 0 && index < source.Count;
-    public static bool               ContainsIndex<T>(this ICollection<T> source, int   index) => index >= 0 && index < source.Count;
-    public static bool               ContainsIndex(this    ICollection    source, Index index) => source.ContainsIndex(index.GetOffset(source.Count));
-    public static bool               ContainsIndex<T>(this ICollection<T> source, Index index) => source.ContainsIndex(index.GetOffset(source.Count));
-    public static bool               ContainsRange(this    ICollection    source, Range range) => source.ContainsIndex(range.Start) && source.ContainsIndex(range.End);
-    public static bool               ContainsRange<T>(this ICollection<T> source, Range range) => source.ContainsIndex(range.Start) && source.ContainsIndex(range.End);
+    [Pure] public static int                LastIndex(this        ICollection    source)              => source.Count - 1;
+    [Pure] public static int                LastIndex<T>(this     ICollection<T> source)              => source.Count - 1;
+    [Pure] public static (int min, int max) IndexRange(this       ICollection    source)              => (0, source.LastIndex());
+    [Pure] public static (int min, int max) IndexRange<T>(this    ICollection<T> source)              => (0, source.LastIndex());
+    [Pure] public static bool               ContainsIndex(this    ICollection    source, int   index) => index >= 0 && index < source.Count;
+    [Pure] public static bool               ContainsIndex<T>(this ICollection<T> source, int   index) => index >= 0 && index < source.Count;
+    [Pure] public static bool               ContainsIndex(this    ICollection    source, Index index) => source.ContainsIndex(index.GetOffset(source.Count));
+    [Pure] public static bool               ContainsIndex<T>(this ICollection<T> source, Index index) => source.ContainsIndex(index.GetOffset(source.Count));
+    [Pure] public static bool               ContainsRange(this    ICollection    source, Range range) => source.ContainsIndex(range.Start) && source.ContainsIndex(range.End);
+    [Pure] public static bool               ContainsRange<T>(this ICollection<T> source, Range range) => source.ContainsIndex(range.Start) && source.ContainsIndex(range.End);
 
     #endregion
 }
