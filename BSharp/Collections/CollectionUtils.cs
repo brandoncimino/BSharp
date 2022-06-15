@@ -5,7 +5,6 @@ using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
-using System.Diagnostics.Contracts;
 using System.Linq;
 
 using FowlFever.BSharp.Enums;
@@ -14,8 +13,6 @@ using FowlFever.BSharp.Strings;
 using FowlFever.Conjugal.Affixing;
 
 using JetBrains.Annotations;
-
-using Pure = System.Diagnostics.Contracts.PureAttribute;
 
 namespace FowlFever.BSharp.Collections;
 
@@ -1497,4 +1494,14 @@ public static partial class CollectionUtils {
             return default;
         }
     }
+
+    #region Indexes & Ranges
+
+    public static int                LastIndex(this     ICollection source)              => source.Count - 1;
+    public static (int min, int max) IndexRange(this    ICollection source)              => (0, source.LastIndex());
+    public static bool               ContainsIndex(this ICollection source, int   index) => index >= 0 && index < source.Count;
+    public static bool               ContainsIndex(this ICollection source, Index index) => source.ContainsIndex(index.GetOffset(source.Count));
+    public static bool               ContainsRange(this ICollection source, Range range) => source.ContainsIndex(range.Start) && source.ContainsIndex(range.End);
+
+    #endregion
 }
