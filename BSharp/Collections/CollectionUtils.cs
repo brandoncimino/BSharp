@@ -1138,18 +1138,75 @@ public static partial class CollectionUtils {
 
     #region Finding indexes
 
-    /// TODO: alternate names could be: FirstIndexWhere, FirstIndexSatisfying
-    /// TODO: This can probably be made into some fancy thing that doesn't _necessarily_ enumerate <paramref name="source"/>, likely using <see cref="IEnumerable{T}.GetEnumerator"/> or something like that
-    /// <param name="source"></param>
-    /// <param name="predicate"></param>
-    /// <typeparam name="T"></typeparam>
+    /// <summary>
+    /// Attempts to find the index of the first entry that satisfies the given <paramref name="predicate"/>.
+    /// <p/>
+    /// If none is found, then <c>null</c> is returned.
+    /// </summary>
+    /// <param name="source">this <see cref="IEnumerable{T}"/></param>
+    /// <param name="predicate">the condition to check against each element</param>
+    /// <typeparam name="T">the type of the entries in <paramref name="source"/></typeparam>
     /// <returns>the index of the first entry in the <paramref name="source"/> that satisfies the <paramref name="predicate"/>; or null if none was found</returns>
-    public static int? FirstIndexOf<T>([InstantHandle] this IEnumerable<T>? source, [InstantHandle] Func<T, bool> predicate) {
-        var sourceArray = source.OrEmpty().ToArray();
-        for (int i = 0; i < sourceArray.Length; i++) {
-            if (predicate.Invoke(sourceArray[i])) {
+    /// <remarks>
+    /// If you are searching for a specific entry by equality, then use <see cref="FirstIndexOf{T}(System.Collections.Generic.IEnumerable{T},T,IEqualityComparer{T})"/>
+    /// instead, which should be faster.
+    /// </remarks>
+    [NonNegativeValue]
+    public static int? FirstIndexOf<T>([InstantHandle] this IEnumerable<T> source, [InstantHandle] Func<T, bool> predicate) {
+        var i = 0;
+
+        foreach (var it in source) {
+            if (predicate(it)) {
                 return i;
             }
+
+            i++;
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Finds the first index of <paramref name="entry"/>, using the given <see cref="IEqualityComparer{T}"/>.
+    /// </summary>
+    /// <param name="source">this <see cref="IEnumerable{T}"/></param>
+    /// <param name="entry">the item to look for</param>
+    /// <param name="equalityComparer">how the looked-for <paramref name="entry"/> and the entries in <paramref name="source"/> should be compared</param>
+    /// <typeparam name="T">the type of the entries on <paramref name="source"/></typeparam>
+    /// <returns>the first index of the <paramref name="entry"/>, if found; otherwise, <c>null</c></returns>
+    /// <remarks>
+    /// <ul>
+    /// <li>Attempts to use built-int <c>"IndexOf"</c> methods if possible.</li>
+    /// <li>📝 Returns <c>null</c> if a result isn't found, rather than <c>-1</c></li>
+    /// </ul>
+    /// </remarks>
+    [NonNegativeValue]
+    public static int? FirstIndexOf<T>([InstantHandle] this IEnumerable<T> source, T entry, IEqualityComparer<T>? equalityComparer = default) {
+        // Attempt to use the built-in `IndexOf` methods for `IList<T>` (which includes `Array`s and `List`s)
+        if (
+            (equalityComparer == null || equalityComparer.Equals(EqualityComparer<T>.Default))
+            && source is IList<T> ls
+        ) {
+            var index = ls.IndexOf(entry);
+            return index == -1 ? null : index;
+        }
+
+        // Attempt to use the built-in `IndexOf` methods for `IImmutableList<T>`, which actually take in an `IEqualityComparer`
+        if (source is IImmutableList<T> ils) {
+            var index = ils.IndexOf(entry, equalityComparer);
+            return index == -1 ? null : index;
+        }
+
+        equalityComparer ??= EqualityComparer<T>.Default;
+
+        var i = 0;
+
+        foreach (var it in source) {
+            if (equalityComparer.Equals(it, entry)) {
+                return i;
+            }
+
+            i++;
         }
 
         return null;
@@ -1503,6 +1560,9 @@ public static partial class CollectionUtils {
     [Pure] public static (int min, int max) IndexRange(this       ICollection            source)              => (0, source.LastIndex());
     [Pure] public static (int min, int max) IndexRange<T>(this    ICollection<T>         source)              => (0, source.LastIndex());
     [Pure] public static (int min, int max) IndexRange<T>(this    IReadOnlyCollection<T> source)              => (0, source.LastIndex());
+    [Pure] public static Indexes            Indexes(this          ICollection            source)              => new(source.Count);
+    [Pure] public static Indexes            Indexes<T>(this       ICollection<T>         source)              => new(source.Count);
+    [Pure] public static Indexes            Indexes<T>(this       IReadOnlyCollection<T> source)              => new(source.Count);
     [Pure] public static bool               ContainsIndex(this    ICollection            source, int   index) => index >= 0 && index < source.Count;
     [Pure] public static bool               ContainsIndex<T>(this ICollection<T>         source, int   index) => index >= 0 && index < source.Count;
     [Pure] public static bool               ContainsIndex<T>(this IReadOnlyCollection<T> source, int   index) => index >= 0 && index < source.Count;
