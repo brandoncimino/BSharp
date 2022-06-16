@@ -15,16 +15,15 @@ namespace FowlFever.BSharp.Collections;
 /// The purpose of <see cref="Indexes"/> is to support <see cref="ICollection"/>- and <see cref="IEnumerable{T}"/>-like operations on an <see cref="int"/>,
 /// and to allow interoperability with <see cref="IEnumerable{T}"/>-based APIs when we don't want to bother with an actual collection.
 /// </remarks>
-public readonly record struct Indexes : IReadOnlyCollection<int>, ICollection<int>, IHas<int> {
+public readonly partial record struct Indexes(int Count) : IHas<int>, ICollection {
     #region Implementations
 
     public IEnumerator<int> GetEnumerator()    => Enumerable.Repeat(0, Count).GetEnumerator();
     IEnumerator IEnumerable.GetEnumerator()    => GetEnumerator();
     public bool             Contains(int item) => item >= 0 && item < Count;
     public bool             IsReadOnly         => true;
-    public int              Count              { get; } = 0;
 
-    public Indexes(int count) => Count = Must.BePositive(count);
+    public int Count { get; } = Must.BePositive(Count);
 
     #region Unuspported methods from ICollection<int>
 
@@ -42,6 +41,12 @@ public readonly record struct Indexes : IReadOnlyCollection<int>, ICollection<in
     int IHas<int>.Value => Count;
 
     #endregion
+
+    #endregion
+
+    #region Implementation of IReadOnlyList<out int>
+
+    public int this[int index] => Must.BeIndexOf(index, this);
 
     #endregion
 }
