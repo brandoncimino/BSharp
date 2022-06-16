@@ -1574,4 +1574,41 @@ public static partial class CollectionUtils {
     [Pure] public static bool               ContainsRange<T>(this IReadOnlyCollection<T> source, Range range) => source.ContainsIndex(range.Start) && source.ContainsIndex(range.End);
 
     #endregion
+
+    #region Minx/Max
+
+    /// <summary>
+    /// Returns both the <see cref="Enumerable.Min(System.Collections.Generic.IEnumerable{decimal})"/> and <see cref="Enumerable.Max(System.Collections.Generic.IEnumerable{decimal})"/>
+    /// as a <see cref="ValueTuple{T,T}"/>.
+    /// </summary>
+    /// <param name="source">this <see cref="IEnumerable{T}"/></param>
+    /// <typeparam name="T">an <see cref="IComparable{T}"/> type</typeparam>
+    /// <returns>(
+    /// <typeparamref name="T"/> <see cref="Enumerable.Min(System.Collections.Generic.IEnumerable{decimal})">min</see>,
+    /// <typeparamref name="T"/> <see cref="Enumerable.Max(System.Collections.Generic.IEnumerable{decimal})">max</see>
+    /// )</returns>
+    [Pure]
+    public static (T min, T max) MinMax<T>(this IEnumerable<T> source)
+        where T : IComparable<T> {
+        (T min, T max) = (default!, default!);
+        var started = false;
+        foreach (var it in source) {
+            if (started == false) {
+                started    = true;
+                (min, max) = (it, it);
+                continue;
+            }
+
+            if (it?.CompareTo(min) <= -1) {
+                min = it;
+            }
+            else if (it?.CompareTo(max) >= 1) {
+                max = it;
+            }
+        }
+
+        return (min, max);
+    }
+
+    #endregion
 }
