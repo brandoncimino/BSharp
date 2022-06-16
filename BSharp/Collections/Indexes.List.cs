@@ -1,14 +1,55 @@
 using System;
+using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 
+using FowlFever.BSharp.Exceptions;
+
 namespace FowlFever.BSharp.Collections;
 
-public readonly partial record struct Indexes : IImmutableList<int> {
+public readonly partial record struct Indexes : IImmutableList<int>, IList<int>, IList, IReadOnlyList<int>, IReadOnlyCollection<int> {
     private static readonly ConcurrentDictionary<int, Lazy<ImmutableList<int>>> ListCache = new();
-    private                 ImmutableList<int>                                  AsList => ListCache.GetOrAddLazily(Count, ct => Enumerable.Range(0, ct).ToImmutableList());
+    private                 ImmutableList<int>                                  AsList           => ListCache.GetOrAddLazily(Count, ct => Enumerable.Range(0, ct).ToImmutableList());
+    private                 IList                                               AsNonGenericList => AsList;
+
+    #region Implementation of ICollection<int>
+
+    void ICollection<int>.Add(int item)                       => throw UnsupportedMethodException();
+    void ICollection<int>.Clear()                             => throw UnsupportedMethodException();
+    void ICollection<int>.CopyTo(int[] array, int arrayIndex) => throw UnsupportedMethodException();
+    bool ICollection<int>.Remove(int   item) => throw UnsupportedMethodException();
+
+    #endregion
+
+    #region Implementation of IList
+
+    int IList. Add(object value)                    => throw UnsupportedMethodException();
+    void IList.Clear()                              => throw UnsupportedMethodException();
+    bool IList.Contains(object value)               => AsNonGenericList.Contains(value);
+    int IList. IndexOf(object  value)               => AsNonGenericList.IndexOf(value);
+    void IList.Insert(int      index, object value) => throw UnsupportedMethodException();
+    void IList.Remove(object   value) => throw UnsupportedMethodException();
+    bool IList.IsFixedSize            => true;
+    object IList.this[int index] {
+        get => AsNonGenericList[index];
+        set => throw UnsupportedMethodException();
+    }
+
+    #endregion
+
+    #region Implementation of IList<int>
+
+    public int  IndexOf(int  item)            => AsList.IndexOf(item);
+    public void Insert(int   index, int item) => throw UnsupportedMethodException();
+    public void RemoveAt(int index) => throw UnsupportedMethodException();
+    int IList<int>.this[int index] {
+        get => AsList[index];
+        set => throw UnsupportedMethodException();
+    }
+
+    #endregion
 
     #region Implementation of IImmutableList<T>
 
@@ -47,6 +88,12 @@ public readonly partial record struct Indexes : IImmutableList<int> {
     IImmutableList<int> IImmutableList<int>.RemoveAt(int                 index)                                                           => AsList.RemoveAt(index);
     IImmutableList<int> IImmutableList<int>.SetItem(int                  index,    int value)                                             => AsList.SetItem(index, value);
     IImmutableList<int> IImmutableList<int>.Replace(int                  oldValue, int newValue, IEqualityComparer<int> equalityComparer) => AsList.Replace(oldValue, newValue, equalityComparer);
+
+    #endregion
+
+    #region Implementation of IReadOnlyList<out int>
+
+    public int this[int index] => Must.BeIndexOf(index, this);
 
     #endregion
 }
