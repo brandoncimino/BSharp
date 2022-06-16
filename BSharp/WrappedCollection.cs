@@ -1,7 +1,6 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
-
-using FowlFever.BSharp.Collections;
 
 namespace FowlFever.BSharp;
 
@@ -13,15 +12,18 @@ namespace FowlFever.BSharp;
 /// <typeparam name="TCollection">the type of the underlying <see cref="ICollection{T}"/></typeparam>
 public abstract record WrappedCollection<TElement, TCollection>(TCollection Value) : Wrapped<TCollection>,
                                                                                      IList<TElement>,
-                                                                                     IReadOnlyList<TElement>
-    where TCollection : ICollection<TElement> {
-    public override TCollection      Value { get; } = Value;
-    private         IList<TElement>? _asList;
-    private         IList<TElement>  AsList => _asList ??= Value.AsList();
+                                                                                     IReadOnlyList<TElement>,
+                                                                                     IList
+    where TCollection : IEnumerable<TElement> {
+    public override    TCollection           Value            { get; } = Value;
+    protected abstract IList<TElement>       AsList           { get; }
+    protected abstract IList                 AsNonGenericList { get; }
+    protected abstract ICollection<TElement> AsCollection     { get; }
 
     #region Implementation of IEnumerable
 
     public IEnumerator<TElement> GetEnumerator() {
+        var ls = new List<int>();
         return Value.GetEnumerator();
     }
 
@@ -33,28 +35,36 @@ public abstract record WrappedCollection<TElement, TCollection>(TCollection Valu
 
     #region Implementation of ICollection<ELEMENT>
 
-    public void Add(TElement item) {
-        Value.Add(item);
-    }
+    public void Add(TElement item) => AsList.Add(item);
 
-    public void Clear() {
-        Value.Clear();
-    }
+    int IList.Add(object value) => AsNonGenericList.Add(value);
 
-    public bool Contains(TElement item) {
-        return Value.Contains(item);
-    }
+    public void Clear() => AsCollection.Clear();
 
-    public void CopyTo(TElement[] array, int arrayIndex) {
-        Value.CopyTo(array, arrayIndex);
-    }
+    bool IList.Contains(object value) => AsNonGenericList.Contains(value);
 
-    public bool Remove(TElement item) {
-        return Value.Remove(item);
-    }
+    int IList.IndexOf(object value) => AsNonGenericList.IndexOf(value);
 
-    public int  Count      => Value.Count;
-    public bool IsReadOnly => Value.IsReadOnly;
+    public void Insert(int index, object value) => AsNonGenericList.Insert(index, value);
+
+    void IList.Remove(object value) => AsNonGenericList.Remove(value);
+
+    public bool Contains(TElement item) => AsCollection.Contains(item);
+
+    public void CopyTo(TElement[] array, int arrayIndex) => AsCollection.CopyTo(array, arrayIndex);
+
+    public bool Remove(TElement item) => AsCollection.Remove(item);
+
+    public void CopyTo(Array array, int index) => AsNonGenericList.CopyTo(array, index);
+
+    public int         Count          => AsCollection.Count;
+    public bool        IsSynchronized => AsNonGenericList.IsSynchronized;
+    object ICollection.SyncRoot       => AsNonGenericList.SyncRoot;
+    public bool        IsReadOnly     => AsCollection.IsReadOnly;
+    object IList.this[int index] {
+        get => AsNonGenericList[index];
+        set => AsNonGenericList[index] = value;
+    }
 
     #endregion
 
@@ -71,6 +81,8 @@ public abstract record WrappedCollection<TElement, TCollection>(TCollection Valu
     public void RemoveAt(int index) {
         AsList.RemoveAt(index);
     }
+
+    public bool IsFixedSize => AsNonGenericList.IsFixedSize;
 
     public TElement this[int index] {
         get => AsList[index];
