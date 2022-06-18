@@ -8,11 +8,14 @@ using FowlFever.BSharp.Collections;
 using FowlFever.BSharp.Exceptions;
 using FowlFever.BSharp.Strings;
 
+using JetBrains.Annotations;
+
 namespace FowlFever.BSharp.Optional;
 
 /// <summary>
 /// Contains a set of <see cref="IFailable"/> results.
 /// </summary>
+[PublicAPI]
 public class RapSheet : IEnumerable<IFailable>, IPrettifiable, IFailable {
     public enum Verdict { Passed, Failed, }
 
@@ -34,7 +37,11 @@ public class RapSheet : IEnumerable<IFailable>, IPrettifiable, IFailable {
         );
     }
 
+    public RapSheet(params IFailable[] charges) : this(charges.AsEnumerable()) { }
+
     public RapSheet(Optional<object?> plaintiff, IEnumerable<IFailable> charges) : this(charges) => Plaintiff = plaintiff;
+
+    public RapSheet(Optional<object?> plaintiff, IFailable charge, params IFailable[] charges) : this(plaintiff, charges.AsEnumerable().Prepend(charge)) { }
 
     #region IEnumerable<> Implementation
 
@@ -59,18 +66,26 @@ public class RapSheet : IEnumerable<IFailable>, IPrettifiable, IFailable {
                                     ? $"[{Convictions.Count()}/{Charges.Count()}]"
                                     : $"All {Charges.Count()}";
 
-        string AgainstString() => Plaintiff.Select(it => PlaintiffFormatter?.Invoke(it) ?? FormatPlaintiff_Default(it)).OrElse("");
+        Optional<string> PlaintiffString() => Plaintiff.Select(it => PlaintiffFormatter?.Invoke(it) ?? FormatPlaintiff_Default(it));
+
+        string AgainstString() => PlaintiffString().Select(it => $"against `{PlaintiffString()}` ").OrElse("");
 
         string VerdictString() => Convictions.IsNotEmpty() ? "stuck" : "were dropped";
 
         return $"{Icon} {CountString()} charges {AgainstString()}{VerdictString()}!";
     }
 
-    private static string FormatPlaintiff_Default(object? plaintiff) => $"against `{plaintiff}` ";
+    private static string FormatPlaintiff_Default(object? plaintiff) => plaintiff switch {
+        IEnumerable e => e.Cast<object>().JoinString(", ", "[", "]"),
+        null          => "⛔",
+        _             => plaintiff.ToString()!,
+    };
 
     private static string FormatFailable_Default(IFailable failable) => $"{failable}";
 
     private string GetSummary() => SummaryFormatter?.Invoke(this) ?? FormatSummary_Default();
+
+    public override string ToString() => GetSummary();
 
     private string FormatFailable(IFailable failable) => FailableFormatter?.Invoke(failable) ?? FormatFailable_Default(failable);
 
