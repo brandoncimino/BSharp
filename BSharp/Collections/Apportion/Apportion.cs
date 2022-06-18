@@ -15,7 +15,7 @@ public static class Apportion {
     /// <param name="amount">the amount to distribute</param>
     /// <param name="portions">the number of even portions</param>
     /// <returns>all of the resulting portions</returns>
-    public static IEnumerable<int> Evenly(int amount, int portions) {
+    public static IList<int> Evenly(int amount, int portions) {
         return new SimpleApportion(amount, Enumerable.Repeat<double>(1, portions));
     }
 
@@ -25,7 +25,7 @@ public static class Apportion {
     /// <param name="amount">the amount to distribute</param>
     /// <param name="weights">the relative amount allocated to each resulting portion</param>
     /// <returns>all of the resulting portions</returns>
-    public static IEnumerable<int> Simply(int amount, IEnumerable<double> weights) {
+    public static IList<int> Simply(int amount, IEnumerable<double> weights) {
         return new SimpleApportion(amount, weights);
     }
 
