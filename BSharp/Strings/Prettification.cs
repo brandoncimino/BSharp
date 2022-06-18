@@ -1,12 +1,9 @@
 using System;
-using System.Diagnostics.Contracts;
 
 using FowlFever.BSharp.Optional;
 using FowlFever.BSharp.Strings.Json;
 
 using JetBrains.Annotations;
-
-using Pure = System.Diagnostics.Contracts.PureAttribute;
 
 namespace FowlFever.BSharp.Strings {
     /// <summary>
@@ -26,8 +23,9 @@ namespace FowlFever.BSharp.Strings {
 
         [Obsolete] public static PrettificationSettings DefaultPrettificationSettings => PrettificationSettings.Default;
 
+        [Obsolete]
         public static PrettificationSettings ResolveSettings(PrettificationSettings? settings) {
-            return settings ?? PrettificationSettings.Default;
+            return settings.Resolve();
         }
 
         public static void RegisterPrettifier(IPrettifier prettifier) {
@@ -46,14 +44,12 @@ namespace FowlFever.BSharp.Strings {
 
         #endregion
 
-        [Pure]
-        public static string Prettify(this object? cinderella) {
-            return cinderella.Prettify(default);
-        }
+        [Pure] public static string Prettify<T>(this T?      cinderella) => cinderella.Prettify(default);
+        [Pure] public static string Prettify(this    object? cinderella) => cinderella.Prettify(default);
 
         [Pure]
-        public static string Prettify(this object? cinderella, PrettificationSettings? settings) {
-            settings = ResolveSettings(settings);
+        public static string Prettify<T>(this T? cinderella, PrettificationSettings? settings) {
+            settings = settings.Resolve();
 
             settings.TraceWriter.Info(() => $"👸 Prettifying [{cinderella?.GetType().Name}]");
 
@@ -70,10 +66,13 @@ namespace FowlFever.BSharp.Strings {
 
             return prettifier
                 .IfPresentOrElse(
-                    it => _Safely(cinderella, it.Prettify, settings),
+                    // TODO: Refactor this to prevent boxing into `object`
+                    it => _Safely<object>(cinderella, it.Prettify, settings),
                     () => LastResortPrettifier(cinderella, settings)
                 );
         }
+
+        [Pure] public static string Prettify(this object? cinderella, PrettificationSettings? settings) => cinderella.Prettify<object>(settings);
 
         private static string _Safely<T>(T? cinderella, Func<T?, PrettificationSettings?, string> prettifyFunc, PrettificationSettings? settings) {
             settings = settings.Resolve();
