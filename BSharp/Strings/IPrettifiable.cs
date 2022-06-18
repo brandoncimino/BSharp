@@ -1,5 +1,3 @@
-using Pure = System.Diagnostics.Contracts.PureAttribute;
-
 namespace FowlFever.BSharp.Strings {
     /// <summary>
     /// Allows an object to specifically designate a method for use by <see cref="Prettification"/>.

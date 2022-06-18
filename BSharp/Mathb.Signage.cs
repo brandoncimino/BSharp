@@ -2,8 +2,6 @@ using System;
 
 using FowlFever.BSharp.Exceptions;
 
-using Pure = System.Diagnostics.Contracts.PureAttribute;
-
 namespace FowlFever.BSharp {
     public static partial class Mathb {
         #region Signage

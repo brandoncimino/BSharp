@@ -1,5 +1,4 @@
 using System;
-using System.Diagnostics.Contracts;
 using System.Text.RegularExpressions;
 
 using FowlFever.BSharp.Enums;
@@ -8,8 +7,6 @@ using FowlFever.BSharp.Optional;
 using FowlFever.BSharp.Strings.Tabler;
 
 using JetBrains.Annotations;
-
-using Pure = System.Diagnostics.Contracts.PureAttribute;
 
 namespace FowlFever.BSharp.Strings;
 
@@ -41,7 +38,7 @@ public static partial class StringUtils {
             var shortLimit = maxLength   + trail.Length * 2;
             var cutAmount  = self.Length - shortLimit;
             Must.BePositive(cutAmount);
-            var (leftCut, rightCut) = cutAmount.Sperp(.5);
+            var (leftCut, rightCut) = cutAmount.Splerp(.5);
             return self[leftCut..^rightCut];
         }
 

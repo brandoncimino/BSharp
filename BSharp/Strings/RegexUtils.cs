@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Text.RegularExpressions;
 
@@ -7,8 +6,6 @@ using FowlFever.BSharp.Collections;
 using FowlFever.BSharp.Optional;
 
 using JetBrains.Annotations;
-
-using Pure = System.Diagnostics.Contracts.PureAttribute;
 
 namespace FowlFever.BSharp.Strings {
     /// <summary>
@@ -147,14 +144,11 @@ namespace FowlFever.BSharp.Strings {
             );
         }
 
-        [Pure]
-        public static bool MatchesAll(this string str, params string[] patterns) => MatchesAll(str, patterns.AsEnumerable());
+        [Pure] public static bool MatchesAll(this string str, params string[] patterns) => MatchesAll(str, patterns.AsEnumerable());
 
-        [Pure]
-        public static bool MatchesAll(this string str, params Regex[] patterns) => MatchesAll(str, patterns.AsEnumerable());
+        [Pure] public static bool MatchesAll(this string str, params Regex[] patterns) => MatchesAll(str, patterns.AsEnumerable());
 
-        [Pure]
-        public static bool MatchesAll(this string str, IEnumerable<Regex> patterns, RegexOptions? options = default) => patterns.All(it => it.IsMatch(str));
+        [Pure] public static bool MatchesAll(this string str, IEnumerable<Regex> patterns, RegexOptions? options = default) => patterns.All(it => it.IsMatch(str));
 
         #endregion
 
@@ -168,14 +162,11 @@ namespace FowlFever.BSharp.Strings {
             );
         }
 
-        [Pure]
-        public static bool MatchesAny(this string str, params string[] patterns) => MatchesAny(str, patterns.AsEnumerable());
+        [Pure] public static bool MatchesAny(this string str, params string[] patterns) => MatchesAny(str, patterns.AsEnumerable());
 
-        [Pure]
-        public static bool MatchesAny(this string str, IEnumerable<Regex> patterns) => patterns.Any(it => it.IsMatch(str));
+        [Pure] public static bool MatchesAny(this string str, IEnumerable<Regex> patterns) => patterns.Any(it => it.IsMatch(str));
 
-        [Pure]
-        public static bool MatchesAny(this string str, params Regex[] patterns) => MatchesAny(str, patterns.AsEnumerable());
+        [Pure] public static bool MatchesAny(this string str, params Regex[] patterns) => MatchesAny(str, patterns.AsEnumerable());
 
         #endregion
 
@@ -188,14 +179,11 @@ namespace FowlFever.BSharp.Strings {
             );
         }
 
-        [Pure]
-        public static bool MatchesNone(this string str, params string[] patterns) => MatchesNone(str, patterns.AsEnumerable());
+        [Pure] public static bool MatchesNone(this string str, params string[] patterns) => MatchesNone(str, patterns.AsEnumerable());
 
-        [Pure]
-        public static bool MatchesNone(this string str, IEnumerable<Regex> patterns) => patterns.None(it => it.IsMatch(str));
+        [Pure] public static bool MatchesNone(this string str, IEnumerable<Regex> patterns) => patterns.None(it => it.IsMatch(str));
 
-        [Pure]
-        public static bool MatchesNone(this string str, params Regex[] patterns) => MatchesNone(str, patterns.AsEnumerable());
+        [Pure] public static bool MatchesNone(this string str, params Regex[] patterns) => MatchesNone(str, patterns.AsEnumerable());
 
         #endregion
 
