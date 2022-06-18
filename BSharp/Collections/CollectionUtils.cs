@@ -6,6 +6,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Text;
 
 using FowlFever.BSharp.Enums;
 using FowlFever.BSharp.Optional;
@@ -239,12 +240,26 @@ public static partial class CollectionUtils {
     /// <br/>
     /// Corresponds roughly to Java's <a href="https://docs.oracle.com/javase/8/docs/api/java/util/stream/Collectors.html#joining--">.joining()</a> collector.
     /// </remarks>
-    /// <param name="enumerable"></param>
-    /// <param name="separator"></param>
-    /// <typeparam name="T"></typeparam>
-    /// <returns></returns>
-    public static string JoinString<T>(this IEnumerable<T?>? enumerable, string? separator = "") {
-        return string.Join(separator, enumerable.OrEmpty());
+    /// <param name="enumerable">this <see cref="IEnumerable{T}"/></param>
+    /// <param name="separator">an optional <see cref="string"/> interposed betwixt each entry of this <see cref="IEnumerable{T}"/></param>
+    /// <param name="prefix">an optional <see cref="string"/> before any of the <paramref name="enumerable"/> entries</param>
+    /// <param name="suffix">an optional <see cref="string"/> after any of the <paramref name="enumerable"/> entries</param>
+    /// <typeparam name="T">the type of the entries in the <paramref name="enumerable"/></typeparam>
+    /// <returns>the fully joined <see cref="string"/></returns>
+    public static string JoinString<T>(this IEnumerable<T?>? enumerable, string? separator = "", string? prefix = default, string? suffix = default) {
+        if (enumerable.IsEmpty()) {
+            return "";
+        }
+
+        var sb = new StringBuilder();
+        sb.Append(prefix);
+        sb.Append(string.Join(separator, enumerable.OrEmpty()));
+
+        // Not available until .NET 6, _of course_! >:(
+        // sb.AppendJoin(separator, enumerable.OrEmpty());
+
+        sb.Append(suffix);
+        return sb.ToString();
     }
 
     /// <summary>
@@ -1224,8 +1239,6 @@ public static partial class CollectionUtils {
     /// <typeparam name="T">the type of the items in <paramref name="source"/></typeparam>
     /// <returns><see cref="Enumerable.TakeWhile{TSource}(System.Collections.Generic.IEnumerable{TSource},System.Func{TSource,bool})"/>.<see cref="Enumerable.Last{TSource}(System.Collections.Generic.IEnumerable{TSource})"/></returns>
     [Pure]
-    [ContractAnnotation("source:null => stop")]
-    [ContractAnnotation("takePredicate:null => stop")]
     public static T TakeLast<T>(
         [InstantHandle]
         this IEnumerable<T> source,
@@ -1233,6 +1246,22 @@ public static partial class CollectionUtils {
     ) {
         return source.TakeWhile(takePredicate).Last();
     }
+
+    [Pure]
+    public static IEnumerable<T> TakeLast<T>(
+        [InstantHandle]
+        this IEnumerable<T> source,
+        [NonNegativeValue]
+        int count
+    ) => count <= 0 ? Enumerable.Empty<T>() : source.Reverse().Take(count).Reverse();
+
+    [Pure]
+    public static IEnumerable<T> SkipLast<T>(
+        [InstantHandle]
+        this IEnumerable<T> source,
+        [NonNegativeValue]
+        int count
+    ) => count <= 0 ? source : source.Reverse().Skip(count).Reverse();
 
     #endregion JustBefore
 
@@ -1611,4 +1640,15 @@ public static partial class CollectionUtils {
     }
 
     #endregion
+
+    /// <summary>
+    /// ⚠⚠⚠⚠⚠⚠ This method sucks!!!
+    /// </summary>
+    /// <param name="source"></param>
+    /// <param name="range"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public static T[] GetSlice<T>(this IEnumerable<T> source, Range range) {
+        return source.ToArray()[range];
+    }
 }
