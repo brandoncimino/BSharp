@@ -1,11 +1,8 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 
 using JetBrains.Annotations;
-
-using Pure = System.Diagnostics.Contracts.PureAttribute;
 
 namespace FowlFever.BSharp.Collections {
     /// <summary>
@@ -20,7 +17,6 @@ namespace FowlFever.BSharp.Collections {
         public ReadOnlySet(ISet<T> original) {
             RealSet = original ?? throw new ArgumentNullException(nameof(original));
         }
-
 
         private static NotSupportedException ReadOnlyException() {
             return new NotSupportedException("Collection is read-only.");
