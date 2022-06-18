@@ -2,13 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 
-namespace FowlFever.BSharp;
+namespace FowlFever.BSharp.Collections;
 
 /// <summary>
 /// Similar to <see cref="WrappedCollection{TElement,TCollection}"/> but also delegates to <see cref="IImmutableList{T}"/> methods.
 /// </summary>
 /// <inheritdoc cref="WrappedCollection{TElement,TCollection}"/>
-public abstract record WrappedImmutableCollection<TElement, TCollection>(TCollection Value) : WrappedCollection<TElement, TCollection>(Value), IImmutableList<TElement>
+public abstract record WrappedImmutableCollection<TElement, TCollection> : WrappedCollection<TElement, TCollection>, IImmutableList<TElement>
     where TCollection : IImmutableList<TElement> {
     #region Implementation of IImmutableList<T>
 
@@ -79,4 +79,14 @@ public abstract record WrappedImmutableCollection<TElement, TCollection>(TCollec
     }
 
     #endregion
+}
+
+/// <summary>
+/// A slightly stricter version of <see cref="WrappedImmutableCollection{TElement,TCollection}"/> that makes <see cref="Value"/> <c>sealed</c>
+/// and requires it to be passed into the primary <c>record</c> constructor.
+/// </summary>
+/// <inheritdoc cref="WrappedImmutableCollection{TElement,TCollection}"/>
+public abstract record StrictImmutableCollection<TElement, TCollection>(TCollection Value) : WrappedImmutableCollection<TElement, TCollection>
+    where TCollection : IImmutableList<TElement> {
+    public sealed override TCollection Value { get; } = Value;
 }

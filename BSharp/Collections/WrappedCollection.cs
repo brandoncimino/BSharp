@@ -2,7 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace FowlFever.BSharp;
+namespace FowlFever.BSharp.Collections;
 
 /// <summary>
 /// Similar to <see cref="Wrapped{T}"/>, but automatically delegates <see cref="IList{T}"/> operations to the underlying <typeparamref name="TCollection"/>. 
@@ -10,15 +10,18 @@ namespace FowlFever.BSharp;
 /// <param name="Value">the wrapped <see cref="ICollection{T}"/></param>
 /// <typeparam name="TElement">the type of the elements in the underlying <see cref="ICollection{T}"/></typeparam>
 /// <typeparam name="TCollection">the type of the underlying <see cref="ICollection{T}"/></typeparam>
-public abstract record WrappedCollection<TElement, TCollection>(TCollection Value) : Wrapped<TCollection>,
-                                                                                     IList<TElement>,
-                                                                                     IReadOnlyList<TElement>,
-                                                                                     IList
+public abstract record WrappedCollection<TElement, TCollection> : Wrapped<TCollection>,
+                                                                  IList<TElement>,
+                                                                  IReadOnlyList<TElement>,
+                                                                  IList
     where TCollection : IEnumerable<TElement> {
-    public override    TCollection           Value            { get; } = Value;
     protected abstract IList<TElement>       AsList           { get; }
     protected abstract IList                 AsNonGenericList { get; }
     protected abstract ICollection<TElement> AsCollection     { get; }
+
+    protected abstract TCollection CreateSlice(IEnumerable<TElement> elements);
+
+    public TCollection this[Range range] => CreateSlice(range.EnumerateSlice(this));
 
     #region Implementation of IEnumerable
 
@@ -88,6 +91,37 @@ public abstract record WrappedCollection<TElement, TCollection>(TCollection Valu
         get => AsList[index];
         set => AsList[index] = value;
     }
+
+    #endregion
+
+    #region Deconstructors
+
+    public void Deconstruct(out TElement a, out TElement b)                 => (a, b) = (this[0], this[1]);
+    public void Deconstruct(out TElement a, out TElement b, out TElement c) => (a, b, c) = (this[0], this[1], this[2]);
+
+    public void Deconstruct(
+        out TElement a,
+        out TElement b,
+        out TElement c,
+        out TElement d
+    ) => (a, b, c, d) = (this[0], this[1], this[2], this[3]);
+
+    public void Deconstruct(
+        out TElement a,
+        out TElement b,
+        out TElement c,
+        out TElement d,
+        out TElement e
+    ) => (a, b, c, d, e) = (this[0], this[1], this[2], this[3], this[4]);
+
+    public void Deconstruct(
+        out TElement a,
+        out TElement b,
+        out TElement c,
+        out TElement d,
+        out TElement e,
+        out TElement f
+    ) => (a, b, c, d, e, f) = (this[0], this[1], this[2], this[3], this[4], this[5]);
 
     #endregion
 }
