@@ -1,8 +1,6 @@
 using System;
-using System.Diagnostics.Contracts;
 
 using FowlFever.BSharp.Chronic;
-using FowlFever.BSharp.Enums;
 
 namespace FowlFever.BSharp;
 
@@ -53,30 +51,9 @@ public static partial class Mathb {
 
     #region Fraction (i.e. the "fractional part")
 
-    public static float   Fraction(this float   value) => value % 1;
-    public static double  Fraction(this double  value) => value % 1;
-    public static decimal Fraction(this decimal value) => value % 1;
-
-    #endregion
-
-    #region Apportion
-
-    public static (double a, double b) Apportion(double a, double b, double total = 1) {
-        var sum      = a + b;
-        var aRatio   = a      / sum;
-        var aPortion = aRatio * total;
-        var bRatio   = total - aPortion;
-        return (aRatio, bRatio);
-    }
-
-    public static (int a, int b) Apportion(double a, double b, int total) {
-        var sum      = a + b;
-        var aRatio   = a      / sum;
-        var aPortion = aRatio * total;
-        var aRounded = Math.Round(aPortion).ToInt();
-        var bRounded = total - aRounded;
-        return (aRounded, bRounded);
-    }
+    [Pure] public static float   Fraction(this float   value) => value % 1;
+    [Pure] public static double  Fraction(this double  value) => value % 1;
+    [Pure] public static decimal Fraction(this decimal value) => value % 1;
 
     #endregion
 }
