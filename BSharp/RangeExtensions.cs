@@ -1,6 +1,9 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 using FowlFever.BSharp.Enums;
+using FowlFever.BSharp.Exceptions;
 
 namespace FowlFever.BSharp;
 
@@ -16,5 +19,44 @@ public static class RangeExtensions {
         }
 
         return value.IsInRange(range.Start.Value, range.End.Value, clusivity);
+    }
+
+    public static IEnumerable<T> EnumerateSlice<T>(this Range range, IEnumerable<T> source) {
+        static IEnumerable<T> Collection(ICollection<T> src, Range rng) {
+            var (off, len) = rng.GetOffsetAndLength(src.Count);
+            for (int i = off; i < (off + len); i++) {
+                yield return src.ElementAt(i);
+            }
+        }
+
+        static IEnumerable<T> ReadOnlyCollection(IReadOnlyCollection<T> src, Range rng) {
+            var (off, len) = rng.GetOffsetAndLength(src.Count);
+            for (int i = off; i < (off + len); i++) {
+                yield return src.ElementAt(i);
+            }
+        }
+
+        static IEnumerable<T> Enumerable(IEnumerable<T> src, Range rng) {
+            throw Reject.Unsupported(typeof(RangeExtensions), details: "Too hard!");
+            // var (start, end) = (rng.Start, rng.End);
+            // return (start.IsFromEnd, end.IsFromEnd) switch {
+            // (false, false) => src.Skip(start.Value).Take(end.Value - start.Value),
+            // (false, true)  => src.Skip(start.Value).SkipLast(end.Value),
+            // ^3..3
+            // 1  2  3  4  5
+            //      [3] 2  1  0 // ^3 => 2 => {3,4,5}
+            // 0  1  2 [3]      //  3 => 3
+            //                             ->> From {3,4,5} we want {4}, which is skip(1)
+            //                             ->> skip(1) is 
+            // (true, false) => src.Reverse().Skip(end.Value).Reverse().Take(start.Value),
+            // (true, true)  => src.Reverse().Skip(end.Value).Take(start.Value - end.Value).Reverse(),
+            // };
+        }
+
+        return source switch {
+            ICollection<T> coll       => Collection(coll, range),
+            IReadOnlyCollection<T> rc => ReadOnlyCollection(rc, range),
+            _                         => Enumerable(source, range),
+        };
     }
 }
