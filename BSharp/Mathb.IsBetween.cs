@@ -1,5 +1,3 @@
-using System.Diagnostics.Contracts;
-
 using FowlFever.BSharp.Enums;
 
 // ReSharper disable ConvertConditionalTernaryExpressionToSwitchExpression
