@@ -2,9 +2,7 @@ using System;
 
 using FowlFever.BSharp.Enums;
 
-using NUnit.Framework.Constraints;
-
-namespace FowlFever.Testing {
+namespace FowlFever.Testing.NUnitExtensionPoints {
     /// <summary>
     /// This is an "extension" of NUnit's <see cref="NUnit.Framework.Is"/> entry point for <see cref="Constraint"/>s.
     /// </summary>
