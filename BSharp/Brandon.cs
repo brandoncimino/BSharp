@@ -7,6 +7,7 @@ using System.Runtime.CompilerServices;
 using FowlFever.BSharp.Exceptions;
 using FowlFever.BSharp.Strings;
 using FowlFever.BSharp.Strings.Json;
+using FowlFever.BSharp.Strings.Tabler;
 
 namespace FowlFever.BSharp;
 
@@ -24,7 +25,17 @@ internal static class Brandon {
         int lineNumber = default
     ) => new(value, argumentExpression, memberName, filePath, lineNumber);
 
-    public static void Print<T>(
+    public static T Print<T>(
+        T value,
+        [CallerArgumentExpression("value")]
+        string? expression = default
+    ) {
+        var str = Row.Of(expression, value).Prettify();
+        Console.WriteLine(str);
+        return value;
+    }
+
+    public static string Verbose<T>(
         T value,
         [CallerArgumentExpression("value")]
         string? argumentExpression = default,
@@ -36,7 +47,9 @@ internal static class Brandon {
         int lineNumber = default
     ) {
         var info = Info(value, argumentExpression, memberName, filePath, lineNumber);
-        Console.WriteLine(info);
+        var str  = info.Prettify();
+        Console.WriteLine(str);
+        return str;
     }
 
     internal static ConsoleTraceWriter Start(
