@@ -12,19 +12,19 @@ namespace FowlFever.Testing {
 
         protected override void OnFailure(string results) => Assert.Ignore(results);
 
-        public override void ResolveFunc<T1>(
+        protected override void ResolveFunc<T1>(
             Func<T1>           actual,
             IResolveConstraint constraint,
             Func<string>?      message
         ) => Ignore.Unless(actual, constraint, message);
 
-        public override void ResolveAction(
+        protected override void ResolveAction(
             Action             action,
             IResolveConstraint constraint,
             Func<string>?      message
         ) => Ignore.Unless(action, constraint, message);
 
-        public override void ResolveActual<T2>(
+        protected override void ResolveActual<T2>(
             T2                 actual,
             IResolveConstraint constraint,
             Func<string>?      message

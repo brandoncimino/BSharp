@@ -13,10 +13,10 @@ namespace FowlFever.Testing {
 
         protected override void OnFailure(string results) => Assert.Inconclusive(results);
 
-        public override void ResolveFunc<T1>(
+        protected override void ResolveFunc<T1>(
             Func<T1>           actual,
             IResolveConstraint constraint,
-            Func<string>?      message
+            Func<string?>?     message
         ) {
             var msg = message?.Invoke();
             if (msg.IsBlank()) {
@@ -28,10 +28,10 @@ namespace FowlFever.Testing {
             }
         }
 
-        public override void ResolveAction(
+        protected override void ResolveAction(
             Action             action,
             IResolveConstraint constraint,
-            Func<string>?      message
+            Func<string?>?     message
         ) {
             if (message == null) {
                 Assume.That(action, constraint);
@@ -41,10 +41,10 @@ namespace FowlFever.Testing {
             }
         }
 
-        public override void ResolveActual<T2>(
+        protected override void ResolveActual<T2>(
             T2                 actual,
             IResolveConstraint constraint,
-            Func<string>?      message
+            Func<string?>?     message
         ) {
             if (message == null) {
                 Assume.That(actual, constraint);
