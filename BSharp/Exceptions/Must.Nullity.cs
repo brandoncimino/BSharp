@@ -16,7 +16,7 @@ public static partial class Must {
     /// <param name="rejectedBy">see <see cref="CallerMemberNameAttribute"/></param>
     /// <typeparam name="T">the type of <paramref name="actualValue"/></typeparam>
     /// <returns><paramref name="actualValue"/> as a non-nullable type</returns>
-    /// <exception cref="ArgumentNullException">if <paramref name="actualValue"/> is null</exception>
+    /// <exception cref="RejectionException">if <paramref name="actualValue"/> is null</exception>
     public static T NotBeNull<T>(
         [NotNull] T? actualValue,
         string?      details = default,
