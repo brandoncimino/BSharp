@@ -1,11 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Text;
 
 using FowlFever.BSharp;
 using FowlFever.BSharp.Collections;
 using FowlFever.BSharp.Optional;
 using FowlFever.BSharp.Strings;
+using FowlFever.BSharp.Sugar;
 
 using JetBrains.Annotations;
 
@@ -13,554 +16,544 @@ using NUnit.Framework;
 using NUnit.Framework.Constraints;
 using NUnit.Framework.Internal;
 
-namespace FowlFever.Testing {
-    [PublicAPI]
-    public abstract class MultipleAsserter<TSelf, TActual> : IMultipleAsserter
-        where TSelf : MultipleAsserter<TSelf, TActual>, new() {
-        private const string HeadingIcon = "🧪";
+namespace FowlFever.Testing;
 
-        public PrettificationSettings? PrettificationSettings { get; protected set; }
+[PublicAPI]
+public abstract class MultipleAsserter<TSelf, TActual> : IMultipleAsserter
+    where TSelf : MultipleAsserter<TSelf, TActual>, new() {
+    private const string HeadingIcon = "🧪";
 
-        private Lazy<TActual>? _actual;
+    public PrettificationSettings? PrettificationSettings { get; protected set; }
 
-        /// <summary>
-        /// The actual value being asserted against (if there is one)
-        /// </summary>
-        // private Lazy<TActual> Actual => _actual ?? throw new InvalidOperationException("Actual is empty!");
-        internal OneTimeOnly<TActual> Actual { get; init; } = new OneTimeOnly<TActual>();
+    private Lazy<TActual>? _actual;
 
-        public Func<string>? Heading          { get; set; }
-        public string?       ActualValueAlias { get; }
+    /// <summary>
+    /// The actual value being asserted against (if there is one)
+    /// </summary>
+    // private Lazy<TActual> Actual => _actual ?? throw new InvalidOperationException("Actual is empty!");
+    internal OneTimeOnly<TActual> Actual { get; init; } = new OneTimeOnly<TActual>();
 
-        public int Indent { get; protected set; }
+    public Supplied<string?>? Heading          { get; set; }
+    public string?            ActualValueAlias { get; }
 
-        private Action<string>? CustomActionOnFailure;
+    public int Indent { get; protected set; }
 
-        #region Subtest Types
+    private Action<string>? CustomActionOnFailure;
 
-        internal abstract record Subtest(
-            Supplied<string>   Nickname,
-            IResolveConstraint Constraint,
-            Supplied<string>?  Message = default
+    #region Subtest Types
+
+    internal abstract record Subtest(
+        Supplied<string?>? ActualValueDescription,
+        IResolveConstraint Constraint,
+        string?            Expression,
+        Supplied<string?>? Message = default
+    ) {
+        protected                   Supplied<string?> Description => GetNicknameSupplier(ActualValueDescription, Expression, Constraint);
+        protected internal abstract IFailable         Test(MultipleAsserter<TSelf, TActual> asserter);
+
+        private static Supplied<string?> GetNicknameSupplier(
+            Supplied<string?>?      actualDescription,
+            string?                 expression,
+            IResolveConstraint?     constraint,
+            PrettificationSettings? settings = default
         ) {
-            protected internal abstract IFailable Test(MultipleAsserter<TSelf, TActual> asserter);
-        }
-
-        internal record Action_AgainstAnything(
-            Action              Action,
-            IResolveConstraint? Constraint,
-            Supplied<string>?   Nickname
-        ) : Subtest(
-            Nickname   ?? Assertable.GetNicknameSupplier(Action, default),
-            Constraint ?? Throws.Nothing
-        ) {
-            protected internal override IFailable Test(MultipleAsserter<TSelf, TActual> asserter) {
-                return new Assertable(
-                    () => asserter.ResolveAction(Action, Constraint, Message?.Supply()),
-                    Nickname
-                );
-            }
-        }
-
-        internal record Action_AgainstActual(
-            Action<TActual?>    Action,
-            IResolveConstraint? Constraint,
-            Supplied<string>?   Nickname
-        ) : Subtest(
-            Nickname   ?? Assertable.GetNicknameSupplier(Action, default),
-            Constraint ?? Throws.Nothing
-        ) {
-            protected internal override IFailable Test(MultipleAsserter<TSelf, TActual> asserter) {
-                return new Assertable(
-                    () => { asserter.ResolveAction(() => Action(asserter.Actual.Value), Constraint, Message.GetValueOrDefault); },
-                    Nickname
-                );
-            }
-        }
-
-        internal record Constraint_AgainstActual(
-            IResolveConstraint Constraint,
-            Supplied<string>?  Nickname
-        ) : Subtest(
-            Nickname ?? Assertable.GetNicknameSupplier(default, Constraint),
-            Constraint
-        ) {
-            protected internal override IFailable Test(MultipleAsserter<TSelf, TActual> asserter) {
-                return new Assertable(
-                    () => asserter.ResolveActual(asserter.Actual.Value, Constraint, Nickname.GetValueOrDefault),
-                    Nickname
-                );
-            }
-        }
-
-        internal record Constraint_AgainstAnything(
-            object?            Target,
-            IResolveConstraint Constraint,
-            Supplied<string>?  Nickname
-        ) : Subtest(
-            Nickname ?? Assertable.GetNicknameSupplier(Target, Constraint),
-            Constraint
-        ) {
-            protected internal override IFailable Test(MultipleAsserter<TSelf, TActual> asserter) {
-                return new Assertable(
-                    () => asserter.ResolveActual(Target, Constraint, Message.GetValueOrDefault),
-                    Nickname
-                );
-            }
-        }
-
-        internal record Constraint_AgainstDelegate(
-            Func<object?>      Target,
-            IResolveConstraint Constraint,
-            Supplied<string>?  Nickname
-        ) : Subtest(
-            Nickname ?? Assertable.GetNicknameSupplier(Target, Constraint),
-            Constraint
-        ) {
-            protected internal override IFailable Test(MultipleAsserter<TSelf, TActual> asserter) {
-                return new Assertable(
-                    () => asserter.ResolveFunc(Target, Constraint, Message.GetValueOrDefault),
-                    Nickname
-                );
-            }
-        }
-
-        internal record Constraint_AgainstTransformation(
-            Delegate           Transformation,
-            IResolveConstraint Constraint,
-            Supplied<string>?  Nickname
-        ) : Subtest(
-            Nickname ?? Assertable.GetNicknameSupplier(Transformation, Constraint),
-            Constraint
-        ) {
-            protected internal override IFailable Test(MultipleAsserter<TSelf, TActual> asserter) {
-                return new Assertable(
-                    () => asserter.ResolveFunc(() => Transformation.DynamicInvoke(asserter.Actual.Value), Constraint, Message.GetValueOrDefault),
-                    // () => asserter.ResolveActual(Transformation.DynamicInvoke(asserter.Actual.Value), Constraint, Message),
-                    Nickname
-                );
-            }
-        }
-
-        #endregion
-
-        internal IList<IMultipleAsserter> Asserters { get; } = new List<IMultipleAsserter>();
-
-        internal IList<Subtest> Subtests { get; } = new List<Subtest>();
-
-        protected abstract void OnFailure(string results);
-
-        /// <summary>
-        /// ⚠ DO NOT call this method directly!
-        ///
-        /// Call <see cref="Succeed"/> instead!
-        /// </summary>
-        /// <param name="results"></param>
-        protected virtual void OnSuccess(string results) {
-            Console.WriteLine(results);
-        }
-
-        protected void Fail(string results) {
-            if (CustomActionOnFailure != null) {
-                CustomActionOnFailure.Invoke(results);
-            }
-            else {
-                OnFailure(results);
-            }
-        }
-
-        protected void Succeed(string results) {
-            OnSuccess(results);
-        }
-
-        public abstract void ResolveFunc<T>(
-            Func<T>            actual,
-            IResolveConstraint constraint,
-            Func<string?>?     message
-        );
-
-        public abstract void ResolveAction(
-            Action             action,
-            IResolveConstraint constraint,
-            Func<string?>?     message
-        );
-
-        public abstract void ResolveActual<T>(
-            T                  actual,
-            IResolveConstraint constraint,
-            Func<string?>?     message
-        );
-
-        private Optional<Exception> ShortCircuitException;
-
-        #region Constructors
-
-        protected MultipleAsserter() { }
-
-        protected MultipleAsserter(TActual actual, string? actualValueAlias) {
-            Actual.Set(actual);
-            ActualValueAlias = actualValueAlias;
-        }
-
-        protected MultipleAsserter(Func<TActual> actualValueDelegate, string? actualValueAlias) {
-            Actual.Set(actualValueDelegate);
-            ActualValueAlias = actualValueAlias;
-        }
-
-        #endregion
-
-        private TSelf Self => (this as TSelf)!;
-
-        //TODO: Make an extension method of this called "AsFunc" or something
-        [ContractAnnotation("null => null")]
-        [ContractAnnotation("notnull => notnull")]
-        private Func<T>? AsFunc<T>(T? obj) {
-            return obj switch {
-                null       => null,
-                string str => str.IsBlank() ? default(Func<T>) : () => obj,
-                _          => () => obj
-            };
-        }
-
-        #region Builder
-
-        [MustUseReturnValue]
-        public TSelf Against(TActual actual) {
-            Actual.Set(actual);
-            return Self;
-        }
-
-        [MustUseReturnValue]
-        public TSelf Against(Func<TActual> actualValueDelegate) {
-            Actual.Set(actualValueDelegate);
-            return Self;
-        }
-
-        #region "And" Constraints
-
-        #region Actions_AgainstAnything
-
-        private TSelf _Add_Action_AgainstAnything(Action action, IResolveConstraint? constraint, Func<string>? nickname) {
-            Subtests.Add(new Action_AgainstAnything(action, constraint, nickname));
-            return Self;
-        }
-
-        [MustUseReturnValue]
-        public TSelf And(Action action, Func<string>? nickname = default) => _Add_Action_AgainstAnything(action, default, nickname);
-
-        [MustUseReturnValue]
-        public TSelf And(Action action, IResolveConstraint constraint, Func<string>? nickname = default) => _Add_Action_AgainstAnything(action, constraint, nickname);
-
-        [MustUseReturnValue]
-        public TSelf And(Action action, string nickname) => _Add_Action_AgainstAnything(action, default, AsFunc(nickname));
-
-        [MustUseReturnValue]
-        public TSelf And(Action action, IResolveConstraint constraint, string nickname) => _Add_Action_AgainstAnything(action, constraint, AsFunc(nickname));
-
-        [MustUseReturnValue]
-        public TSelf And(IEnumerable<Action> actions) {
-            actions.ForEach(it => _ = _Add_Action_AgainstAnything(it, default, default));
-            return Self;
-        }
-
-        #endregion
-
-        #region Actions_AgainstActual
-
-        [MustUseReturnValue]
-        public TSelf And(
-            Action<TActual?>   action,
-            IResolveConstraint constraint,
-            Func<string>?      nickname = default
-        ) {
-            Subtests.Add(new Action_AgainstActual(action, constraint, nickname));
-            return Self;
-        }
-
-        [MustUseReturnValue]
-        public TSelf And(
-            Action<TActual?> action,
-            Func<string>?    nickname = default
-        ) {
-            Subtests.Add(new Action_AgainstActual(action, default, nickname));
-            return Self;
-        }
-
-        [MustUseReturnValue]
-        public TSelf Satisfies(
-            Action<TActual?> action,
-            Func<string>?    nickname = default
-        ) => And(action, nickname);
-
-        [MustUseReturnValue]
-        public TSelf And(
-            Action<TActual?> action,
-            string?          nickname
-        ) {
-            Func<string>? nickname1 = AsFunc(nickname);
-            Subtests.Add(new Action_AgainstActual(action, default, nickname1));
-            return Self;
-        }
-
-        [MustUseReturnValue]
-        public TSelf Satisfies(
-            Action<TActual?>   action,
-            IResolveConstraint constraint,
-            Func<string>?      nickname = default
-        ) =>
-            And(
-                action,
-                constraint,
-                nickname
-            );
-
-        #endregion
-
-        #region Constraints_AgainstActual
-
-        [MustUseReturnValue]
-        public TSelf And(IResolveConstraint? constraint, Func<string>? nickname = default) {
-            if (constraint != null) {
-                Subtests.Add(new Constraint_AgainstActual(constraint, nickname));
-            }
-
-            return Self;
-        }
-
-        [MustUseReturnValue]
-        public TSelf And(IResolveConstraint? constraint, string nickname) => And(constraint, () => nickname);
-
-        [MustUseReturnValue]
-        public TSelf And(IEnumerable<IResolveConstraint?>? constraints) {
-            constraints?.ForEach(it => _ = And(it));
-            return Self;
-        }
-
-        #endregion
-
-        #region Constraints_AgainstAnything
-
-        [MustUseReturnValue]
-        public TSelf And(
-            object?            target,
-            IResolveConstraint constraint,
-            Func<string>?      nickname = default
-        ) {
-            Subtests.Add(new Constraint_AgainstAnything(target, constraint, nickname));
-            return Self;
-        }
-
-        [MustUseReturnValue]
-        [Obsolete("ugly")]
-        public TSelf And(IEnumerable<(object target, IResolveConstraint constraint)>? constraints) {
-            constraints?.ForEach(
-                it => {
-                    Subtests.Add(new Constraint_AgainstAnything(it.target, it.constraint, default));
-                    _ = Self;
+            static string GetNickname(Supplied<string?>? actualDescription, string? expression, IResolveConstraint? constraint, PrettificationSettings? settings) {
+                var sb = new StringBuilder();
+                if (actualDescription.IsNotBlank()) {
+                    sb.Append($"[{actualDescription}]");
                 }
-            );
-            return Self;
+
+                sb.AppendNonBlank(expression,                     " ");
+                sb.AppendNonBlank(constraint?.Prettify(settings), " 🗜 ");
+                return sb.ToString();
+            }
+
+            return Lazily.Get(() => GetNickname(actualDescription, expression, constraint, settings))!;
         }
+    }
 
-        [MustUseReturnValue]
-        public TSelf And(
-            object?            target,
-            IResolveConstraint constraint,
-            string?            nickname
-        ) {
-            Func<string>? nickname1 = AsFunc(nickname);
-            Subtests.Add(new Constraint_AgainstAnything(target, constraint, nickname1));
-            return Self;
-        }
-
-        #endregion
-
-        #region Constraints_AgainstDelegate
-
-        private TSelf _Add(Subtest subtest) {
-            Subtests.Add(subtest);
-            return Self;
-        }
-
-        [MustUseReturnValue]
-        public TSelf And(Func<object> supplier, IResolveConstraint constraint, Func<string>? nickname = default) => _Add(new Constraint_AgainstDelegate(supplier, constraint, nickname));
-
-        [MustUseReturnValue]
-        public TSelf And(Func<object> supplier, IResolveConstraint constraint, string? nickname) => _Add(new Constraint_AgainstDelegate(supplier, constraint, AsFunc(nickname)));
-
-        #endregion
-
-        #region Constraints_AgainstTransformation
-
-        [MustUseReturnValue]
-        public TSelf And<TNew>(Func<TActual, TNew> tf, IResolveConstraint constraint, Func<string>? nickname = default) => _Add(new Constraint_AgainstTransformation(tf, constraint, nickname));
-
-        [MustUseReturnValue]
-        public TSelf And<TNew>(Func<TActual, TNew> tf, IResolveConstraint constraint, string? nickname) => _Add(new Constraint_AgainstTransformation(tf, constraint, AsFunc(nickname)));
-
-        [MustUseReturnValue]
-        [Obsolete("ugly")]
-        public TSelf And<TNew>(IEnumerable<(Func<TActual, TNew>, IResolveConstraint)>? constraints) {
-            constraints?.ForEach(it => _ = _Add(new Constraint_AgainstTransformation(it.Item1, it.Item2, default)));
-            return Self;
-        }
-
-        #endregion
-
-        #region Asserters
-
-        private TSelf _Add_Asserter(IMultipleAsserter asserter) {
-            Asserters.Add(asserter);
-            return Self;
-        }
-
-        [MustUseReturnValue]
-        public TSelf And(IMultipleAsserter asserter) => _Add_Asserter(asserter);
-
-        [MustUseReturnValue]
-        public TSelf AndAgainst<TNew>(
-            Func<TActual?, TNew?>                  transformation,
-            Func<Asserter<TNew?>, Asserter<TNew?>> ass
-        ) {
-            var a2 = Asserter.Against(this, transformation).WithPrettificationSettings(PrettificationSettings);
-            _Add_Asserter(a2);
-            return Self;
-        }
-
-        #endregion
-
-        #endregion
-
-        #region WithHeading
-
-        [MustUseReturnValue]
-        public TSelf WithHeading(Func<string> headingSupplier) {
-            Heading = headingSupplier;
-            return Self;
-        }
-
-        [MustUseReturnValue]
-        public TSelf WithHeading(string? heading) {
-            Heading = heading.IsNotBlank() ? () => heading : default;
-            return Self;
-        }
-
-        #endregion
-
-        #region WithPrettificationSettings
-
-        public TSelf WithPrettificationSettings(PrettificationSettings? settings) {
-            PrettificationSettings = settings;
-            return Self;
-        }
-
-        #endregion
-
-        #region WithIndent
-
-        [MustUseReturnValue]
-        protected TSelf WithIndent(int indent) {
-            Indent = indent;
-            return Self;
-        }
-
-        #endregion
-
-        #region WithActionOnFailure
-
-        [MustUseReturnValue]
-        public TSelf WithActionOnFailure(Action<string>? actionOnFailure) {
-            CustomActionOnFailure = actionOnFailure;
-            return Self;
-        }
-
-        [MustUseReturnValue]
-        public TSelf WithForgiveness(string excuse) {
-            return WithActionOnFailure(str => throw new InconclusiveException($"Failure was forgiven: {excuse}\n{str}"));
-        }
-
-        #endregion
-
-        #endregion
-
-        #region Executing Test Assertions
-
-        internal IFailable Test_Asserter(IMultipleAsserter asserter) {
+    internal record Action_AgainstAnything(
+        Action              Action,
+        IResolveConstraint? Constraint,
+        Supplied<string?>?  Description,
+        string?             Expression
+    ) : Subtest(
+        Description,
+        Constraint ?? Throws.Nothing,
+        Expression
+    ) {
+        protected internal override IFailable Test(MultipleAsserter<TSelf, TActual> asserter) {
             return new Assertable(
-                asserter.Heading,
-                asserter.Invoke,
-                Throws.Nothing,
-                default,
-                ResolveAction
+                () => asserter.ResolveAction(Action, Constraint, Message?.Supply()),
+                Description
             );
         }
+    }
 
-        #endregion
-
-        #region Validations / Exceptions
-
-        private Func<InvalidOperationException> ActualIsEmptyException(string message) {
-            return () => new InvalidOperationException($"{message}: this {GetType().Prettify(PrettificationSettings)} doesn't have {nameof(Actual)} value!");
+    internal record Action_AgainstActual(
+        Action<TActual?>    Action,
+        IResolveConstraint? Constraint,
+        Supplied<string?>?  Description,
+        string?             Expression
+    ) : Subtest(
+        Description,
+        Constraint ?? Throws.Nothing,
+        Expression
+    ) {
+        protected internal override IFailable Test(MultipleAsserter<TSelf, TActual> asserter) {
+            return new Assertable(
+                () => { asserter.ResolveAction(() => Action(asserter.Actual.Value), Constraint, Message.GetValueOrDefault); },
+                Description
+            );
         }
+    }
 
-        #endregion
+    internal record Constraint_AgainstActual(
+        IResolveConstraint Constraint,
+        Supplied<string?>? Description
+    ) : Subtest(
+        Description,
+        Constraint,
+        default
+    ) {
+        protected internal override IFailable Test(MultipleAsserter<TSelf, TActual> asserter) {
+            return new Assertable(
+                () => asserter.ResolveActual(asserter.Actual.Value, Constraint, Description.GetValueOrDefault),
+                Description
+            );
+        }
+    }
 
-        private IEnumerable<IFailable> TestEverything() {
-            return Subtests.Select(
-                               it => {
-                                   using (new TestExecutionContext.IsolatedContext()) {
-                                       return it.Test(this);
-                                   }
+    internal record Constraint_AgainstAnything(
+        object?            Target,
+        IResolveConstraint Constraint,
+        Supplied<string?>? Description,
+        string?            Expression
+    ) : Subtest(
+        Description,
+        Constraint,
+        Expression
+    ) {
+        protected internal override IFailable Test(MultipleAsserter<TSelf, TActual> asserter) {
+            return new Assertable(
+                () => asserter.ResolveActual(Target, Constraint, Message.GetValueOrDefault),
+                Description
+            );
+        }
+    }
+
+    internal record Constraint_AgainstDelegate(
+        Func<object?>      Target,
+        IResolveConstraint Constraint,
+        Supplied<string>?  Description,
+        string?            Expression
+    ) : Subtest(
+        Description,
+        Constraint,
+        Expression
+    ) {
+        protected internal override IFailable Test(MultipleAsserter<TSelf, TActual> asserter) {
+            return new Assertable(
+                () => asserter.ResolveFunc(Target, Constraint, Message.GetValueOrDefault),
+                Description
+            );
+        }
+    }
+
+    internal record Constraint_AgainstTransformation(
+        Delegate           Transformation,
+        IResolveConstraint Constraint,
+        Supplied<string?>? Description,
+        string?            Expression
+    ) : Subtest(
+        Description,
+        Constraint,
+        Expression
+    ) {
+        protected internal override IFailable Test(MultipleAsserter<TSelf, TActual> asserter) {
+            return new Assertable(
+                () => asserter.ResolveFunc(() => Transformation.DynamicInvoke(asserter.Actual.Value), Constraint, Message.GetValueOrDefault),
+                Description
+            );
+        }
+    }
+
+    #endregion
+
+    internal IList<IMultipleAsserter> Asserters { get; } = new List<IMultipleAsserter>();
+
+    internal IList<Subtest> Subtests { get; } = new List<Subtest>();
+
+    #region Failing & Succeeding
+
+    protected abstract void OnFailure(string results);
+
+    /// <summary>
+    /// ⚠ DO NOT call this method directly!
+    ///
+    /// Call <see cref="Succeed"/> instead!
+    /// </summary>
+    /// <param name="results"></param>
+    protected virtual void OnSuccess(string results) {
+        Console.WriteLine(results);
+    }
+
+    protected void Fail(string results) {
+        if (CustomActionOnFailure != null) {
+            CustomActionOnFailure.Invoke(results);
+        }
+        else {
+            OnFailure(results);
+        }
+    }
+
+    protected void Succeed(string results) {
+        OnSuccess(results);
+    }
+
+    #endregion
+
+    protected abstract void ResolveFunc<T>(
+        Func<T>            actual,
+        IResolveConstraint constraint,
+        Func<string?>?     message
+    );
+
+    protected abstract void ResolveAction(
+        Action             action,
+        IResolveConstraint constraint,
+        Func<string?>?     message
+    );
+
+    protected abstract void ResolveActual<T>(
+        T                  actual,
+        IResolveConstraint constraint,
+        Func<string?>?     message
+    );
+
+    private Optional<Exception> ShortCircuitException;
+
+    #region Constructors
+
+    protected MultipleAsserter() { }
+
+    protected MultipleAsserter(TActual actual, string? actualValueAlias) {
+        Actual.Set(actual);
+        ActualValueAlias = actualValueAlias;
+    }
+
+    protected MultipleAsserter(Func<TActual> actualValueDelegate, string? actualValueAlias) {
+        Actual.Set(actualValueDelegate);
+        ActualValueAlias = actualValueAlias;
+    }
+
+    #endregion
+
+    private TSelf Self => (this as TSelf)!;
+
+    #region Builder
+
+    [MustUseReturnValue]
+    public TSelf Against(TActual actual) {
+        Actual.Set(actual);
+        return Self;
+    }
+
+    [MustUseReturnValue]
+    public TSelf Against(Func<TActual> actualValueDelegate) {
+        Actual.Set(actualValueDelegate);
+        return Self;
+    }
+
+    #region "And" Constraints
+
+    #region Actions_AgainstAnything
+
+    [MustUseReturnValue]
+    public TSelf And(
+        Action             action,
+        Supplied<string?>? description = default,
+        [CallerArgumentExpression("action")]
+        string? expression = default
+    ) =>
+        _Add(new Action_AgainstAnything(action, default, description, default));
+
+    [MustUseReturnValue]
+    public TSelf And(Action action, IResolveConstraint constraint, Supplied<string?>? description = default, [CallerArgumentExpression("action")] string? expression = default)
+        => _Add(new Action_AgainstAnything(action, constraint, description, expression));
+
+    [MustUseReturnValue]
+    [Obsolete("Ugliness")]
+    public TSelf And(IEnumerable<Action> actions) {
+        actions.ForEach(it => _ = _Add(new Action_AgainstAnything(it, default, default, default)));
+        return Self;
+    }
+
+    #endregion
+
+    #region Actions_AgainstActual
+
+    [MustUseReturnValue]
+    public TSelf And(
+        Action<TActual?>   action,
+        IResolveConstraint constraint,
+        Supplied<string?>? description = default,
+        [CallerArgumentExpression("action")]
+        string? expression = default
+    ) {
+        return _Add(new Action_AgainstActual(action, constraint, description, expression));
+    }
+
+    [MustUseReturnValue]
+    public TSelf And(
+        Action<TActual?>   action,
+        Supplied<string?>? description = default,
+        [CallerArgumentExpression("action")]
+        string? expression = default
+    ) {
+        return _Add(new Action_AgainstActual(action, default, description, expression));
+    }
+
+    [MustUseReturnValue]
+    [Obsolete]
+    public TSelf Satisfies(
+        Action<TActual?>   action,
+        IResolveConstraint constraint,
+        Supplied<string?>? nickname = default
+    ) =>
+        And(
+            action,
+            constraint,
+            nickname
+        );
+
+    #endregion
+
+    #region Constraints_AgainstActual
+
+    [MustUseReturnValue]
+    public TSelf And(IResolveConstraint constraint, Supplied<string?>? description = default) {
+        return _Add(new Constraint_AgainstActual(constraint, description));
+    }
+
+    [Obsolete("ugliness")]
+    [MustUseReturnValue]
+    public TSelf And(IEnumerable<IResolveConstraint?>? constraints) {
+        constraints?.ForEach(it => _ = And(it));
+        return Self;
+    }
+
+    #endregion
+
+    #region Constraints_AgainstAnything
+
+    [MustUseReturnValue]
+    public TSelf And(
+        object?            target,
+        IResolveConstraint constraint,
+        Supplied<string?>? description = default,
+        [CallerArgumentExpression("target")]
+        string? expression = default
+    ) {
+        return _Add(new Constraint_AgainstAnything(target, constraint, description, expression));
+    }
+
+    #endregion
+
+    #region Constraints_AgainstDelegate
+
+    private TSelf _Add(Subtest subtest) {
+        Subtests.Add(subtest);
+        return Self;
+    }
+
+    [MustUseReturnValue]
+    public TSelf And(
+        Func<object>       supplier,
+        IResolveConstraint constraint,
+        Supplied<string>?  description = default,
+        [CallerArgumentExpression("supplier")]
+        string? expression = default
+    ) =>
+        _Add(
+            new Constraint_AgainstDelegate(
+                supplier,
+                constraint,
+                description,
+                expression
+            )
+        );
+
+    #endregion
+
+    #region Constraints_AgainstTransformation
+
+    [MustUseReturnValue]
+    public TSelf And<TNew>(
+        Func<TActual, TNew> tf,
+        IResolveConstraint  constraint,
+        Supplied<string?>?  description = default,
+        [CallerArgumentExpression("tf")]
+        string? expression = default
+    ) =>
+        _Add(
+            new Constraint_AgainstTransformation(
+                tf,
+                constraint,
+                description,
+                expression
+            )
+        );
+
+    #endregion
+
+    #region Asserters
+
+    private TSelf _Add_Asserter(IMultipleAsserter asserter) {
+        Asserters.Add(asserter);
+        return Self;
+    }
+
+    [MustUseReturnValue]
+    public TSelf And(IMultipleAsserter asserter) => _Add_Asserter(asserter);
+
+    [MustUseReturnValue]
+    public TSelf AndAgainst<TNew>(
+        Func<TActual?, TNew?>                  transformation,
+        Func<Asserter<TNew?>, Asserter<TNew?>> ass
+    ) {
+        var a2 = Asserter.Against(this, transformation).WithPrettificationSettings(PrettificationSettings);
+        return _Add_Asserter(ass(a2));
+    }
+
+    #endregion
+
+    #endregion
+
+    #region WithHeading
+
+    [MustUseReturnValue]
+    public TSelf WithHeading(Supplied<string?>? headingSupplier) {
+        Heading = headingSupplier;
+        return Self;
+    }
+
+    #endregion
+
+    #region WithPrettificationSettings
+
+    [MustUseReturnValue]
+    public TSelf WithPrettificationSettings(PrettificationSettings? settings) {
+        PrettificationSettings = settings;
+        return Self;
+    }
+
+    #endregion
+
+    #region WithIndent
+
+    [MustUseReturnValue]
+    protected TSelf WithIndent(int indent) {
+        Indent = indent;
+        return Self;
+    }
+
+    #endregion
+
+    #region WithActionOnFailure
+
+    [MustUseReturnValue]
+    public TSelf WithActionOnFailure(Action<string>? actionOnFailure) {
+        CustomActionOnFailure = actionOnFailure;
+        return Self;
+    }
+
+    [MustUseReturnValue]
+    public TSelf WithForgiveness(string excuse) {
+        return WithActionOnFailure(str => throw new InconclusiveException($"Failure was forgiven: {excuse}\n{str}"));
+    }
+
+    #endregion
+
+    #endregion
+
+    #region Executing Test Assertions
+
+    internal IFailable Test_Asserter(IMultipleAsserter asserter) {
+        return new Assertable(
+            asserter.Heading,
+            asserter.Invoke,
+            Throws.Nothing,
+            default,
+            ResolveAction
+        );
+    }
+
+    #endregion
+
+    #region Validations / Exceptions
+
+    private Func<InvalidOperationException> ActualIsEmptyException(string message) {
+        return () => new InvalidOperationException($"{message}: this {GetType().Prettify(PrettificationSettings)} doesn't have {nameof(Actual)} value!");
+    }
+
+    #endregion
+
+    private IEnumerable<IFailable> TestEverything() {
+        return Subtests.Select(
+                           it => {
+                               using (new TestExecutionContext.IsolatedContext()) {
+                                   return it.Test(this);
                                }
-                           )
-                           .Concat(Asserters.Select(Test_Asserter));
+                           }
+                       )
+                       .Concat(Asserters.Select(Test_Asserter));
+    }
+
+    [ContractAnnotation("=> stop")]
+    public void ShortCircuit(Exception shortCircuitException) {
+        ShortCircuitException = shortCircuitException;
+        Invoke();
+    }
+
+    #region formatting
+
+    private IEnumerable<string> FormatFailures([InstantHandle] IEnumerable<IFailable> testResults) {
+        testResults = testResults.ToList();
+        return new RapSheet(Actual.ToOptional().Cast<object?>(), testResults).Prettify().SplitLines();
+    }
+
+    private string FormatMultipleAssertionMessage(IEnumerable<IFailable> failures) {
+        return new List<string>()
+               .Concat(FormatHeading())
+               .Concat(FormatShortCircuitException())
+               .Concat(FormatFailures(failures))
+               .ToStringLines()
+               .Indent(Indent)
+               .JoinLines();
+    }
+
+    /// <returns>either the result of <see cref="Heading"/> or an empty <see cref="IEnumerable{T}"/> of strings</returns>
+    private IEnumerable<string> FormatHeading() {
+        return Heading
+               .GetValueOrDefault()
+               .IfNotBlank(it => $"{HeadingIcon} {it}")
+               .WrapInEnumerable();
+    }
+
+    private Optional<string> FormatShortCircuitException() {
+        return ShortCircuitException.Select(it => $"Something caused this {GetType().Name} to be unable to execute all of the assertions that it wanted to:\n{it.Message}\n{it.StackTrace}");
+    }
+
+    #endregion
+
+    public void Invoke() {
+        var results = TestEverything().ToList();
+        if (results.Any(it => it.Failed)) {
+            Fail(FormatMultipleAssertionMessage(results));
         }
-
-        [ContractAnnotation("=> stop")]
-        public void ShortCircuit(Exception shortCircuitException) {
-            ShortCircuitException = shortCircuitException;
-            Invoke();
-        }
-
-        #region formatting
-
-        private IEnumerable<string> FormatFailures([InstantHandle] IEnumerable<IFailable> testResults) {
-            testResults = testResults.ToList();
-            return new RapSheet(testResults).Prettify().SplitLines();
-        }
-
-        private string FormatMultipleAssertionMessage(IEnumerable<IFailable> failures) {
-            return new List<string>()
-                   .Concat(FormatHeading())
-                   .Concat(FormatShortCircuitException())
-                   .Concat(FormatFailures(failures))
-                   .ToStringLines()
-                   .Indent(Indent)
-                   .JoinLines();
-        }
-
-        /// <summary>
-        /// Returns either the result of <see cref="Heading"/> or an empty <see cref="IEnumerable{T}"/> of strings.
-        /// </summary>
-        /// <returns></returns>
-        private IEnumerable<string> FormatHeading() {
-            return (Heading?.Invoke()).WrapInEnumerable();
-        }
-
-        private Optional<string> FormatShortCircuitException() {
-            return ShortCircuitException.Select(it => $"Something caused this {GetType().Name} to be unable to execute all of the assertions that it wanted to:\n{it.Message}\n{it.StackTrace}");
-        }
-
-        #endregion
-
-        public void Invoke() {
-            var results = TestEverything().ToList();
-            if (results.Any(it => it.Failed)) {
-                Fail(FormatMultipleAssertionMessage(results));
-            }
-            else {
-                Succeed(FormatMultipleAssertionMessage(results));
-            }
+        else {
+            Succeed(FormatMultipleAssertionMessage(results));
         }
     }
 }
