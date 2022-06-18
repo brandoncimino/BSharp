@@ -359,6 +359,14 @@ namespace FowlFever.BSharp.Collections {
 
         #endregion
 
+        #region Difference
+
+        /// <param name="tuple">a <see cref="(T1, T2)"/></param>
+        /// <returns><see cref="ValueTuple{T1,T2}.Item2"/> - <see cref="ValueTuple{T1,T2}.Item1"/></returns>
+        public static int Diff(this (int from, int to) tuple) => tuple.to - tuple.from;
+
+        #endregion
+
         #region Max
 
         /// <summary>
