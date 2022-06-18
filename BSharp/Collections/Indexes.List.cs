@@ -1,19 +1,13 @@
 using System;
 using System.Collections;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Linq;
 
 using FowlFever.BSharp.Exceptions;
 
 namespace FowlFever.BSharp.Collections;
 
 public readonly partial record struct Indexes : IImmutableList<int>, IList<int>, IList, IReadOnlyList<int>, IReadOnlyCollection<int> {
-    private static readonly ConcurrentDictionary<int, Lazy<ImmutableList<int>>> ListCache = new();
-    private                 ImmutableList<int>                                  AsList           => ListCache.GetOrAddLazily(Count, ct => Enumerable.Range(0, ct).ToImmutableList());
-    private                 IList                                               AsNonGenericList => AsList;
-
     #region Implementation of ICollection<int>
 
     void ICollection<int>.Add(int item)                       => throw UnsupportedMethodException();
@@ -25,16 +19,16 @@ public readonly partial record struct Indexes : IImmutableList<int>, IList<int>,
 
     #region Implementation of IList
 
-    int IList. Add(object value)                    => throw UnsupportedMethodException();
-    void IList.Clear()                              => throw UnsupportedMethodException();
-    bool IList.Contains(object value)               => AsNonGenericList.Contains(value);
-    int IList. IndexOf(object  value)               => AsNonGenericList.IndexOf(value);
-    void IList.Insert(int      index, object value) => throw UnsupportedMethodException();
-    void IList.Remove(object   value) => throw UnsupportedMethodException();
-    bool IList.IsFixedSize            => true;
-    object IList.this[int index] {
-        get => AsNonGenericList[index];
-        set => throw UnsupportedMethodException();
+    int IList. Add(object? value)                     => throw UnsupportedMethodException();
+    void IList.Clear()                                => throw UnsupportedMethodException();
+    bool IList.Contains(object? value)                => AsNonGenericList.Contains(value);
+    int IList. IndexOf(object?  value)                => AsNonGenericList.IndexOf(value);
+    void IList.Insert(int       index, object? value) => throw UnsupportedMethodException();
+    void IList.Remove(object?   value) => throw UnsupportedMethodException();
+    bool IList.IsFixedSize             => true;
+    object? IList.this[int index] {
+        get => AsNonGenericList[index]!;
+        set => throw Reject.ReadOnly();
     }
 
     #endregion
@@ -55,39 +49,20 @@ public readonly partial record struct Indexes : IImmutableList<int>, IList<int>,
 
     IImmutableList<int> IImmutableList<int>.Clear() => AsList.Clear();
 
-    public int IndexOf(
-        int                     item,
-        int                     index,
-        int                     count,
-        IEqualityComparer<int>? equalityComparer = null
-    ) {
-        // TODO: does the basic ImmutableList throw an exception if the index and/or index+count is out of range?
-        if (equalityComparer == null) {
-            var range = index..(index + count);
-            return range.Contains(item) ? item : -1;
-        }
+    public int              IndexOf(int     item, int index, int count, IEqualityComparer<int>? equalityComparer = null) => AsList.IndexOf(item, index, count, equalityComparer);
+    int IImmutableList<int>.LastIndexOf(int item, int index, int count, IEqualityComparer<int>? equalityComparer)        => AsList.LastIndexOf(item, index, count, equalityComparer);
 
-        return Enumerable.Range(index, count).FirstIndexOf(item, equalityComparer) ?? -1;
-    }
-
-    int IImmutableList<int>.LastIndexOf(
-        int                     item,
-        int                     index,
-        int                     count,
-        IEqualityComparer<int>? equalityComparer
-    ) => IndexOf(item, index, count, equalityComparer);
-
-    IImmutableList<int> IImmutableList<int>.Add(int                      value)                                          => AsList.Add(value);
-    IImmutableList<int> IImmutableList<int>.AddRange(IEnumerable<int>    items)                                          => AsList.AddRange(items);
-    IImmutableList<int> IImmutableList<int>.Insert(int                   index, int                    element)          => AsList.Insert(index, element);
-    IImmutableList<int> IImmutableList<int>.InsertRange(int              index, IEnumerable<int>       items)            => AsList.InsertRange(index, items);
-    IImmutableList<int> IImmutableList<int>.Remove(int                   value, IEqualityComparer<int> equalityComparer) => AsList.Remove(value, equalityComparer);
-    IImmutableList<int> IImmutableList<int>.RemoveAll(Predicate<int>     match)                                          => AsList.RemoveAll(match);
-    IImmutableList<int> IImmutableList<int>.RemoveRange(IEnumerable<int> items, IEqualityComparer<int> equalityComparer) => AsList.RemoveRange(items, equalityComparer);
-    IImmutableList<int> IImmutableList<int>.RemoveRange(int              index, int                    count)            => AsList.RemoveRange(index, count);
-    IImmutableList<int> IImmutableList<int>.RemoveAt(int                 index)                                                           => AsList.RemoveAt(index);
-    IImmutableList<int> IImmutableList<int>.SetItem(int                  index,    int value)                                             => AsList.SetItem(index, value);
-    IImmutableList<int> IImmutableList<int>.Replace(int                  oldValue, int newValue, IEqualityComparer<int> equalityComparer) => AsList.Replace(oldValue, newValue, equalityComparer);
+    IImmutableList<int> IImmutableList<int>.Add(int                      value)                                           => AsList.Add(value);
+    IImmutableList<int> IImmutableList<int>.AddRange(IEnumerable<int>    items)                                           => AsList.AddRange(items);
+    IImmutableList<int> IImmutableList<int>.Insert(int                   index, int                     element)          => AsList.Insert(index, element);
+    IImmutableList<int> IImmutableList<int>.InsertRange(int              index, IEnumerable<int>        items)            => AsList.InsertRange(index, items);
+    IImmutableList<int> IImmutableList<int>.Remove(int                   value, IEqualityComparer<int>? equalityComparer) => AsList.Remove(value, equalityComparer);
+    IImmutableList<int> IImmutableList<int>.RemoveAll(Predicate<int>     match)                                           => AsList.RemoveAll(match);
+    IImmutableList<int> IImmutableList<int>.RemoveRange(IEnumerable<int> items, IEqualityComparer<int>? equalityComparer) => AsList.RemoveRange(items, equalityComparer);
+    IImmutableList<int> IImmutableList<int>.RemoveRange(int              index, int                     count)            => AsList.RemoveRange(index, count);
+    IImmutableList<int> IImmutableList<int>.RemoveAt(int                 index)                                                            => AsList.RemoveAt(index);
+    IImmutableList<int> IImmutableList<int>.SetItem(int                  index,    int value)                                              => AsList.SetItem(index, value);
+    IImmutableList<int> IImmutableList<int>.Replace(int                  oldValue, int newValue, IEqualityComparer<int>? equalityComparer) => AsList.Replace(oldValue, newValue, equalityComparer);
 
     #endregion
 

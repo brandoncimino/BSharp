@@ -1,17 +1,11 @@
 using System;
 using System.Collections;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Linq;
 
 namespace FowlFever.BSharp.Collections;
 
 public readonly partial record struct Indexes : IImmutableSet<int>, ISet<int> {
-    private static readonly ConcurrentDictionary<int, Lazy<ImmutableHashSet<int>>> SetCache = new();
-    private                 ImmutableHashSet<int>                                  AsSet  => SetCache.GetOrAddLazily(Count, ct => Enumerable.Range(0, ct).ToImmutableHashSet());
-    private                 ICollection                                            AsColl => AsSet;
-
     #region Implementation of ISet<int>
 
     bool ISet<int>.Add(int                              item)  => throw UnsupportedMethodException();
