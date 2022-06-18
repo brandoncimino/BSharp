@@ -16,51 +16,47 @@ namespace FowlFever.Testing {
     /// TODO: Replace this with a builder-style class; maybe one o' them fancy new records I keep hearing about
     /// </summary>
     public record Assertable : Failable {
-        private Assertable(
-            IFailable         failable,
-            Supplied<string>? description
-        ) : base(
-            failable,
-            description
-        ) { }
-
         internal Assertable(
-            Action            action,
-            Supplied<string>? description
-        ) : this(
-            Invoke(action, null, null, typeof(SuccessException)),
+            Action             action,
+            Supplied<string?>? description
+        ) : base(
+            Invoke(action, description, null, typeof(SuccessException)),
             description
         ) { }
 
         /// <summary>
         /// TODO: Move this into an instance method of <see cref="MultipleAsserter{TSelf,TActual}"/>
         /// </summary>
-        /// <param name="nickname"></param>
+        /// <param name="description"></param>
         /// <param name="assertion"></param>
         /// <param name="constraint"></param>
         /// <param name="message"></param>
         /// <param name="actionResolver"></param>
         internal Assertable(
-            Supplied<string>?                                 nickname,
+            Supplied<string?>?                                description,
             Action                                            assertion,
             IResolveConstraint                                constraint,
             Func<string>?                                     message,
             Action<Action, IResolveConstraint, Func<string>?> actionResolver
         ) : this(
             () => actionResolver.Invoke(assertion, constraint, message),
-            nickname ?? GetNicknameSupplier(assertion, constraint)
+            GetNicknameSupplier(description, constraint)
         ) { }
 
         public override string ToString() => this.FormatAssertable().JoinLines();
 
-        internal static Supplied<string> GetNicknameSupplier(object? actual, IResolveConstraint? constraint, PrettificationSettings? settings = default) {
-            static string GetNickname(object? actual, IResolveConstraint? constraint, PrettificationSettings? settings) {
-                var dName = actual?.Prettify(settings);
+        private static Supplied<string?> GetNicknameSupplier(
+            Supplied<string?>?      actualDescription,
+            IResolveConstraint?     constraint,
+            PrettificationSettings? settings = default
+        ) {
+            static string GetNickname(IPrettifiable? actualString, IResolveConstraint? constraint, PrettificationSettings? settings) {
+                var dName = actualString?.Prettify(settings);
                 var cName = constraint?.Prettify(settings);
                 return dName.JoinNonBlank(cName, " 🗜 ");
             }
 
-            return Lazily.Get(() => GetNickname(actual, constraint, settings));
+            return Lazily.Get(() => GetNickname(actualDescription, constraint, settings))!;
         }
     }
 }
