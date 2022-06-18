@@ -2,12 +2,13 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
+using FowlFever.BSharp.Exceptions;
+
 namespace FowlFever.BSharp.Collections;
 
 /// <summary>
 /// Similar to <see cref="Wrapped{T}"/>, but automatically delegates <see cref="IList{T}"/> operations to the underlying <typeparamref name="TCollection"/>. 
 /// </summary>
-/// <param name="Value">the wrapped <see cref="ICollection{T}"/></param>
 /// <typeparam name="TElement">the type of the elements in the underlying <see cref="ICollection{T}"/></typeparam>
 /// <typeparam name="TCollection">the type of the underlying <see cref="ICollection{T}"/></typeparam>
 public abstract record WrappedCollection<TElement, TCollection> : Wrapped<TCollection>,
@@ -15,9 +16,9 @@ public abstract record WrappedCollection<TElement, TCollection> : Wrapped<TColle
                                                                   IReadOnlyList<TElement>,
                                                                   IList
     where TCollection : IEnumerable<TElement> {
-    protected abstract IList<TElement>       AsList           { get; }
-    protected abstract IList                 AsNonGenericList { get; }
-    protected abstract ICollection<TElement> AsCollection     { get; }
+    protected virtual IList<TElement>       AsList           => Value.MustBe<IList<TElement>>();
+    protected virtual IList                 AsNonGenericList => Value.MustBe<IList>();
+    protected virtual ICollection<TElement> AsCollection     => Value.MustBe<ICollection<TElement>>();
 
     protected abstract TCollection CreateSlice(IEnumerable<TElement> elements);
 
