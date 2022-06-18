@@ -1,8 +1,6 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 
-using JetBrains.Annotations;
-
 using NUnit.Framework;
 using NUnit.Framework.Constraints;
 
@@ -31,7 +29,6 @@ namespace FowlFever.Testing {
     /// <p/>
     /// <b>NOTE 3:</b> Maybe I will keep this, 'cus stupid <a href="https://docs.nunit.org/articles/nunit/writing-tests/assertions/multiple-asserts.html">NUnit Assert.Multiple()</a> doesn't handle non-<see cref="AssertionException"/>s!!
     /// </remarks>
-    [PublicAPI]
     [Obsolete("Please use the Asserter class instead")]
     public static class AssertAll {
         /// <summary>
@@ -51,12 +48,6 @@ namespace FowlFever.Testing {
          */
         public static void Of(params Action[] assertions) {
             Of(null, assertions);
-        }
-
-        public static void Of<T>(T actual, params (Func<T, object>, IResolveConstraint)[] transformativeConstraints) {
-            Asserter.Against(actual)
-                    .And(transformativeConstraints)
-                    .Invoke();
         }
 
         /// <summary>
@@ -80,7 +71,7 @@ namespace FowlFever.Testing {
          */
         [SuppressMessage("ReSharper", "InvalidXmlDocComment")]
         public static void Of<T>(string heading, T actual, params Constraint[] assertions) {
-            Asserter.WithHeading(heading)
+            Asserter.WithHeading<T>(heading)
                     .Against(actual)
                     .And(assertions)
                     .Invoke();
