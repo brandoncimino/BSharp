@@ -1,7 +1,6 @@
 // ReSharper disable UseDeconstructionOnParameter
 
 using System;
-using System.Diagnostics.Contracts;
 
 using FowlFever.BSharp.Chronic;
 using FowlFever.BSharp.Enums;
@@ -10,28 +9,27 @@ namespace FowlFever.BSharp {
     public static partial class Mathb {
         [Pure]
         public static int LerpInt(
-            int               start,
-            int               finish,
-            double            lerpAmount,
-            RoundingDirection roundingDirection = RoundingDirection.Floor
-        ) =>
-            lerpAmount switch {
-                <= 0 => start,
-                >= 1 => finish,
-                _    => start + (lerpAmount * (finish - start)).RoundToInt(roundingDirection),
-            };
+            int     start,
+            int     finish,
+            double  lerpAmount,
+            Rounder rounder = default
+        ) => lerpAmount switch {
+            <= 0 => start,
+            >= 1 => finish,
+            _    => start + (lerpAmount * (finish - start)).RoundToInt(rounder),
+        };
 
         [Pure]
         public static long LerpInt(
-            long              start,
-            long              finish,
-            double            lerpAmount,
-            RoundingDirection roundingDirection = RoundingDirection.Floor
+            long    start,
+            long    finish,
+            double  lerpAmount,
+            Rounder rounder = default
         ) =>
             lerpAmount switch {
                 <= 0 => start,
                 >= 1 => finish,
-                _    => start + ((finish - start) * lerpAmount).Round(roundingDirection).ToLong(),
+                _    => start + ((finish - start) * lerpAmount).Round(rounder).ToLong(),
             };
 
         [Pure]
@@ -125,38 +123,38 @@ namespace FowlFever.BSharp {
         /// <param name="lerpAmount"></param>
         /// <param name="leftPortionRounding"></param>
         /// <returns></returns>
-        public static (int A, int B) Sperp(
-            int               start,
-            int               finish,
-            double            lerpAmount,
-            RoundingDirection leftPortionRounding = default
+        public static (int A, int B) Splerp(
+            int     start,
+            int     finish,
+            double  lerpAmount,
+            Rounder leftPortionRounding = default
         ) {
             var leftPortion = LerpInt(start, finish, lerpAmount, leftPortionRounding);
             return (start + leftPortion, finish - leftPortion);
         }
 
-        /// <inheritdoc cref="Sperp(int,int,double,FowlFever.BSharp.Enums.RoundingDirection)"/>
-        /// <remarks><see cref="Bisect"/> is equivalent to <see cref="Sperp(int,double,FowlFever.BSharp.Enums.RoundingDirection)"/>-ing with <c>.5</c>.</remarks>
-        public static (int A, int B) Bisect(this int total, RoundingDirection leftPartitionRounding = default) => total.Sperp(.5);
+        /// <inheritdoc cref="Splerp(int,int,double,Rounder)"/>
+        /// <remarks><see cref="Bisect"/> is equivalent to <see cref="Splerp(int,int,double,Rounder)"/>-ing with <c>.5</c>.</remarks>
+        public static (int A, int B) Bisect(this int total, Rounder leftPartitionRounding = default) => total.Splerp(.5, leftPartitionRounding);
 
-        /// <inheritdoc cref="Sperp(int,int,double,FowlFever.BSharp.Enums.RoundingDirection)"/>
-        public static (int A, int B) Sperp(this int total, double lerpAmount, RoundingDirection leftPortionRounding = default)
-            => Sperp(0, total, lerpAmount, leftPortionRounding);
+        /// <inheritdoc cref="Splerp(int,int,double,Rounder)"/>
+        public static (int A, int B) Splerp(this int total, double lerpAmount, Rounder leftPortionRounding = default)
+            => Splerp(0, total, lerpAmount, leftPortionRounding);
 
-        /// <inheritdoc cref="Sperp(int,int,double,FowlFever.BSharp.Enums.RoundingDirection)"/>
-        public static (long A, long B) Sperp(
-            long              start,
-            long              finish,
-            double            lerpAmount,
-            RoundingDirection leftPortionRounding = default
+        /// <inheritdoc cref="Splerp(int,int,double,Rounder)"/>
+        public static (long A, long B) Splerp(
+            long    start,
+            long    finish,
+            double  lerpAmount,
+            Rounder leftPortionRounding = default
         ) {
             var leftPortion = LerpInt(start, finish, lerpAmount, leftPortionRounding);
             return (start + leftPortion, finish - leftPortion);
         }
 
-        /// <inheritdoc cref="Sperp(int,int,double,FowlFever.BSharp.Enums.RoundingDirection)"/>
-        public static (long A, long B) Sperp(this long total, double lerpAmount, RoundingDirection leftPortionRounding = default)
-            => Sperp(0, total, lerpAmount, leftPortionRounding);
+        /// <inheritdoc cref="Splerp(int,int,double,Rounder)"/>
+        public static (long A, long B) Splerp(this long total, double lerpAmount, Rounder leftPortionRounding = default)
+            => Splerp(0, total, lerpAmount, leftPortionRounding);
 
         #endregion
     }
