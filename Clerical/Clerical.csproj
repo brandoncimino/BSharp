@@ -32,18 +32,4 @@
         </ProjectReference>
     </ItemGroup>
 
-    <ItemGroup>
-        <Compile Remove="ClericalExtensions.cs"/>
-        <Compile Remove="ZeroLengthFileHandling.cs"/>
-        <Compile Remove="ISaveFolder.cs"/>
-    </ItemGroup>
-
-    <ItemGroup>
-        <Folder Include="Interfaces"/>
-    </ItemGroup>
-
-    <ItemGroup>
-        <None Remove="Interfaces\SimplifiedSaves.adoc"/>
-    </ItemGroup>
-
 </Project>
