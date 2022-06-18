@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
-using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -15,15 +14,13 @@ using FowlFever.Conjugal.Affixing;
 
 using JetBrains.Annotations;
 
-using Pure = System.Diagnostics.Contracts.PureAttribute;
-
 namespace FowlFever.BSharp.Clerical;
 
 /// <summary>
 /// TODO: There is almost certainly a cross-platform library to use for this that I can get from Nuget
 /// TODO: Made this non-static to prepare for the ability to make an instantiable class like <see cref="Conjugal"/>
 /// </summary>
-[PublicAPI]
+[Obsolete($"Please use FowlFever.BSharp.Clerical.Clerk instead")]
 public class BPath {
     internal static readonly RegexGroup ExtensionGroup = new RegexGroup(nameof(ExtensionGroup), @"(\.[^.]+?)+$");
 
@@ -77,24 +74,24 @@ public class BPath {
     [Obsolete]
     private static class Validate {
         public static void PathString(string? maybePath) {
-            ValidationExtensions.ValidateMultiple(
-                maybePath,
-                p => p.MustNotBeBlank(),
-                p => _ = Path.GetFullPath(p!),
-                p => _ = new FileInfo(p!),
-                PathChars
-                // p => p != null ? PathParts(SplitPath(p)) : null
-            );
+            // ValidationExtensions.ValidateMultiple(
+            //     maybePath,
+            //     p => p.MustNotBeBlank(),
+            //     p => _ = Path.GetFullPath(p!),
+            //     p => _ = new FileInfo(p!),
+            //     PathChars
+            //     // p => p != null ? PathParts(SplitPath(p)) : null
+            // );
         }
 
         public static string PathPart(string? part, bool isFirst) {
-            ValidationExtensions.ValidateMultiple(
-                part,
-                p => p.MustNotBeBlank(),
-                p => _ = p?.Matches(InnerSeparatorPattern)                == true ? throw new ArgumentException($"[{part}] contains inner separators!") : true,
-                p => _ = p?.Matches($"{DirectorySeparatorPattern}{{2,}}") == true ? throw new ArgumentException($"[{part}] contains repeating separators!") : true,
-                p => FileNameChars(p, isFirst)
-            );
+            // ValidationExtensions.ValidateMultiple(
+            //     part,
+            //     p => p.MustNotBeBlank(),
+            //     p => _ = p?.Matches(InnerSeparatorPattern)                == true ? throw new ArgumentException($"[{part}] contains inner separators!") : true,
+            //     p => _ = p?.Matches($"{DirectorySeparatorPattern}{{2,}}") == true ? throw new ArgumentException($"[{part}] contains repeating separators!") : true,
+            //     p => FileNameChars(p, isFirst)
+            // );
 
             return part!;
         }
