@@ -1,12 +1,11 @@
-using System;
-
+using FowlFever.BSharp;
 using FowlFever.BSharp.Strings;
 
 namespace FowlFever.Testing {
     public interface IMultipleAsserter {
         void Invoke();
 
-        Func<string>? Heading { get; }
+        Supplied<string?>? Heading { get; }
 
         /// <summary>
         /// An optional <see cref="string"/> that represents the value that was validated instead of the object's <see cref="object.ToString"/>.
