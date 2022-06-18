@@ -1,5 +1,6 @@
-using System;
+using System.Collections.Generic;
 
+using FowlFever.BSharp.Collections.Apportion;
 using FowlFever.BSharp.Enums;
 using FowlFever.BSharp.Strings.Enums;
 
@@ -28,15 +29,13 @@ public record PrettificationSettings : Settings {
         init => FillerSettings = FillerSettings with { LineLengthLimit = value }; // this is pretty sketchy...
     }
 
-    public string          TableHeaderSeparator { get; init; } = "-";
-    public string          TableColumnSeparator { get; init; } = " ";
-    public StringAlignment TableHeaderAlignment { get; init; } = StringAlignment.Center;
-    public string          NullPlaceholder      { get; init; } = "⛔";
-    public LineStyle       PreferredLineStyle   { get; init; } = LineStyle.Dynamic;
-    public TypeNameStyle   TypeLabelStyle       { get; init; } = TypeNameStyle.Full;
-    public TypeNameStyle   EnumLabelStyle       { get; init; } = TypeNameStyle.None;
-    public HeaderStyle     HeaderStyle          { get; init; } = HeaderStyle.None;
-    public FillerSettings  FillerSettings       { get; init; } = new();
+    public TableSettings  TableSettings      { get; init; } = new();
+    public string         NullPlaceholder    { get; init; } = "⛔";
+    public LineStyle      PreferredLineStyle { get; init; } = LineStyle.Dynamic;
+    public TypeNameStyle  TypeLabelStyle     { get; init; } = TypeNameStyle.Full;
+    public TypeNameStyle  EnumLabelStyle     { get; init; } = TypeNameStyle.None;
+    public HeaderStyle    HeaderStyle        { get; init; } = HeaderStyle.None;
+    public FillerSettings FillerSettings     { get; init; } = new();
 
     public ITraceWriter? TraceWriter { get; init; } = null;
 
@@ -44,13 +43,24 @@ public record PrettificationSettings : Settings {
     public static implicit operator PrettificationSettings(TypeNameStyle  typeLabelStyle) => Default with { TypeLabelStyle = typeLabelStyle };
     public static implicit operator PrettificationSettings(HeaderStyle    headerStyle)    => Default with { HeaderStyle = headerStyle };
     public static implicit operator PrettificationSettings(FillerSettings fillerSettings) => Default with { FillerSettings = fillerSettings };
+
+    public IList<int> GetAutoColumnWidths() {
+        return TableSettings.GetAutoColumnWidths(LineLengthLimit);
+    }
 }
 
-/// <summary>
-/// TODO: move stuff like <see cref="PrettificationSettings.TableColumnSeparator"/> into here
-/// </summary>
-public record TableSettings {
-    public TableSettings() => throw new NotImplementedException();
+public record TableSettings : Settings {
+    /// <summary>
+    /// Used as the "default" number of columns so unrelated <see cref="Prettification.Prettify{T}(T?)"/> calls can line up.
+    /// </summary>
+    public int AutoColumnCount { get;             init; } = 4;
+    public string          HeaderSeparator { get; init; } = "-";
+    public string          ColumnSeparator { get; init; } = " ";
+    public StringAlignment HeaderAlignment { get; init; } = StringAlignment.Center;
+
+    public IList<int> GetAutoColumnWidths(int totalWidth) {
+        return Apportion.Evenly(totalWidth, AutoColumnCount);
+    }
 }
 
 /// <summary>

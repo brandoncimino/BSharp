@@ -26,7 +26,7 @@ public readonly record struct Cell : IPrettifiable {
         return Value.Prettify(settings)
                     .Align(
                         Style switch {
-                            Row.RowStyle.Header => settings.TableHeaderAlignment,
+                            Row.RowStyle.Header => settings.TableSettings.HeaderAlignment,
                             Row.RowStyle.Normal => settings.FillerSettings.Alignment,
                             _                   => throw BEnum.UnhandledSwitch(Style),
                         }

@@ -5,6 +5,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 
 using FowlFever.BSharp.Collections;
+using FowlFever.BSharp.Collections.Apportion;
 using FowlFever.BSharp.Exceptions;
 using FowlFever.BSharp.Reflection;
 using FowlFever.BSharp.Strings.Tabler;
@@ -36,7 +37,7 @@ namespace FowlFever.BSharp.Strings.Prettifiers {
                 return (unlimitedKeyWidth, unlimitedValWidth);
             }
 
-            var (keyWidth, valWidth) = Mathb.Apportion(unlimitedKeyWidth, unlimitedValWidth, widthLimit);
+            var (keyWidth, valWidth) = new SimpleApportion(widthLimit, unlimitedKeyWidth, unlimitedValWidth);
 
             // checking my work
             if (keyWidth + valWidth != widthLimit) {

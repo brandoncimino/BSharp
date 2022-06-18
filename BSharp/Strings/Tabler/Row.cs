@@ -57,7 +57,8 @@ public readonly record struct Row : IReadOnlyList<Cell>, IPrettifiable {
     }
 
     public string Prettify(PrettificationSettings? settings = default) {
-        return Render(GetWidths(settings), settings);
+        var widths = settings?.GetAutoColumnWidths() ?? GetWidths(settings);
+        return Render(widths, settings);
     }
 
     public string Render(IEnumerable<int> widths, PrettificationSettings? settings = default) {
@@ -67,7 +68,7 @@ public readonly record struct Row : IReadOnlyList<Cell>, IPrettifiable {
         }
 
         return Cells.Select(it => it.Prettify(settings))
-                    .JoinString(settings.Resolve().TableColumnSeparator);
+                    .JoinString(settings.Resolve().TableSettings.ColumnSeparator);
     }
 
     public IEnumerator<Cell> GetEnumerator() {

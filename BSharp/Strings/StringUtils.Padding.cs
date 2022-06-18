@@ -89,7 +89,9 @@ public static partial class StringUtils {
         return FormatHeading(
             heading,
             settings.Resolve() with {
-                TableHeaderSeparator = border,
+                TableSettings = settings.Resolve().TableSettings with {
+                    HeaderSeparator = border,
+                },
                 FillerSettings = settings.Resolve().FillerSettings with {
                     PadString = padding,
                 },
