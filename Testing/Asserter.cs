@@ -1,5 +1,4 @@
 using System;
-using System.Diagnostics.Contracts;
 using System.Runtime.CompilerServices;
 
 using FowlFever.BSharp.Strings;
@@ -9,11 +8,9 @@ using JetBrains.Annotations;
 using NUnit.Framework;
 using NUnit.Framework.Constraints;
 
-using Pure = System.Diagnostics.Contracts.PureAttribute;
-
 namespace FowlFever.Testing {
     public class Asserter<T> : MultipleAsserter<Asserter<T>, T> {
-        public override void ResolveFunc<T1>(
+        protected override void ResolveFunc<T1>(
             Func<T1>           actual,
             IResolveConstraint constraint,
             Func<string?>?     message
@@ -28,7 +25,7 @@ namespace FowlFever.Testing {
             }
         }
 
-        public override void ResolveAction(
+        protected override void ResolveAction(
             Action             action,
             IResolveConstraint constraint,
             Func<string?>?     message
@@ -42,7 +39,7 @@ namespace FowlFever.Testing {
             }
         }
 
-        public override void ResolveActual<T1>(
+        protected override void ResolveActual<T1>(
             T1                 actual,
             IResolveConstraint constraint,
             Func<string?>?     message
