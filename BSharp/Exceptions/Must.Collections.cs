@@ -13,44 +13,89 @@ namespace FowlFever.BSharp.Exceptions;
 public static partial class Must {
     #region Collections
 
+    #region BeIndexOf
+
+    public static int BeIndexOf(
+        int         actualIndex,
+        ICollection possibleCollection,
+        string?     details = default,
+        [CallerArgumentExpression("actualIndex")]
+        string? parameterName = default,
+        [CallerMemberName]
+        string? rejectedBy = default
+    ) {
+        return Be(
+            actualIndex,
+            possibleCollection.ContainsIndex,
+            details,
+            parameterName,
+            rejectedBy,
+            $"must be a valid index of a {possibleCollection.GetType().Name} of size {possibleCollection.Count}"
+        );
+    }
+
+    public static Index BeIndexOf(
+        Index       actualIndex,
+        ICollection possibleCollection,
+        string?     details = default,
+        [CallerArgumentExpression("actualIndex")]
+        string? parameterName = default,
+        [CallerMemberName]
+        string? rejectedBy = default
+    ) {
+        return Be(
+            actualIndex,
+            possibleCollection.ContainsIndex,
+            details,
+            parameterName,
+            rejectedBy,
+            $"must be a valid index of a {possibleCollection.GetType().Name} of size {possibleCollection.Count}"
+        );
+    }
+
+    #endregion
+
     #region Contain (Index)
 
     public static T ContainIndex<T>(
         [System.Diagnostics.CodeAnalysis.NotNull]
         T actualValue,
-        [NonNegativeValue]
-        int requiredIndex,
+        Index   requiredIndex,
+        string? details = default,
         [CallerArgumentExpression("actualValue")]
         string? parameterName = default,
         [CallerMemberName]
-        string? methodName = default
+        string? rejectedBy = default
     )
         where T : ICollection {
         return Be(
             actualValue,
-            it => it.Count > requiredIndex,
+            it => it.ContainsIndex(requiredIndex),
+            details,
             parameterName,
-            methodName,
-            $"must contain the index {requiredIndex} (actual size: {actualValue.Count})"
+            rejectedBy,
+            $"must contain the index [{requiredIndex}] (actual size: {actualValue.Count}"
         );
     }
 
-    public static T ContainIndex<T>(
+    public static TCollection ContainIndex<TElements, TCollection>(
         [System.Diagnostics.CodeAnalysis.NotNull]
-        T actualValue,
-        Index requiredIndex,
+        TCollection actualValue,
+        Index   requiredIndex,
+        string? details = default,
         [CallerArgumentExpression("actualValue")]
         string? parameterName = default,
         [CallerMemberName]
-        string? methodName = default
+        string? rejectedBy = default
     )
-        where T : ICollection {
+        where TCollection : IReadOnlyCollection<TElements> {
         return Be(
             actualValue,
-            it => requiredIndex.GetOffset(it.Count) > 0,
+            it => it.ContainsIndex(requiredIndex),
+            details,
             parameterName,
-            methodName,
-            $"must contain the index [{requiredIndex}]"
+            rejectedBy,
+            $"must contain the index [{requiredIndex}] (actual size: {actualValue.Count}"
         );
     }
 
@@ -61,11 +106,12 @@ public static partial class Must {
     public static T ContainRange<T>(
         [System.Diagnostics.CodeAnalysis.NotNull]
         T actualValue,
-        Range range,
+        Range   range,
+        string? details = default,
         [CallerArgumentExpression("actualValue")]
         string? parameterName = default,
         [CallerMemberName]
-        string? methodName = default
+        string? rejectedBy = default
     )
         where T : ICollection {
         return Be(
@@ -74,8 +120,9 @@ public static partial class Must {
                 range.GetOffsetAndLength(it.Count);
                 return true;
             },
+            details,
             parameterName,
-            methodName,
+            rejectedBy,
             $"must contain the range {range}"
         );
     }
@@ -87,17 +134,19 @@ public static partial class Must {
     public static T ContainAny<T, T2>(
         T               actualValue,
         IEnumerable<T2> desiredValues,
+        string?         details = default,
         [CallerArgumentExpression("actualValue")]
         string? parameterName = default,
         [CallerMemberName]
-        string? methodName = default
+        string? rejectedBy = default
     )
         where T : IEnumerable<T2> {
         return Be(
             actualValue,
             it => it.ContainsAny(desiredValues),
+            details,
             parameterName,
-            methodName
+            rejectedBy
         );
     }
 
@@ -110,7 +159,7 @@ public static partial class Must {
         [CallerArgumentExpression("actualValues")]
         string? parameterName = default,
         [CallerMemberName]
-        string? methodName = default
+        string? rejectedBy = default
     )
         where T : IEnumerable<T2> {
         badValues = badValues.AsList();
@@ -123,7 +172,7 @@ public static partial class Must {
             actualValue: actualValues,
             details,
             parameterName: parameterName,
-            rejectedBy: methodName,
+            rejectedBy: rejectedBy,
             reason: $"contained the invalid {typeof(T2)}: {badNuts}"
         );
     }
@@ -137,7 +186,7 @@ public static partial class Must {
         [CallerArgumentExpression("actualValues")]
         string? parameterName = default,
         [CallerMemberName]
-        string? methodName = default
+        string? rejectedBy = default
     )
         where T : IEnumerable<T2> {
         requiredValues = requiredValues.AsList();
@@ -150,7 +199,7 @@ public static partial class Must {
             actualValue: actualValues,
             details: details,
             parameterName: parameterName,
-            rejectedBy: methodName,
+            rejectedBy: rejectedBy,
             reason: $"was missing the required {typeof(T2)} values {missingNuts}"
         );
     }
