@@ -38,8 +38,8 @@ public static partial class Must {
     /// <param name="reason">a description of what we <b>wanted</b> to happen. 📎 Automatically populated with <paramref name="predicate"/> via <see cref="CallerArgumentExpressionAttribute"/></param>
     /// <typeparam name="T">the type of the <paramref name="actualValue"/></typeparam>
     /// <returns><paramref name="actualValue"/>, <b>if</b> it satisfies the <paramref name="predicate"/></returns>
-    /// <exception cref="ArgumentException">if the <paramref name="predicate"/> returns <c>false</c></exception>
-    /// <exception cref="ArgumentNullException">if <paramref name="actualValue"/> is <c>null</c></exception>
+    /// <exception cref="RejectionException">if the <paramref name="predicate"/> returns <c>false</c></exception>
+    /// <exception cref="RejectionException">if <paramref name="actualValue"/> is <c>null</c></exception>
     [return: NotNullIfNotNull("predicate")]
     public static T Be<T>(
         [NotNullIfNotNull("predicate")]
@@ -220,6 +220,15 @@ public static partial class Must {
 
     #region Types
 
+    /// <summary>
+    /// Requires that <paramref name="actualValue"/> is an instance of <typeparamref name="T"/>.
+    /// </summary>
+    /// <param name="actualValue">the value being tested</param>
+    /// <param name="parameterName">see <see cref="CallerArgumentExpressionAttribute"/></param>
+    /// <param name="rejectedBy">see <see cref="CallerMemberNameAttribute"/></param>
+    /// <typeparam name="T">the desired output <see cref="Type"/></typeparam>
+    /// <returns><paramref name="actualValue"/> cast to type <typeparamref name="T"/></returns>
+    /// <exception cref="RejectionException">if <paramref name="actualValue"/> isn't an instance of <typeparamref name="T"/></exception>
     public static T Be<T>(
         object actualValue,
         [CallerArgumentExpression("actualValue")]
@@ -234,6 +243,7 @@ public static partial class Must {
         throw Reject(actualValue, parameterName, rejectedBy, reason: $"was not an instance of {typeof(T).PrettifyType(default)}");
     }
 
+    /// <inheritdoc cref="Be{T}(object,string?,string?)"/>
     public static T MustBe<T>(
         this object actualValue,
         [CallerArgumentExpression("actualValue")]
