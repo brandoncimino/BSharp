@@ -41,7 +41,10 @@ public interface IValidatorMethod : IHas<MethodInfo> {
 }
 
 public interface IValidatorMethod<in T> : IValidatorMethod {
-    public void      Assert(T?      actual);
-    public bool      Test(T?        actual);
-    public IFailable TryValidate(T? actual);
+    public void      Assert(T?                   actual);
+    public void      Assert(IValidated<T?>       actual);
+    public bool      Test(T?                     actual);
+    public bool      Test(IValidated<T?>?        actual);
+    public IFailable TryValidate(T?              actual);
+    public IFailable TryValidate(IValidated<T?>? actual);
 }
