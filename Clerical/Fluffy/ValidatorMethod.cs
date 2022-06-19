@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Reflection;
 
 using FowlFever.BSharp;
+using FowlFever.BSharp.Exceptions;
 using FowlFever.BSharp.Optional;
 using FowlFever.BSharp.Reflection;
 using FowlFever.BSharp.Strings;
@@ -102,30 +103,38 @@ public record ValidatorMethod<T> : Wrapped<MethodInfo>, IValidatorMethod<T> {
 
     #region Verbs
 
-    [PublicAPI] public void Assert(T? actual) => ((IValidatorMethod)this).Assert(actual);
-    [PublicAPI] public bool Test(T?   actual) => ((IValidatorMethod)this).Test(actual);
+    [PublicAPI] public void Assert(T?              actual) => _assertion.Value(actual);
+    [PublicAPI] public void Assert(IValidated<T?>? actual) => _assertion.Value(actual == null ? default : actual.ValidationTarget);
+    [PublicAPI] public bool Test(T?                actual) => _predicate.Value(actual);
+    [PublicAPI] public bool Test(IValidated<T?>?   actual) => _predicate.Value(actual == null ? default : actual.ValidationTarget);
 
     [StackTraceHidden]
     [PublicAPI]
-    void IValidatorMethod.Assert(object? value) => _assertion.Value((T?)value);
+    void IValidatorMethod.Assert(object? value) {
+        if (value is IValidated<T> validated) {
+            Assert(validated);
+        }
+        else {
+            Assert((T?)value);
+        }
+    }
 
     [StackTraceHidden]
     [PublicAPI]
-    bool IValidatorMethod.Test(object? value) => _predicate.Value((T?)value);
+    bool IValidatorMethod.Test(object? value) => value switch {
+        IValidated<T> validated => Test(validated),
+        _                       => Test((T?)value),
+    };
 
-    public IFailable           TryValidate(T?      actual) => Failables.Try(Assert, actual, Description.IfBlank(Value.Name));
-    IFailable IValidatorMethod.TryValidate(object? value)  => TryValidate((T?)value);
+    public IFailable TryValidate(T?              actual) => Failables.Try(Assert, actual, Description.IfBlank(Value.Name));
+    public IFailable TryValidate(IValidated<T?>? actual) => Failables.Try(Assert, actual == null ? default : actual.ValidationTarget);
 
-    #endregion
-
-    #region Casts
-
-    public static implicit operator ValidatorMethod<T>(Action<T?>     action)    => new(action);
-    public static implicit operator ValidatorMethod<T>(Func<T?, bool> predicate) => new(predicate);
-    public static implicit operator ValidatorMethod<T>(Func<T?, T?>   func)      => new(func);
-
-    public static implicit operator Action<T?>(ValidatorMethod<T?>     validator) => validator.Assert;
-    public static implicit operator Func<T?, bool>(ValidatorMethod<T?> validator) => validator.Test;
+    IFailable IValidatorMethod.TryValidate(object? value) =>
+        value switch {
+            T t             => TryValidate(t),
+            IValidated<T> t => TryValidate(t),
+            _               => throw Must.RejectUnhandledSwitchType(value),
+        };
 
     #endregion
 
