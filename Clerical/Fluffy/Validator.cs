@@ -25,22 +25,24 @@ namespace FowlFever.Clerical.Fluffy;
 public static class Validator {
     private static readonly ConcurrentDictionary<Type, Lazy<IValidatorMethod[]>> Cache = new();
 
-    private static IValidatorMethod[] _GetValidatorMethods(Type validatedType) {
-        return validatedType.FindAnnotated<MethodInfo, ValidatorAttribute>()
-                            .Select(Create)
-                            .ToArray();
+    private static IValidatorMethod[] _GetValidatorMethods(Type sourceType) {
+        return sourceType.FindAnnotated<MethodInfo, ValidatorAttribute>()
+                         .Select(Create)
+                         .ToArray();
     }
 
     /// <summary>
     /// Retrieves all of the <see cref="MethodInfo"/>s annotated with <see cref="ValidatorAttribute"/> on the given <see cref="Type"/> <i>or its <see cref="ReflectionUtils.GetAncestors"/></i>.
     /// </summary>
-    /// <param name="validatedType">the <see cref="Type"/> to check for <see cref="ValidatorAttribute"/>s</param>
+    /// <param name="sourceType">the <see cref="Type"/> to check for <see cref="ValidatorAttribute"/>s</param>
     /// <returns>all of the retrieved <see cref="IValidatorMethod"/>s</returns>
     /// <remarks>
     /// TODO: construct <see cref="ValidatorMethod{T}"/>s that apply to the is the <see cref="IHas{T}"/>.<see cref="IHas{T}.Value"/>
     /// TODO: define <see cref="ValidatorMethod{T}"/>s using a <see cref="AttributeTargets.Class"/>-level <see cref="ValidatorAttribute"/>
     /// </remarks>
-    public static IEnumerable<IValidatorMethod> GetValidatorMethods(Type? validatedType) => validatedType == null ? Enumerable.Empty<IValidatorMethod>() : Cache.GetOrAddLazily(validatedType, _GetValidatorMethods);
+    public static IEnumerable<IValidatorMethod> GetValidatorMethods(Type? sourceType) {
+        return sourceType == null ? Enumerable.Empty<IValidatorMethod>() : Cache.GetOrAddLazily(sourceType, _GetValidatorMethods);
+    }
 
     /// <summary>
     /// Invokes all of the <see cref="GetValidatorMethods"/> from the type <typeparamref name="T"/> against <paramref name="actual"/>.
@@ -67,7 +69,7 @@ public static class Validator {
                 details,
                 parameterName,
                 rejectedBy,
-                results.JoinLines(indent: "  ")
+                new RapSheet(results).Prettify()
             );
         }
 
@@ -91,18 +93,23 @@ public static class Validator {
     /// Constructs an <see cref="IValidatorMethod"/> from a <see cref="MethodInfo"/>.
     /// </summary>
     /// <param name="method">a <see cref="MethodInfo"/> that might be an <see cref="IValidatorMethod"/></param>
-    /// <param name="description"></param>
+    /// <param name="validatedType">the <see cref="Type"/> being validated. Defaults to the <see cref="MethodInfo"/>'s <see cref="GetValidatedType"/></param>
+    /// <param name="description">an optional <see cref="IValidatorMethod.Description"/></param>
     /// <returns>a new <see cref="IValidatorMethod"/></returns>
     [PublicAPI]
-    public static IValidatorMethod Create(MethodInfo method, string? description = default) {
-        var validatedType = GetValidatedType(method);
+    private static IValidatorMethod Create(MethodInfo method, Type? validatedType = default, string? description = default) {
+        description   =   description.IfBlank(method.Name);
+        validatedType ??= GetValidatedType(method);
         var validatorType = typeof(ValidatorMethod<>).MakeGenericType(validatedType);
         var delgato       = CreateDelegate(method);
         var built         = validatorType.Construct(delgato, description);
         return Must.Be<IValidatorMethod>(built);
     }
 
-    [PublicAPI] public static IValidatorMethod Create(Annotated<MethodInfo, ValidatorAttribute> annotatedMethod) => Create(annotatedMethod.Member, annotatedMethod.Attributes.Single().Description);
+    [PublicAPI]
+    private static IValidatorMethod Create(Annotated<MethodInfo, ValidatorAttribute> annotatedMethod) {
+        return Create(annotatedMethod.Member, description: annotatedMethod.Attributes.Single().Description);
+    }
 
     internal static ValidatorStyle InferValidatorStyle(MethodInfo methodInfo) {
         return BEnum.GetValues<ValidatorStyle>()
@@ -114,13 +121,6 @@ public static class Validator {
     #region Delegate Conversions
 
     #region From "Assertion" (Action<T>)
-
-    internal static Func<T, T> ToCheckpoint<T>(this Action<T> action) {
-        return it => {
-            action(it);
-            return it;
-        };
-    }
 
     internal static Func<T, bool> ToPredicate<T>(this Action<T> action) {
         return it => {
@@ -180,20 +180,29 @@ public static class Validator {
 
     [StackTraceHidden]
     private static Type GetValidatedType(MethodInfo method) {
-        var type = method.IsStatic ? method.GetSingleParameter()?.ParameterType : method.DeclaringType;
-        return Must.NotBeNull(type);
+        static Type? FromParameters(MethodInfo methodInfo) {
+            return methodInfo.FindSingleParameter()?.ParameterType;
+        }
+
+        static Type FromDeclaringType(MemberInfo memberInfo) {
+            return memberInfo.MustGetDeclaringType();
+        }
+
+        return FromParameters(method)
+               ?? FromDeclaringType(method);
     }
 
     [StackTraceHidden]
     internal static Delegate CreateDelegate(MethodInfo method) {
-        var style        = InferValidatorStyle(method);
-        var delegateType = style.GetDelegateType(GetValidatedType(method));
+        var style         = InferValidatorStyle(method);
+        var validatedType = GetValidatedType(method);
+        var delegateType  = style.GetDelegateType(validatedType);
         try {
             var delgato = Delegate.CreateDelegate(delegateType, method);
             return delgato;
         }
         catch (Exception e) {
-            throw new ArgumentException($"Unable to create a {delegateType.Prettify()} from the method {method.Prettify()}", e);
+            throw new ArgumentException($"Unable to create [{delegateType.Prettify()}] from the {method.Prettify()}\n\t{nameof(style)}: {style}\n\t{nameof(validatedType)}: {validatedType}", e);
         }
     }
 
