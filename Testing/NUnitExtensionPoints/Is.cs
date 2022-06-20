@@ -1,6 +1,10 @@
 using System;
+using System.Collections;
+using System.Linq;
 
 using FowlFever.BSharp.Enums;
+
+using NUnit.Framework.Constraints;
 
 namespace FowlFever.Testing.NUnitExtensionPoints {
     /// <summary>
@@ -32,6 +36,15 @@ namespace FowlFever.Testing.NUnitExtensionPoints {
 
         public static ApproximationConstraint CloseTo(DateTime expectedValue, TimeSpan threshold, Clusivity clusivity = Clusivity.Inclusive) {
             return Approximately(expectedValue, threshold, clusivity);
+        }
+
+        /// <summary>
+        /// Tests that a <paramref name="collection"/> contains the actual value.
+        /// </summary>
+        /// <param name="collection">the possible values</param>
+        /// <returns>a new <see cref="AnyOfConstraint"/></returns>
+        public static AnyOfConstraint In(IEnumerable collection) {
+            return AnyOf(collection.Cast<object>().ToArray());
         }
     }
 }
