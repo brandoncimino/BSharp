@@ -1273,7 +1273,11 @@ public static partial class CollectionUtils {
     /// <typeparam name="T">the type of the elements in <paramref name="source"/></typeparam>
     /// <returns><paramref name="source"/>, or an <see cref="Enumerable.Empty{TResult}"/> if <paramref name="source"/> was null</returns>
     /// <remarks>
-    /// To facilitate easier work with <see cref="ImmutableArray{T}"/>, this will also replace <see cref="ImmutableArray{T}.IsDefault"/> with <see cref="ImmutableArray{T}.Empty"/>. 
+    /// To facilitate easier work with <see cref="ImmutableArray{T}"/>, this will also replace <see cref="ImmutableArray{T}.IsDefault"/> with <see cref="ImmutableArray{T}.Empty"/>.
+    /// <p/>
+    /// <see cref="ImmutableArray{T}"/> also requires a special <c>switch</c> branch because of its nature as a <see cref="ValueType"/>.
+    /// <p/>
+    /// Other overloads shouldn't require dedicated <c>switch</c> branches because, if their type is known, they should already be passed to the correct overload. 
     /// </remarks>
     [Pure]
     [LinqTunnel]
@@ -1298,11 +1302,23 @@ public static partial class CollectionUtils {
 
     /// <inheritdoc cref="OrEmpty{T}(System.Collections.Generic.IEnumerable{T}?)"/>
     [Pure]
+    public static IList<T> OrEmpty<T>(this IList<T>? source) => source ?? new List<T>();
+
+    /// <inheritdoc cref="OrEmpty{T}(System.Collections.Generic.IEnumerable{T}?)"/>
+    [Pure]
     public static List<T> OrEmpty<T>(this List<T>? source) => source ?? new List<T>();
 
     /// <inheritdoc cref="OrEmpty{T}(System.Collections.Generic.IEnumerable{T}?)"/>
     [Pure]
     public static IDictionary<TKey, TValue> OrEmpty<TKey, TValue>(this IDictionary<TKey, TValue>? source) => source ?? new Dictionary<TKey, TValue>();
+
+    /// <inheritdoc cref="OrEmpty{T}(System.Collections.Generic.IEnumerable{T}?)"/>
+    [Pure]
+    public static IImmutableList<T> OrEmpty<T>(this IImmutableList<T>? source) => source ?? ImmutableList.Create<T>();
+
+    /// <inheritdoc cref="OrEmpty{T}(System.Collections.Generic.IEnumerable{T}?)"/>
+    [Pure]
+    public static ImmutableList<T> OrEmpty<T>(this ImmutableList<T>? source) => source ?? ImmutableList.Create<T>();
 
     #endregion
 
