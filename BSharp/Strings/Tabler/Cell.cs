@@ -23,7 +23,8 @@ public readonly record struct Cell : IPrettifiable {
     public string Prettify(PrettificationSettings? settings = default) {
         settings = settings.Resolve();
         settings = settings with { PreferredLineStyle = LineStyle.Single };
-        return Value.Prettify(settings)
+        return Value.Select(it => it.Prettify(settings))
+                    .OrElse(settings.TableSettings.EmptyCellPlaceholder)
                     .Align(
                         Style switch {
                             Row.RowStyle.Header => settings.TableSettings.HeaderAlignment,
