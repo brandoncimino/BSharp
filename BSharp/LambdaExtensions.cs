@@ -1,5 +1,4 @@
 using System;
-using System.Diagnostics;
 
 using FowlFever.BSharp.Strings;
 
@@ -24,23 +23,12 @@ namespace FowlFever.BSharp {
 
         #region Func with Tuple args
 
-        [System.Diagnostics.Contracts.Pure]
-        public static TResult Invoke<A, B, TResult>(this Func<A, B, TResult> func, (A a, B b) args) => func.Invoke(args.a, args.b);
-
-        [System.Diagnostics.Contracts.Pure]
-        public static TResult Invoke<A, B, C, TResult>(this Func<A, B, C, TResult> func, (A a, B b, C c) args) => func.Invoke(args.a, args.b, args.c);
-
-        [System.Diagnostics.Contracts.Pure]
-        public static TResult Invoke<A, B, C, D, TResult>(this Func<A, B, C, D, TResult> func, (A a, B b, C c, D d) args) => func.Invoke(args.a, args.b, args.c, args.d);
-
-        [System.Diagnostics.Contracts.Pure]
-        public static TResult Invoke<A, B, C, D, E, TResult>(this Func<A, B, C, D, E, TResult> func, (A a, B b, C c, D d, E e) args) => func.Invoke(args.a, args.b, args.c, args.d, args.e);
-
-        [System.Diagnostics.Contracts.Pure]
-        public static TResult Invoke<A, B, C, D, E, F, TResult>(this Func<A, B, C, D, E, F, TResult> func, (A a, B b, C c, D d, E e, F f) args) => func.Invoke(args.a, args.b, args.c, args.d, args.e, args.f);
-
-        [System.Diagnostics.Contracts.Pure]
-        public static TResult Invoke<A, B, C, D, E, F, G, TResult>(this Func<A, B, C, D, E, F, G, TResult> func, (A a, B b, C c, D d, E e, F f, G g) args) => func.Invoke(args.a, args.b, args.c, args.d, args.e, args.f, args.g);
+        [Pure] public static TResult Invoke<A, B, TResult>(this                Func<A, B, TResult>                func, (A a, B b)                          args) => func.Invoke(args.a, args.b);
+        [Pure] public static TResult Invoke<A, B, C, TResult>(this             Func<A, B, C, TResult>             func, (A a, B b, C c)                     args) => func.Invoke(args.a, args.b, args.c);
+        [Pure] public static TResult Invoke<A, B, C, D, TResult>(this          Func<A, B, C, D, TResult>          func, (A a, B b, C c, D d)                args) => func.Invoke(args.a, args.b, args.c, args.d);
+        [Pure] public static TResult Invoke<A, B, C, D, E, TResult>(this       Func<A, B, C, D, E, TResult>       func, (A a, B b, C c, D d, E e)           args) => func.Invoke(args.a, args.b, args.c, args.d, args.e);
+        [Pure] public static TResult Invoke<A, B, C, D, E, F, TResult>(this    Func<A, B, C, D, E, F, TResult>    func, (A a, B b, C c, D d, E e, F f)      args) => func.Invoke(args.a, args.b, args.c, args.d, args.e, args.f);
+        [Pure] public static TResult Invoke<A, B, C, D, E, F, G, TResult>(this Func<A, B, C, D, E, F, G, TResult> func, (A a, B b, C c, D d, E e, F f, G g) args) => func.Invoke(args.a, args.b, args.c, args.d, args.e, args.f, args.g);
 
         #endregion
 
@@ -163,28 +151,13 @@ namespace FowlFever.BSharp {
 
         #region Actions
 
-        [System.Diagnostics.Contracts.Pure]
-        [StackTraceHidden]
-        public static Action Reduce<T>(this Action<T> action, T arg) => () => action(arg);
+        [Pure] public static Action    Reduce<T>(this       Action<T>       action, T arg)    => () => action(arg);
+        [Pure] public static Action    Reduce<A, B>(this    Action<A, B>    action, A a, B b) => () => action(a, b);
+        [Pure] public static Action<A> Reduce<A, B>(this    Action<A, B>    action, B b)           => a => action(a,  b);
+        [Pure] public static Action    Reduce<A, B, C>(this Action<A, B, C> action, A a, B b, C c) => () => action(a, b, c);
+        [Pure] public static Action<A> Reduce<A, B, C>(this Action<A, B, C> action, B b, C c) => a => action(a, b, c);
 
-        [System.Diagnostics.Contracts.Pure]
-        public static Action Reduce<A, B>(this Action<A, B> action, A a, B b) => () => action(a, b);
-
-        [System.Diagnostics.Contracts.Pure]
-        public static Action<A> Reduce<A, B>(this Action<A, B> action, B b) => a => action(a, b);
-
-        [System.Diagnostics.Contracts.Pure]
-        public static Action Reduce<A, B, C>(
-            this Action<A, B, C> action,
-            A                    a,
-            B                    b,
-            C                    c
-        ) => () => action(a, b, c);
-
-        [System.Diagnostics.Contracts.Pure]
-        public static Action<A> Reduce<A, B, C>(this Action<A, B, C> action, B b, C c) => a => action(a, b, c);
-
-        [System.Diagnostics.Contracts.Pure]
+        [Pure]
         public static Action Reduce<A, B, C, D>(
             this Action<A, B, C, D> action,
             A                       a,
@@ -193,65 +166,27 @@ namespace FowlFever.BSharp {
             D                       d
         ) => () => action(a, b, c, d);
 
-        [System.Diagnostics.Contracts.Pure]
-        public static Action<A> Reduce<A, B, C, D>(
-            this Action<A, B, C, D> action,
-            B                       b,
-            C                       c,
-            D                       d
-        ) => a => action(a, b, c, d);
+        [Pure] public static Action<A> Reduce<A, B, C, D>(this Action<A, B, C, D> action, B b, C c, D d) => a => action(a, b, c, d);
 
         #endregion
 
         #region Functions
 
-        [System.Diagnostics.Contracts.Pure]
-        public static Func<TOut> Reduce<A, TOut>(this Func<A, TOut> func, A a) => () => func(a);
-
-        [System.Diagnostics.Contracts.Pure]
-        public static Func<TOut> Reduce<A, B, TOut>(this Func<A, B, TOut> func, A a, B b) => () => func(a, b);
-
-        [System.Diagnostics.Contracts.Pure]
-        public static Func<A, TOut> Reduce<A, B, TOut>(this Func<A, B, TOut> func, B b) => a => func(a, b);
-
-        [System.Diagnostics.Contracts.Pure]
-        public static Func<TOut> Reduce<A, B, C, TOut>(
-            this Func<A, B, C, TOut> func,
-            A                        a,
-            B                        b,
-            C                        c
-        ) => () => func(a, b, c);
-
-        [System.Diagnostics.Contracts.Pure]
-        public static Func<A, TOut> Reduce<A, B, C, TOut>(
-            this Func<A, B, C, TOut> func,
-            B                        b,
-            C                        c
-        ) => a => func(a, b, c);
+        [Pure] public static Func<TOut>    Reduce<A, TOut>(this       Func<A, TOut>       func, A a)      => () => func(a);
+        [Pure] public static Func<TOut>    Reduce<A, B, TOut>(this    Func<A, B, TOut>    func, A a, B b) => () => func(a, b);
+        [Pure] public static Func<A, TOut> Reduce<A, B, TOut>(this    Func<A, B, TOut>    func, B b)           => a => func(a,  b);
+        [Pure] public static Func<TOut>    Reduce<A, B, C, TOut>(this Func<A, B, C, TOut> func, A a, B b, C c) => () => func(a, b, c);
+        [Pure] public static Func<A, TOut> Reduce<A, B, C, TOut>(this Func<A, B, C, TOut> func, B b, C c) => a => func(a, b, c);
 
         #endregion
 
         #region Discard (i.e. Func -> Action)
 
-        [System.Diagnostics.Contracts.Pure]
-        public static Action Discard<TOut>(this Func<TOut> func) => () => func.Invoke();
-
-        [System.Diagnostics.Contracts.Pure]
-        public static Action<A> Discard<A, TOut>(this Func<A, TOut> func) => a => func.Invoke(a);
-
-        [System.Diagnostics.Contracts.Pure]
-        public static Action<A, B> Discard<A, B, TOut>(this Func<A, B, TOut> func) => (a, b) => func.Invoke(a, b);
-
-        [System.Diagnostics.Contracts.Pure]
-        public static Action<A, B, C> Discard<A, B, C, TOut>(this Func<A, B, C, TOut> func) => (a, b, c) => func.Invoke(a, b, c);
-
-        [System.Diagnostics.Contracts.Pure]
-        public static Action<A, B, C, D> Discard<A, B, C, D, TOut>(this Func<A, B, C, D, TOut> func) => (
-            a,
-            b,
-            c,
-            d
-        ) => func.Invoke(a, b, c, d);
+        [Pure] public static Action             Discard<TOut>(this             Func<TOut>             func) => () => func.Invoke();
+        [Pure] public static Action<A>          Discard<A, TOut>(this          Func<A, TOut>          func) => a => func.Invoke(a);
+        [Pure] public static Action<A, B>       Discard<A, B, TOut>(this       Func<A, B, TOut>       func) => (a, b) => func.Invoke(a,       b);
+        [Pure] public static Action<A, B, C>    Discard<A, B, C, TOut>(this    Func<A, B, C, TOut>    func) => (a, b, c) => func.Invoke(a,    b, c);
+        [Pure] public static Action<A, B, C, D> Discard<A, B, C, D, TOut>(this Func<A, B, C, D, TOut> func) => (a, b, c, d) => func.Invoke(a, b, c, d);
 
         #endregion
 
