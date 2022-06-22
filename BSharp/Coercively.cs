@@ -22,7 +22,7 @@ namespace FowlFever.BSharp {
     /// ]]></code>
     /// </remarks>
     public static class Coercively {
-        private static Coercive.Operator Addition { get; } = new Coercive.Operator() {
+        private static Coercive.Operator Addition { get; } = new() {
             Noun       = "Addition",
             Verb       = "Add",
             Symbol     = "+",
@@ -53,7 +53,7 @@ namespace FowlFever.BSharp {
             return Addition.Apply(a, b);
         }
 
-        private static Coercive.Operator Subtraction { get; } = new Coercive.Operator() {
+        private static Coercive.Operator Subtraction { get; } = new() {
             Noun       = "Subtraction",
             Verb       = "Subtract",
             Symbol     = "-",
@@ -77,7 +77,7 @@ namespace FowlFever.BSharp {
             return Subtraction.Apply(a, b);
         }
 
-        private static Coercive.Operator Multiplication { get; } = new Coercive.Operator() {
+        private static Coercive.Operator Multiplication { get; } = new() {
             Noun       = "Multiplication",
             Verb       = "Multiply",
             Symbol     = "x",
@@ -94,14 +94,14 @@ namespace FowlFever.BSharp {
             Double     = (a, b) => a * b,
             Decimal    = (a, b) => a * b,
             String     = (a, b) => a.Repeat(Convert.ToInt32(b)), // this might be inefficient, since it means that b will be converted to a string AND then to an int after - even if it was an int to begin with
-            TimeSpan   = (a, b) => TimeUtils.Multiply(a, Convert.ToDouble(b)),
+            TimeSpan   = (a, b) => a.Multiply(Convert.ToDouble(b)),
         };
 
         public static object Multiply(object multiplicand, object multiplier) {
             return Multiplication.Apply(multiplicand, multiplier);
         }
 
-        private static Coercive.Operator Division { get; } = new Coercive.Operator() {
+        private static Coercive.Operator Division { get; } = new() {
             Noun       = "Division",
             Verb       = "Divide",
             Symbol     = "/",
