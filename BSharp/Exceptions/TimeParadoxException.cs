@@ -4,6 +4,6 @@ namespace FowlFever.BSharp.Exceptions {
     public class TimeParadoxException : BrandonException {
         protected override string BaseMessage { get; } = "\t\tWhen am I?";
         public TimeParadoxException() { }
-        public TimeParadoxException(string message, Exception innerException = null) : base(message, innerException) { }
+        public TimeParadoxException(string message, Exception? innerException = null) : base(message, innerException) { }
     }
 }

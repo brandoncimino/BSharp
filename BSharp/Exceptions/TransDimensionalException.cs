@@ -10,6 +10,6 @@ namespace FowlFever.BSharp.Exceptions {
     public class TransDimensionalException : BrandonException {
         protected override string BaseMessage { get; } = "You will kick Descartes in the junk; and Euclid said 'ow'.";
         public TransDimensionalException() : base() { }
-        public TransDimensionalException(string message, Exception innerException = null) : base(message, innerException) { }
+        public TransDimensionalException(string message, Exception? innerException = null) : base(message, innerException) { }
     }
 }
