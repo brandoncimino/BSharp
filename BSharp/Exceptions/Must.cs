@@ -53,11 +53,6 @@ public static partial class Must {
         [CallerArgumentExpression("predicate")]
         string? reason = default
     ) {
-        predicate ??= it => it == null;
-        if ((predicate, actualValue) is (null, null)) {
-            return actualValue;
-        }
-
         switch (predicate, actualValue) {
             case (null, null):     return actualValue;
             case (null, not null): throw Reject(actualValue, parameterName, rejectedBy, "must be null");
