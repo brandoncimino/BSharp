@@ -7,50 +7,11 @@ using FowlFever.BSharp.Collections;
 using FowlFever.BSharp.Strings;
 using FowlFever.BSharp.Strings.Prettifiers;
 
-using JetBrains.Annotations;
-
 namespace FowlFever.BSharp.Exceptions {
-    [Obsolete("Please use " + nameof(EnumNotInSetException) + " instead")]
-    public class EnumNotInSubsetException<T> : EnumNotInSetException<T> where T : Enum {
-        public EnumNotInSubsetException(ICollection<T> superset, IEnumerable<T> expectedValues = null, string messagePrefix = null, Exception innerException = null) : base(superset, expectedValues, messagePrefix, innerException) { }
-        public EnumNotInSubsetException(ICollection<T> superset, T              invalidValue,          string messagePrefix = null, Exception innerException = null) : base(superset, invalidValue, messagePrefix, innerException) { }
-    }
-
-    public class EnumNotInSetException : InvalidEnumArgumentException {
-        public EnumNotInSetException(
-            IEnumerable<object> superset,
-            IEnumerable<object> expectedValues,
-            string?             messagePrefix  = default,
-            Exception?          innerException = default
-        )
-            : base(BuildMessage(superset, expectedValues, messagePrefix), innerException) { }
-
-
-        private static string BuildMessage(
-            IEnumerable<object>  superset,
-            IEnumerable<object>? valuesThatShouldBeThere,
-            string?              messagePrefix
-        ) {
-            var prettySettings = PrettificationSettings.Default with { TypeLabelStyle = TypeNameStyle.Full };
-
-            var badValues = valuesThatShouldBeThere?.Except(superset);
-
-            return new Dictionary<object, object>() {
-                    [superset.GetType().PrettifyType(prettySettings)] = superset,
-                    [nameof(valuesThatShouldBeThere)]                 = valuesThatShouldBeThere,
-                    ["Disallowed values"]                             = badValues
-                }.Prettify(prettySettings)
-                 .SplitLines()
-                 .PrependNonNull(messagePrefix)
-                 .JoinLines();
-        }
-    }
-
-    [PublicAPI]
     public class EnumNotInSetException<T> : InvalidEnumArgumentException {
-        private         string _baseMessage;
-        public override string Message       => Lists.Of(MessagePrefix, "", _baseMessage).NonNull().JoinLines();
-        public virtual  string MessagePrefix { get; }
+        private readonly  string  _baseMessage;
+        public override   string  Message       => Lists.Of(MessagePrefix, "", _baseMessage).NonNull().JoinLines();
+        protected virtual string? MessagePrefix { get; }
 
         /// <inheritdoc cref="InvalidEnumArgumentException"/>
         /// <summary>
@@ -66,8 +27,8 @@ namespace FowlFever.BSharp.Exceptions {
         public EnumNotInSetException(
             IEnumerable<T>  superset,
             IEnumerable<T>? expectedValues,
-            string          messagePrefix  = null,
-            Exception       innerException = null
+            string?         messagePrefix  = null,
+            Exception?      innerException = null
         ) : base(messagePrefix, innerException) {
             _baseMessage  = BuildMessage(superset, expectedValues);
             MessagePrefix = messagePrefix;
@@ -76,8 +37,8 @@ namespace FowlFever.BSharp.Exceptions {
         public EnumNotInSetException(
             IEnumerable<T> superset,
             T              invalidValue,
-            string         messagePrefix  = null,
-            Exception      innerException = null
+            string?        messagePrefix  = null,
+            Exception?     innerException = null
         ) : this(superset, Enumerable.Repeat(invalidValue, 1), messagePrefix, innerException) { }
 
         private string BuildMessage(IEnumerable<T> superset, IEnumerable<T>? valuesThatShouldBeThere) {
