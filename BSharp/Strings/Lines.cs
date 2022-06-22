@@ -75,3 +75,16 @@ public readonly record struct Lines : IEnumerable<OneLine> {
 
     // public Lines EachLine(Func<string, string> transformer) => this.Select(it => transformer(it)).Lines();
 }
+
+/// <summary>
+/// Extension methods for working with <see cref="FowlFever.BSharp.Strings.Lines"/>.
+/// </summary>
+public static class LineExtensions {
+    public static Lines Lines(this IEnumerable<OneLine>? lines) => lines switch {
+        Lines ln => ln,
+        _        => new Lines(new Supplied<IEnumerable<OneLine>>(lines.OrEmpty)),
+    };
+
+    public static Lines Lines(this IEnumerable<string>? source) => source.OrEmpty().Select(it => it.Lines().AsEnumerable()).Flatten().Lines();
+    public static Lines Lines(this string?              str)    => new(Strings.Lines.EachLine(str).Shim());
+}
