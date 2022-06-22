@@ -7,7 +7,8 @@ using JetBrains.Annotations;
 
 namespace FowlFever.BSharp.Clerical.Saving {
     [PublicAPI]
-    public class SaveFile<TData> : BaseSaveFile<TData> where TData : ISaveData {
+    public class SaveFile<TData> : BaseSaveFile<TData>
+        where TData : ISaveData {
         private readonly SaveFileName _saveFileName;
 
         public override string Nickname => _saveFileName.Nickname;
@@ -19,7 +20,7 @@ namespace FowlFever.BSharp.Clerical.Saving {
             string      nickname,
             DateTime    timeStamp,
             string?     extension = SaveFileName.DefaultExtension,
-            TData       data      = default
+            TData?      data      = default
         )
             : this(
                 folder,

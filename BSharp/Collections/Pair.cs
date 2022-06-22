@@ -42,7 +42,7 @@ namespace FowlFever.BSharp.Collections {
         public TX X;
         public TY Y;
 
-        public Pair(TX x = default, TY y = default) {
+        public Pair(TX? x = default, TY? y = default) {
             X = x;
             Y = y;
         }

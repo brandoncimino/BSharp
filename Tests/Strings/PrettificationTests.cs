@@ -407,14 +407,14 @@ int (int, string)
     #region Prettifier Prefers IPrettifiable
 
     class Nerd : IPrettifiable {
-        public string Prettify(PrettificationSettings settings = default) => $"{GetType().Prettify()}::{nameof(Prettify)}";
+        public string Prettify(PrettificationSettings? settings = default) => $"{GetType().Prettify()}::{nameof(Prettify)}";
 
         public override string ToString() => $"{GetType().Prettify()}::{nameof(ToString)}";
     }
 
     class LoveInterest<T> : IPrettifiable {
-        public          string Prettify(PrettificationSettings settings = default) => $"{GetType().Prettify()}::{nameof(Prettify)}";
-        public override string ToString()                                          => $"{GetType().Prettify()}::{nameof(ToString)}";
+        public          string Prettify(PrettificationSettings? settings = default) => $"{GetType().Prettify()}::{nameof(Prettify)}";
+        public override string ToString()                                           => $"{GetType().Prettify()}::{nameof(ToString)}";
     }
 
     class Professor<T> : Nerd { }
@@ -429,7 +429,7 @@ int (int, string)
             PrettifierType = type;
         }
 
-        public string Prettify(object cinderella, PrettificationSettings settings = default) {
+        public string Prettify(object cinderella, PrettificationSettings? settings = default) {
             return PrettifyString();
         }
 
@@ -437,7 +437,7 @@ int (int, string)
             return $"{PrettifierType.Prettify()}::{nameof(DebugPrettifier)}";
         }
 
-        public string PrettifySafely(object cinderella, PrettificationSettings settings = default) {
+        public string PrettifySafely(object cinderella, PrettificationSettings? settings = default) {
             return PrettifyString();
         }
     }
