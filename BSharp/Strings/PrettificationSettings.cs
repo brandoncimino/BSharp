@@ -39,10 +39,10 @@ public record PrettificationSettings : Settings {
 
     public ITraceWriter? TraceWriter { get; init; } = null;
 
-    public static implicit operator PrettificationSettings(LineStyle      lineStyle)      => Default with { PreferredLineStyle = lineStyle };
-    public static implicit operator PrettificationSettings(TypeNameStyle  typeLabelStyle) => Default with { TypeLabelStyle = typeLabelStyle };
-    public static implicit operator PrettificationSettings(HeaderStyle    headerStyle)    => Default with { HeaderStyle = headerStyle };
-    public static implicit operator PrettificationSettings(FillerSettings fillerSettings) => Default with { FillerSettings = fillerSettings };
+    public static implicit operator PrettificationSettings(LineStyle        lineStyle)      => Default with { PreferredLineStyle = lineStyle };
+    public static implicit operator PrettificationSettings(TypeNameStyle    typeLabelStyle) => Default with { TypeLabelStyle = typeLabelStyle };
+    public static implicit operator PrettificationSettings(HeaderStyle      headerStyle)    => Default with { HeaderStyle = headerStyle };
+    public static implicit operator PrettificationSettings?(FillerSettings? fillerSettings) => fillerSettings == null ? null : Default with { FillerSettings = fillerSettings };
 
     public IList<int> GetAutoColumnWidths() {
         return TableSettings.GetAutoColumnWidths(LineLengthLimit);
@@ -53,10 +53,11 @@ public record TableSettings : Settings {
     /// <summary>
     /// Used as the "default" number of columns so unrelated <see cref="Prettification.Prettify{T}(T?)"/> calls can line up.
     /// </summary>
-    public int AutoColumnCount { get;             init; } = 4;
-    public string          HeaderSeparator { get; init; } = "-";
-    public string          ColumnSeparator { get; init; } = " ";
-    public StringAlignment HeaderAlignment { get; init; } = StringAlignment.Center;
+    public int AutoColumnCount { get;                  init; } = 4;
+    public string          HeaderSeparator      { get; init; } = "-";
+    public string          ColumnSeparator      { get; init; } = " ";
+    public StringAlignment HeaderAlignment      { get; init; } = StringAlignment.Center;
+    public string          EmptyCellPlaceholder { get; init; } = " - ";
 
     public IList<int> GetAutoColumnWidths(int totalWidth) {
         return Apportion.Evenly(totalWidth, AutoColumnCount);
@@ -108,9 +109,9 @@ public record FillerSettings : Settings {
     /// </summary>
     public string TruncateTrail { get; init; } = "…";
 
-    public static implicit operator FillerSettings(StringAlignment        alignment)              => Default with { Alignment = alignment };
-    public static implicit operator FillerSettings(OverflowStyle          overflowStyle)          => Default with { OverflowStyle = overflowStyle };
-    public static implicit operator FillerSettings(PrettificationSettings prettificationSettings) => prettificationSettings.FillerSettings;
+    public static implicit operator FillerSettings(StringAlignment          alignment)              => Default with { Alignment = alignment };
+    public static implicit operator FillerSettings(OverflowStyle            overflowStyle)          => Default with { OverflowStyle = overflowStyle };
+    public static implicit operator FillerSettings?(PrettificationSettings? prettificationSettings) => prettificationSettings?.FillerSettings;
 }
 
 public static class SettingsExtensions {
