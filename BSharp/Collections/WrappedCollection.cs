@@ -22,7 +22,7 @@ public abstract record WrappedCollection<TElement, TCollection> : Wrapped<TColle
 
     protected abstract TCollection CreateSlice(IEnumerable<TElement> elements);
 
-    public TCollection this[Range range] => CreateSlice(range.EnumerateSlice(this));
+    public virtual TCollection this[Range range] => CreateSlice(range.EnumerateSlice(this));
 
     #region Implementation of IEnumerable
 
@@ -39,33 +39,33 @@ public abstract record WrappedCollection<TElement, TCollection> : Wrapped<TColle
 
     #region Implementation of ICollection<ELEMENT>
 
-    public void Add(TElement item) => AsList.Add(item);
+    public virtual void Add(TElement item) => AsList.Add(item);
 
-    int IList.Add(object value) => AsNonGenericList.Add(value);
+    int IList.Add(object? value) => AsNonGenericList.Add(value);
 
-    public void Clear() => AsCollection.Clear();
+    public virtual void Clear() => AsCollection.Clear();
 
-    bool IList.Contains(object value) => AsNonGenericList.Contains(value);
+    bool IList.Contains(object? value) => AsNonGenericList.Contains(value);
 
-    int IList.IndexOf(object value) => AsNonGenericList.IndexOf(value);
+    int IList.IndexOf(object? value) => AsNonGenericList.IndexOf(value);
 
-    public void Insert(int index, object value) => AsNonGenericList.Insert(index, value);
+    public virtual void Insert(int index, object? value) => AsNonGenericList.Insert(index, value);
 
-    void IList.Remove(object value) => AsNonGenericList.Remove(value);
+    void IList.Remove(object? value) => AsNonGenericList.Remove(value);
 
-    public bool Contains(TElement item) => AsCollection.Contains(item);
+    public virtual bool Contains(TElement item) => AsCollection.Contains(item);
 
-    public void CopyTo(TElement[] array, int arrayIndex) => AsCollection.CopyTo(array, arrayIndex);
+    public virtual void CopyTo(TElement[] array, int arrayIndex) => AsCollection.CopyTo(array, arrayIndex);
 
-    public bool Remove(TElement item) => AsCollection.Remove(item);
+    public virtual bool Remove(TElement item) => AsCollection.Remove(item);
 
-    public void CopyTo(Array array, int index) => AsNonGenericList.CopyTo(array, index);
+    public virtual void CopyTo(Array array, int index) => AsNonGenericList.CopyTo(array, index);
 
-    public int         Count          => AsCollection.Count;
-    public bool        IsSynchronized => AsNonGenericList.IsSynchronized;
-    object ICollection.SyncRoot       => AsNonGenericList.SyncRoot;
-    public bool        IsReadOnly     => AsCollection.IsReadOnly;
-    object IList.this[int index] {
+    public virtual int  Count          => AsCollection.Count;
+    public virtual bool IsSynchronized => AsNonGenericList.IsSynchronized;
+    object ICollection. SyncRoot       => AsNonGenericList.SyncRoot;
+    public virtual bool IsReadOnly     => AsCollection.IsReadOnly;
+    object? IList.this[int index] {
         get => AsNonGenericList[index];
         set => AsNonGenericList[index] = value;
     }
@@ -74,15 +74,15 @@ public abstract record WrappedCollection<TElement, TCollection> : Wrapped<TColle
 
     #region Implementation of IList<ELEMENT>
 
-    public int IndexOf(TElement item) {
+    public virtual int IndexOf(TElement item) {
         return AsList.IndexOf(item);
     }
 
-    public void Insert(int index, TElement item) {
+    public virtual void Insert(int index, TElement item) {
         AsList.Insert(index, item);
     }
 
-    public void RemoveAt(int index) {
+    public virtual void RemoveAt(int index) {
         AsList.RemoveAt(index);
     }
 
