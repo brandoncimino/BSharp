@@ -4,6 +4,8 @@ using System.Linq;
 namespace FowlFever.BSharp.Collections;
 
 public static partial class CollectionUtils {
+    #region Flatten
+
     /// <summary>
     /// Backing method for <see cref="Flatten{T}(System.Collections.Generic.IEnumerable{System.Collections.Generic.IEnumerable{T}})"/> overloads to prevent clobbering
     /// and recursion with those overloads.
@@ -53,4 +55,6 @@ public static partial class CollectionUtils {
                                                                                                                                  ._flatten()
                                                                                                                                  ._flatten()
                                                                                                                                  ._flatten();
+
+    #endregion Flatten
 }
