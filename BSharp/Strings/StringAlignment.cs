@@ -15,7 +15,7 @@ public enum StringAlignment {
 }
 
 public static class StringAlignmentExtensions {
-    public static string ApplyTo(
+    public static Lines ApplyTo(
         this StringAlignment alignment,
         string               str,
         string               padString = " ",
@@ -37,7 +37,7 @@ public static class StringAlignmentExtensions {
     /// <param name="padString">see <see cref="FillerSettings.PadString"/></param>
     /// <param name="settings">fine-grained <see cref="FillerSettings"/> <i>(📎 Individual parameters take precedence over these settings)</i></param>
     /// <returns>the <see cref="StringAlignment"/>-aligned <see cref="string"/></returns>
-    public static string Align(
+    public static Lines Align(
         this string str,
         [NonNegativeValue]
         int? width = default,
@@ -67,7 +67,7 @@ public static class StringAlignmentExtensions {
     /// <param name="alignment">where the <see cref="original"/> string should be aligned within the result</param>
     /// <returns>a <see cref="string"/> with a <see cref="string.Length"/> >= <see cref="totalLength"/></returns>
     /// <exception cref="InvalidEnumArgumentException">if an unknown <see cref="StringAlignment"/> is passed</exception>
-    public static string Fill(
+    public static Lines Fill(
         this string original,
         [NonNegativeValue]
         int totalLength,
@@ -89,30 +89,34 @@ public static class StringAlignmentExtensions {
     /// <param name="str">this <see cref="string"/></param>
     /// <param name="settings">a set of <see cref="FillerSettings"/></param>
     /// <returns>the aligned <see cref="string"/></returns>
-    public static string Align(this string str, FillerSettings settings) {
-        if (str.Length >= settings.LineLengthLimit) {
-            return settings.OverflowStyle switch {
-                OverflowStyle.Overflow => str,
-                OverflowStyle.Truncate => str.Truncate(settings.LineLengthLimit, trail: settings.TruncateTrail, alignment: settings.Alignment),
-                OverflowStyle.Wrap     => throw BEnum.Unsupported(settings.OverflowStyle, "I want to do this someday, though..."),
-                _                      => throw BEnum.UnhandledSwitch(settings.OverflowStyle),
+    public static Lines Align(this string str, FillerSettings? settings) {
+        static string _AlignSingle(OneLine str, FillerSettings settings) {
+            if (str.Length >= settings.LineLengthLimit) {
+                return settings.OverflowStyle switch {
+                    OverflowStyle.Overflow => str,
+                    OverflowStyle.Truncate => str.Value.Truncate(settings.LineLengthLimit, trail: settings.TruncateTrail, alignment: settings.Alignment),
+                    OverflowStyle.Wrap     => throw BEnum.Unsupported(settings.OverflowStyle, "I want to do this someday, though..."),
+                    _                      => throw BEnum.UnhandledSwitch(settings.OverflowStyle),
+                };
+            }
+
+            var filler       = settings.PadString.IfEmpty(str);
+            var fillerLength = settings.LineLengthLimit - str.Length;
+
+            (int left, int right) fillAmounts = settings.Alignment switch {
+                StringAlignment.Left   => (0, fillerLength),
+                StringAlignment.Right  => (fillerLength, 0),
+                StringAlignment.Center => fillerLength.Bisect(settings.LeftSideRounding),
+                _                      => throw BEnum.UnhandledSwitch(settings.Alignment),
             };
+
+            var rightFill = filler.RepeatToLength(fillAmounts.right);
+            var leftFill  = fillAmounts.left == fillAmounts.right ? rightFill : filler.RepeatToLength(fillAmounts.left);
+            leftFill = settings.MirrorPadding.ApplyTo(leftFill);
+
+            return $"{leftFill}{str}{rightFill}";
         }
 
-        var filler       = settings.PadString.IfEmpty(str);
-        var fillerLength = settings.LineLengthLimit - str.Length;
-
-        (int left, int right) fillAmounts = settings.Alignment switch {
-            StringAlignment.Left   => (0, fillerLength),
-            StringAlignment.Right  => (fillerLength, 0),
-            StringAlignment.Center => fillerLength.Bisect(settings.LeftSideRounding),
-            _                      => throw BEnum.UnhandledSwitch(settings.Alignment),
-        };
-
-        var rightFill = filler.RepeatToLength(fillAmounts.right);
-        var leftFill  = fillAmounts.left == fillAmounts.right ? rightFill : filler.RepeatToLength(fillAmounts.left);
-        leftFill = settings.MirrorPadding.ApplyTo(leftFill);
-
-        return $"{leftFill}{str}{rightFill}";
+        return str.Lines().SelectLines(it => _AlignSingle(it, settings.Resolve()));
     }
 }

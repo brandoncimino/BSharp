@@ -55,9 +55,8 @@ public readonly record struct Lines : IEnumerable<OneLine> {
             line.Append(c);
         }
     }
-    // public static IEnumerable<OneLine> EachLine(IEnumerable<string> multiMultilineContents) => multiMultilineContents.SelectMany(EachLine);
 
-    // public Lines EachLine(Func<OneLine, OnePlus<IHas<string>>> transformer) => this.Select(transformer).Lines();
+    public static implicit operator string(Lines lines) => lines.JoinLines();
 
     /// <summary>
     /// Performs a <see cref="Func{T,TResult}"/> against each <see cref="OneLine"/>.
