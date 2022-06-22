@@ -125,6 +125,19 @@ public static partial class CollectionUtils {
         return (matches, leftovers);
     }
 
+    /// <summary>
+    /// <see cref="Enumerable.Take{TSource}"/>s the first <paramref name="count"/> items and <see cref="Enumerable.Skip{TSource}"/>s to the rest into
+    /// separate <see cref="IEnumerable{T}"/>s.
+    /// </summary>
+    /// <param name="source">the original <see cref="IEnumerable{T}"/></param>
+    /// <param name="count"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    [SuppressMessage("ReSharper", "PossibleMultipleEnumeration")]
+    public static (IEnumerable<T> taken, IEnumerable<T> leftovers) TakeLeftovers<T>(this IEnumerable<T> source, int count) {
+        return (source.Take(count), source.Skip(count));
+    }
+
     #region Dictionary Inversion
 
     public static IDictionary<TValue_Original, TKey_Original> Inverse_Internal<TKey_Original, TValue_Original>(IDictionary<TKey_Original, TValue_Original> dictionary) {
@@ -1229,6 +1242,8 @@ public static partial class CollectionUtils {
 
     #endregion
 
+#if !NET6_0_OR_GREATER
+
     #region TakeLast
 
     /// <summary>
@@ -1263,7 +1278,9 @@ public static partial class CollectionUtils {
         int count
     ) => count <= 0 ? source : source.Reverse().Skip(count).Reverse();
 
-    #endregion JustBefore
+    #endregion
+
+#endif
 
     #endregion Finding
 
