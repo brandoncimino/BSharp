@@ -11,10 +11,10 @@ namespace FowlFever.BSharp.Attributes {
     /// </summary>
     /// <remarks>
     /// <b>NOTE:</b> Even if an attribute only <b>affects</b> editor functionality (as is the case with <see cref="EditorInvocationButtonAttribute"/>), if it will <b>target</b> runtime code (which is most likely the case), then the <see cref="Attribute"/> class itself should be declared <b>inside <see cref="Packages.BrandonUtils.Runtime"/></b>.
-    /// <br/>
-    /// This mimics the setup of Unity's built-in attributes like <see cref="UnityEngine.HeaderAttribute"/> and <see cref="UnityEngine.RangeAttribute"/>, which are declared inside of <see cref="UnityEngine"/> rather than <see cref="UnityEditor"/>.
+    /// <p/>
+    /// This mimics the setup of Unity's built-in attributes like <c>UnityEngine.HeaderAttribute</c> and <c>UnityEngine.RangeAttribute</c>, which are declared inside of <c>UnityEngine</c> rather than <c>"UnityEditor"</c>.
     /// </remarks>
-    public abstract class BrandonAttribute : Attribute {
+    public abstract class BrandonAttribute : Attribute, ITargetValidatedAttribute {
         /// <remarks>
         /// This is the overridable portion of <see cref="ValidateTarget"/>. Any <see cref="Exception"/>s raised here will be re-thrown as <see cref="InvalidAttributeTargetException"/>s.
         /// </remarks>
