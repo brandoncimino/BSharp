@@ -284,7 +284,7 @@ namespace FowlFever.BSharp.Optional {
         /// <param name="optional">this <see cref="IOptional{T}"/></param>
         /// <param name="fallbackSupplier">a <see cref="Func{TResult}"/> that produces a <see cref="T"/> if <see cref="IOptional{T}.Value"/> isn't present</param>
         /// <returns><see cref="IOptional{T}.Value"/> if this <see cref="IOptional{T}.HasValue"/>; otherwise, <see cref="Func{TResult}.Invoke"/>s <see cref="fallbackSupplier"/></returns>
-        public static T? GetValueOrDefault<T>(this IOptional<T?>? optional, Func<T> fallbackSupplier) {
+        public static T GetValueOrDefault<T>(this IOptional<T>? optional, Func<T> fallbackSupplier) {
             if (fallbackSupplier == null) {
                 throw new ArgumentNullException(nameof(fallbackSupplier));
             }
@@ -295,7 +295,7 @@ namespace FowlFever.BSharp.Optional {
         /**
          * <inheritdoc cref="GetValueOrDefault{T}(FowlFever.BSharp.Optional.IOptional{T?}?,System.Func{T})"/>
          */
-        public static T? OrElseGet<T>(this IOptional<T?>? optional, Func<T> fallbackSupplier) {
+        public static T OrElseGet<T>(this IOptional<T>? optional, Func<T> fallbackSupplier) {
             return optional.GetValueOrDefault(fallbackSupplier);
         }
 
