@@ -89,13 +89,13 @@ public class RapSheet : IEnumerable<IFailable>, IPrettifiable, IFailable {
 
     private string FormatFailable(IFailable failable) => FailableFormatter?.Invoke(failable) ?? FormatFailable_Default(failable);
 
-    #endregion
-
     public string Prettify(PrettificationSettings? settings = default) {
         var lines = new List<string> { GetSummary() };
         lines.AddRange(Charges.Select(FormatFailable).Indent());
         return lines.JoinLines();
     }
+
+    #endregion
 
     public Exception?                   Excuse                => ExceptionUtils.Aggregate(Convictions.Select(it => it.Excuse));
     public bool                         Failed                => Convictions.Any();
