@@ -332,14 +332,14 @@ namespace FowlFever.BSharp.Strings {
         #region ContainsAny
 
         /// <summary>
-        /// Returns true if the given <see cref="string"/> <see cref="string.Contains"/> <b>any</b> of the given <see cref="substrings"/>.
+        /// Returns true if the given <see cref="string"/> <see cref="string.Contains(string)"/> <b>any</b> of the given <see cref="substrings"/>.
         /// </summary>
         /// <remarks>
         /// TODO: I wonder if it would be faster to search for the shortest substring first...? And maybe excluding substrings that wholly contain other substrings?
         /// </remarks>
         /// <param name="str">the <see cref="string"/> to check for <see cref="substrings"/></param>
         /// <param name="substrings">the possible <see cref="substrings"/></param>
-        /// <returns>true if the given <see cref="string"/> <see cref="string.Contains"/> <b>any</b> of the given <see cref="substrings"/></returns>
+        /// <returns>true if the given <see cref="string"/> <see cref="string.Contains(string)"/> <b>any</b> of the given <see cref="substrings"/></returns>
         public static bool ContainsAny(this string str, IEnumerable<string> substrings) {
             return substrings.Any(str.Contains);
         }
@@ -357,7 +357,7 @@ namespace FowlFever.BSharp.Strings {
 
         /// <param name="str">this <see cref="string"/></param>
         /// <param name="substring">the <see cref="string"/> that shouldn't be inside of <paramref name="str"/></param>
-        /// <returns>the inverse of <see cref="string.Contains"/></returns>
+        /// <returns>the inverse of <see cref="string.Contains(string)"/></returns>
         public static bool DoesNotContain(this string str, string substring) {
             return !str.Contains(substring);
         }
@@ -385,11 +385,11 @@ namespace FowlFever.BSharp.Strings {
         #region ContainsAll
 
         /// <summary>
-        /// Returns true if the given <see cref="string"/> <see cref="string.Contains"/> <b>all</b> of the given <see cref="substrings"/>.
+        /// Returns true if the given <see cref="string"/> <see cref="string.Contains(string)"/> <b>all</b> of the given <see cref="substrings"/>.
         /// </summary>
         /// <param name="str">the <see cref="string"/> to search through</param>
         /// <param name="substrings">the possible substrings</param>
-        /// <returns>true if the given <see cref="string"/> <see cref="string.Contains"/> <b>all</b> of the given <see cref="substrings"/></returns>
+        /// <returns>true if the given <see cref="string"/> <see cref="string.Contains(string)"/> <b>all</b> of the given <see cref="substrings"/></returns>
         public static bool ContainsAll(this string str, IEnumerable<string> substrings) {
             return substrings.All(str.Contains);
         }
@@ -462,7 +462,7 @@ namespace FowlFever.BSharp.Strings {
         [NonNegativeValue]
         public static int LongestLine([InstantHandle] this IEnumerable<string?> strings) {
             return strings
-                   .SelectMany(it => it?.SplitLines().OrEmpty())
+                   .SelectMany(it => (it?.SplitLines()).OrEmpty())
                    .Max(it => it.Length);
         }
 
@@ -517,24 +517,22 @@ namespace FowlFever.BSharp.Strings {
         /// <param name="lineCount"></param>
         /// <param name="includeMessage"></param>
         /// <returns></returns>
-        public static string?[] TruncateLines(this IEnumerable<string?> lines, int lineCount, bool includeMessage = true) {
-            var lns = lines.ToArray();
-            if (lns.Length <= lineCount) {
-                return lns.ToArray();
+        public static IEnumerable<string> TruncateLines(this IEnumerable<string> lines, int lineCount, bool includeMessage = true) {
+            var (taken, leftover) = lines.TakeLeftovers(lineCount);
+
+            // ReSharper disable once InvertIf
+            if (includeMessage) {
+                var leftoverCount = leftover.Count();
+                if (leftoverCount > 0) {
+                    taken = taken.SkipLast(1)
+                                 .Append($"{Ellipsis}[{leftoverCount} lines omitted]");
+                }
             }
 
-            if (includeMessage) {
-                return lns.Take(lineCount - 1)
-                          .Append($"{Ellipsis}[{lns.Length - lineCount} lines omitted]")
-                          .ToArray();
-            }
-            else {
-                return lns.Take(lineCount)
-                          .ToArray();
-            }
+            return taken;
         }
 
-        public static string?[] TruncateLines(this string contentWithLines, int lineCount, bool includeMessage = true) {
+        public static IEnumerable<string> TruncateLines(this string contentWithLines, int lineCount, bool includeMessage = true) {
             return TruncateLines(contentWithLines.SplitLines(), lineCount, includeMessage);
         }
 
@@ -590,13 +588,10 @@ namespace FowlFever.BSharp.Strings {
         /// <param name="nullPlaceholder"></param>
         /// <returns></returns>
         public static IEnumerable<string?> ToStringLines(this object? obj, string? nullPlaceholder = "") {
-            if (obj is IEnumerable<object> e) {
-                return e.SelectMany(it => it.ToStringLines(nullPlaceholder)).SplitLines();
-            }
-
-            return obj?.ToString().SplitLines() ?? new[] {
-                nullPlaceholder
-            };
+            return obj?
+                   .ToString()
+                   .Lines()
+                   .Select(it => it.Value) ?? Enumerable.Empty<string?>();
         }
 
         #endregion
@@ -611,13 +606,12 @@ namespace FowlFever.BSharp.Strings {
         /// <param name="obj">the original <see cref="object"/></param>
         /// <param name="nullPlaceholder">the <see cref="string"/> returned when <paramref name="obj"/> is <c>null</c></param>
         /// <returns>the <see cref="object.ToString"/> representation of <paramref name="obj"/>, or <c>null</c></returns>
-        [ContractAnnotation("nullPlaceholder:null => stop")]
         public static string ToString(this object? obj, string nullPlaceholder) {
             if (nullPlaceholder == null) {
                 throw new ArgumentNullException(nameof(nullPlaceholder), $"Providing a null value as a {nameof(nullPlaceholder)} is redundant!");
             }
 
-            return obj == null ? nullPlaceholder : obj.ToString();
+            return obj?.ToString() ?? nullPlaceholder;
         }
 
         /// <summary>
@@ -628,21 +622,23 @@ namespace FowlFever.BSharp.Strings {
         /// <returns>this <see cref="string"/> or <paramref name="emptyPlaceholder"/></returns>
         [return: NotNullIfNotNull("emptyPlaceholder")]
         public static string? IfEmpty(this string? str, string? emptyPlaceholder) {
-            return str.IsNullOrEmpty() ? emptyPlaceholder : str;
+            return str.IsEmpty() ? emptyPlaceholder : str;
         }
 
         /// <param name="obj">this <see cref="object"/></param>
         /// <param name="nullPlaceholder">the output if this <see cref="Object"/> is <c>null</c>. Defaults to <see cref="Prettification.DefaultNullPlaceholder"/></param>
         /// <returns><see cref="object.ToString"/> if this <see cref="Object"/> isn't <c>null</c>; otherwise, <paramref name="nullPlaceholder"/></returns>
-        public static string OrNullPlaceholder<T>(this T? obj, string? nullPlaceholder = Prettification.DefaultNullPlaceholder) {
+        public static string OrNullPlaceholder<T>(this T? obj, string? nullPlaceholder) {
             nullPlaceholder ??= Prettification.DefaultNullPlaceholder;
             return obj?.ToString() ?? nullPlaceholder;
         }
 
         /// <inheritdoc cref="OrNullPlaceholder{T}(T?,string?)"/>
+        public static string OrNullPlaceholder<T>(this T? obj) => OrNullPlaceholder(obj, default(PrettificationSettings));
+
+        /// <inheritdoc cref="OrNullPlaceholder{T}(T?,string?)"/>
         public static string OrNullPlaceholder<T>(this T? obj, PrettificationSettings? settings) {
-            settings ??= PrettificationSettings.Default;
-            return OrNullPlaceholder(obj, settings.NullPlaceholder);
+            return OrNullPlaceholder(obj, settings.Resolve().NullPlaceholder);
         }
 
         /// <summary>
@@ -702,18 +698,12 @@ namespace FowlFever.BSharp.Strings {
         /// <returns><see cref="string.IsNullOrEmpty"/></returns>
         public static bool IsEmpty([NotNullWhen(false)] this string? str) => string.IsNullOrEmpty(str);
 
-        /// <inheritdoc cref="IsEmpty(string?)"/>
-        public static bool IsEmpty(this IHas<string?>? str) => (str?.Value).IsEmpty();
-
         /// <summary>
         /// The inverse of <see cref="IsEmpty(string?)"/>.
         /// </summary>
         /// <param name="str">this <see cref="string"/></param>
         /// <returns>!<see cref="IsEmpty(string?)"/></returns>
         public static bool IsNotEmpty([NotNullWhen(true)] this string? str) => !string.IsNullOrEmpty(str);
-
-        /// <inheritdoc cref="IsNotEmpty(string?)"/>
-        public static bool IsNotEmpty(this IHas<string?>? str) => (str?.Value).IsEmpty() == false;
 
         /// <summary>
         /// An extension method for <see cref="string.IsNullOrWhiteSpace"/> matching Java's <a href="https://commons.apache.org/proper/commons-lang/apidocs/org/apache/commons/lang3/StringUtils.html#isBlank-java.lang.CharSequence-">StringUtils.isBlank()</a>
@@ -722,18 +712,12 @@ namespace FowlFever.BSharp.Strings {
         /// <returns><see cref="string.IsNullOrWhiteSpace"/></returns>
         public static bool IsBlank([NotNullWhen(false)] this string? str) => string.IsNullOrWhiteSpace(str);
 
-        /// <inheritdoc cref="IsBlank(string?)"/>
-        public static bool IsBlank(this IHas<string?>? str) => (str?.Value).IsBlank();
-
         /// <summary>
         /// The inverse of <see cref="IsBlank(string?)"/>
         /// </summary>
         /// <param name="str">this <see cref="string"/></param>
         /// <returns><b>NOT</b> <see cref="string.IsNullOrWhiteSpace"/></returns>
         public static bool IsNotBlank([NotNullWhen(true)] this string? str) => !str.IsBlank();
-
-        /// <inheritdoc cref="IsNotBlank(string?)"/>
-        public static bool IsNotBlank(this IHas<string?>? str) => (str?.Value).IsNotBlank();
 
         #endregion
 
@@ -761,7 +745,7 @@ namespace FowlFever.BSharp.Strings {
 
         [Pure]
         public static string SubstringBefore(this string str, string splitter) {
-            if (splitter.IsNullOrEmpty()) {
+            if (splitter.IsEmpty()) {
                 return "";
             }
 
@@ -771,7 +755,7 @@ namespace FowlFever.BSharp.Strings {
 
         [Pure]
         public static string SubstringAfter(this string? str, string? splitter) {
-            if (str.IsNullOrEmpty() || splitter.IsNullOrEmpty()) {
+            if (str.IsEmpty() || splitter.IsEmpty()) {
                 return "";
             }
 
@@ -781,7 +765,7 @@ namespace FowlFever.BSharp.Strings {
 
         [Pure]
         public static string SubstringBefore(this string? str, Regex pattern) {
-            if (str.IsNullOrEmpty()) {
+            if (str.IsEmpty()) {
                 return "";
             }
 
@@ -791,7 +775,7 @@ namespace FowlFever.BSharp.Strings {
 
         [Pure]
         public static string SubstringAfter(this string? str, Regex pattern) {
-            if (str.IsNullOrEmpty()) {
+            if (str.IsEmpty()) {
                 return "";
             }
 
