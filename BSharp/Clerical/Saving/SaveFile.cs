@@ -1,7 +1,7 @@
 using System;
 using System.IO;
 
-using FowlFever.BSharp.Strings;
+using FowlFever.BSharp.Exceptions;
 
 using JetBrains.Annotations;
 
@@ -38,7 +38,7 @@ namespace FowlFever.BSharp.Clerical.Saving {
             TData?       data = default
         ) : base(
             folder,
-            saveFileName.Rendered.MustNotBeBlank(),
+            saveFileName.Rendered.Must().NotBlank(),
             data
         ) {
             _saveFileName = saveFileName ?? throw new ArgumentNullException(nameof(saveFileName));

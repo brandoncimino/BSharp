@@ -2,10 +2,11 @@ using System;
 using System.IO;
 using System.Text.Json;
 
-using FowlFever.BSharp.Strings;
+using FowlFever.BSharp.Exceptions;
 
 namespace FowlFever.BSharp.Clerical.Saving {
-    public abstract class BaseSaveFile<TData> : ISaveFile<TData> where TData : ISaveData {
+    public abstract class BaseSaveFile<TData> : ISaveFile<TData>
+        where TData : ISaveData {
         public          FileSystemInfo FileSystemInfo => File;
         public          FileInfo       File           { get; }
         public abstract string         Nickname       { get; }
@@ -31,7 +32,7 @@ namespace FowlFever.BSharp.Clerical.Saving {
         )
             : this(
                 folder ?? throw new ArgumentNullException(nameof(folder)),
-                new FileInfo(folder.Directory.GetChildPath(relativePathToFile.MustNotBeBlank())),
+                new FileInfo(Must.Have(folder.Directory.GetChildPath(relativePathToFile)).NotBlank()),
                 data
             ) { }
 

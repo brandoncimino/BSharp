@@ -65,7 +65,7 @@ namespace FowlFever.BSharp.Clerical.Saving {
 
         [ContractAnnotation("null => stop")]
         private static string Validate_Nickname(string? nickname) {
-            if (nickname.IsNullOrEmpty()) {
+            if (nickname.IsEmpty()) {
                 throw new ArgumentNullException(nameof(nickname), $"Must not be null or empty, but was [{nickname}]!");
             }
 
