@@ -614,10 +614,10 @@ namespace FowlFever.BSharp.Strings {
         }
 
         /// <summary>
-        /// Returns <paramref name="emptyPlaceholder"/> if this <see cref="string"/> <see cref="IsNullOrEmpty"/>; otherwise, returns this <see cref="string"/>.
+        /// Returns <paramref name="emptyPlaceholder"/> if this <see cref="string"/> <see cref="IsEmpty"/>; otherwise, returns this <see cref="string"/>.
         /// </summary>
         /// <param name="str">this <see cref="string"/></param>
-        /// <param name="emptyPlaceholder">the fallback string if <paramref name="str"/> <see cref="IsNullOrEmpty"/>. Defaults to <c>""</c></param>
+        /// <param name="emptyPlaceholder">the fallback string if <paramref name="str"/> <see cref="IsEmpty"/>. Defaults to <c>""</c></param>
         /// <returns>this <see cref="string"/> or <paramref name="emptyPlaceholder"/></returns>
         [return: NotNullIfNotNull("emptyPlaceholder")]
         public static string? IfEmpty(this string? str, string? emptyPlaceholder) {
@@ -703,21 +703,10 @@ namespace FowlFever.BSharp.Strings {
 
         #region {x}IfMissing
 
-        public static string PrependIfMissing(this string str, string prefix) {
-            return PrefixIfMissing(str, prefix);
-        }
-
-        public static string PrefixIfMissing(this string str, string prefix) {
-            return str.StartsWith(prefix) ? str : str.Prefix(prefix);
-        }
-
-        public static string AppendIfMissing(this string str, string suffix) {
-            return SuffixIfMissing(str, suffix);
-        }
-
-        public static string SuffixIfMissing(this string str, string suffix) {
-            return str.EndsWith(suffix) ? str : str.Suffix(suffix);
-        }
+        public static string PrependIfMissing(this string str, string prefix) => PrefixIfMissing(str, prefix);
+        public static string PrefixIfMissing(this  string str, string prefix) => str.StartsWith(prefix) ? str : str.Prefix(prefix);
+        public static string AppendIfMissing(this  string str, string suffix) => SuffixIfMissing(str, suffix);
+        public static string SuffixIfMissing(this  string str, string suffix) => str.EndsWith(suffix) ? str : str.Suffix(suffix);
 
         #endregion
 
@@ -725,40 +714,24 @@ namespace FowlFever.BSharp.Strings {
 
         [Pure]
         public static string SubstringBefore(this string str, string splitter) {
-            if (splitter.IsEmpty()) {
-                return "";
-            }
-
             var first = str.IndexOf(splitter, StringComparison.Ordinal);
             return first > 0 ? str[..first] : "";
         }
 
         [Pure]
-        public static string SubstringAfter(this string? str, string? splitter) {
-            if (str.IsEmpty() || splitter.IsEmpty()) {
-                return "";
-            }
-
+        public static string SubstringAfter(this string str, string splitter) {
             var last = str.LastIndexOf(splitter, StringComparison.Ordinal) + splitter.Length;
             return last.IsBetween(0, str.Length, Clusivity.Exclusive) ? str.Substring(last, str.Length - last) : "";
         }
 
         [Pure]
-        public static string SubstringBefore(this string? str, Regex pattern) {
-            if (str.IsEmpty()) {
-                return "";
-            }
-
+        public static string SubstringBefore(this string str, Regex pattern) {
             var match = pattern.Match(str);
             return match.Success ? str.Substring(0, match.Index) : "";
         }
 
         [Pure]
-        public static string SubstringAfter(this string? str, Regex pattern) {
-            if (str.IsEmpty()) {
-                return "";
-            }
-
+        public static string SubstringAfter(this string str, Regex pattern) {
             var rightToLeftPattern = new Regex(pattern.ToString(), pattern.Options | RegexOptions.RightToLeft);
             var match              = rightToLeftPattern.Match(str);
             if (match.Success) {
