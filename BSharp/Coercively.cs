@@ -118,7 +118,7 @@ namespace FowlFever.BSharp {
             Double     = (a, b) => a / b,
             Decimal    = (a, b) => a / b,
             TimeSpan = (a, b) => {
-                if (b.IsNumber()) {
+                if (b.GetType().IsNumber()) {
                     return a.Divide(Convert.ToDouble(b));
                 }
 
