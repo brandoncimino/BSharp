@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Concurrent;
 
+using FowlFever.BSharp.Collections;
 using FowlFever.BSharp.Enums;
 using FowlFever.BSharp.Optional;
 
@@ -47,6 +49,9 @@ public record Supplied<T> : Wrapped<T?> {
     }
 
     public Supplied(Func<T>? supplier) : this(supplier?.Lazily()) { }
+
+    private static readonly ConcurrentDictionary<Type, Lazy<Supplied<T>>> EmptiesCache = new();
+    public static           Supplied<T>                                   Empty => EmptiesCache.GetOrAddLazily(typeof(T), _ => new Supplied<T>());
 
     public static implicit operator Supplied<T>(T        value)    => new(value);
     public static implicit operator Supplied<T>(Lazy<T>? lazy)     => new(lazy);
