@@ -1,5 +1,4 @@
 using System;
-using System.Diagnostics.Contracts;
 using System.Runtime.CompilerServices;
 
 namespace FowlFever.BSharp.Exceptions;
@@ -22,7 +21,7 @@ public static partial class Must {
             details,
             parameterName,
             rejectedBy,
-            reason ?? $"must {caller}",
+            reason ?? $"must satisfy: [{caller}]",
             causedBy
         );
     }
