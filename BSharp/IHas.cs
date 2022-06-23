@@ -23,5 +23,5 @@ public static class HasExtensions {
     /// <returns>this <see cref="IHas{T}"/>.<see cref="IHas{T}.Value"/></returns>
     public static T Get<T>(this IHas<T> self) => self.Value;
 
-    public static Func<T> Supply<T>(this IHas<T> self) => self.Get;
+    public static Supplied<T> Supplied<T>(this IHas<T> self) => new(self.Get);
 }
