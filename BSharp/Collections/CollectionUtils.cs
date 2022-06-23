@@ -134,7 +134,7 @@ public static partial class CollectionUtils {
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
     [SuppressMessage("ReSharper", "PossibleMultipleEnumeration")]
-    public static (IEnumerable<T> taken, IEnumerable<T> leftovers) TakeLeftovers<T>(this IEnumerable<T> source, int count) {
+    public static (IEnumerable<T> taken, IEnumerable<T> leftovers) TakeLeftovers<T>([NoEnumeration] this IEnumerable<T> source, [NonNegativeValue] int count) {
         return (source.Take(count), source.Skip(count));
     }
 
@@ -462,7 +462,8 @@ public static partial class CollectionUtils {
     /// <returns></returns>
     /// <exception cref="ConflictResolution.Fail">If <see cref="ConflictResolution"/> or an unknown <see cref="InvalidEnumArgumentException"/> is passed.</exception>
     [Pure]
-    public static Dictionary<TKey, TValue> Overlap<TKey, TValue>(this IDictionary<TKey, TValue> original, IDictionary<TKey, TValue> additional, ConflictResolution conflictResolution) {
+    public static IDictionary<TKey, TValue> Overlap<TKey, TValue>(this IDictionary<TKey, TValue> original, IDictionary<TKey, TValue> additional, ConflictResolution conflictResolution)
+        where TKey : notnull {
         var overlappingKeys = original.Keys.Where(additional.ContainsKey);
 
         switch (conflictResolution) {
@@ -509,10 +510,11 @@ public static partial class CollectionUtils {
     /// <exception cref="ArgumentException">If <paramref name="conflictResolution"/> is <see cref="ConflictResolution.Fail"/> and there are duplicate <see cref="IDictionary{TKey,TValue}.Keys"/> in the <paramref name="dictionaries"/>.</exception>
     /// <exception cref="InvalidEnumArgumentException"></exception>
     [Pure]
-    public static Dictionary<TKey, TValue> JoinDictionaries<TKey, TValue>(
+    public static IDictionary<TKey, TValue> JoinDictionaries<TKey, TValue>(
         IEnumerable<IDictionary<TKey, TValue>> dictionaries,
         ConflictResolution                     conflictResolution = ConflictResolution.Fail
-    ) {
+    )
+        where TKey : notnull {
         var dicList = dictionaries.ToList();
         var allKeys = dicList.SelectMany(dic => dic.Keys).ToList();
 
@@ -561,7 +563,8 @@ public static partial class CollectionUtils {
         this IDictionary<TKey, TValue> original,
         IDictionary<TKey, TValue>      additional,
         ConflictResolution             conflictResolution = ConflictResolution.Fail
-    ) {
+    )
+        where TKey : notnull {
         return JoinDictionaries(new[] { original, additional }, conflictResolution);
     }
 
@@ -569,14 +572,15 @@ public static partial class CollectionUtils {
     public static IDictionary<TKey, TValue> JoinDictionaries<TKey, TValue>(
         this   IDictionary<TKey, TValue>   original,
         params IDictionary<TKey, TValue>[] additional
-    ) {
+    )
+        where TKey : notnull {
         return JoinDictionaries(additional.Prepend(original));
     }
 
     [Pure]
     public static TValue FirstValue<TKey, TValue>(
-        this IEnumerable<Dictionary<TKey, TValue>> dictionaries,
-        TKey                                       key
+        this IEnumerable<IDictionary<TKey, TValue>> dictionaries,
+        TKey                                        key
     ) {
         return dictionaries.First(dic => dic.ContainsKey(key))[key];
     }
@@ -1008,7 +1012,7 @@ public static partial class CollectionUtils {
     }
 
     /// <summary>
-    /// Adds entries that <see cref="Nullable{T}.HasValue"/> to <paramref name="source"/>.
+    /// Adds entries that <see cref="System.Nullable{T}.HasValue"/> to <paramref name="source"/>.
     /// </summary>
     /// <param name="source">the original <see cref="ICollection{T}"/> of a <see cref="ValueType"/></param>
     /// <param name="nullableValues">a sequence of <see cref="Nullable{T}"/> values that will might add to <paramref name="source"/></param>
@@ -1243,7 +1247,6 @@ public static partial class CollectionUtils {
     #endregion
 
 #if !NET6_0_OR_GREATER
-
     #region TakeLast
 
     /// <summary>
@@ -1556,7 +1559,7 @@ public static partial class CollectionUtils {
     /// <exception cref="Exception"></exception>
     [Pure]
     [LinqTunnel]
-    public static IEnumerable<T> Must<T>([ItemNotNull] this IEnumerable<T> source, Func<T, bool> predicate, Func<T, Exception>? exceptionSupplier = default) {
+    public static IEnumerable<T> AllMust<T>([ItemNotNull] this IEnumerable<T> source, Func<T, bool> predicate, Func<T, Exception>? exceptionSupplier = default) {
         return source.Peek(
             it => {
                 if (predicate.Invoke(it) == false) {
