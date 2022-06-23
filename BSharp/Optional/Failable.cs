@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 
@@ -16,8 +17,9 @@ namespace FowlFever.BSharp.Optional {
      * <inheritdoc cref="IFailable"/>
      */
     public record Failable : IFailable {
-        public Exception?                Excuse                { get; }
-        public bool                      Failed                => Excuse != null;
+        public Exception? Excuse { get; }
+        [MemberNotNullWhen(true, nameof(Excuse))]
+        public bool Failed => Excuse != null;
         public IReadOnlyCollection<Type> IgnoredExceptionTypes { get; }
         public Exception?                IgnoredException      { get; }
         public Supplied<string?>?        Description           { get; }

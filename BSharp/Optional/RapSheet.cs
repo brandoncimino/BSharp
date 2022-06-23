@@ -101,5 +101,5 @@ public class RapSheet : IEnumerable<IFailable>, IPrettifiable, IFailable {
     public bool                         Failed                => Convictions.Any();
     IReadOnlyCollection<Type> IFailable.IgnoredExceptionTypes => throw new NotSupportedException(MethodBase.GetCurrentMethod()?.ToString());
     Exception IFailable.                IgnoredException      => throw new NotSupportedException(MethodBase.GetCurrentMethod()?.ToString());
-    public Supplied<string>             Description           => GetSummary();
+    public Supplied<string?>            Description           => GetSummary();
 }

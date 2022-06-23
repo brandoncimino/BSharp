@@ -494,6 +494,11 @@ namespace FowlFever.BSharp.Optional {
             return optional.HasValue ? optional.Value : throw (exceptionProvider?.Invoke() ?? NoCanHasValue(optional));
         }
 
+        [Pure]
+        public static T OrElseThrow<T>(this IFailableFunc<T> failable, Func<Exception, Exception>? exceptionTransformer = default) {
+            return failable.Failed ? throw (exceptionTransformer?.Invoke(failable.Excuse) ?? failable.Excuse) : failable.Value;
+        }
+
         /// <summary>
         /// If this <see cref="Nullable{T}.HasValue"/>, returns <see cref="Nullable{T}.Value"/>.
         ///

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 using JetBrains.Annotations;
 
@@ -9,19 +10,13 @@ namespace FowlFever.BSharp.Optional;
 /// Represents something that <b><i>might</i></b> have failed.
 /// </summary>
 /// <remarks>
-/// TODO: A looser, cuter version of this called <c>ITried</c>, with <see cref="FailableOutcome"/> => <c>Verdict</c>, <see cref="FailableOutcome.Passed"/> => <c>Acquitted</c>, etc.!
+/// TODO: A looser, cuter version of this called <c>ITried</c>, with <c>"FailableOutcome"</c> => <c>Verdict</c>, <c>"FailableOutcome.Passed"</c> => <c>Acquitted</c>, etc.!
 /// </remarks>
 [PublicAPI]
 public interface IFailable {
     /// <summary>
     /// The <see cref="Exception"/> that caused this <see cref="IFailable"/> to fail (if it did).
     /// </summary>
-    /// <remarks>
-    /// <ul>
-    /// <li>Retrieving <see cref="Excuse"/> when <see cref="Failed"/> is <c>false</c> should throw an <see cref="InvalidOperationException"/>.</li>
-    /// <li><see cref="Excuse"/> should <b>never</b> return <c>null</c>.</li>
-    /// </ul>
-    /// </remarks>
     public Exception? Excuse { get; }
 
     /// <summary>
@@ -33,6 +28,7 @@ public interface IFailable {
     /// <li>If <see cref="Failed"/> is <c>false</c>, then <see cref="Excuse"/> should <b>not</b> be present.</li>
     /// </ul>
     /// </remarks>
+    [MemberNotNullWhen(true, nameof(Excuse))]
     public bool Failed { get; }
 
     IReadOnlyCollection<Type> IgnoredExceptionTypes { get; }
@@ -45,5 +41,5 @@ public interface IFailable {
     /// <remarks>
     /// Should ideally be retrieved via <see cref="System.Runtime.CompilerServices.CallerArgumentExpressionAttribute"/>.
     /// </remarks>
-    public Supplied<string>? Description { get; }
+    public Supplied<string?>? Description { get; }
 }
