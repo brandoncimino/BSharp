@@ -80,7 +80,7 @@ namespace FowlFever.BSharp.Strings {
             string      indentString = DefaultIndentString,
             IndentMode  indentMode   = IndentMode.Relative
         ) {
-            Must.NotBeEmpty(indentString, nameof(indentString), nameof(Indent));
+            Must.Have(indentString).NotBlank();
             return Enumerable.Repeat(toIndent, 1).Indent(indentCount, indentString, indentMode);
         }
 
@@ -90,8 +90,7 @@ namespace FowlFever.BSharp.Strings {
             string                    indentString = DefaultIndentString,
             IndentMode                indentMode   = IndentMode.Relative
         ) {
-            indentString = Must.NotBeEmpty(indentString, nameof(indentString), nameof(Indent));
-
+            Must.Have(indentString).NotEmpty();
             return indentMode switch {
                 IndentMode.Absolute => IndentAbsolute(toIndent, indentCount, indentString),
                 IndentMode.Relative => IndentRelative(toIndent, indentCount, indentString),
@@ -668,28 +667,9 @@ namespace FowlFever.BSharp.Strings {
         [return: NotNullIfNotNull("str")]
         public static string? IfNotBlank(this string? str, Func<string, string> transformation) => str.IsBlank() ? str : transformation(str);
 
-        /// <summary>
-        /// TODO: move to <see cref="Must"/>
-        /// </summary>
-        /// <param name="str"></param>
-        /// <returns></returns>
-        /// <exception cref="ArgumentException"></exception>
-        [Obsolete]
-        public static string MustNotBeBlank([NotNull] this string? str) => Must.NotBeBlank(str);
-
         #endregion
 
         #region Lapelle deux Vid
-
-        /// <summary>
-        /// An extension method for <see cref="string.IsNullOrEmpty"/>
-        /// </summary>
-        /// <param name="str">this <see cref="string"/></param>
-        /// <returns><see cref="string.IsNullOrEmpty"/></returns>
-        [Obsolete($"ugly!!! use {nameof(IsEmpty)} instead!")]
-        public static bool IsNullOrEmpty([NotNullWhen(false)] this string? str) {
-            return str.IsEmpty();
-        }
 
         /// <summary>
         /// An extension method for <see cref="string.IsNullOrEmpty"/>
