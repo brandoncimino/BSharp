@@ -46,7 +46,7 @@ namespace FowlFever.BSharp.Optional {
             [CallerArgumentExpression("failableAction")]
             string? expression = default
         ) {
-            ignoredExceptionTypes = ignoredExceptionTypes.Must(ReflectionUtils.IsExceptionType).ToArray();
+            ignoredExceptionTypes = ignoredExceptionTypes.AllMust(ReflectionUtils.IsExceptionType).ToArray();
             var resolvedDescription = description ?? expression;
 
             if (failableAction == null) {
