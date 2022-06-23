@@ -12,15 +12,14 @@ namespace FowlFever.BSharp.Strings;
 /// Represents a collection of <see cref="OneLine"/> <see cref="string"/>s.
 /// </summary>
 public readonly record struct Lines : IEnumerable<OneLine> {
-    // public override  string                    Value => this.JoinLines();
     private readonly Supplied<IEnumerable<OneLine>> _lineSupplier;
 
     public Lines() => _lineSupplier = Supplied<IEnumerable<OneLine>>.Empty;
-
     public Lines(Supplied<IEnumerable<OneLine>> lineSupplier) => _lineSupplier = lineSupplier;
-
-    public IEnumerator<OneLine> GetEnumerator() => _lineSupplier.Value.OrEmpty().GetEnumerator();
-    IEnumerator IEnumerable.    GetEnumerator() => GetEnumerator();
+    private IEnumerable<OneLine> LineEnumerable() => _lineSupplier.Value.OrEmpty();
+    public  IEnumerable<OneLine> AsEnumerable()   => LineEnumerable();
+    public  IEnumerator<OneLine> GetEnumerator()  => LineEnumerable().GetEnumerator();
+    IEnumerator IEnumerable.     GetEnumerator()  => GetEnumerator();
 
     public static IEnumerable<OneLine> EachLine(string? multilineContent) => EachLine(multilineContent, default);
 
