@@ -13,6 +13,28 @@ public static partial class Must {
 
     #region Blankness
 
+    #region Muster-extensions
+
+    [return: NotNull]
+    public static T NotBlank<T>(this Muster<T, string> muster, string? details = default) {
+        if (muster.ValidationTarget.IsBlank()) {
+            throw muster.Reject(details);
+        }
+
+        return muster.TrueSelf!;
+    }
+
+    [return: NotNull]
+    public static T NotEmpty<T>(this Muster<T, string> muster, string? details = default) {
+        if (muster.ValidationTarget.IsEmpty()) {
+            throw muster.Reject(details);
+        }
+
+        return muster.TrueSelf;
+    }
+
+    #endregion
+
     public static string NotBeBlank(
         [NotNull] string? actualValue,
         string?           details = default,
@@ -21,11 +43,11 @@ public static partial class Must {
         [CallerMemberName]
         string? methodName = default
     ) {
-        if (actualValue.IsNotBlank()) {
-            return actualValue!;
+        if (!actualValue.IsNotBlank()) {
+            throw Reject(actualValue, details: details, parameterName: parameterName, rejectedBy: methodName, reason: nameof(NotBeBlank));
         }
 
-        throw Reject(actualValue, details: details, parameterName: parameterName, rejectedBy: methodName, reason: nameof(NotBeBlank));
+        return actualValue!;
     }
 
     public static string NotBeEmpty(
@@ -36,11 +58,11 @@ public static partial class Must {
         [CallerMemberName]
         string? methodName = default
     ) {
-        if (actualValue.IsNotEmpty()) {
-            return actualValue;
+        if (!actualValue.IsNotEmpty()) {
+            throw Reject(actualValue, details: details, parameterName: parameterName, rejectedBy: methodName, reason: nameof(NotBeEmpty));
         }
 
-        throw Reject(actualValue, details: details, parameterName: parameterName, rejectedBy: methodName, reason: nameof(NotBeEmpty));
+        return actualValue;
     }
 
     #endregion
