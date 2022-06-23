@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 
+using FowlFever.BSharp.Sugar;
+
 using JetBrains.Annotations;
 
 namespace FowlFever.BSharp.Optional;
@@ -29,6 +31,22 @@ public static partial class Failables {
     ) {
         return FailableFunc<T>.Invoke(functionThatMightFail, description);
     }
+
+    /// <summary>
+    /// "Safely" <see cref="Lazily.Get{T}(Lazy{T})"/>s the value of this <see cref="Lazy{T}"/> as a <see cref="FailableFunc{TValue}"/>
+    /// </summary>
+    /// <param name="lazy">this <see cref="Lazy{T}"/></param>
+    /// <typeparam name="T">the type of the underlying <see cref="Lazy{T}.Value"/></typeparam>
+    /// <returns>the <see cref="Lazy{T}.Value"/>; or the <see cref="Failable.Excuse"/> for why we couldn't get it</returns>
+    public static FailableFunc<T> TryGet<T>(this Lazy<T> lazy) => Try(lazy.Get);
+
+    /// <summary>
+    /// "Safely" <see cref="HasExtensions.Get{T}"/>s the value of this <see cref="IHas{T}"/> as a <see cref="FailableFunc{TValue}"/>.
+    /// </summary>
+    /// <param name="has">this <see cref="IHas{T}"/></param>
+    /// <typeparam name="T">the type of the underlying <see cref="IHas{T}.Value"/></typeparam>
+    /// <returns>the <see cref="IHas{T}.Value"/>; or the <see cref="Failable.Excuse"/> for why we couldn't get it</returns>
+    public static FailableFunc<T> TryGet<T>(this IHas<T> has) => Try(has.Get);
 
     /// <inheritdoc cref="FailableFunc{TValue}"/>
     public static FailableFunc<TOut> Try<TIn, TOut>(
