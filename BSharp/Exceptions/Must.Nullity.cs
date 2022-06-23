@@ -17,6 +17,7 @@ public static partial class Must {
     /// <typeparam name="T">the type of <paramref name="actualValue"/></typeparam>
     /// <returns><paramref name="actualValue"/> as a non-nullable type</returns>
     /// <exception cref="RejectionException">if <paramref name="actualValue"/> is null</exception>
+    [return: NotNull]
     public static T NotBeNull<T>(
         [NotNull] T? actualValue,
         string?      details = default,
@@ -60,6 +61,7 @@ public static partial class Must {
         where T : struct => NotBeNull(actualValue, details, parameterName, rejectedBy);
 
     /// <inheritdoc cref="NotBeNull{T}(T?,string?,string?,string?)"/>
+    [return: NotNull]
     public static T MustNotBeNull<T>(
         [NotNull] this T? actualValue,
         string?           details = default,
