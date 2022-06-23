@@ -318,17 +318,6 @@ namespace FowlFever.BSharp.Reflection {
                    .Distinct();
         }
 
-        private static IEnumerable<Type> GetAncestors(this Type type) {
-            var ancestors = new List<Type>();
-
-            while (type != null) {
-                ancestors.Add(type);
-                type = type.BaseType;
-            }
-
-            return ancestors;
-        }
-
         /// <summary>
         /// An idiomatic inverse of <see cref="Type.IsAssignableFrom"/> because I always get confused by that.
         /// </summary>
