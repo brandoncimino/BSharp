@@ -41,10 +41,10 @@ public static partial class Must {
         [CallerArgumentExpression("actualValue")]
         string? parameterName = default,
         [CallerMemberName]
-        string? methodName = default
+        string? rejectedBy = default
     ) {
         if (!actualValue.IsNotBlank()) {
-            throw Reject(actualValue, details: details, parameterName: parameterName, rejectedBy: methodName, reason: nameof(NotBeBlank));
+            throw Reject(actualValue, details: details, parameterName: parameterName, rejectedBy: rejectedBy, reason: nameof(NotBeBlank));
         }
 
         return actualValue!;
@@ -56,10 +56,10 @@ public static partial class Must {
         [CallerArgumentExpression("actualValue")]
         string? parameterName = default,
         [CallerMemberName]
-        string? methodName = default
+        string? rejectedBy = default
     ) {
         if (!actualValue.IsNotEmpty()) {
-            throw Reject(actualValue, details: details, parameterName: parameterName, rejectedBy: methodName, reason: nameof(NotBeEmpty));
+            throw Reject(actualValue, details: details, parameterName: parameterName, rejectedBy: rejectedBy, reason: nameof(NotBeEmpty));
         }
 
         return actualValue;
@@ -77,10 +77,10 @@ public static partial class Must {
         [CallerArgumentExpression("actualValue")]
         string? parameterName = default,
         [CallerMemberName]
-        string? methodName = default
+        string? rejectedBy = default
     ) {
         if (actualValue?.Contains(unwantedString) == true) {
-            throw Reject(actualValue, details, parameterName: parameterName, rejectedBy: methodName, reason: $"must NOT contain the substring \"{unwantedString}\"");
+            throw Reject(actualValue, details, parameterName: parameterName, rejectedBy: rejectedBy, reason: $"must NOT contain the substring \"{unwantedString}\"");
         }
 
         return actualValue;
@@ -112,13 +112,13 @@ public static partial class Must {
         [CallerArgumentExpression("actualValue")]
         string? parameterName = default,
         [CallerMemberName]
-        string? methodName = default
+        string? rejectedBy = default
     ) {
         if (actualValue?.Contains(substring) == true) {
             return actualValue;
         }
 
-        throw Reject(actualValue, details, parameterName: parameterName, rejectedBy: methodName, reason: $"must contain the substring \"{substring}\"");
+        throw Reject(actualValue, details, parameterName: parameterName, rejectedBy: rejectedBy, reason: $"must contain the substring \"{substring}\"");
     }
 
     #endregion
@@ -132,13 +132,13 @@ public static partial class Must {
         [CallerArgumentExpression("actualValue")]
         string? parameterName = default,
         [CallerMemberName]
-        string? methodName = default
+        string? rejectedBy = default
     ) {
         if (actualValue?.Matches(pattern) == true) {
             return actualValue;
         }
 
-        throw Reject(actualValue, details, parameterName: parameterName, rejectedBy: methodName, reason: $"must match the {nameof(Regex)} pattern /{pattern}/");
+        throw Reject(actualValue, details, parameterName: parameterName, rejectedBy: rejectedBy, reason: $"must match the {nameof(Regex)} pattern /{pattern}/");
     }
 
     [return: NotNullIfNotNull("actualValue")]
@@ -149,13 +149,13 @@ public static partial class Must {
         [CallerArgumentExpression("actualValue")]
         string? parameterName = default,
         [CallerMemberName]
-        string? methodName = default
+        string? rejectedBy = default
     ) {
         if (actualValue?.Matches(pattern) != true) {
             return actualValue;
         }
 
-        throw Reject(actualValue, details, parameterName: parameterName, rejectedBy: methodName, reason: $"must NOT match the {nameof(Regex)} pattern /{pattern}/");
+        throw Reject(actualValue, details, parameterName: parameterName, rejectedBy: rejectedBy, reason: $"must NOT match the {nameof(Regex)} pattern /{pattern}/");
     }
 
     #endregion
