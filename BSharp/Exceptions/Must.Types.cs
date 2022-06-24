@@ -65,4 +65,15 @@ public static partial class Must {
 
         return actualValue;
     }
+
+    public static Type Extend<TParent>(
+        Type?   actualValue,
+        string? details = default,
+        [CallerArgumentExpression("actualValue")]
+        string? parameterName = default,
+        [CallerMemberName]
+        string? rejectedBy = default
+    ) {
+        return Extend(actualValue, typeof(TParent));
+    }
 }
