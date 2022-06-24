@@ -5,6 +5,7 @@ using System.Reflection;
 
 using FowlFever.BSharp.Collections;
 using FowlFever.BSharp.Enums;
+using FowlFever.BSharp.Exceptions;
 
 namespace FowlFever.BSharp.Reflection;
 
@@ -71,7 +72,7 @@ public static partial class ReflectionUtils {
         TCriteria                        filterCriteria
     )
         where TMember : MemberInfo {
-        bool AsMemberFilter(MemberInfo info, object criteria) => filter((TMember)info, (TCriteria)criteria);
+        bool AsMemberFilter(MemberInfo? info, object? criteria) => filter((TMember?)info, (TCriteria?)criteria);
         return type.FindAllMembers(
                        GetMemberInfoMemberTypes<TMember>(),
                        GetMemberInfoBindingFlags<TMember>(),
@@ -103,7 +104,7 @@ public static partial class ReflectionUtils {
     /// This makes it worthwhile to construct the silly <see cref="AnnotatedMemberFilter"/>.
     /// 
     /// </remarks>
-    /// <param name="type">the original <see cref="Type"/></param>
+    /// <param name="type">the <see cref="Type"/> that owns the members</param>
     /// <typeparam name="TMember">the <see cref="MemberTypes"/> you're searching for</typeparam>
     /// <typeparam name="TAttribute">the desired <see cref="Attribute"/></typeparam>
     /// <returns>the members with the specified <see cref="Attribute"/></returns>
@@ -120,6 +121,24 @@ public static partial class ReflectionUtils {
     }
 
     /// <summary>
+    /// Retrieves all of the <see cref="MemberInfo"/>s annotated with the given <paramref name="attributeType"/>.
+    /// </summary>
+    /// <param name="type">the <see cref="Type"/> that owns the members</param>
+    /// <param name="attributeType">the <see cref="Attribute"/> type to search for</param>
+    /// <param name="memberTypes">the types of <see cref="MemberInfo"/>s to retrieve</param>
+    /// <returns>all of the located <see cref="MemberInfo"/>s</returns>
+    /// <exception cref="RejectionException">if <paramref name="attributeType"/> is not an <see cref="Attribute"/></exception>
+    public static IEnumerable<MemberInfo> FindMembersWithAttribute(this Type type, Type attributeType, MemberTypes memberTypes = MemberTypes.All) {
+        Must.Extend(attributeType, typeof(Attribute));
+        return type.FindAllMembers(
+            memberTypes,
+            memberTypes.GetBindingFlags(),
+            FilterWithAttribute,
+            attributeType
+        );
+    }
+
+    /// <summary>
     /// Similar to <see cref="FindMembersWithAttribute{TMember,TAttribute}"/>, but returns the results as <see cref="Annotated{TMember,TAttribute}"/> instances.
     /// </summary>
     /// <param name="type">the original <see cref="Type"/></param>
@@ -133,12 +152,26 @@ public static partial class ReflectionUtils {
                    .Select(it => new Annotated<TMember, TAttribute>(it));
     }
 
+    /// <inheritdoc cref="FindAnnotated{TMember,TAttribute}"/>
+    /// <remarks>
+    /// The generic equivalent of this method, <see cref="FindAnnotated{TMember,TAttribute}"/>, should always be used if possible.
+    /// </remarks>
+    /// <exception cref="RejectionException">if <paramref name="attributeType"/> is not an <see cref="Attribute"/></exception>
+    public static IEnumerable<Annotated<MemberInfo, Attribute>> FindAnnotated(this Type type, Type attributeType, MemberTypes memberTypes = MemberTypes.All) {
+        return type.FindMembersWithAttribute(attributeType, memberTypes)
+                   .Select(it => new Annotated<MemberInfo, Attribute>(it));
+    }
+
     /// <inheritdoc cref="CustomAttributeExtensions.GetCustomAttributes{T}(MemberInfo, bool)"/>
     /// <returns>An <see cref="Annotated{TMember,TAttribute}"/> instance containing the results.</returns>
     public static Annotated<TMember, TAttribute> GetAnnotated<TMember, TAttribute>(this TMember member, bool inherit = true)
         where TMember : MemberInfo
         where TAttribute : Attribute
-        => new(member);
+        => new(member, inherit: inherit);
+
+    /// <inheritdoc cref="CustomAttributeExtensions.GetCustomAttributes(MemberInfo, Type)"/>
+    public static Annotated<TMember, Attribute> GetAnnotated<TMember>(this TMember member, Type attributeType, bool inherit = true)
+        where TMember : MemberInfo => new(member, CustomAttributeExtensions.GetCustomAttributes(member, attributeType, inherit), inherit);
 
     /// <inheritdoc cref="GetAnnotated{TMember,TAttribute}"/>
     public static Annotated<PropertyInfo, T> GetAnnotated<T>(this PropertyInfo property, bool inherit = true)
