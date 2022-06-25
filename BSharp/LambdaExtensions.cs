@@ -1,4 +1,6 @@
 using System;
+using System.Linq.Expressions;
+using System.Reflection;
 
 using FowlFever.BSharp.Strings;
 
@@ -189,6 +191,30 @@ namespace FowlFever.BSharp {
         [Pure] public static Action<A, B, C, D> Discard<A, B, C, D, TOut>(this Func<A, B, C, D, TOut> func) => (a, b, c, d) => func.Invoke(a, b, c, d);
 
         #endregion
+
+        #endregion
+
+        #region Lambda expressions
+
+        /// <summary>
+        /// Attempts to extract the underling <see cref="MemberInfo"/> from an <see cref="Expression{TDelegate}"/>
+        /// </summary>
+        /// <param name="lambdaExpression">this <see cref="Expression{TDelegate}"/></param>
+        /// <typeparam name="T">the type of the expression's lambda (aka <see cref="Delegate"/>)</typeparam>
+        /// <returns>the latter-most <see cref="MemberInfo"/> referenced by the <see cref="Expression{TDelegate}"/>, if possible; otherwise, <c>null</c></returns>
+        public static MemberInfo? AsMember<T>(this Expression<T> lambdaExpression)
+            where T : Delegate {
+            static MemberInfo? _GetMember(Expression exp) {
+                return exp switch {
+                    MemberExpression member                                                                       => member.Member,
+                    MethodCallExpression call                                                                     => call.Method,
+                    UnaryExpression { NodeType: ExpressionType.Convert or ExpressionType.ConvertChecked } convert => _GetMember(convert.Operand),
+                    _                                                                                             => default
+                };
+            }
+
+            return _GetMember(lambdaExpression.Body);
+        }
 
         #endregion
     }
