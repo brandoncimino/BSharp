@@ -206,5 +206,25 @@ public static partial class Must {
 
     #endregion
 
+    public static COLLECTION NotContainNull<COLLECTION, ENTRY>(
+        [NotNull] COLLECTION? actualValue,
+        string?               details = default,
+        [CallerArgumentExpression("actualValue")]
+        string? parameterName = default,
+        [CallerMemberName]
+        string? rejectedBy = default
+    )
+        where COLLECTION : IEnumerable<ENTRY?>? {
+        if (actualValue == null) {
+            throw Reject(actualValue, details, parameterName, rejectedBy, $"the {typeof(COLLECTION).Name} itself is null!");
+        }
+
+        if (actualValue.Any(it => it == null)) {
+            throw Reject(actualValue, details, parameterName, rejectedBy);
+        }
+
+        return actualValue;
+    }
+
     #endregion
 }
