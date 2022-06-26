@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
@@ -15,10 +16,6 @@ using JetBrains.Annotations;
 namespace FowlFever.BSharp.Enums {
     [PublicAPI]
     public static class BEnum {
-        private static Type MustBeEnumType(this Type enumType) {
-            return enumType.IsEnum ? enumType : throw new ArgumentException($"{enumType.PrettifyType(default)} is not an enum type!");
-        }
-
         private static Type MustMatchTypeArgument<T>(this Type enumType) {
             return enumType == typeof(T) ? enumType : throw new ArgumentException($"The {nameof(enumType)} {enumType.Prettify()} was not the same as the type argument <{nameof(T)}> {typeof(T).Prettify()}!");
         }
@@ -26,18 +23,38 @@ namespace FowlFever.BSharp.Enums {
         /// <typeparam name="T">an <see cref="Enum"/> type</typeparam>
         /// <returns>an array containing the <see cref="Type.GetEnumValues"/> of <typeparamref name="T"/>.</returns>
         /// <exception cref="ArgumentException">if <typeparamref name="T"/> is not an <see cref="Enum"/> type</exception>
-        public static T[] GetValues<T>()
+        /// <remarks>
+        /// This is similar to the <a href="https://docs.microsoft.com/en-us/dotnet/api/system.enum.getvalues?view=net-6.0#system-enum-getvalues-1">.NET 5+ Enum.GetValues<![CDATA[<T>]]>()</a> method,
+        /// with some improvements:
+        /// <ul>
+        /// <li>It can be used in .NET Standard 2+</li>
+        /// <li>The results are cached</li>
+        /// <li>It doesn't require the <see cref="ValueType">T : struct</see> constraint <i>(which is redundant with the <see cref="System.Enum">T : Enum</see> constraint)</i></li>
+        /// <li>The results are returned as an <see cref="IImmutableSet{T}"/> instead of an array</li> 
+        /// </ul>
+        /// </remarks>
+        public static IImmutableSet<T> GetValues<T>()
             where T : Enum {
             return GetValues<T>(typeof(T));
         }
 
-        public static T[] GetValues<T>(Type enumType)
+        private static class BenumCache<T>
             where T : Enum {
-            return enumType.MustBeEnumType()
-                           .MustMatchTypeArgument<T>()
-                           .GetEnumValues()
+            private static readonly Lazy<IImmutableSet<T>> Cache = new(RetrieveValues);
+
+            private static IImmutableSet<T> RetrieveValues() {
+                return Enum.GetValues(typeof(T))
                            .Cast<T>()
-                           .ToArray();
+                           .ToImmutableHashSet();
+            }
+
+            public static IImmutableSet<T> Values => Cache.Value;
+        }
+
+        /// <inheritdoc cref="GetValues{T}()"/>
+        public static IImmutableSet<T> GetValues<T>(Type enumType)
+            where T : Enum {
+            return BenumCache<T>.Values;
         }
 
         /// <summary>
