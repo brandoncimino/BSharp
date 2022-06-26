@@ -212,4 +212,15 @@ public static class PrimitiveUtils {
     }
 
     #endregion
+
+    #region Powers of Two
+
+    public static bool IsPowerOf2(this short  value) => (value != 0) && ((value & (value - 1)) == 0);
+    public static bool IsPowerOf2(this ushort value) => (value != 0) && ((value & (value - 1)) == 0);
+    public static bool IsPowerOf2(this int    value) => (value != 0) && ((value & (value - 1)) == 0);
+    public static bool IsPowerOf2(this uint   value) => (value != 0) && ((value & (value - 1)) == 0);
+    public static bool IsPowerOf2(this long   value) => (value != 0) && ((value & (value - 1)) == 0);
+    public static bool IsPowerOf2(this ulong  value) => (value != 0) && ((value & (value - 1)) == 0);
+
+    #endregion
 }
