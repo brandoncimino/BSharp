@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Reflection;
 
@@ -6,10 +7,8 @@ using FowlFever.BSharp.Enums;
 
 namespace FowlFever.BSharp.Reflection;
 
-public enum None { }
-
 public static class BindingFlagsExtensions {
-    private static readonly IReadOnlyDictionary<MemberTypes, BindingFlags> BindingFlag_To_MemberTypes = new Dictionary<MemberTypes, BindingFlags>() {
+    private static readonly IImmutableDictionary<MemberTypes, BindingFlags> BindingFlag_To_MemberTypes = new Dictionary<MemberTypes, BindingFlags> {
         [MemberTypes.Constructor] = BindingFlags.Default,
         [MemberTypes.Method]      = BindingFlags.InvokeMethod,
         [MemberTypes.Field]       = BindingFlags.GetField    | BindingFlags.SetField,
@@ -17,7 +16,7 @@ public static class BindingFlagsExtensions {
         [MemberTypes.Event]       = BindingFlags.Default,
         [MemberTypes.TypeInfo]    = BindingFlags.Default,
         [MemberTypes.NestedType]  = BindingFlags.Default
-    };
+    }.ToImmutableDictionary();
 
     /// <summary>
     /// Returns a set of <see cref="BindingFlags"/> that will match all instances of the given <see cref="MemberTypes"/>.
