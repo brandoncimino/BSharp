@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -16,8 +17,14 @@ using JetBrains.Annotations;
 namespace FowlFever.BSharp.Enums {
     [PublicAPI]
     public static class BEnum {
-        private static Type MustMatchTypeArgument<T>(this Type enumType) {
-            return enumType == typeof(T) ? enumType : throw new ArgumentException($"The {nameof(enumType)} {enumType.Prettify()} was not the same as the type argument <{nameof(T)}> {typeof(T).Prettify()}!");
+        /// TODO: Replace the return with a more efficient, nullable-safe version of <see cref="EnumSet"/>, maybe
+        private static class BenumCache<T>
+            where T : struct, Enum {
+            private static readonly Type StructEnumType = Nullable.GetUnderlyingType(typeof(T)) ?? typeof(T);
+
+            public static readonly IImmutableSet<T> Values = Enum.GetValues(StructEnumType)
+                                                                 .Cast<T>()
+                                                                 .ToImmutableHashSet();
         }
 
         /// <typeparam name="T">an <see cref="Enum"/> type</typeparam>
@@ -34,26 +41,7 @@ namespace FowlFever.BSharp.Enums {
         /// </ul>
         /// </remarks>
         public static IImmutableSet<T> GetValues<T>()
-            where T : Enum {
-            return GetValues<T>(typeof(T));
-        }
-
-        private static class BenumCache<T>
-            where T : Enum {
-            private static readonly Lazy<IImmutableSet<T>> Cache = new(RetrieveValues);
-
-            private static IImmutableSet<T> RetrieveValues() {
-                return Enum.GetValues(typeof(T))
-                           .Cast<T>()
-                           .ToImmutableHashSet();
-            }
-
-            public static IImmutableSet<T> Values => Cache.Value;
-        }
-
-        /// <inheritdoc cref="GetValues{T}()"/>
-        public static IImmutableSet<T> GetValues<T>(Type enumType)
-            where T : Enum {
+            where T : struct, Enum {
             return BenumCache<T>.Values;
         }
 
@@ -156,7 +144,7 @@ namespace FowlFever.BSharp.Enums {
 
             var msg = $"{enumType.PrettifyType(default)} values {badValues.Prettify()} aren't among the allowed values!";
 
-            var dic = new Dictionary<object, object>() {
+            var dic = new Dictionary<object, object?>() {
                     ["Enum type"]      = enumType,
                     ["Parameter name"] = paramName,
                     ["Allowed values"] = allowedValues,
@@ -229,16 +217,28 @@ namespace FowlFever.BSharp.Enums {
 
         /// <summary>
         /// Iterates through the individual <see cref="Enum.HasFlag"/> values of an <see cref="Enum"/> value with the <see cref="FlagsAttribute"/>.
+        /// <p/>
+        /// Only includes values that <see cref="IsCanonFlag{T}"/>, meaning that "combination" values like <see cref="MemberTypes.All"/> will be excluded.
         /// </summary>
         /// <param name="flags">a value of an <see cref="Enum"/> that <see cref="IsEnumFlags"/></param>
         /// <typeparam name="T">the <see cref="IsEnumFlags"/> type</typeparam>
         /// <returns>each individual <see cref="Enum.HasFlag"/> value from <paramref name="flags"/></returns>
         /// <exception cref="RejectionException">if <typeparamref name="T"/> isn't <see cref="IsEnumFlags"/></exception>
         public static IEnumerable<T> EachFlag<T>(this T flags)
-            where T : Enum {
-            Must.Be(typeof(T), IsEnumFlags);
+            where T : struct, Enum {
             return GetValues<T>()
-                .Where(it => flags.HasFlag(it));
+                   .Where(IsCanonFlag)
+                   .Where(it => flags.HasFlag(it));
+        }
+
+        /// <param name="flag">a <see cref="FlagsAttribute"/> <see cref="Enum"/> value</param>
+        /// <typeparam name="T">the type of <see cref="Enum"/></typeparam>
+        /// <returns><c>true</c> if the <paramref name="flag"/> refers to an explicitly defined, non-combination <see cref="FlagsAttribute"/></returns>
+        public static bool IsCanonFlag<T>([NotNullWhen(true)] this T flag)
+            where T : Enum? {
+            return flag != null
+                   && Convert.ToInt64(flag).IsPowerOf2()
+                   && typeof(T).IsEnumDefined(flag);
         }
 
         /// <summary>
