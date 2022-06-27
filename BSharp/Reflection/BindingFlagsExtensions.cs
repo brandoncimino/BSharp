@@ -6,12 +6,17 @@ using FowlFever.BSharp.Enums;
 
 namespace FowlFever.BSharp.Reflection;
 
+public enum None { }
+
 public static class BindingFlagsExtensions {
-    private static readonly IReadOnlyDictionary<MemberTypes, BindingFlags> BindingFlag_To_MemberType = new Dictionary<MemberTypes, BindingFlags>() {
-        [MemberTypes.Constructor] = BindingFlags.CreateInstance,
+    private static readonly IReadOnlyDictionary<MemberTypes, BindingFlags> BindingFlag_To_MemberTypes = new Dictionary<MemberTypes, BindingFlags>() {
+        [MemberTypes.Constructor] = BindingFlags.Default,
         [MemberTypes.Method]      = BindingFlags.InvokeMethod,
         [MemberTypes.Field]       = BindingFlags.GetField    | BindingFlags.SetField,
         [MemberTypes.Property]    = BindingFlags.GetProperty | BindingFlags.SetProperty,
+        [MemberTypes.Event]       = BindingFlags.Default,
+        [MemberTypes.TypeInfo]    = BindingFlags.Default,
+        [MemberTypes.NestedType]  = BindingFlags.Default
     };
 
     /// <summary>
@@ -29,7 +34,7 @@ public static class BindingFlagsExtensions {
                           .Aggregate(
                               baseBinding,
                               (soFar, nextMemberType) => {
-                                  if (BindingFlag_To_MemberType.TryGetValue(nextMemberType, out var nextBindingFlag)) {
+                                  if (BindingFlag_To_MemberTypes.TryGetValue(nextMemberType, out var nextBindingFlag)) {
                                       return soFar | nextBindingFlag;
                                   }
 
