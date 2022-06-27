@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -186,8 +187,10 @@ namespace FowlFever.BSharp.Reflection {
             return type.Implements(typeof(IEnumerable<>));
         }
 
-        private static readonly Type[] TupleTypes = {
+        private static readonly ImmutableHashSet<Type> TupleTypes = ImmutableHashSet.Create(
+#if NETSTANDARD2_1 || NET5_0_OR_GREATER
             typeof(ITuple),
+#endif
             // 📝 typeof(ValueTuple) is a static utility class
             typeof(ValueTuple<>),
             typeof(ValueTuple<,>),
@@ -205,8 +208,8 @@ namespace FowlFever.BSharp.Reflection {
             typeof(Tuple<,,,,>),
             typeof(Tuple<,,,,,>),
             typeof(Tuple<,,,,,,>),
-            typeof(Tuple<,,,,,,,>),
-        };
+            typeof(Tuple<,,,,,,,>)
+        );
 
         #endregion
 
@@ -601,20 +604,28 @@ namespace FowlFever.BSharp.Reflection {
         /// </summary>
         public static readonly MemberFilter FilterWithAttribute = (info, criteria) => info.IsDefined(criteria as Type ?? throw new InvalidOperationException($"{nameof(MemberFilter)} criteria [{criteria}] was not a {nameof(Type)}!"));
 
-        private static readonly IDictionary<Type, MemberTypes> MemberInfoType_To_MemberTypesFlag = new Dictionary<Type, MemberTypes>() {
+        private static readonly IImmutableDictionary<Type, MemberTypes> MemberInfoType_To_MemberTypesFlag = new Dictionary<Type, MemberTypes> {
             [typeof(MemberInfo)]      = MemberTypes.All,
             [typeof(ConstructorInfo)] = MemberTypes.Constructor,
             [typeof(MethodInfo)]      = MemberTypes.Method,
             [typeof(FieldInfo)]       = MemberTypes.Field,
             [typeof(PropertyInfo)]    = MemberTypes.Property,
-            [typeof(VariableInfo)]    = MemberTypes.Property | MemberTypes.Property,
-        };
+            [typeof(EventInfo)]       = MemberTypes.Event,
+            [typeof(Type)]            = MemberTypes.TypeInfo | MemberTypes.NestedType,
+            [typeof(VariableInfo)]    = MemberTypes.Property | MemberTypes.Field,
+        }.ToImmutableDictionary();
 
-        private static MemberTypes GetMemberInfoMemberTypes<T>()
+        internal static MemberTypes GetMemberInfoMemberTypes<T>()
             where T : MemberInfo => MemberInfoType_To_MemberTypesFlag[typeof(T)];
 
-        private static BindingFlags GetMemberInfoBindingFlags<T>()
+        internal static MemberTypes? GetMemberInfoMemberTypes(Type memberType)
+            => MemberInfoType_To_MemberTypesFlag.TryGetValue(memberType, out var mt) ? mt : null;
+
+        internal static BindingFlags GetMemberInfoBindingFlags<T>()
             where T : MemberInfo => GetMemberInfoMemberTypes<T>().GetBindingFlags();
+
+        internal static BindingFlags? GetMemberInfoBindingFlags(Type memberType)
+            => GetMemberInfoMemberTypes(memberType)?.GetBindingFlags();
 
         public static Type MustGetDeclaringType(this MemberInfo member, [CallerArgumentExpression("member")] string? parameterName = default) => member.DeclaringType ?? throw ReflectionException.NoDeclaringTypeException(member, parameterName);
         public static Type MustGetReflectedType(this MemberInfo member, [CallerArgumentExpression("member")] string? parameterName = default) => member.ReflectedType ?? throw ReflectionException.NoReflectedTypeException(member, parameterName);
