@@ -1,6 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
+
+using FowlFever.BSharp.Attributes;
 
 namespace FowlFever.BSharp.Reflection;
 
@@ -13,16 +16,28 @@ namespace FowlFever.BSharp.Reflection;
 /// <i>(TODO: citation needed)</i>
 /// </remarks>
 public sealed record Annotated<TMember, TAttribute> :
+    IHas<TMember>,
     IEquatable<MemberInfo?>
     where TMember : MemberInfo
     where TAttribute : Attribute {
     public TMember                 Member     { get; }
     public IEnumerable<TAttribute> Attributes { get; }
 
-    public Annotated(TMember member, IEnumerable<TAttribute>? attributes = null, bool inherit = true) {
+    public Annotated(TMember member, IEnumerable<TAttribute> attributes, bool validateTarget = true) {
         Member     = member;
-        Attributes = attributes ?? Member.GetCustomAttributes<TAttribute>(inherit);
+        Attributes = attributes;
+        if (validateTarget) {
+            Attributes.OfType<ITargetValidatedAttribute>()
+                      .ForEach(it => it.ValidateTarget(Member));
+        }
     }
 
-    public bool Equals(MemberInfo? other) => new MetadataTokenComparer().Equals(Member, other);
+    public Annotated(TMember member, bool inherit = true, bool validateTarget = true) : this(
+        member,
+        member.GetCustomAttributes<TAttribute>(inherit),
+        validateTarget
+    ) { }
+
+    public bool           Equals(MemberInfo? other) => new MetadataTokenComparer().Equals(Member, other);
+    TMember IHas<TMember>.Value                     => Member;
 }
