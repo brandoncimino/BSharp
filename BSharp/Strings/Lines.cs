@@ -1,8 +1,8 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
-using System.Text;
 
 using FowlFever.BSharp.Collections;
 
@@ -11,51 +11,29 @@ namespace FowlFever.BSharp.Strings;
 /// <summary>
 /// Represents a collection of <see cref="OneLine"/> <see cref="string"/>s.
 /// </summary>
-public readonly record struct Lines : IEnumerable<OneLine> {
-    private readonly Supplied<IEnumerable<OneLine>> _lineSupplier;
+public readonly record struct Lines : IImmutableList<OneLine> {
+    private readonly IImmutableList<OneLine> _lines;
 
-    public Lines() => _lineSupplier = Supplied<IEnumerable<OneLine>>.Empty;
-    public Lines(Supplied<IEnumerable<OneLine>> lineSupplier) => _lineSupplier = lineSupplier;
-    private IEnumerable<OneLine> LineEnumerable() => _lineSupplier.Value.OrEmpty();
+    public Lines() => _lines = ImmutableList<OneLine>.Empty;
+    public Lines(IEnumerable<OneLine> lines) => _lines = lines.AsImmutableList();
+    public Lines(string?              str) : this(EachLine(str)) { }
+    private IEnumerable<OneLine> LineEnumerable() => _lines;
     public  IEnumerable<OneLine> AsEnumerable()   => LineEnumerable();
     public  IEnumerator<OneLine> GetEnumerator()  => LineEnumerable().GetEnumerator();
     IEnumerator IEnumerable.     GetEnumerator()  => GetEnumerator();
 
-    public static IEnumerable<OneLine> EachLine(string? multilineContent) => EachLine(multilineContent, default);
-
-    private static IEnumerable<OneLine> EachLine(string? multilineContent, StringSplitOptions options) {
-        static (bool shouldReturn, OneLine line) FinishLine(StringBuilder sb, StringSplitOptions options) {
-            var str = sb.ToString();
-            sb.Clear();
-
-            if (options == StringSplitOptions.RemoveEmptyEntries && str.Length == 0) {
-                return (false, new OneLine(str));
-            }
-
-            return (true, new OneLine(str));
-        }
-
-        if (multilineContent == null) {
-            yield break;
-        }
-
-        var line = new StringBuilder();
-        foreach (var c in multilineContent) {
-            if (c.IsLineBreak()) {
-                var (shouldReturn, str) = FinishLine(line, options);
-
-                if (shouldReturn) {
-                    yield return str;
-                }
-
-                continue;
-            }
-
-            line.Append(c);
-        }
+    public override string ToString() {
+        return string.Join("\n", AsEnumerable());
     }
 
-    public static implicit operator string(Lines lines) => lines.JoinLines();
+    private static IEnumerable<OneLine> EachLine(string? multilineContent) => EachLine(multilineContent, default);
+
+    private static IEnumerable<OneLine> EachLine(string? multilineContent, StringSplitOptions options) {
+        return multilineContent?.Split(StringUtils.LineBreakSplitters, options)
+                               .Select(it => new OneLine(it)) ?? Enumerable.Empty<OneLine>();
+    }
+
+    public static implicit operator string(Lines lines) => lines.ToString();
 
     /// <summary>
     /// Performs a <see cref="Func{T,TResult}"/> against each <see cref="OneLine"/>.
@@ -71,7 +49,32 @@ public readonly record struct Lines : IEnumerable<OneLine> {
                                                                                         .NonNull()
                                                                                         .Lines();
 
-    // public Lines EachLine(Func<string, string> transformer) => this.Select(it => transformer(it)).Lines();
+    private (int x, int y) GetDimensions() {
+        (int x, int y) dim = default;
+        foreach (var line in this) {
+            dim.x =  dim.x.Max(line.VisibleLength());
+            dim.y += 1;
+        }
+
+        return dim;
+    }
+
+    public int Count => _lines.Count;
+    public OneLine this[int                                      index] => _lines[index];
+    public IImmutableList<OneLine> Add(OneLine                   value)                                                                                                => _lines.Add(value);
+    public IImmutableList<OneLine> AddRange(IEnumerable<OneLine> items)                                                                                                => _lines.AddRange(items);
+    public IImmutableList<OneLine> Clear()                                                                                                                             => _lines.Clear();
+    public int                     IndexOf(OneLine                  item,  int                         index, int count, IEqualityComparer<OneLine>? equalityComparer) => _lines.IndexOf(item, index, count, equalityComparer);
+    public IImmutableList<OneLine> Insert(int                       index, OneLine                     element)                                                        => _lines.Insert(index, element);
+    public IImmutableList<OneLine> InsertRange(int                  index, IEnumerable<OneLine>        items)                                                          => _lines.InsertRange(index, items);
+    public int                     LastIndexOf(OneLine              item,  int                         index, int count, IEqualityComparer<OneLine>? equalityComparer) => _lines.LastIndexOf(item, index, count, equalityComparer);
+    public IImmutableList<OneLine> Remove(OneLine                   value, IEqualityComparer<OneLine>? equalityComparer) => _lines.Remove(value, equalityComparer);
+    public IImmutableList<OneLine> RemoveAll(Predicate<OneLine>     match)                                                                                        => _lines.RemoveAll(match);
+    public IImmutableList<OneLine> RemoveAt(int                     index)                                                                                        => _lines.RemoveAt(index);
+    public IImmutableList<OneLine> RemoveRange(IEnumerable<OneLine> items,    IEqualityComparer<OneLine>? equalityComparer)                                       => _lines.RemoveRange(items, equalityComparer);
+    public IImmutableList<OneLine> RemoveRange(int                  index,    int                         count)                                                  => _lines.RemoveRange(index, count);
+    public IImmutableList<OneLine> Replace(OneLine                  oldValue, OneLine                     newValue, IEqualityComparer<OneLine>? equalityComparer) => _lines.Replace(oldValue, newValue, equalityComparer);
+    public IImmutableList<OneLine> SetItem(int                      index,    OneLine                     value) => _lines.SetItem(index, value);
 }
 
 /// <summary>
@@ -80,9 +83,28 @@ public readonly record struct Lines : IEnumerable<OneLine> {
 public static class LineExtensions {
     public static Lines Lines(this IEnumerable<OneLine>? lines) => lines switch {
         Lines ln => ln,
-        _        => new Lines(new Supplied<IEnumerable<OneLine>>(lines.OrEmpty)),
+        _        => new Lines(lines.OrEmpty()),
     };
 
-    public static Lines Lines(this IEnumerable<string>? source) => source.OrEmpty().Select(it => it.Lines().AsEnumerable()).Flatten().Lines();
-    public static Lines Lines(this string?              str)    => new(Strings.Lines.EachLine(str).Shim());
+    public static Lines Lines(this IEnumerable<string>? source) {
+        return source.OrEmpty()
+                     .Select(it => it.Lines())
+                     .Lines();
+    }
+
+    public static Lines Lines(this string? str) => new(str);
+
+    public static Lines Lines(this IEnumerable<Lines>? sources) {
+        if (sources == null) {
+            return default;
+        }
+
+        var lineBuilder = ImmutableList.CreateBuilder<OneLine>();
+
+        foreach (var src in sources) {
+            lineBuilder.Plus(src);
+        }
+
+        return lineBuilder.ToImmutable().Lines();
+    }
 }
