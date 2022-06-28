@@ -39,4 +39,14 @@ public static class GraphemeClusterExtensions {
 
     /// <inheritdoc cref="VisibleLength(string?)"/>
     public static int VisibleLength(this IHas<string?>? str) => str.GetValueOrDefault().VisibleLength();
+
+    /// <summary>
+    /// Retrieves a <see cref="GraphemeCluster"/> by its index within a <see cref="StringInfo"/>.
+    /// </summary>
+    /// <param name="stringInfo">this <see cref="StringInfo"/></param>
+    /// <param name="index">the index of the <see cref="StringInfo.SubstringByTextElements(int)"/> of length 1</param>
+    /// <returns>the corresponding <see cref="GraphemeCluster"/></returns>
+    public static GraphemeCluster ElementAt(this StringInfo stringInfo, int index) {
+        return GraphemeCluster.CreateRisky(stringInfo.SubstringByTextElements(index, 1));
+    }
 }
