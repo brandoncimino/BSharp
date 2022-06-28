@@ -14,4 +14,7 @@ public readonly record struct GraphemeCluster : IHas<string> {
 
         Value = validate ? value!.MustBe(it => new StringInfo(it).LengthInTextElements == 1) : value!;
     }
+
+    public static GraphemeCluster Create(string?      value) => new(value, true);
+    public static GraphemeCluster CreateRisky(string? value) => new(value, false);
 }
