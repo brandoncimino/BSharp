@@ -26,65 +26,46 @@ public abstract record WrappedCollection<TElement, TCollection> : Wrapped<TColle
 
     #region Implementation of IEnumerable
 
-    public IEnumerator<TElement> GetEnumerator() {
-        var ls = new List<int>();
-        return Value.GetEnumerator();
-    }
-
-    IEnumerator IEnumerable.GetEnumerator() {
-        return ((IEnumerable)Value).GetEnumerator();
-    }
+    public IEnumerator<TElement> GetEnumerator() => Value.GetEnumerator();
+    IEnumerator IEnumerable.     GetEnumerator() => ((IEnumerable)Value).GetEnumerator();
 
     #endregion
 
     #region Implementation of ICollection<ELEMENT>
 
-    public virtual void Add(TElement item) => AsList.Add(item);
+    public virtual void        Add(TElement item)                       => AsList.Add(item);
+    public virtual void        Clear()                                  => AsCollection.Clear();
+    public virtual bool        Contains(TElement item)                  => AsCollection.Contains(item);
+    void ICollection<TElement>.CopyTo(TElement[] array, int arrayIndex) => AsCollection.CopyTo(array, arrayIndex);
+    public virtual bool        Remove(TElement   item) => AsCollection.Remove(item);
+    public virtual int         Count                   => AsCollection.Count;
+    public virtual bool        IsReadOnly              => AsCollection.IsReadOnly;
 
-    int IList.Add(object? value) => AsNonGenericList.Add(value);
+    #endregion
 
-    public virtual void Clear() => AsCollection.Clear();
+    #region Non-Generic Implementations
 
-    bool IList.Contains(object? value) => AsNonGenericList.Contains(value);
-
-    int IList.IndexOf(object? value) => AsNonGenericList.IndexOf(value);
-
-    public virtual void Insert(int index, object? value) => AsNonGenericList.Insert(index, value);
-
-    void IList.Remove(object? value) => AsNonGenericList.Remove(value);
-
-    public virtual bool Contains(TElement item) => AsCollection.Contains(item);
-
-    public virtual void CopyTo(TElement[] array, int arrayIndex) => AsCollection.CopyTo(array, arrayIndex);
-
-    public virtual bool Remove(TElement item) => AsCollection.Remove(item);
-
-    public virtual void CopyTo(Array array, int index) => AsNonGenericList.CopyTo(array, index);
-
-    public virtual int  Count          => AsCollection.Count;
-    public virtual bool IsSynchronized => AsNonGenericList.IsSynchronized;
-    object ICollection. SyncRoot       => AsNonGenericList.SyncRoot;
-    public virtual bool IsReadOnly     => AsCollection.IsReadOnly;
     object? IList.this[int index] {
         get => AsNonGenericList[index];
         set => AsNonGenericList[index] = value;
     }
 
+    bool ICollection.  IsSynchronized                         => AsNonGenericList.IsSynchronized;
+    object ICollection.SyncRoot                               => AsNonGenericList.SyncRoot;
+    int IList.         Add(object?      value)                => AsNonGenericList.Add(value);
+    bool IList.        Contains(object? value)                => AsNonGenericList.Contains(value);
+    int IList.         IndexOf(object?  value)                => AsNonGenericList.IndexOf(value);
+    void IList.        Insert(int       index, object? value) => AsNonGenericList.Insert(index, value);
+    void IList.        Remove(object?   value)            => AsNonGenericList.Remove(value);
+    void ICollection.  CopyTo(Array     array, int index) => AsNonGenericList.CopyTo(array, index);
+
     #endregion
 
     #region Implementation of IList<ELEMENT>
 
-    public virtual int IndexOf(TElement item) {
-        return AsList.IndexOf(item);
-    }
-
-    public virtual void Insert(int index, TElement item) {
-        AsList.Insert(index, item);
-    }
-
-    public virtual void RemoveAt(int index) {
-        AsList.RemoveAt(index);
-    }
+    public virtual int  IndexOf(TElement item)                 => AsList.IndexOf(item);
+    public virtual void Insert(int       index, TElement item) => AsList.Insert(index, item);
+    public virtual void RemoveAt(int     index) => AsList.RemoveAt(index);
 
     public bool IsFixedSize => AsNonGenericList.IsFixedSize;
 
