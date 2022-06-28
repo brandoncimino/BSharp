@@ -28,9 +28,15 @@ public static class GraphemeClusterExtensions {
     /// <inheritdoc cref="EnumerateTextElements(string?)"/>
     public static IEnumerable<string> EnumerateTextElements(this IHas<string?>? str) => str.GetValueOrDefault().EnumerateTextElements();
 
-    /// <inheritdoc cref="StringInfo.LengthInTextElements"/>
+    /// <summary>
+    /// Gets the "visible" length of a <see cref="string"/> by counting the number of <a href="https://www.unicode.org/glossary/#grapheme_cluster">grapheme clusters</a>,
+    /// which C# refers to as 
+    /// <a href="https://docs.microsoft.com/en-us/dotnet/standard/base-types/character-encoding-introduction#grapheme-clusters">"text elements"</a>.
+    /// </summary>
+    /// <param name="str">this <see cref="string"/></param>
+    /// <returns><inheritdoc cref="StringInfo.LengthInTextElements"/></returns>
     public static int VisibleLength(this string? str) => str == null ? 0 : new StringInfo(str).LengthInTextElements;
 
-    /// <inheritdoc cref="StringInfo.LengthInTextElements"/>
+    /// <inheritdoc cref="VisibleLength(string?)"/>
     public static int VisibleLength(this IHas<string?>? str) => str.GetValueOrDefault().VisibleLength();
 }
