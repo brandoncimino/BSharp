@@ -10,4 +10,6 @@ public static class CharExtensions {
     public static           bool   IsWordCharacter(this char character) => WordCharacter.IsMatch(character.ToString());
     private static readonly Regex  NonWordCharacter = new Regex(@"^\W$");
     public static           bool   IsNonWordCharacter(this char character) => NonWordCharacter.IsMatch(character.ToString());
+    private const           char   ZeroWidthJoiner = '\u200D';
+    public static           bool   IsZeroWidthJoiner(this char character) => character == ZeroWidthJoiner;
 }
