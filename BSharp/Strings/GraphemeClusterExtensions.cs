@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 
@@ -48,5 +49,11 @@ public static class GraphemeClusterExtensions {
     /// <returns>the corresponding <see cref="GraphemeCluster"/></returns>
     public static GraphemeCluster ElementAt(this StringInfo stringInfo, int index) {
         return GraphemeCluster.CreateRisky(stringInfo.SubstringByTextElements(index, 1));
+    }
+
+    /// <inheritdoc cref="StringInfo.SubstringByTextElements(int)"/>
+    public static string SubstringByTextElements(this StringInfo stringInfo, Range range) {
+        var (off, len) = range.GetOffsetAndLength(stringInfo.LengthInTextElements);
+        return stringInfo.SubstringByTextElements(off, len);
     }
 }
