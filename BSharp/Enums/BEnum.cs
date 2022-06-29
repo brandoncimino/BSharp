@@ -113,9 +113,15 @@ namespace FowlFever.BSharp.Enums {
             return new InvalidEnumArgumentException(rejection.Message);
         }
 
-        public static InvalidEnumArgumentException Unsupported<T>(
-            T?      actualValue,
-            string? details = default,
+        /// <summary>
+        /// Indicates that the given <typeparamref name="T"/> <paramref name="actualValue"/> is <b>intentionally</b> not supported.
+        ///
+        /// This is in contrast with <see cref="UnhandledSwitch{T}"/>, which implies that the <typeparamref name="T"/> value didn't exist at the time.
+        /// </summary>
+        /// <inheritdoc cref="UnhandledSwitch{T}"/>
+        public static InvalidEnumArgumentException NotSupported<T>(
+            T?     actualValue,
+            string details,
             [CallerArgumentExpression("actualValue")]
             string? parameterName = default,
             [CallerMemberName]
