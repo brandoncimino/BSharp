@@ -829,6 +829,7 @@ public static partial class CollectionUtils {
 
     [LinqTunnel]
     [ContractAnnotation("source:null => stop")]
+    [Obsolete($"this method appears to be a really ugly and inefficient way to 'build' a set. Please use {nameof(ImmutableHashSet)}.{nameof(ImmutableHashSet<int>.Builder)} instead")]
     public static IEnumerable<T?> Union<T>(
         this IEnumerable<T?> source,
         T?                   newItem
@@ -1687,4 +1688,33 @@ public static partial class CollectionUtils {
     public static T[] GetSlice<T>(this IEnumerable<T> source, Range range) {
         return source.ToArray()[range];
     }
+
+    #region Overwrite
+
+    /// <summary>
+    /// Beginning at <paramref name="startAt"/>, replaces each entry in <paramref name="source"/> with the corresponding element in <see cref="newValues"/>.
+    /// </summary>
+    /// <param name="source">the original <see cref="ICollection{T}"/></param>
+    /// <param name="newValues">the replacement values</param>
+    /// <param name="startAt">the <see cref="Index"/> from which we should start replacements</param>
+    /// <typeparam name="T">the type of elements in the <paramref name="source"/></typeparam>
+    /// <returns>a new <see cref="IEnumerable{T}"/></returns>
+    public static IEnumerable<T> Overwrite<T>(this ICollection<T> source, IEnumerable<T> newValues, Index startAt) {
+        var       startOffset = startAt.GetOffset(source.Count);
+        using var newmerator  = newValues.GetEnumerator();
+
+        for (int i = 0; i < source.Count; i++) {
+            if (i < startOffset) {
+                yield return source.ElementAt(i);
+            }
+            else if (newmerator.MoveNext()) {
+                yield return newmerator.Current;
+            }
+            else {
+                yield return source.ElementAt(i);
+            }
+        }
+    }
+
+    #endregion
 }
