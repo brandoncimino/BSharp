@@ -91,9 +91,9 @@ public record FillerSettings : Settings {
     /// <summary>
     /// The additive string used to achieve the desired <see cref="Alignment"/>
     /// </summary>
-    public string PadString { get; init; } = " ";
+    public OneLine PadString { get; init; } = OneLine.Empty;
     /// <summary>
-    /// Controls whether filling applied to the left (start) of the string will be <see cref="StringUtils.Mirror"/>:
+    /// Controls whether filling applied to the left (start) of the string will be <see cref="StringMirroringExtensions.Mirror"/>:
     /// <code><![CDATA[
     /// StringMirroring.None        ---* str *---
     /// StringMirroring.Mirrored    *--- str *---
@@ -107,7 +107,7 @@ public record FillerSettings : Settings {
     /// <summary>
     /// Replaces the last characters of a <see cref="Enums.OverflowStyle.Truncate"/>d string
     /// </summary>
-    public string TruncateTrail { get; init; } = "…";
+    public OneLine TruncateTrail { get; init; } = OneLine.Ellipsis;
 
     public static implicit operator FillerSettings(StringAlignment          alignment)              => Default with { Alignment = alignment };
     public static implicit operator FillerSettings(OverflowStyle            overflowStyle)          => Default with { OverflowStyle = overflowStyle };
