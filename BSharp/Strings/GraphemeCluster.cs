@@ -9,8 +9,9 @@ namespace FowlFever.BSharp.Strings;
 public readonly record struct GraphemeCluster : IHas<string> {
     #region "Constants"
 
-    public static GraphemeCluster Empty = CreateRisky("");
-    public static GraphemeCluster Space = CreateRisky(" ");
+    public static GraphemeCluster Empty    = CreateRisky("");
+    public static GraphemeCluster Space    = CreateRisky(" ");
+    public static GraphemeCluster Ellipsis = CreateRisky("…");
 
     #endregion
 

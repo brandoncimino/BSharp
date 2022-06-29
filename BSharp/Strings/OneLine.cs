@@ -22,6 +22,7 @@ public readonly record struct OneLine : IHas<string>, IEnumerable<GraphemeCluste
 
     public static readonly OneLine Empty          = CreateRisky(GraphemeCluster.Empty);
     public static readonly OneLine Space          = CreateRisky(GraphemeCluster.Space);
+    public static readonly OneLine Ellipsis       = CreateRisky(GraphemeCluster.Ellipsis);
     private const          string  LineBreakChars = "\n\r";
 
     #endregion
