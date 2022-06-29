@@ -37,15 +37,9 @@ public static class StringMirroringExtensions {
     /// <param name="str">this <see cref="string"/></param>
     /// <returns>this <see cref="string"/>...but backwards</returns>
     public static string Mirror(this string str) {
-        return string.Create(
-            str.Length,
-            str,
-            (span, forwardString) => {
-                for (int i = forwardString.Length - 1; i >= 0; i--) {
-                    span[i] = forwardString[i];
-                }
-            }
-        );
+        var chars = str.ToCharArray();
+        Array.Reverse(chars);
+        return new string(chars);
     }
 
     public static OneLine Mirror(this OneLine line) => OneLine.CreateRisky(line.Reverse());
