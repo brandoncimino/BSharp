@@ -58,5 +58,8 @@ public readonly partial record struct Indexes : IHas<int> {
     [NonNegativeValue]
     public static implicit operator int(Indexes indexes) => indexes.Count;
 
-    public static implicit operator Indexes([NonNegativeValue] int count) => new(count);
+    public static implicit operator Indexes([NonNegativeValue] int count)   => new(count);
+    public static implicit operator Indexes(string                 str)     => str.Length;
+    public static implicit operator Indexes(Array                  array)   => array.Length;
+    public static implicit operator Range(Indexes                  indexes) => ..indexes.Count;
 }
