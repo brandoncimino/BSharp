@@ -6,23 +6,30 @@ using FowlFever.BSharp.Exceptions;
 
 namespace FowlFever.BSharp.Collections;
 
+/// <inheritdoc cref="WrappedCollection{TElement,TCollection,TSlice}"/>
+public abstract record WrappedCollection<TElement, TCollection> : WrappedCollection<TElement, TCollection, TElement>
+    where TCollection : IEnumerable<TElement>
+    where TElement : IEnumerable<TElement>;
+
 /// <summary>
 /// Similar to <see cref="Wrapped{T}"/>, but automatically delegates <see cref="IList{T}"/> operations to the underlying <typeparamref name="TCollection"/>. 
 /// </summary>
 /// <typeparam name="TElement">the type of the elements in the underlying <see cref="ICollection{T}"/></typeparam>
 /// <typeparam name="TCollection">the type of the underlying <see cref="ICollection{T}"/></typeparam>
-public abstract record WrappedCollection<TElement, TCollection> : Wrapped<TCollection>,
-                                                                  IList<TElement>,
-                                                                  IReadOnlyList<TElement>,
-                                                                  IList
-    where TCollection : IEnumerable<TElement> {
+/// <typeparam name="TSlice">the type of sub-<see cref="Range"/>s of <typeparamref name="TCollection"/></typeparam>
+public abstract record WrappedCollection<TElement, TCollection, TSlice> : Wrapped<TCollection>,
+                                                                          IList<TElement>,
+                                                                          IReadOnlyList<TElement>,
+                                                                          IList
+    where TCollection : IEnumerable<TElement>
+    where TSlice : IEnumerable<TElement> {
     protected virtual IList<TElement>       AsList           => Value.MustBe<IList<TElement>>();
     protected virtual IList                 AsNonGenericList => Value.MustBe<IList>();
     protected virtual ICollection<TElement> AsCollection     => Value.MustBe<ICollection<TElement>>();
 
-    protected abstract TCollection CreateSlice(IEnumerable<TElement> elements);
+    protected abstract TSlice CreateSlice(IEnumerable<TElement> elements);
 
-    public virtual TCollection this[Range range] => CreateSlice(range.EnumerateSlice(this));
+    public virtual TSlice this[Range range] => CreateSlice(range.EnumerateSlice(this));
 
     #region Implementation of IEnumerable
 
