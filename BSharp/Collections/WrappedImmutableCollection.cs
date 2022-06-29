@@ -7,12 +7,17 @@ using FowlFever.BSharp.Exceptions;
 
 namespace FowlFever.BSharp.Collections;
 
+/// <inheritdoc cref="WrappedImmutableCollection{TElement,TCollection,TSlice}"/>
+public abstract record WrappedImmutableCollection<TElement, TCollection> : WrappedImmutableCollection<TElement, TCollection, TCollection>
+    where TCollection : IReadOnlyCollection<TElement>;
+
 /// <summary>
 /// Similar to <see cref="WrappedCollection{TElement,TCollection}"/> but also delegates to <see cref="IImmutableList{T}"/> methods.
 /// </summary>
 /// <inheritdoc cref="WrappedCollection{TElement,TCollection}"/>
-public abstract record WrappedImmutableCollection<TElement, TCollection> : WrappedCollection<TElement, TCollection>, IImmutableList<TElement>
-    where TCollection : IReadOnlyCollection<TElement> {
+public abstract record WrappedImmutableCollection<TElement, TCollection, TSlice> : WrappedCollection<TElement, TCollection, TSlice>, IImmutableList<TElement>
+    where TCollection : IReadOnlyCollection<TElement>
+    where TSlice : IEnumerable<TElement> {
     /// <summary>
     /// A representation of the underlying <see cref="Wrapped{TCollection}.Value"/> as an <see cref="IImmutableList{T}"/>.
     /// </summary>
