@@ -10,12 +10,12 @@ namespace FowlFever.BSharp.Strings;
 /// <summary>
 /// An immutable version of <see cref="StringInfo"/> with nutty <see cref="GraphemeCluster"/>s.
 /// </summary>
-public record TextElementString : WrappedImmutableCollection<GraphemeCluster, ImmutableList<GraphemeCluster>> {
+public sealed record TextElementString : WrappedImmutableCollection<GraphemeCluster, ImmutableList<GraphemeCluster>, TextElementString> {
     private            string?                              _stringSource;
     public             string                               StringSource => _stringSource ??= string.Join("", _graphemeClusters.Value);
     private readonly   Lazy<ImmutableList<GraphemeCluster>> _graphemeClusters;
     public override    ImmutableList<GraphemeCluster>       Value                                              => _graphemeClusters.Value;
-    protected override ImmutableList<GraphemeCluster>       CreateSlice(IEnumerable<GraphemeCluster> elements) => elements.ToImmutableList();
+    protected override TextElementString                    CreateSlice(IEnumerable<GraphemeCluster> elements) => new(elements);
 
     public TextElementString(string stringSource) {
         _stringSource     = stringSource;
@@ -23,7 +23,14 @@ public record TextElementString : WrappedImmutableCollection<GraphemeCluster, Im
     }
 
     public TextElementString(IEnumerable<GraphemeCluster> graphemeClusters) {
-        _graphemeClusters = new Lazy<ImmutableList<GraphemeCluster>>(graphemeClusters.ToImmutableList());
+        _graphemeClusters = new Lazy<ImmutableList<GraphemeCluster>>(graphemeClusters.ToImmutableList);
+    }
+
+    public new TextElementString this[Range range] => new(base[range]);
+
+    public TextElementString Substring(int start, int length) {
+        var subClusters = this[start..(start + length - 1)];
+        return new TextElementString(subClusters);
     }
 
     public static TextElementString Empty => new("");

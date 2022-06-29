@@ -11,53 +11,54 @@ namespace FowlFever.BSharp.Strings;
 /// <summary>
 /// Represents a collection of <see cref="OneLine"/> <see cref="string"/>s.
 /// </summary>
-public readonly record struct Lines : IImmutableList<OneLine> {
-    private readonly IImmutableList<OneLine> _lines;
+public readonly record struct Lines : IImmutableList<OneLine>, IHas<string> {
+    private readonly IImmutableList<OneLine> _lines = ImmutableList<OneLine>.Empty;
+    /// <summary>
+    /// The largest <see cref="GraphemeClusterExtensions.VisibleLength(string?)"/> of any of the individual <see cref="Lines"/>.
+    /// </summary>
+    private int Width => _lines.Max(it => it.VisibleLength());
+    /// <summary>
+    /// The number of <see cref="Lines"/>.
+    /// </summary>
+    /// <remarks>This is identical to <see cref="Count"/>, but is more idiomatic when combined with <see cref="Width"/>.</remarks>
+    private int Height => _lines.Count;
+    /// <summary>
+    /// Combines (<see cref="Width"/>, <see cref="Height"/>).
+    /// </summary>
+    public (int width, int height) Dimensions => (Width, Height);
 
-    public Lines() => _lines = ImmutableList<OneLine>.Empty;
-    public Lines(IEnumerable<OneLine> lines) => _lines = lines.AsImmutableList();
-    public Lines(string?              str) : this(EachLine(str)) { }
+    internal Lines(IEnumerable<OneLine>? lines) => _lines = lines?.AsImmutableList() ?? ImmutableArray<OneLine>.Empty;
+    internal Lines(OneLine               line) => _lines = _lines.Add(line);
     private IEnumerable<OneLine> LineEnumerable() => _lines;
-    public  IEnumerable<OneLine> AsEnumerable()   => LineEnumerable();
     public  IEnumerator<OneLine> GetEnumerator()  => LineEnumerable().GetEnumerator();
     IEnumerator IEnumerable.     GetEnumerator()  => GetEnumerator();
+    string IHas<string>.         Value            => ToString();
 
-    public override string ToString() {
-        return string.Join("\n", AsEnumerable());
-    }
+    private static readonly string[] LineBreakSplitters = {
+        "\r\n", "\r", "\n"
+    };
 
-    private static IEnumerable<OneLine> EachLine(string? multilineContent) => EachLine(multilineContent, default);
-
-    private static IEnumerable<OneLine> EachLine(string? multilineContent, StringSplitOptions options) {
-        return multilineContent?.Split(StringUtils.LineBreakSplitters, options)
-                               .Select(it => new OneLine(it)) ?? Enumerable.Empty<OneLine>();
-    }
-
-    public static implicit operator string(Lines lines) => lines.ToString();
-
-    /// <summary>
-    /// Performs a <see cref="Func{T,TResult}"/> against each <see cref="OneLine"/>.
-    /// </summary>
-    /// <param name="transformer">a <see cref="Func{T,TResult}"/> that transforms each <see cref="OneLine"/> into one or more <see cref="string"/>s</param>
-    /// <returns></returns>
-    /// <remarks>
-    /// <see cref="EnumerableShim{T}"/> is used to coalesce nearly any <see cref="string"/>-like result into an <see cref="IEnumerable{T}"/>.
-    /// <c>null</c> <see cref="string"/>s are then discarded.
-    /// </remarks>
-    public Lines SelectLines(Func<OneLine, EnumerableShim<string?>> transformer) => this.Select(transformer)
-                                                                                        .SelectMany(it => it)
-                                                                                        .NonNull()
-                                                                                        .Lines();
-
-    private (int x, int y) GetDimensions() {
-        (int x, int y) dim = default;
-        foreach (var line in this) {
-            dim.x =  dim.x.Max(line.VisibleLength());
-            dim.y += 1;
+    private static IEnumerable<OneLine> _SplitStringLines(string? str) {
+        if (string.IsNullOrEmpty(str)) {
+            return Enumerable.Empty<OneLine>();
         }
 
-        return dim;
+        return str?.Split(LineBreakSplitters, StringSplitOptions.None).Select(OneLine.CreateRisky) ?? Enumerable.Empty<OneLine>();
     }
+
+    public static Lines Split(string?                      source) => new(_SplitStringLines(source));
+    public static Lines Split(IHas<string?>?               source) => Split(source.GetValueOrDefault());
+    public static Lines Split(IEnumerable<string?>?        source) => new(source?.Select(_SplitStringLines).AggregateImmutableList());
+    public static Lines Split(IEnumerable<IHas<string?>?>? source) => new(source?.Select(it => _SplitStringLines(it.GetValueOrDefault())).AggregateImmutableList());
+
+    public override string ToString() {
+        return string.Join("\n", this.AsEnumerable());
+    }
+
+    public static implicit operator string(Lines  lines) => lines.ToString();
+    public static implicit operator Lines(OneLine line)  => new(line);
+
+    #region IImmutableList<OneLine> Implementation
 
     public int Count => _lines.Count;
     public OneLine this[int                                      index] => _lines[index];
@@ -75,6 +76,8 @@ public readonly record struct Lines : IImmutableList<OneLine> {
     public IImmutableList<OneLine> RemoveRange(int                  index,    int                         count)                                                  => _lines.RemoveRange(index, count);
     public IImmutableList<OneLine> Replace(OneLine                  oldValue, OneLine                     newValue, IEqualityComparer<OneLine>? equalityComparer) => _lines.Replace(oldValue, newValue, equalityComparer);
     public IImmutableList<OneLine> SetItem(int                      index,    OneLine                     value) => _lines.SetItem(index, value);
+
+    #endregion
 }
 
 /// <summary>
@@ -83,16 +86,12 @@ public readonly record struct Lines : IImmutableList<OneLine> {
 public static class LineExtensions {
     public static Lines Lines(this IEnumerable<OneLine>? lines) => lines switch {
         Lines ln => ln,
-        _        => new Lines(lines.OrEmpty()),
+        _        => new Lines(lines),
     };
 
-    public static Lines Lines(this IEnumerable<string>? source) {
-        return source.OrEmpty()
-                     .Select(it => it.Lines())
-                     .Lines();
-    }
+    public static Lines Lines(this IEnumerable<string?>? source) => Strings.Lines.Split(source);
 
-    public static Lines Lines(this string? str) => new(str);
+    public static Lines Lines(this string? str) => Strings.Lines.Split(str);
 
     public static Lines Lines(this IEnumerable<Lines>? sources) {
         if (sources == null) {
@@ -107,4 +106,7 @@ public static class LineExtensions {
 
         return lineBuilder.ToImmutable().Lines();
     }
+
+    /// <inheritdoc cref="Strings.OneLine.Create(string?)"/>
+    public static OneLine OneLine(this string str) => Strings.OneLine.Create(str);
 }
