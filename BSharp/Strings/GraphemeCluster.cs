@@ -14,7 +14,9 @@ public readonly record struct GraphemeCluster : IHas<string> {
 
     #endregion
 
-    public string Value { get; } = "";
+    public string Value   { get; } = "";
+    public bool   IsEmpty => Value.IsEmpty();
+    public bool   IsBlank => Value.IsBlank();
 
     private GraphemeCluster(string? value, Range range, ShouldValidate shouldValidate) {
         if (value.IsEmpty()) {

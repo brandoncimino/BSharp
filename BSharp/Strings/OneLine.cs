@@ -28,6 +28,7 @@ public readonly record struct OneLine : IHas<string>, IEnumerable<GraphemeCluste
 
     public           string            Value   => _stringInfo.StringSource;
     public           bool              IsEmpty => VisibleLength == 0;
+    public           bool              IsBlank => IsEmpty || _stringInfo.All(it => it.IsBlank);
     private readonly TextElementString _stringInfo;
 
     /// <inheritdoc cref="Value"/>
