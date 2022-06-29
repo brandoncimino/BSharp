@@ -7,6 +7,13 @@ using FowlFever.BSharp.Exceptions;
 namespace FowlFever.BSharp.Strings;
 
 public readonly record struct GraphemeCluster : IHas<string> {
+    #region "Constants"
+
+    public static GraphemeCluster Empty = CreateRisky("");
+    public static GraphemeCluster Space = CreateRisky(" ");
+
+    #endregion
+
     public string Value { get; } = "";
 
     private GraphemeCluster(string? value, Range range, ShouldValidate shouldValidate) {
