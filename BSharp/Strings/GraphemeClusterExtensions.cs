@@ -15,19 +15,19 @@ public static class GraphemeClusterExtensions {
     /// </summary>
     /// <param name="str">this <see cref="string"/></param>
     /// <returns>a new <see cref="IEnumerable{T}"/></returns>
-    public static IEnumerable<string> EnumerateTextElements(this string? str) {
+    public static IEnumerable<GraphemeCluster> EnumerateTextElements(this string? str) {
         if (str == null) {
             yield break;
         }
 
         var enumerator = StringInfo.GetTextElementEnumerator(str);
         while (enumerator.MoveNext()) {
-            yield return enumerator.Current.ToString()!;
+            yield return GraphemeCluster.CreateRisky(enumerator.GetTextElement());
         }
     }
 
     /// <inheritdoc cref="EnumerateTextElements(string?)"/>
-    public static IEnumerable<string> EnumerateTextElements(this IHas<string?>? str) => str.GetValueOrDefault().EnumerateTextElements();
+    public static IEnumerable<GraphemeCluster> EnumerateTextElements(this IHas<string?>? str) => str.GetValueOrDefault().EnumerateTextElements();
 
     /// <summary>
     /// Gets the "visible" length of a <see cref="string"/> by counting the number of <a href="https://www.unicode.org/glossary/#grapheme_cluster">grapheme clusters</a>,
