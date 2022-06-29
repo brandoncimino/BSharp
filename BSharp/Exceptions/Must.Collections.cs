@@ -162,6 +162,10 @@ public static partial class Must {
         string? rejectedBy = default
     )
         where T : IEnumerable<T2> {
+        if (actualValues.IsEmpty()) {
+            return actualValues;
+        }
+
         badValues = badValues.AsList();
         if (!actualValues.ContainsAny(badValues)) {
             return actualValues;
