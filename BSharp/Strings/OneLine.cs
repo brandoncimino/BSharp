@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 
@@ -17,12 +18,13 @@ namespace FowlFever.BSharp.Strings;
 ///
 /// TODO: What about adding a <see cref="StringMirroring"/> property?
 /// </summary>
-public readonly record struct OneLine : IHas<string>, IEnumerable<GraphemeCluster> {
+public readonly record struct OneLine : IHas<string>, IEnumerable<GraphemeCluster>, IEquivalent<string> {
     #region "Constants"
 
     public static readonly OneLine Empty          = CreateRisky(GraphemeCluster.Empty);
     public static readonly OneLine Space          = CreateRisky(GraphemeCluster.Space);
     public static readonly OneLine Ellipsis       = CreateRisky(GraphemeCluster.Ellipsis);
+    public static readonly OneLine Hyphen         = CreateRisky(GraphemeCluster.Hyphen);
     private const          string  LineBreakChars = "\n\r";
 
     #endregion
@@ -31,6 +33,22 @@ public readonly record struct OneLine : IHas<string>, IEnumerable<GraphemeCluste
     public           bool              IsEmpty => VisibleLength == 0;
     public           bool              IsBlank => IsEmpty || _stringInfo.All(it => it.IsBlank);
     private readonly TextElementString _stringInfo;
+
+    #region Equals
+
+    public bool Equals(string?              other) => this.ValueEquals(other);
+    public bool Equals(IHas<string?>?       other) => this.ValueEquals(other);
+    public bool Equals(IEquatable<string?>? other) => this.ValueEquals(other);
+
+    #endregion
+
+    #region Comparison
+
+    public int CompareTo(string?               other) => Comparer<string>.Default.Compare(Value, other);
+    public int CompareTo(IHas<string?>?        other) => Comparer<string>.Default.Compare(Value, other.OrDefault());
+    public int CompareTo(IComparable<string?>? other) => other?.CompareTo(Value) ?? 1;
+
+    #endregion
 
     /// <inheritdoc cref="Value"/>
     [Pure]
@@ -83,8 +101,8 @@ public readonly record struct OneLine : IHas<string>, IEnumerable<GraphemeCluste
     [Pure]
     internal static OneLine CreateRisky(string value) => new(value, ShouldValidate.No);
 
-    internal static OneLine CreateRisky(IEnumerable<GraphemeCluster> value)  => new(value, ShouldValidate.No);
-    internal static OneLine CreateRisky(params GraphemeCluster[]     values) => CreateRisky(values.AsEnumerable());
+    [Pure] internal static OneLine CreateRisky(IEnumerable<GraphemeCluster> value)  => new(value, ShouldValidate.No);
+    [Pure] internal static OneLine CreateRisky(params GraphemeCluster[]     values) => CreateRisky(values.AsEnumerable());
 
     /// <summary>
     /// Constructs a new instance of <see cref="OneLine"/>, validating that the provided <see cref="string"/> doesn't contain any <see cref="LineBreakChars"/>.
@@ -192,14 +210,93 @@ public readonly record struct OneLine : IHas<string>, IEnumerable<GraphemeCluste
         );
     }
 
+    /// <summary>
+    /// Cuts this <see cref="OneLine"/> down to the given <see cref="FillerSettings.LineLengthLimit"/>.
+    /// </summary>
+    /// <param name="settings">settings that informe the <see cref="Truncation"/></param>
+    /// <returns>a new <see cref="OneLine"/> with a <see cref="VisibleLength"/> <![CDATA[<=]]> <see cref="FillerSettings.LineLengthLimit"/></returns>
     [Pure]
-    public OneLine Truncate(FillerSettings? settings = default) {
-        settings = settings.Resolve();
+    public OneLine Truncate(FillerSettings settings) {
         return Truncate(settings.LineLengthLimit, settings);
     }
 
+    /// <inheritdoc cref="GraphemeClusterExtensions.RepeatToLength(System.Collections.Generic.IEnumerable{FowlFever.BSharp.Strings.GraphemeCluster},int)"/>
     [Pure]
-    public OneLine Align(StringAlignment alignment) {
-        throw new NotImplementedException();
+    public OneLine RepeatToLength(int desiredLength) => CreateRisky(_stringInfo.RepeatToLength(desiredLength));
+
+    /// <summary>
+    /// <inheritdoc cref="Fill(FowlFever.BSharp.Strings.FillerSettings?)"/>
+    /// </summary>
+    /// <param name="desiredLength">see <see cref="FillerSettings.LineLengthLimit"/></param>
+    /// <param name="padString">see <see cref="FillerSettings.PadString"/></param>
+    /// <param name="settings">additional <see cref="FillerSettings"/></param>
+    /// <returns>a <see cref="OneLine"/> with a <see cref="VisibleLength"/> of at least <paramref name="desiredLength"/></returns>
+    [Pure]
+    public OneLine Fill(int desiredLength, OneLine padString, FillerSettings? settings = default) {
+        return Fill(settings.Resolve() with { LineLengthLimit = desiredLength, PadString = padString });
+    }
+
+    /// <summary>
+    /// Adds <see cref="FillerSettings.PadString"/> to this <see cref="Value"/> in order to reach <see cref="FillerSettings.LineLengthLimit"/>.
+    /// </summary>
+    /// <param name="settings">controls how the fill should be performed</param>
+    /// <returns><see cref="OneLine"/> with a <see cref="VisibleLength"/> of <b><i>at least</i></b> <see cref="FillerSettings.LineLengthLimit"/></returns>
+    /// <exception cref="System.ComponentModel.InvalidEnumArgumentException">if an  unknown <see cref="StringAlignment"/> is provided</exception>
+    /// <remarks>
+    /// This method is purely additive, meaning that the output will always contain <b><i>at least</i></b> the original <see cref="Value"/>.
+    /// If the <see cref="VisibleLength"/> is already greater than <see cref="FillerSettings.LineLengthLimit"/>, then no changes will be applied.
+    /// <p/>
+    /// The "destructive" aka "subtractive" equivalent is <see cref="Truncate(int,FowlFever.BSharp.Strings.FillerSettings?)"/>.
+    /// </remarks>
+    [Pure]
+    public OneLine Fill(FillerSettings settings) {
+        var fillerLength = settings.LineLengthLimit - VisibleLength;
+
+        if (fillerLength <= 0) {
+            return this;
+        }
+
+        var filler = settings.PadString.IsEmpty ? this : settings.PadString;
+
+        (int left, int right) fillAmounts = settings.Alignment switch {
+            StringAlignment.Left   => (0, fillerLength),
+            StringAlignment.Right  => (fillerLength, 0),
+            StringAlignment.Center => fillerLength.Bisect(settings.LeftSideRounding),
+            _                      => throw BEnum.UnhandledSwitch(settings.Alignment),
+        };
+
+        var rightFill = filler.RepeatToLength(fillAmounts.right);
+        var leftFill  = fillAmounts.left == fillAmounts.right ? rightFill : filler.RepeatToLength(fillAmounts.left);
+        leftFill = settings.MirrorPadding.ApplyTo(leftFill);
+        return OneLine.FlatJoin(leftFill, this, rightFill);
+    }
+
+    /// <summary>
+    /// Either <see cref="Fill(int,FowlFever.BSharp.Strings.OneLine,FowlFever.BSharp.Strings.FillerSettings?)"/> or <see cref="Truncate(int,FowlFever.BSharp.Strings.FillerSettings?)"/>s
+    /// this <see cref="OneLine"/> so that it reaches <see cref="FillerSettings.LineLengthLimit"/>.
+    /// </summary>
+    /// <param name="settings">determines how the alignment should be performed</param>
+    /// <returns></returns>
+    /// <exception cref="InvalidEnumArgumentException">if an unknown <see cref="FillerSettings.OverflowStyle"/> is provided</exception>
+    [Pure]
+    public OneLine Fit(FillerSettings? settings) {
+        settings = settings.Resolve();
+
+        var comparisonResult = VisibleLength.ComparedWith(settings.LineLengthLimit);
+        return comparisonResult switch {
+            ComparisonResult.LessThan    => Fill(settings),
+            ComparisonResult.EqualTo     => this,
+            ComparisonResult.GreaterThan => HandleOverflow(this, settings),
+            _                            => throw BEnum.UnhandledSwitch(comparisonResult),
+        };
+
+        static OneLine HandleOverflow(OneLine og, FillerSettings settings) {
+            return settings.OverflowStyle switch {
+                OverflowStyle.Overflow => og,
+                OverflowStyle.Truncate => og.Truncate(settings),
+                OverflowStyle.Wrap     => throw BEnum.NotSupported(settings.OverflowStyle, $"Because this returns a {nameof(OneLine)}, {nameof(OverflowStyle)}.{OverflowStyle.Wrap} the result would be equivalent to {OverflowStyle.Truncate}."),
+                _                      => throw BEnum.UnhandledSwitch(settings.OverflowStyle),
+            };
+        }
     }
 }
