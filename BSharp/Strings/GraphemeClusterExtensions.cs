@@ -1,6 +1,6 @@
-using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 
 namespace FowlFever.BSharp.Strings;
 
@@ -42,18 +42,18 @@ public static class GraphemeClusterExtensions {
     public static int VisibleLength(this IHas<string?>? str) => str.GetValueOrDefault().VisibleLength();
 
     /// <summary>
-    /// Retrieves a <see cref="GraphemeCluster"/> by its index within a <see cref="StringInfo"/>.
+    /// <see cref="Bloop.WrapAround{T}"/>s <paramref name="source"/> until we reach <paramref name="desiredLength"/>.
     /// </summary>
-    /// <param name="stringInfo">this <see cref="StringInfo"/></param>
-    /// <param name="index">the index of the <see cref="StringInfo.SubstringByTextElements(int)"/> of length 1</param>
-    /// <returns>the corresponding <see cref="GraphemeCluster"/></returns>
-    public static GraphemeCluster ElementAt(this StringInfo stringInfo, int index) {
-        return GraphemeCluster.CreateRisky(stringInfo.SubstringByTextElements(index, 1));
+    /// <param name="source">this <see cref="IEnumerable{T}"/> of <see cref="GraphemeCluster"/>s</param>
+    /// <param name="desiredLength">the desired number of <see cref="GraphemeCluster"/>s</param>
+    /// <returns>a sequence of <paramref name="desiredLength"/> <see cref="GraphemeCluster"/>s</returns>
+    public static IEnumerable<GraphemeCluster> RepeatToLength(this IEnumerable<GraphemeCluster> source, int desiredLength) {
+        return source switch {
+            OneLine line => line.RepeatToLength(desiredLength),
+            _            => source.WrapAround(desiredLength),
+        };
     }
 
-    /// <inheritdoc cref="StringInfo.SubstringByTextElements(int)"/>
-    public static string SubstringByTextElements(this StringInfo stringInfo, Range range) {
-        var (off, len) = range.GetOffsetAndLength(stringInfo.LengthInTextElements);
-        return stringInfo.SubstringByTextElements(off, len);
-    }
+    /// <inheritdoc cref="RepeatToLength(System.Collections.Generic.IEnumerable{FowlFever.BSharp.Strings.GraphemeCluster},int)"/>
+    public static OneLine RepeatToLength(this OneLine line, int desiredLength) => OneLine.CreateRisky(line.AsEnumerable().RepeatToLength(desiredLength));
 }
