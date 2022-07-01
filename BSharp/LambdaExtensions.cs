@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 
@@ -37,14 +35,6 @@ namespace FowlFever.BSharp {
         #endregion
 
         #region Laziness
-
-        public static IEnumerable<Lazy<T>> Lazily<T>(this IEnumerable<T> source) {
-            if (source is IEnumerable<Lazy<T>> lazy) {
-                return lazy;
-            }
-
-            return source.Select(it => new Lazy<T>(() => it));
-        }
 
         /// <summary>
         /// Creates a <see cref="Lazy{T}"/> that will execute an <see cref="Action"/>.
