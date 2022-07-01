@@ -12,12 +12,14 @@ public readonly record struct GraphemeCluster : IHas<string> {
     public static GraphemeCluster Empty    = CreateRisky("");
     public static GraphemeCluster Space    = CreateRisky(" ");
     public static GraphemeCluster Ellipsis = CreateRisky("…");
+    public static GraphemeCluster Hyphen   = CreateRisky("-");
 
     #endregion
 
-    public string Value   { get; } = "";
-    public bool   IsEmpty => Value.IsEmpty();
-    public bool   IsBlank => Value.IsBlank();
+    public          string Value      { get; } = "";
+    public          bool   IsEmpty    => Value.IsEmpty();
+    public          bool   IsBlank    => Value.IsBlank();
+    public override string ToString() => Value;
 
     private GraphemeCluster(string? value, Range range, ShouldValidate shouldValidate) {
         if (value.IsEmpty()) {
