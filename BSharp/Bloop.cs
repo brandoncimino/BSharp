@@ -1,6 +1,11 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+
+using FowlFever.BSharp.Enums;
 
 using JetBrains.Annotations;
 
@@ -366,5 +371,127 @@ namespace FowlFever.BSharp {
         }
 
         #endregion
+
+        public enum RepetitionHandling { ReEvaluate, CacheResult }
+
+        /// <summary>
+        /// Iterates through the entries in <paramref name="source"/> <paramref name="totalCount"/> times, starting back over from the beginning of
+        /// <paramref name="source"/> if we reach the end.
+        /// </summary>
+        /// <param name="source">this <see cref="IEnumerable{T}"/></param>
+        /// <param name="totalCount">the total number of items in the resulting sequence</param>
+        /// <param name="repetitionHandling">determines whether to <see cref="RepetitionHandling.ReEvaluate"/> entries once we wrap-around or to re-use <see cref="RepetitionHandling.CacheResult"/>s</param>
+        /// <typeparam name="T">the type of entries in the <paramref name="source"/></typeparam>
+        /// <returns>a sequence of <paramref name="totalCount"/> <typeparamref name="T"/> entries</returns>
+        /// <exception cref="System.ComponentModel.InvalidEnumArgumentException">if an unknown <see cref="RepetitionHandling"/> is provided</exception>
+        public static IEnumerable<T> WrapAround<T>(this IEnumerable<T> source, int totalCount, RepetitionHandling repetitionHandling = RepetitionHandling.ReEvaluate) {
+            return repetitionHandling switch {
+                RepetitionHandling.CacheResult => source.Wrap_Cache(totalCount, ResetStyle.Restart),
+                RepetitionHandling.ReEvaluate  => source.Wrap_ReEvaluate(totalCount, ResetStyle.Restart),
+                _                              => throw BEnum.UnhandledSwitch(repetitionHandling),
+            };
+        }
+
+        public static IEnumerable<T> PingPong<T>(this IEnumerable<T> source, int totalCount, RepetitionHandling repetitionHandling = RepetitionHandling.ReEvaluate) {
+            return repetitionHandling switch {
+                RepetitionHandling.CacheResult => source.Wrap_Cache(totalCount, ResetStyle.PingPong),
+                RepetitionHandling.ReEvaluate  => source.Wrap_ReEvaluate(totalCount, ResetStyle.PingPong),
+                _                              => throw BEnum.UnhandledSwitch(repetitionHandling),
+            };
+        }
+
+        internal enum ResetStyle { Restart, PingPong }
+
+        internal static IEnumerable<T> Wrap_Cache<T>(this IEnumerable<T> source, int totalCount, ResetStyle resetStyle) {
+            bool      reversed = false;
+            var       cache    = ImmutableList.CreateBuilder<T>();
+            using var iterator = source.GetEnumerator();
+
+            if (!iterator.MoveNext()) {
+                throw new IndexOutOfRangeException("EMPTY!!");
+            }
+
+            yield return iterator.Current;
+            cache.Add(iterator.Current);
+
+            bool useCache = false;
+
+            for (int i = 1; i < totalCount; i++) {
+                if (useCache) {
+                    yield return cache[i % cache.Count];
+                    continue;
+                }
+
+                if (iterator.MoveNext()) {
+                    yield return iterator.Current;
+                    cache.Add(iterator.Current);
+                    continue;
+                }
+
+                useCache = true;
+                yield return cache[i % cache.Count];
+            }
+
+            void GetFromCache(int cacheSize, int overallPosition) {
+                var positionInCache = overallPosition % cacheSize;
+                if (positionInCache == 0) {
+                    reversed = resetStyle switch {
+                        ResetStyle.Restart  => false,
+                        ResetStyle.PingPong => !reversed,
+                        _                   => throw BEnum.UnhandledSwitch(resetStyle)
+                    };
+                }
+            }
+        }
+
+        private record Resettable<T>(IEnumerable<T> Source, ResetStyle ResetDirection) : IEnumerator<T> {
+            private IEnumerator<T> _iterator = Source.GetEnumerator();
+            private bool           Reversed  = false;
+
+            public void Dispose() {
+                _iterator.Dispose();
+            }
+
+            public bool MoveNext() {
+                return _iterator.MoveNext();
+            }
+
+            public void Reset() {
+                Reversed = ResetDirection switch {
+                    ResetStyle.Restart  => false,
+                    ResetStyle.PingPong => !Reversed,
+                    _                   => throw BEnum.UnhandledSwitch(ResetDirection)
+                };
+
+                _iterator.Dispose();
+                _iterator = Reversed ? Source.Reverse().GetEnumerator() : Source.GetEnumerator();
+            }
+
+            public T           Current => _iterator.Current;
+            object IEnumerator.Current => ((IEnumerator)_iterator).Current!;
+        }
+
+        [SuppressMessage("ReSharper", "PossibleMultipleEnumeration")]
+        private static IEnumerable<T> Wrap_ReEvaluate<T>(this IEnumerable<T> source, int totalCount, ResetStyle resetStyle) {
+            using var iterator = new Resettable<T>(source, resetStyle);
+
+            if (!iterator.MoveNext()) {
+                throw new IndexOutOfRangeException("EMPTY!");
+            }
+
+            yield return iterator.Current;
+            totalCount -= 1;
+
+            for (int i = 1; i < totalCount; i++) {
+                if (iterator.MoveNext()) {
+                    yield return iterator.Current;
+                    continue;
+                }
+
+                iterator.Reset();
+                iterator.MoveNext();
+                yield return iterator.Current;
+            }
+        }
     }
 }
