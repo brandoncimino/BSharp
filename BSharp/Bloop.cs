@@ -6,6 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 using FowlFever.BSharp.Enums;
+using FowlFever.BSharp.Exceptions;
 
 using JetBrains.Annotations;
 
@@ -384,7 +385,12 @@ namespace FowlFever.BSharp {
         /// <typeparam name="T">the type of entries in the <paramref name="source"/></typeparam>
         /// <returns>a sequence of <paramref name="totalCount"/> <typeparamref name="T"/> entries</returns>
         /// <exception cref="System.ComponentModel.InvalidEnumArgumentException">if an unknown <see cref="RepetitionHandling"/> is provided</exception>
-        public static IEnumerable<T> WrapAround<T>(this IEnumerable<T> source, int totalCount, RepetitionHandling repetitionHandling = RepetitionHandling.ReEvaluate) {
+        public static IEnumerable<T> WrapAround<T>(this IEnumerable<T> source, [NonNegativeValue] int totalCount, RepetitionHandling repetitionHandling = RepetitionHandling.ReEvaluate) {
+            Must.BePositive(totalCount);
+            if (totalCount == 0) {
+                return Enumerable.Empty<T>();
+            }
+
             return repetitionHandling switch {
                 RepetitionHandling.CacheResult => source.Wrap_Cache(totalCount, ResetStyle.Restart),
                 RepetitionHandling.ReEvaluate  => source.Wrap_ReEvaluate(totalCount, ResetStyle.Restart),
@@ -480,7 +486,6 @@ namespace FowlFever.BSharp {
             }
 
             yield return iterator.Current;
-            totalCount -= 1;
 
             for (int i = 1; i < totalCount; i++) {
                 if (iterator.MoveNext()) {
