@@ -279,4 +279,19 @@ public static partial class Mathb {
     #endregion
 
     #endregion
+
+    #region DivRem
+
+    /// <summary>
+    /// An extension method for <see cref="Math.DivRem(int,int,out int)"/> that uses a modern <see cref="ValueTuple{T1,T2}"/> return value instead of an <c>out</c> parameter. 
+    /// </summary>
+    /// <param name="dividend">the "top" of the fraction</param>
+    /// <param name="divisor">the "bottom" of the fraction</param>
+    /// <returns>the (quotient, remainder) of the division</returns>
+    public static (int quotient, int remainder) DivRem(this int dividend, int divisor) => (Math.DivRem(dividend, divisor, out var remainder), remainder);
+
+    /// <inheritdoc cref="DivRem(int,int)"/>
+    public static (long quotient, long remainder) DivRem(this long dividend, long divisor) => (Math.DivRem(dividend, divisor, out var remainder), remainder);
+
+    #endregion
 }
