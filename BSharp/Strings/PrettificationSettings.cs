@@ -18,7 +18,7 @@ public record PrettificationSettings : Settings {
     /// Stores the <b>global default</b> <see cref="PrettificationSettings"/>.
     /// </summary>
     /// <seealso cref="SettingsExtensions.Resolve(FowlFever.BSharp.Strings.PrettificationSettings?)"/>
-    public static PrettificationSettings Default { get; set; } = new PrettificationSettings();
+    public static PrettificationSettings Default { get; set; } = new();
 
     /// <summary>
     /// TODO: probably just move this into <see cref="FillerSettings"/>
@@ -54,8 +54,8 @@ public record TableSettings : Settings {
     /// Used as the "default" number of columns so unrelated <see cref="Prettification.Prettify{T}(T?)"/> calls can line up.
     /// </summary>
     public int AutoColumnCount { get;                  init; } = 4;
-    public string          HeaderSeparator      { get; init; } = "-";
-    public string          ColumnSeparator      { get; init; } = " ";
+    public OneLine         HeaderSeparator      { get; init; } = OneLine.Hyphen;
+    public OneLine         ColumnSeparator      { get; init; } = OneLine.Space;
     public StringAlignment HeaderAlignment      { get; init; } = StringAlignment.Center;
     public string          EmptyCellPlaceholder { get; init; } = " - ";
 
@@ -93,7 +93,7 @@ public record FillerSettings : Settings {
     /// </summary>
     public OneLine PadString { get; init; } = OneLine.Empty;
     /// <summary>
-    /// Controls whether filling applied to the left (start) of the string will be <see cref="StringMirroringExtensions.Mirror"/>:
+    /// Controls whether filling applied to the left (start) of the string will be <see cref="StringMirroringExtensions.Mirror(string)"/>:
     /// <code><![CDATA[
     /// StringMirroring.None        ---* str *---
     /// StringMirroring.Mirrored    *--- str *---
