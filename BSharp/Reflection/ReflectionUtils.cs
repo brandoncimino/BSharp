@@ -56,7 +56,8 @@ namespace FowlFever.BSharp.Reflection {
 
         #region Variables
 
-        public static T ResetAllVariables<T>(this T objectWithVariables)
+        [Obsolete]
+        public static T __ResetAllVariables<T>(this T objectWithVariables)
             where T : class {
             throw new NotImplementedException();
         }
