@@ -1,4 +1,6 @@
 using System.ComponentModel;
+using System.Linq;
+using System.Text;
 
 using FowlFever.BSharp.Enums;
 using FowlFever.BSharp.Strings.Enums;
@@ -15,10 +17,10 @@ public enum StringAlignment {
 }
 
 public static class StringAlignmentExtensions {
-    public static Lines ApplyTo(
+    public static Lines Align(
         this StringAlignment alignment,
         string               str,
-        string               padString = " ",
+        OneLine?             padString = default,
         FillerSettings?      settings  = default
     ) {
         return str.Align(
@@ -42,7 +44,7 @@ public static class StringAlignmentExtensions {
         [NonNegativeValue]
         int? width = default,
         StringAlignment? alignment = default,
-        string?          padString = default,
+        OneLine?         padString = default,
         FillerSettings?  settings  = default
     ) {
         settings = settings.Resolve();
@@ -71,13 +73,13 @@ public static class StringAlignmentExtensions {
         this string original,
         [NonNegativeValue]
         int totalLength,
-        string?         filler    = default,
+        OneLine?        filler    = default,
         StringAlignment alignment = StringAlignment.Left
     ) {
         return original.Align(
             settings: new FillerSettings {
                 LineLengthLimit = totalLength,
-                PadString       = filler.IfEmpty(original),
+                PadString       = filler ?? OneLine.Create(" "),
                 Alignment       = alignment,
             }
         );
@@ -90,18 +92,39 @@ public static class StringAlignmentExtensions {
     /// <param name="settings">a set of <see cref="FillerSettings"/></param>
     /// <returns>the aligned <see cref="string"/></returns>
     public static Lines Align(this string str, FillerSettings? settings) {
-        static string _AlignSingle(OneLine str, FillerSettings settings) {
-            if (str.Length >= settings.LineLengthLimit) {
-                return settings.OverflowStyle switch {
-                    OverflowStyle.Overflow => str,
-                    OverflowStyle.Truncate => str.Value.Truncate(settings.LineLengthLimit, trail: settings.TruncateTrail, alignment: settings.Alignment),
-                    OverflowStyle.Wrap     => throw BEnum.Unsupported(settings.OverflowStyle, "I want to do this someday, though..."),
-                    _                      => throw BEnum.UnhandledSwitch(settings.OverflowStyle),
-                };
-            }
+        return str.Lines().Select(it => Align(it, settings.Resolve())).Lines();
+    }
 
-            var filler       = settings.PadString.IfEmpty(str);
-            var fillerLength = settings.LineLengthLimit - str.Length;
+    /// <summary>
+    /// Aligns a <see cref="OneLine"/> <see cref="string"/> according to a set of <see cref="FillerSettings"/>.
+    /// </summary>
+    /// <param name="line"></param>
+    /// <param name="settings"></param>
+    /// <returns></returns>
+    /// <exception cref="InvalidEnumArgumentException"></exception>
+    public static OneLine Align(this OneLine line, FillerSettings? settings) {
+        settings = settings.Resolve();
+
+        var comparisonResult = line.VisibleLength.ComparedWith(settings.LineLengthLimit);
+        return comparisonResult switch {
+            ComparisonResult.LessThan    => HandlePadding(line, settings),
+            ComparisonResult.EqualTo     => line,
+            ComparisonResult.GreaterThan => HandleOverflow(line, settings),
+            _                            => throw BEnum.UnhandledSwitch(comparisonResult),
+        };
+
+        static OneLine HandleOverflow(OneLine og, FillerSettings settings) {
+            return settings.OverflowStyle switch {
+                OverflowStyle.Overflow => og,
+                OverflowStyle.Truncate => og.Truncate(settings),
+                OverflowStyle.Wrap     => throw BEnum.NotSupported(settings.OverflowStyle, "I want to do this someday, though..."),
+                _                      => throw BEnum.UnhandledSwitch(settings.OverflowStyle),
+            };
+        }
+
+        static OneLine HandlePadding(OneLine og, FillerSettings settings) {
+            var filler       = settings.PadString.IsEmpty ? og : settings.PadString;
+            var fillerLength = settings.LineLengthLimit - og.VisibleLength;
 
             (int left, int right) fillAmounts = settings.Alignment switch {
                 StringAlignment.Left   => (0, fillerLength),
@@ -113,10 +136,37 @@ public static class StringAlignmentExtensions {
             var rightFill = filler.RepeatToLength(fillAmounts.right);
             var leftFill  = fillAmounts.left == fillAmounts.right ? rightFill : filler.RepeatToLength(fillAmounts.left);
             leftFill = settings.MirrorPadding.ApplyTo(leftFill);
+            return OneLine.FlatJoin(leftFill, og, rightFill);
+        }
+    }
 
-            return $"{leftFill}{str}{rightFill}";
+    /// <summary>
+    /// Repeats a <see cref="string"/> until <see cref="desiredLength"/> is reached, with the last entry potentially being partial.
+    /// </summary>
+    /// <param name="toRepeat"></param>
+    /// <param name="desiredLength"></param>
+    /// <returns></returns>
+    public static string RepeatToLength(this string toRepeat, [NonNegativeValue] int desiredLength) {
+#if NET6_0_OR_GREATER
+        //The following is an example using <c>string.Create</c>, but unfortunately that isn't available until C# 6.
+        return string.Create(
+            desiredLength,
+            toRepeat,
+            (span, source) => {
+                for (int spanPos = 0; spanPos < desiredLength; spanPos++) {
+                    var sourcePos = spanPos % source.Length;
+                    span[spanPos] = source[sourcePos];
+                }
+            }
+        );
+#else
+        var sb = new StringBuilder();
+
+        for (var i = 0; i < desiredLength; i++) {
+            sb.Append(toRepeat[i % toRepeat.Length]);
         }
 
-        return str.Lines().SelectLines(it => _AlignSingle(it, settings.Resolve()));
+        return sb.ToString();
+#endif
     }
 }
