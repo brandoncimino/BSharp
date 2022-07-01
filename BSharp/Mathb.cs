@@ -293,5 +293,20 @@ public static partial class Mathb {
     /// <inheritdoc cref="DivRem(int,int)"/>
     public static (long quotient, long remainder) DivRem(this long dividend, long divisor) => (Math.DivRem(dividend, divisor, out var remainder), remainder);
 
+    /// <summary>
+    /// Finds the index we'd end at if we traversed a collection of <paramref name="totalCount"/> items, turning around whenever we reach the end.
+    ///
+    /// TODO: Currently this will <b>repeat</b> the bounce point, i.e. for a count of <c>3</c> and 7 steps, we'd get <c>[0,1,2,3,3,2,1]</c> 
+    /// </summary>
+    /// <param name="totalCount"></param>
+    /// <param name="numberOfSteps"></param>
+    /// <returns></returns>
+    private static int CalculatePingPong(int totalCount, int numberOfSteps) {
+        var quotient  = Math.DivRem(numberOfSteps, totalCount, out var remainder);
+        var direction = Convert.ToBoolean(quotient % 2);
+        var index     = new Index(remainder, direction);
+        return index.GetOffset(totalCount);
+    }
+
     #endregion
 }
