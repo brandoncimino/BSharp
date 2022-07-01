@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 
 using FowlFever.BSharp.Collections;
@@ -81,7 +80,7 @@ public static partial class StringUtils {
         string      indentString = DefaultIndentString,
         IndentMode  indentMode   = IndentMode.Relative
     ) {
-        Must.Have(indentString).NotBlank();
+        Must.Have(indentString).NotEmpty();
         return Enumerable.Repeat(toIndent, 1).Indent(indentCount, indentString, indentMode);
     }
 
@@ -137,49 +136,6 @@ public static partial class StringUtils {
     public static string Repeat(this char toRepeat, [NonNegativeValue] int repetitions, string? separator = "") {
         Must.BePositive(repetitions, nameof(repetitions), nameof(Repeat));
         return separator is null ? new string(toRepeat, repetitions) : string.Join(separator, Enumerable.Repeat(toRepeat, repetitions));
-    }
-
-    /// <summary>
-    /// Repeats a <see cref="string"/> until <see cref="desiredLength"/> is reached, with the last entry potentially being partial.
-    /// </summary>
-    /// <param name="toRepeat"></param>
-    /// <param name="desiredLength"></param>
-    /// <returns></returns>
-    public static string RepeatToLength(this string toRepeat, [NonNegativeValue] int desiredLength) {
-        var sb = new StringBuilder();
-        for (var i = 0; i < desiredLength; i++) {
-            sb.Append(toRepeat[i % toRepeat.Length]);
-        }
-
-        return sb.ToString();
-        // The following is an example implementation using `string.Create()`
-        // return string.Create(
-        //     desiredLength,
-        //     toRepeat,
-        //     (span, source) => {
-        //         for (int spanPos = 0; spanPos < desiredLength; spanPos++) {
-        //             var sourcePos = spanPos % source.Length;
-        //             span[spanPos] = source[sourcePos];
-        //         }
-        //     }
-        // );
-    }
-
-    /// <summary>
-    /// <see cref="Array.Reverse(System.Array)"/>s the order of each character in this <see cref="string"/>.
-    /// <p/>
-    /// TODO: This can probably be made more efficient by using <see cref="MemoryExtensions.AsSpan(string?)"/>
-    /// TODO: Handle certain sequences that shouldn't be reversed, like composite Emoji (📎 there's gotta be a library built to handle Emoji, right?)
-    /// </summary>
-    /// <remarks>
-    /// This was named "Backwards" to avoid ambiguity with <see cref="Enumerable.Reverse{TSource}"/>.
-    /// </remarks>
-    /// <param name="str">this <see cref="string"/></param>
-    /// <returns>this <see cref="string"/>...but backwards</returns>
-    public static string Mirror(this string str) {
-        var chars = str.ToCharArray();
-        Array.Reverse(chars);
-        return new string(chars);
     }
 
     /// <summary>
@@ -422,7 +378,12 @@ public static partial class StringUtils {
     /// <returns>an <see cref="Array"/> containing each individual line from <paramref name="multilineContent"/></returns>
     [Pure]
     public static string[] SplitLines(this string multilineContent, StringSplitOptions options = default) {
-        return multilineContent.Split(LineBreakSplitters, options);
+        return multilineContent.Split(
+            new[] {
+                "\r\n", "\r", "\n"
+            },
+            options
+        );
     }
 
     /// <summary>
