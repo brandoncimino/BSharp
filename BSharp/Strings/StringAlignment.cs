@@ -2,9 +2,6 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text;
 
-using FowlFever.BSharp.Enums;
-using FowlFever.BSharp.Strings.Enums;
-
 using JetBrains.Annotations;
 
 namespace FowlFever.BSharp.Strings;
@@ -79,7 +76,7 @@ public static class StringAlignmentExtensions {
         return original.Align(
             settings: new FillerSettings {
                 LineLengthLimit = totalLength,
-                PadString       = filler ?? OneLine.Create(" "),
+                PadString       = filler ?? OneLine.Space,
                 Alignment       = alignment,
             }
         );
@@ -92,52 +89,7 @@ public static class StringAlignmentExtensions {
     /// <param name="settings">a set of <see cref="FillerSettings"/></param>
     /// <returns>the aligned <see cref="string"/></returns>
     public static Lines Align(this string str, FillerSettings? settings) {
-        return str.Lines().Select(it => Align(it, settings.Resolve())).Lines();
-    }
-
-    /// <summary>
-    /// Aligns a <see cref="OneLine"/> <see cref="string"/> according to a set of <see cref="FillerSettings"/>.
-    /// </summary>
-    /// <param name="line"></param>
-    /// <param name="settings"></param>
-    /// <returns></returns>
-    /// <exception cref="InvalidEnumArgumentException"></exception>
-    public static OneLine Align(this OneLine line, FillerSettings? settings) {
-        settings = settings.Resolve();
-
-        var comparisonResult = line.VisibleLength.ComparedWith(settings.LineLengthLimit);
-        return comparisonResult switch {
-            ComparisonResult.LessThan    => HandlePadding(line, settings),
-            ComparisonResult.EqualTo     => line,
-            ComparisonResult.GreaterThan => HandleOverflow(line, settings),
-            _                            => throw BEnum.UnhandledSwitch(comparisonResult),
-        };
-
-        static OneLine HandleOverflow(OneLine og, FillerSettings settings) {
-            return settings.OverflowStyle switch {
-                OverflowStyle.Overflow => og,
-                OverflowStyle.Truncate => og.Truncate(settings),
-                OverflowStyle.Wrap     => throw BEnum.NotSupported(settings.OverflowStyle, "I want to do this someday, though..."),
-                _                      => throw BEnum.UnhandledSwitch(settings.OverflowStyle),
-            };
-        }
-
-        static OneLine HandlePadding(OneLine og, FillerSettings settings) {
-            var filler       = settings.PadString.IsEmpty ? og : settings.PadString;
-            var fillerLength = settings.LineLengthLimit - og.VisibleLength;
-
-            (int left, int right) fillAmounts = settings.Alignment switch {
-                StringAlignment.Left   => (0, fillerLength),
-                StringAlignment.Right  => (fillerLength, 0),
-                StringAlignment.Center => fillerLength.Bisect(settings.LeftSideRounding),
-                _                      => throw BEnum.UnhandledSwitch(settings.Alignment),
-            };
-
-            var rightFill = filler.RepeatToLength(fillAmounts.right);
-            var leftFill  = fillAmounts.left == fillAmounts.right ? rightFill : filler.RepeatToLength(fillAmounts.left);
-            leftFill = settings.MirrorPadding.ApplyTo(leftFill);
-            return OneLine.FlatJoin(leftFill, og, rightFill);
-        }
+        return str.Lines().Select(it => it.Fit(settings.Resolve())).Lines();
     }
 
     /// <summary>
