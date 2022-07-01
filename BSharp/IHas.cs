@@ -33,4 +33,14 @@ public static class HasExtensions {
             _           => other?.Equals(self.OrDefault())
         } == true;
     }
+
+    public static bool             ValueEquals<T>(this  IHas<T?>? self, IHas<T?>? other) => self.OrDefault()?.Equals(other.OrDefault()) == true;
+    public static ComparisonResult ComparedWith<T>(this IHas<T?>? self, T?        other) => self.OrDefault().ComparedWith(other);
+    public static ComparisonResult ComparedWith<T>(this IHas<T?>? self, IHas<T?>? other) => Comparator<T>.Default.Compare(self.OrDefault(), other.OrDefault());
+
+    public static ComparisonResult ComparedWith<T>(this IHas<T?>? self, IComparable<T?>? other) => other switch {
+        T t         => self.ComparedWith(t),
+        IHas<T> has => self.ComparedWith(has),
+        _           => Comparator<T>.Default.Compare(self.OrDefault(), other)
+    };
 }
