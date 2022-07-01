@@ -160,11 +160,17 @@ public readonly record struct OneLine : IHas<string>, IEnumerable<GraphemeCluste
 
     #endregion
 
-    /// <inheritdoc cref="GraphemeClusterExtensions.ElementAt"/>
+    /// <summary>
+    /// Retrieves the <see cref="GraphemeCluster"/> at the given <paramref name="textElementIndex"/>.
+    /// </summary>
+    /// <param name="textElementIndex">the index of the <see cref="GraphemeCluster"/></param>
     [Pure]
     public GraphemeCluster this[int textElementIndex] => _stringInfo.ElementAt(textElementIndex);
 
-    /// <inheritdoc cref="GraphemeClusterExtensions.SubstringByTextElements"/>
+    /// <summary>
+    /// Gets a "substring" of this <see cref="OneLine"/> by <see cref="GraphemeCluster"/> indexes.
+    /// </summary>
+    /// <param name="range">the desired "sub-string" <see cref="Range"/></param>
     [Pure]
     public OneLine this[Range range] => CreateRisky(_stringInfo[range]);
 
