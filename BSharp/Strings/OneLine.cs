@@ -44,8 +44,8 @@ public readonly record struct OneLine : IHas<string>, IEnumerable<GraphemeCluste
 
     #region Comparison
 
-    public int CompareTo(string?               other) => Comparer<string>.Default.Compare(Value, other);
-    public int CompareTo(IHas<string?>?        other) => Comparer<string>.Default.Compare(Value, other.OrDefault());
+    public int CompareTo(string?               other) => Comparer<string>.Default.Compare(Value, other!);
+    public int CompareTo(IHas<string?>?        other) => Comparer<string>.Default.Compare(Value, other.OrDefault()!);
     public int CompareTo(IComparable<string?>? other) => other?.CompareTo(Value) ?? 1;
 
     #endregion
@@ -67,12 +67,12 @@ public readonly record struct OneLine : IHas<string>, IEnumerable<GraphemeCluste
         }
 
         value = shouldValidate switch {
-            ShouldValidate.Yes => Validate(value),
+            ShouldValidate.Yes => Validate(value!),
             ShouldValidate.No  => value,
             _                  => throw BEnum.UnhandledSwitch(shouldValidate)
         };
 
-        _stringInfo = new TextElementString(value);
+        _stringInfo = new TextElementString(value!);
     }
 
     private OneLine(IEnumerable<GraphemeCluster> value, ShouldValidate shouldValidate) {
@@ -122,7 +122,7 @@ public readonly record struct OneLine : IHas<string>, IEnumerable<GraphemeCluste
         return value switch {
             OneLine line => line,
             Lines        => throw Must.Reject(value, $"An instance of {nameof(Lines)} can't be converted to a {nameof(OneLine)}!"),
-            _            => Create(value.GetValueOrDefault())
+            _            => Create(value.OrDefault())
         };
     }
 
@@ -213,7 +213,7 @@ public readonly record struct OneLine : IHas<string>, IEnumerable<GraphemeCluste
     /// <summary>
     /// Cuts this <see cref="OneLine"/> down to the given <see cref="FillerSettings.LineLengthLimit"/>.
     /// </summary>
-    /// <param name="settings">settings that informe the <see cref="Truncation"/></param>
+    /// <param name="settings">settings that inform the <see cref="Truncation"/></param>
     /// <returns>a new <see cref="OneLine"/> with a <see cref="VisibleLength"/> <![CDATA[<=]]> <see cref="FillerSettings.LineLengthLimit"/></returns>
     [Pure]
     public OneLine Truncate(FillerSettings settings) {
