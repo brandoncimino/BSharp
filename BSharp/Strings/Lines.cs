@@ -11,7 +11,7 @@ namespace FowlFever.BSharp.Strings;
 /// <summary>
 /// Represents a collection of <see cref="OneLine"/> <see cref="string"/>s.
 /// </summary>
-public readonly record struct Lines : IImmutableList<OneLine>, IHas<string> {
+public readonly record struct Lines : IImmutableList<OneLine>, IHas<string>, IEquatable<string?> {
     private readonly IImmutableList<OneLine> _lines = ImmutableList<OneLine>.Empty;
     /// <summary>
     /// The largest <see cref="GraphemeClusterExtensions.VisibleLength(string?)"/> of any of the individual <see cref="Lines"/>.
@@ -20,7 +20,7 @@ public readonly record struct Lines : IImmutableList<OneLine>, IHas<string> {
     /// <summary>
     /// The number of <see cref="Lines"/>.
     /// </summary>
-    /// <remarks>This is identical to <see cref="Count"/>, but is more idiomatic when combined with <see cref="Width"/>.</remarks>
+    /// <remarks>This is identical to <see cref="ICollection.Count"/>, but is more idiomatic when combined with <see cref="Width"/>.</remarks>
     private int Height => _lines.Count;
     /// <summary>
     /// Combines (<see cref="Width"/>, <see cref="Height"/>).
@@ -46,21 +46,33 @@ public readonly record struct Lines : IImmutableList<OneLine>, IHas<string> {
         return str?.Split(LineBreakSplitters, StringSplitOptions.None).Select(OneLine.CreateRisky) ?? Enumerable.Empty<OneLine>();
     }
 
-    public static Lines Split(string?                      source) => new(_SplitStringLines(source));
-    public static Lines Split(IHas<string?>?               source) => Split(source.GetValueOrDefault());
-    public static Lines Split(IEnumerable<string?>?        source) => new(source?.Select(_SplitStringLines).AggregateImmutableList());
-    public static Lines Split(IEnumerable<IHas<string?>?>? source) => new(source?.Select(it => _SplitStringLines(it.GetValueOrDefault())).AggregateImmutableList());
+    #region Split (factory methods)
 
-    public override string ToString() {
-        return string.Join("\n", this.AsEnumerable());
-    }
+    public static Lines Split(string?                      source) => new(_SplitStringLines(source));
+    public static Lines Split(IHas<string?>?               source) => Split(source.OrDefault());
+    public static Lines Split(IEnumerable<string?>?        source) => new(source?.Select(_SplitStringLines).AggregateImmutableList());
+    public static Lines Split(IEnumerable<IHas<string?>?>? source) => new(source?.Select(it => _SplitStringLines(it.OrDefault())).AggregateImmutableList());
+
+    #endregion
+
+    public override string ToString()            => string.Join("\n", this.AsEnumerable());
+    public          bool   Equals(string? other) => Height == 1 && ToString().Equals(other);
+    public override int    GetHashCode()         => ToString().GetHashCode();
+    public          bool   Equals(Lines? other)  => Height == other?.Height && ToString() == other.ToString();
+
+    #region Operators
 
     public static implicit operator string(Lines  lines) => lines.ToString();
     public static implicit operator Lines(OneLine line)  => new(line);
 
+    #endregion
+
     #region IImmutableList<OneLine> Implementation
 
-    public int Count => _lines.Count;
+    /// <summary>
+    /// Equivalent to <see cref="Height"/>, which should be preferred because it is less ambiguous.
+    /// </summary>
+    int IReadOnlyCollection<OneLine>.Count => Height;
     public OneLine this[int                                      index] => _lines[index];
     public IImmutableList<OneLine> Add(OneLine                   value)                                                                                                => _lines.Add(value);
     public IImmutableList<OneLine> AddRange(IEnumerable<OneLine> items)                                                                                                => _lines.AddRange(items);
