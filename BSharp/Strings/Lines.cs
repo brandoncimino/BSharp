@@ -16,12 +16,12 @@ public readonly record struct Lines : IImmutableList<OneLine>, IHas<string>, IEq
     /// <summary>
     /// The largest <see cref="GraphemeClusterExtensions.VisibleLength(string?)"/> of any of the individual <see cref="Lines"/>.
     /// </summary>
-    private int Width => _lines.Max(it => it.VisibleLength());
+    public int Width => _lines.Max(it => it.VisibleLength());
     /// <summary>
     /// The number of <see cref="Lines"/>.
     /// </summary>
     /// <remarks>This is identical to <see cref="ICollection.Count"/>, but is more idiomatic when combined with <see cref="Width"/>.</remarks>
-    private int Height => _lines.Count;
+    public int Height => _lines.Count;
     /// <summary>
     /// Combines (<see cref="Width"/>, <see cref="Height"/>).
     /// </summary>
@@ -66,6 +66,33 @@ public readonly record struct Lines : IImmutableList<OneLine>, IHas<string>, IEq
     public static implicit operator Lines(OneLine line)  => new(line);
 
     #endregion
+
+    /// <summary>
+    /// Limits the <see cref="Lines"/> to a <see cref="Height"/> of <paramref name="maxLineCount"/>.
+    /// </summary>
+    /// <param name="maxLineCount">the maximum allows <see cref="Height"/></param>
+    /// <param name="includeMessage">if <c>true</c>, the final entry in the output will be a message describing the number of omitted lines</param>
+    /// <param name="truncationMessage"></param>
+    /// <returns></returns>
+    public Lines Truncate(int maxLineCount, Func<IEnumerable<OneLine>, OneLine>? truncationMessage = default) {
+        var (taken, leftovers) = this.TakeLeftovers(maxLineCount);
+
+        if (truncationMessage == null) {
+            return new Lines(taken);
+        }
+
+        var leftoverCount = leftovers.Count();
+        if (leftoverCount > 0) {
+            // taken = taken.Take(maxLineCount - 1)
+            //              .Concat(truncationMessage.Invoke())
+        }
+
+        return new Lines(taken);
+    }
+
+    public IEnumerable<OneLine> JuncTruc(int maxLineCount, Func<IEnumerable<OneLine>, OneLine>? truncationMessage = default) {
+        throw new NotImplementedException();
+    }
 
     #region IImmutableList<OneLine> Implementation
 
