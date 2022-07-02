@@ -12,7 +12,7 @@ namespace FowlFever.BSharp.Strings;
 /// Represents a collection of <see cref="OneLine"/> <see cref="string"/>s.
 /// </summary>
 public readonly record struct Lines : IImmutableList<OneLine>, IHas<string>, IEquatable<string?> {
-    private readonly IImmutableList<OneLine> _lines = ImmutableList<OneLine>.Empty;
+    private readonly ImmutableList<OneLine> _lines = ImmutableList<OneLine>.Empty;
     /// <summary>
     /// The largest <see cref="GraphemeClusterExtensions.VisibleLength(string?)"/> of any of the individual <see cref="Lines"/>.
     /// </summary>
@@ -27,7 +27,7 @@ public readonly record struct Lines : IImmutableList<OneLine>, IHas<string>, IEq
     /// </summary>
     public (int width, int height) Dimensions => (Width, Height);
 
-    internal Lines(IEnumerable<OneLine>? lines) => _lines = lines?.AsImmutableList() ?? ImmutableArray<OneLine>.Empty;
+    internal Lines(IEnumerable<OneLine>? lines) => _lines = lines?.ToImmutableList() ?? ImmutableList<OneLine>.Empty;
     internal Lines(OneLine               line) => _lines = _lines.Add(line);
     private IEnumerable<OneLine> LineEnumerable() => _lines;
     public  IEnumerator<OneLine> GetEnumerator()  => LineEnumerable().GetEnumerator();
@@ -74,7 +74,7 @@ public readonly record struct Lines : IImmutableList<OneLine>, IHas<string>, IEq
     /// <param name="includeMessage">if <c>true</c>, the final entry in the output will be a message describing the number of omitted lines</param>
     /// <param name="truncationMessage"></param>
     /// <returns></returns>
-    public Lines Truncate(int maxLineCount, Func<IEnumerable<OneLine>, OneLine>? truncationMessage = default) {
+    public Lines Truncate(int maxLineCount, Func<int, OneLine>? truncationMessage = default) {
         var (taken, leftovers) = this.TakeLeftovers(maxLineCount);
 
         if (truncationMessage == null) {
@@ -83,15 +83,15 @@ public readonly record struct Lines : IImmutableList<OneLine>, IHas<string>, IEq
 
         var leftoverCount = leftovers.Count();
         if (leftoverCount > 0) {
-            // taken = taken.Take(maxLineCount - 1)
-            //              .Concat(truncationMessage.Invoke())
+            taken = taken.Take(maxLineCount - 1)
+                         .Concat(
+                             truncationMessage.WrapInEnumerable()
+                                              .Select(it => it.Invoke(leftoverCount))
+                         );
+            truncationMessage(leftoverCount);
         }
 
         return new Lines(taken);
-    }
-
-    public IEnumerable<OneLine> JuncTruc(int maxLineCount, Func<IEnumerable<OneLine>, OneLine>? truncationMessage = default) {
-        throw new NotImplementedException();
     }
 
     #region IImmutableList<OneLine> Implementation
