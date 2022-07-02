@@ -957,6 +957,37 @@ public static partial class CollectionUtils {
         return additionalValuesThatMightBeNull.NonNull().Concat(source);
     }
 
+    [Pure]
+    [LinqTunnel]
+    public static IEnumerable<T> PrependNonNull<T>(
+        this IEnumerable<T> source,
+        IEnumerable<T?>     additionalValuesThatMightBeNull
+    )
+        where T : struct {
+        return additionalValuesThatMightBeNull.NonNull().Concat(source);
+    }
+
+    [Pure]
+    [LinqTunnel]
+    public static IEnumerable<T> PrependNonNull<T>(
+        this IEnumerable<T> source,
+        T?                  additional,
+        params T?[]?        more
+    ) {
+        return more.OrEmpty().Prepend(additional).NonNull().Concat(source);
+    }
+
+    [Pure]
+    [LinqTunnel]
+    public static IEnumerable<T> PrependNonNull<T>(
+        this IEnumerable<T> source,
+        T?                  additional,
+        params T?[]?        more
+    )
+        where T : struct {
+        return more.OrEmpty().Prepend(additional).NonNull().Concat(source);
+    }
+
     #endregion
 
     #region AddNonNull
