@@ -64,14 +64,6 @@ public static partial class StringUtils {
 
     #region Filling
 
-    [Pure]
-    [Obsolete]
-    public static string FillRight(this string self, [NonNegativeValue] int totalLength, string? filler = " ") => self.Fill(totalLength, filler: filler, alignment: StringAlignment.Right);
-
-    [Pure]
-    [Obsolete]
-    public static string FillLeft(this string self, [NonNegativeValue] int totalLength, string filler) => self.Fill(totalLength, filler: filler, alignment: StringAlignment.Left);
-
     #endregion
 
     [Pure]
@@ -82,18 +74,18 @@ public static partial class StringUtils {
     [Pure]
     public static string FormatHeading(
         string                  heading,
-        string                  border   = "=",
-        string                  padding  = " ",
+        OneLine?                border   = default,
+        OneLine?                padding  = default,
         PrettificationSettings? settings = default
     ) {
         return FormatHeading(
             heading,
             settings.Resolve() with {
                 TableSettings = settings.Resolve().TableSettings with {
-                    HeaderSeparator = border,
+                    HeaderSeparator = border ?? OneLine.Hyphen,
                 },
                 FillerSettings = settings.Resolve().FillerSettings with {
-                    PadString = padding,
+                    PadString = padding ?? OneLine.Space,
                 },
             }
         );
