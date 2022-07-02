@@ -133,12 +133,14 @@ public readonly record struct OneLine : IHas<string>, IEnumerable<GraphemeCluste
     /// </summary>
     /// <param name="parts">a collection of <see cref="OneLine"/>s</param>
     /// <param name="joiner">an optional <see cref="OneLine"/> interposed betwixt each <see cref="OneLine"/></param>
+    /// <param name="prefix"></param>
+    /// <param name="suffix"></param>
     /// <returns>a new <see cref="OneLine"/></returns>
     /// <remarks>
     /// Since we know that all of the components are themselves <see cref="OneLine"/>, we can use <see cref="CreateRisky(string)"/> to skip re-validating them.
     /// </remarks>
     [Pure]
-    public static OneLine FlatJoin(IEnumerable<OneLine> parts, OneLine? joiner = default) {
+    public static OneLine FlatJoin(IEnumerable<OneLine> parts, OneLine? joiner = default, OneLine? prefix = default, OneLine? suffix = default) {
         using var iterator = parts.GetEnumerator();
 
         if (iterator.MoveNext() == false) {
@@ -146,6 +148,11 @@ public readonly record struct OneLine : IHas<string>, IEnumerable<GraphemeCluste
         }
 
         var clusters = ImmutableList.CreateBuilder<GraphemeCluster>();
+
+        if (prefix != null) {
+            clusters.AddRange(prefix);
+        }
+
         clusters.AddRange(iterator.Current);
 
         while (iterator.MoveNext()) {
@@ -156,10 +163,14 @@ public readonly record struct OneLine : IHas<string>, IEnumerable<GraphemeCluste
             clusters.AddRange(iterator.Current);
         }
 
+        if (suffix != null) {
+            clusters.AddRange(suffix);
+        }
+
         return CreateRisky(clusters.ToImmutable());
     }
 
-    /// <inheritdoc cref="FlatJoin(System.Collections.Generic.IEnumerable{FowlFever.BSharp.Strings.OneLine},System.Nullable{FowlFever.BSharp.Strings.OneLine})"/>
+    /// <inheritdoc cref="FlatJoin(System.Collections.Generic.IEnumerable{FowlFever.BSharp.Strings.OneLine},System.Nullable{FowlFever.BSharp.Strings.OneLine},System.Nullable{FowlFever.BSharp.Strings.OneLine},System.Nullable{FowlFever.BSharp.Strings.OneLine})"/>
     [Pure]
     public static OneLine FlatJoin(params OneLine[] parts) => FlatJoin(parts.AsEnumerable());
 
