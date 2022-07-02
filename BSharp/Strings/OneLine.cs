@@ -21,7 +21,7 @@ namespace FowlFever.BSharp.Strings;
 public readonly record struct OneLine : IHas<string>, IEnumerable<GraphemeCluster>, IEquivalent<string> {
     #region "Constants"
 
-    public static readonly OneLine Empty          = CreateRisky(GraphemeCluster.Empty);
+    public static readonly OneLine Empty          = CreateRisky("");
     public static readonly OneLine Space          = CreateRisky(GraphemeCluster.Space);
     public static readonly OneLine Ellipsis       = CreateRisky(GraphemeCluster.Ellipsis);
     public static readonly OneLine Hyphen         = CreateRisky(GraphemeCluster.Hyphen);
