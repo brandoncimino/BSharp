@@ -675,8 +675,14 @@ public static partial class StringUtils {
     #region Substrings
 
     [Pure]
-    public static string SubstringBefore(this string str, string splitter) {
-        var first = str.IndexOf(splitter, StringComparison.Ordinal);
+    public static string SubstringBefore(this string str, string splitter, StringComparison stringComparison = StringComparison.Ordinal) {
+        var first = str.IndexOf(splitter, stringComparison);
+        return first > 0 ? str[..first] : "";
+    }
+
+    [Pure]
+    public static string SubstringBeforeAny(this string str, char[] anyOf) {
+        var first = str.IndexOfAny(anyOf);
         return first > 0 ? str[..first] : "";
     }
 
@@ -687,25 +693,22 @@ public static partial class StringUtils {
     }
 
     [Pure]
+    public static string SubstringAfterAny(this string str, char[] anyOf) {
+        var last = str.LastIndexOfAny(anyOf);
+        return last > 0 ? str[(last + 1)..] : "";
+    }
+
+    [Pure]
     public static string SubstringBefore(this string str, Regex pattern) {
         var match = pattern.Match(str);
-        return match.Success ? str.Substring(0, match.Index) : "";
+        return match.Success ? str[..match.Index] : "";
     }
 
     [Pure]
     public static string SubstringAfter(this string str, Regex pattern) {
         var rightToLeftPattern = new Regex(pattern.ToString(), pattern.Options | RegexOptions.RightToLeft);
         var match              = rightToLeftPattern.Match(str);
-        if (match.Success) {
-            // the substring starts from the END of the match
-            var subStart  = match.Index + match.Length;
-            var subEnd    = str.Length;
-            var subLength = subEnd - subStart;
-            return str.Substring(subStart, subLength);
-        }
-        else {
-            return "";
-        }
+        return match.Success ? str[(match.Index + match.Length)..] : "";
     }
 
     /// <summary>

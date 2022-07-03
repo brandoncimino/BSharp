@@ -14,4 +14,7 @@ public static class OneLineExtensions {
     public static OneLine JoinOneLine(this IEnumerable<OneLine> source, OneLine? joiner = default, OneLine? prefix = default, OneLine? suffix = default) {
         return OneLine.FlatJoin(source, joiner, prefix, suffix);
     }
+
+    public static OneLine FirstLine(this string str) => OneLine.CreateRisky(str.SubstringBeforeAny(OneLine.LineBreakChars.ToCharArray()));
+    public static OneLine LastLine(this  string str) => OneLine.CreateRisky(str.SubstringAfterAny(OneLine.LineBreakChars.ToCharArray()));
 }

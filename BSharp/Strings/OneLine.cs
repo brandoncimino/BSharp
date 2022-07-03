@@ -25,7 +25,7 @@ public readonly record struct OneLine : IHas<string>, IEnumerable<GraphemeCluste
     public static readonly OneLine Space          = CreateRisky(GraphemeCluster.Space);
     public static readonly OneLine Ellipsis       = CreateRisky(GraphemeCluster.Ellipsis);
     public static readonly OneLine Hyphen         = CreateRisky(GraphemeCluster.Hyphen);
-    private const          string  LineBreakChars = "\n\r";
+    internal const         string  LineBreakChars = "\n\r";
 
     #endregion
 
@@ -201,10 +201,31 @@ public readonly record struct OneLine : IHas<string>, IEnumerable<GraphemeCluste
 
     #region Operators
 
-    [Pure] public static implicit operator string(OneLine             line)         => line.Value;
-    [Pure] public static implicit operator Lines(OneLine              line)         => new(line);
-    [Pure] public static implicit operator Indexes(OneLine            line)         => line.Length;
-    [Pure] public static                   OneLine operator +(OneLine a, OneLine b) => CreateRisky(a.Value + b.Value);
+    [Pure] public static implicit operator string(OneLine  line) => line.Value;
+    [Pure] public static implicit operator Lines(OneLine   line) => new(line);
+    [Pure] public static implicit operator Indexes(OneLine line) => line.Length;
+
+    /// <summary>
+    /// <ul>
+    /// <li>Structs can be implicit cast to their <see cref="Nullable"/> counterparts, so this covers all combinations of <see cref="OneLine"/> and <see cref="Nullable">OneLine?</see></li>
+    /// <li>Coalescing multiple <c>null</c>s into <see cref="Empty"/> aligns with how <c>null</c> <see cref="string"/>s work.</li>
+    /// </ul>
+    /// </summary>
+    /// <param name="a"></param>
+    /// <param name="b"></param>
+    /// <returns></returns>
+    [Pure]
+    public static OneLine operator +(OneLine? a, OneLine? b) => (a, b) switch {
+        (null, null) => default,
+        (_, null)    => a.Value,
+        (null, _)    => b.Value,
+        (_, _)       => CreateRisky(a.Value.Value + b.Value.Value),
+    };
+
+    public static OneLine operator *(OneLine? root, int repetitions) => root switch {
+        { IsEmpty: false } => Enumerable.Repeat(root.Value, repetitions).JoinOneLine(),
+        _                  => default,
+    };
 
     #endregion
 
