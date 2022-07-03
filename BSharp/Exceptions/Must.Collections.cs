@@ -230,5 +230,22 @@ public static partial class Must {
         return actualValue;
     }
 
+    #region NotBeEmpty
+
+    public static SOURCE NotBeEmpty<SOURCE>(
+        [InstantHandle]
+        SOURCE? actualValues,
+        string? details = default,
+        [CallerArgumentExpression("actualValues")]
+        string? parameterName = default,
+        [CallerMemberName]
+        string? rejectedBy = default
+    )
+        where SOURCE : ICollection {
+        return Be(actualValues, it => it?.Count > 0, details, parameterName, rejectedBy, reason: "must not be empty");
+    }
+
+    #endregion
+
     #endregion
 }
