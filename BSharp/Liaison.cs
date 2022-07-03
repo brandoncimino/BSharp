@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 
 namespace FowlFever.BSharp;
 
@@ -38,17 +37,17 @@ public static class LiaisonExtensions {
 
     #region Compare
 
-    [Pure] public static int Compare<CANON, T>(this ILiaison<CANON, T> liaison, CANON? x, CANON? y) => liaison.Compare(x,                 y);
-    [Pure] public static int Compare<CANON, T>(this ILiaison<CANON, T> liaison, CANON? x, T?     y) => liaison.Compare(x,                 liaison.Liaise(y));
-    [Pure] public static int Compare<CANON, T>(this ILiaison<CANON, T> liaison, T?     x, T?     y) => liaison.Compare(liaison.Liaise(x), liaison.Liaise(y));
-    [Pure] public static int Compare<CANON, T>(this ILiaison<CANON, T> liaison, T?     x, CANON? y) => liaison.Compare(liaison.Liaise(x), y);
+    [Pure] public static int Compare<CANON, T>(this ILiaison<CANON?, T?> liaison, CANON? x, CANON? y) => liaison.Compare(x,                 y);
+    [Pure] public static int Compare<CANON, T>(this ILiaison<CANON?, T?> liaison, CANON? x, T?     y) => liaison.Compare(x,                 liaison.Liaise(y));
+    [Pure] public static int Compare<CANON, T>(this ILiaison<CANON?, T?> liaison, T?     x, T?     y) => liaison.Compare(liaison.Liaise(x), liaison.Liaise(y));
+    [Pure] public static int Compare<CANON, T>(this ILiaison<CANON?, T?> liaison, T?     x, CANON? y) => liaison.Compare(liaison.Liaise(x), y);
 
     #endregion
 
     #region GetHashCode
 
-    [Pure] public static int GetHashCode<CANON, T>(this ILiaison<CANON, T> liaison, CANON? obj) => liaison.GetHashCode(obj);
-    [Pure] public static int GetHashCode<CANON, T>(this ILiaison<CANON, T> liaison, T?     obj) => liaison.GetHashCode(liaison.Liaise(obj));
+    [Pure] public static int GetHashCode<CANON, T>(this ILiaison<CANON?, T?>? liaison, CANON? obj) => liaison.GetHashCode(obj);
+    [Pure] public static int GetHashCode<CANON, T>(this ILiaison<CANON?, T?>? liaison, T?     obj) => liaison.GetHashCode(liaison.Liaise(obj));
 
     #endregion
 }

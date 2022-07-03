@@ -24,7 +24,7 @@ internal static class Truncation {
         }
     }
 
-    public static TruncationPlan PlanTruncation(int original, FillerSettings settings) => PlanTruncation(original, settings.LineLengthLimit, settings.TruncateTrail.VisibleLength, settings.TruncateTrail.VisibleLength, settings.Alignment);
+    public static TruncationPlan PlanTruncation(int original, FillerSettings settings) => PlanTruncation(original, settings.LineLengthLimit, settings.TruncateTrail.Length, settings.TruncateTrail.Length, settings.Alignment);
 
     /// <summary>
     /// Decides what of what goes where.

@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.ComponentModel;
-using System.Globalization;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 using FowlFever.BSharp.Collections;
@@ -29,9 +29,27 @@ public readonly record struct OneLine : IHas<string>, IEnumerable<GraphemeCluste
 
     #endregion
 
-    public           string            Value   => _stringInfo.StringSource;
-    public           bool              IsEmpty => VisibleLength == 0;
-    public           bool              IsBlank => IsEmpty || _stringInfo.All(it => it.IsBlank);
+    public string Value => _stringInfo?.StringSource ?? "";
+    [MemberNotNullWhen(false, nameof(_stringInfo))]
+    public bool IsEmpty => Length == 0;
+    public bool IsBlank => IsEmpty || _stringInfo.All(it => it.IsBlank);
+    /// <summary>
+    /// ⚠ Default values in struct fields are completely ignored unless you explicitly call <c>new OneLine()</c> (as opposed to the <c>default</c> keyword).
+    /// This means that <i>all</i> reference types in struct fields can be null.
+    /// <p/>
+    /// We should use the <see cref="System.Diagnostics.CodeAnalysis.MaybeNullAttribute"/> to treat the fields as nullable on <i><b>read</b></i> while still preventing us
+    /// from <i><b>setting</b></i> them to <c>null</c>.
+    ///
+    /// <ul>See:
+    /// <li><a href="https://stackoverflow.com/a/72843696/18494923">How to tell C# that a struct's non-nullable fields may actually be null for nullability-analysis purposes?</a></li>
+    /// <li><a href="https://docs.microsoft.com/en-us/dotnet/csharp/nullable-references#known-pitfalls">Nullable references # Known pitfalls</a></li>
+    /// <li><a href="https://stackoverflow.com/questions/58425298/why-dont-i-get-a-warning-about-possible-dereference-of-a-null-in-c-sharp-8-with">Why don't I get a warning about possible dereference of a null in C# 8 with a class member of a struct?</a></li>
+    /// </ul>
+    /// </summary>
+    /// <remarks>
+    /// TODO: Add these notes to a documentation file.
+    /// </remarks>
+    [MaybeNull]
     private readonly TextElementString _stringInfo;
 
     #region Equals
@@ -56,7 +74,8 @@ public readonly record struct OneLine : IHas<string>, IEnumerable<GraphemeCluste
 
     #region Construction
 
-    private static string Validate(string str) => Must.NotContainAny(str, LineBreakChars);
+    private static string Validate(string? str) => str.MustNotBeNull()
+                                                      .MustNotBe(it => it.ContainsAny(LineBreakChars));
 
     private enum ShouldValidate { Yes, No }
 
@@ -67,7 +86,7 @@ public readonly record struct OneLine : IHas<string>, IEnumerable<GraphemeCluste
         }
 
         value = shouldValidate switch {
-            ShouldValidate.Yes => Validate(value!),
+            ShouldValidate.Yes => Validate(value),
             ShouldValidate.No  => value,
             _                  => throw BEnum.UnhandledSwitch(shouldValidate)
         };
@@ -77,7 +96,7 @@ public readonly record struct OneLine : IHas<string>, IEnumerable<GraphemeCluste
 
     private OneLine(IEnumerable<GraphemeCluster> value, ShouldValidate shouldValidate) {
         if (value is OneLine line) {
-            _stringInfo = line._stringInfo;
+            _stringInfo = line._stringInfo ?? TextElementString.Empty;
             return;
         }
 
@@ -178,13 +197,13 @@ public readonly record struct OneLine : IHas<string>, IEnumerable<GraphemeCluste
     /// <inheritdoc cref="GraphemeClusterExtensions.VisibleLength(string?)"/>
     /// </summary>
     [Pure]
-    public int VisibleLength => _stringInfo.Count;
+    public int Length => _stringInfo?.Count ?? 0;
 
     #region Operators
 
     [Pure] public static implicit operator string(OneLine             line)         => line.Value;
     [Pure] public static implicit operator Lines(OneLine              line)         => new(line);
-    [Pure] public static implicit operator Indexes(OneLine            line)         => line.VisibleLength;
+    [Pure] public static implicit operator Indexes(OneLine            line)         => line.Length;
     [Pure] public static                   OneLine operator +(OneLine a, OneLine b) => CreateRisky(a.Value + b.Value);
 
     #endregion
@@ -194,20 +213,19 @@ public readonly record struct OneLine : IHas<string>, IEnumerable<GraphemeCluste
     /// </summary>
     /// <param name="textElementIndex">the index of the <see cref="GraphemeCluster"/></param>
     [Pure]
-    public GraphemeCluster this[int textElementIndex] => _stringInfo.ElementAt(textElementIndex);
+    public GraphemeCluster this[int textElementIndex] =>
+        IsEmpty
+            ? throw new IndexOutOfRangeException(
+                  $"Index {textElementIndex} is out-of-bounds because this {nameof(OneLine)} is empty!"
+              )
+            : _stringInfo[textElementIndex];
 
     /// <summary>
-    /// Gets a "substring" of this <see cref="OneLine"/> by <see cref="GraphemeCluster"/> indexes.
+    /// See <a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/proposals/csharp-8.0/ranges#implicit-range-support">Implicit Range support</a>
     /// </summary>
-    /// <param name="range">the desired "sub-string" <see cref="Range"/></param>
-    [Pure]
-    public OneLine this[Range range] => CreateRisky(_stringInfo[range]);
+    public OneLine Slice(int start, int length) => CreateRisky((_stringInfo ?? TextElementString.Empty).Slice(start, length));
 
-    /// <inheritdoc cref="StringInfo.SubstringByTextElements(int,int)"/>
-    [Pure]
-    public OneLine Substring(int startingTextElement, int lengthInTextElements) => CreateRisky(_stringInfo.Substring(startingTextElement, lengthInTextElements));
-
-    public IEnumerator<GraphemeCluster> GetEnumerator() => _stringInfo.GetEnumerator();
+    public IEnumerator<GraphemeCluster> GetEnumerator() => _stringInfo.MustNotBeNull().GetEnumerator();
     IEnumerator IEnumerable.            GetEnumerator() => GetEnumerator();
 
     [Pure]
@@ -225,7 +243,7 @@ public readonly record struct OneLine : IHas<string>, IEnumerable<GraphemeCluste
     /// Cuts this <see cref="OneLine"/> down to the given <see cref="FillerSettings.LineLengthLimit"/>.
     /// </summary>
     /// <param name="settings">settings that inform the <see cref="Truncation"/></param>
-    /// <returns>a new <see cref="OneLine"/> with a <see cref="VisibleLength"/> <![CDATA[<=]]> <see cref="FillerSettings.LineLengthLimit"/></returns>
+    /// <returns>a new <see cref="OneLine"/> with a <see cref="Length"/> <![CDATA[<=]]> <see cref="FillerSettings.LineLengthLimit"/></returns>
     [Pure]
     public OneLine Truncate(FillerSettings settings) {
         return Truncate(settings.LineLengthLimit, settings);
@@ -233,7 +251,7 @@ public readonly record struct OneLine : IHas<string>, IEnumerable<GraphemeCluste
 
     /// <inheritdoc cref="GraphemeClusterExtensions.RepeatToLength(System.Collections.Generic.IEnumerable{FowlFever.BSharp.Strings.GraphemeCluster},int)"/>
     [Pure]
-    public OneLine RepeatToLength(int desiredLength) => CreateRisky(_stringInfo.RepeatToLength(desiredLength));
+    public OneLine RepeatToLength(int desiredLength) => CreateRisky(Must.NotBeEmpty(_stringInfo).RepeatToLength(desiredLength));
 
     /// <summary>
     /// <inheritdoc cref="Fill(FowlFever.BSharp.Strings.FillerSettings?)"/>
@@ -241,7 +259,7 @@ public readonly record struct OneLine : IHas<string>, IEnumerable<GraphemeCluste
     /// <param name="desiredLength">see <see cref="FillerSettings.LineLengthLimit"/></param>
     /// <param name="padString">see <see cref="FillerSettings.PadString"/></param>
     /// <param name="settings">additional <see cref="FillerSettings"/></param>
-    /// <returns>a <see cref="OneLine"/> with a <see cref="VisibleLength"/> of at least <paramref name="desiredLength"/></returns>
+    /// <returns>a <see cref="OneLine"/> with a <see cref="Length"/> of at least <paramref name="desiredLength"/></returns>
     [Pure]
     public OneLine Fill(int desiredLength, OneLine padString, FillerSettings? settings = default) {
         return Fill(settings.Resolve() with { LineLengthLimit = desiredLength, PadString = padString });
@@ -251,17 +269,17 @@ public readonly record struct OneLine : IHas<string>, IEnumerable<GraphemeCluste
     /// Adds <see cref="FillerSettings.PadString"/> to this <see cref="Value"/> in order to reach <see cref="FillerSettings.LineLengthLimit"/>.
     /// </summary>
     /// <param name="settings">controls how the fill should be performed</param>
-    /// <returns><see cref="OneLine"/> with a <see cref="VisibleLength"/> of <b><i>at least</i></b> <see cref="FillerSettings.LineLengthLimit"/></returns>
+    /// <returns><see cref="OneLine"/> with a <see cref="Length"/> of <b><i>at least</i></b> <see cref="FillerSettings.LineLengthLimit"/></returns>
     /// <exception cref="System.ComponentModel.InvalidEnumArgumentException">if an  unknown <see cref="StringAlignment"/> is provided</exception>
     /// <remarks>
     /// This method is purely additive, meaning that the output will always contain <b><i>at least</i></b> the original <see cref="Value"/>.
-    /// If the <see cref="VisibleLength"/> is already greater than <see cref="FillerSettings.LineLengthLimit"/>, then no changes will be applied.
+    /// If the <see cref="Length"/> is already greater than <see cref="FillerSettings.LineLengthLimit"/>, then no changes will be applied.
     /// <p/>
     /// The "destructive" aka "subtractive" equivalent is <see cref="Truncate(int,FowlFever.BSharp.Strings.FillerSettings?)"/>.
     /// </remarks>
     [Pure]
     public OneLine Fill(FillerSettings settings) {
-        var fillerLength = settings.LineLengthLimit - VisibleLength;
+        var fillerLength = settings.LineLengthLimit - Length;
 
         if (fillerLength <= 0) {
             return this;
@@ -293,7 +311,7 @@ public readonly record struct OneLine : IHas<string>, IEnumerable<GraphemeCluste
     public OneLine Fit(FillerSettings? settings) {
         settings = settings.Resolve();
 
-        var comparisonResult = VisibleLength.ComparedWith(settings.LineLengthLimit);
+        var comparisonResult = Length.ComparedWith(settings.LineLengthLimit);
         return comparisonResult switch {
             ComparisonResult.LessThan    => Fill(settings),
             ComparisonResult.EqualTo     => this,
