@@ -225,7 +225,7 @@ public readonly record struct OneLine : IHas<string>, IEnumerable<GraphemeCluste
     /// </summary>
     public OneLine Slice(int start, int length) => CreateRisky((_stringInfo ?? TextElementString.Empty).Slice(start, length));
 
-    public IEnumerator<GraphemeCluster> GetEnumerator() => _stringInfo.MustNotBeNull().GetEnumerator();
+    public IEnumerator<GraphemeCluster> GetEnumerator() => _stringInfo?.GetEnumerator() ?? Enumerable.Empty<GraphemeCluster>().GetEnumerator();
     IEnumerator IEnumerable.            GetEnumerator() => GetEnumerator();
 
     [Pure]
