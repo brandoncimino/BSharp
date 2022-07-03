@@ -163,7 +163,7 @@ public record Table : IReadOnlyList<Row>, IPrettifiable {
 
     private Row GetHeaderSeparatorRow(PrettificationSettings? settings = default) {
         settings ??= PrettificationSettings.Default;
-        var separators = GetWidths().Select(it => settings.TableSettings.HeaderSeparator.Repeat(it));
+        var separators = GetWidths().Select(it => settings.TableSettings.HeaderSeparator.RepeatToLength(it));
         return new Row(separators);
     }
 
