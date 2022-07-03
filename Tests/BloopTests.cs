@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 using FowlFever.BSharp;
 using FowlFever.BSharp.Collections;
+using FowlFever.BSharp.Enums;
 using FowlFever.Testing;
 
 using NUnit.Framework;
@@ -13,6 +15,7 @@ namespace BSharp.Tests;
 /// <summary>
 /// Tests for <see cref="Bloop"/>s
 /// </summary>
+[SuppressMessage("ReSharper", "AccessToStaticMemberViaDerivedType")]
 public class BloopTests {
     [Test]
     [TestCase(5)]
@@ -59,10 +62,55 @@ public class BloopTests {
         params float[] expectedResults
     ) {
         var steps = Bloop.StepExclusive(min, max, stepCount);
-        AssertAll.Of(
-            () => Assert.That(steps, Is.EqualTo(expectedResults)),
-            () => Assert.That(steps, Is.EquivalentTo(expectedResults))
-        );
+        Asserter.Against(steps)
+                .And(steps, Is.EqualTo(expectedResults))
+                .And(steps, Is.EquivalentTo(expectedResults))
+                .Invoke();
+    }
+
+    #endregion
+
+    #region Wrapping
+
+    public record WrapExpectation(int SourceCount, int IterationCount, int[] ExpectedResults) {
+        public Bloop.RepetitionHandling RepetitionHandling;
+        public int ExpectedInvocations => RepetitionHandling switch {
+            Bloop.RepetitionHandling.CacheResult => Math.Min(SourceCount, IterationCount),
+            Bloop.RepetitionHandling.ReEvaluate  => IterationCount,
+            _                                    => throw BEnum.UnhandledSwitch(RepetitionHandling)
+        };
+    }
+
+    public static WrapExpectation[] WrapExpectations = {
+        new(5, 3, new[] { 0, 1, 2 }),
+        new(3, 5, new[] { 0, 1, 2, 0, 1 }),
+        new(1, 5, new[] { 0, 0, 0, 0, 0 }),
+        new(2, 5, new[] { 0, 1, 0, 1, 0 }),
+    };
+
+    [Test]
+    public void WrapAround_Cached([ValueSource(nameof(WrapExpectations))] WrapExpectation expectation) {
+        _WrapAround(expectation, Bloop.RepetitionHandling.CacheResult);
+    }
+
+    [Test]
+    public void WrapAround_ReEvaluate([ValueSource(nameof(WrapExpectations))] WrapExpectation expectation) {
+        _WrapAround(expectation, Bloop.RepetitionHandling.ReEvaluate);
+    }
+
+    private void _WrapAround(WrapExpectation expectation, Bloop.RepetitionHandling repetitionHandling) {
+        expectation = expectation with { RepetitionHandling = repetitionHandling };
+        var list = Enumerable.Range(0, expectation.SourceCount)
+                             .Counting(out var counter)
+                             .AssertCounter(counter, 0)
+                             .WrapAround(expectation.IterationCount, expectation.RepetitionHandling)
+                             .AssertCounter(counter, 0)
+                             .ToList()
+                             .AssertCounter(counter, expectation.ExpectedInvocations);
+
+        Assert.That(list,    Has.Exactly(expectation.IterationCount).Items);
+        Assert.That(counter, Has.Exactly(expectation.ExpectedInvocations).Items);
+        Assert.That(list,    Is.EqualTo(expectation.ExpectedResults));
     }
 
     #endregion
