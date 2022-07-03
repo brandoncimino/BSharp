@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 using FowlFever.BSharp.Enums;
@@ -386,6 +385,7 @@ public static class Bloop {
     /// <typeparam name="T">the type of entries in the <paramref name="source"/></typeparam>
     /// <returns>a sequence of <paramref name="totalCount"/> <typeparamref name="T"/> entries</returns>
     /// <exception cref="System.ComponentModel.InvalidEnumArgumentException">if an unknown <see cref="RepetitionHandling"/> is provided</exception>
+    /// <exception cref="IndexOutOfRangeException">if the <paramref name="source"/> is empty <i>(📎 not thrown if <paramref name="totalCount"/> == 0)</i></exception>
     public static IEnumerable<T> WrapAround<T>(this IEnumerable<T> source, [NonNegativeValue] int totalCount, RepetitionHandling repetitionHandling = RepetitionHandling.ReEvaluate) {
         Must.BePositive(totalCount);
         if (totalCount == 0) {
@@ -415,7 +415,7 @@ public static class Bloop {
         using var iterator = source.GetEnumerator();
 
         if (!iterator.MoveNext()) {
-            throw new IndexOutOfRangeException("EMPTY!!");
+            throw new IndexOutOfRangeException($"Could not add repetitions to the {source.GetType().Name} because it is was empty!");
         }
 
         yield return iterator.Current;
@@ -478,12 +478,11 @@ public static class Bloop {
         object IEnumerator.Current => ((IEnumerator)_iterator).Current!;
     }
 
-    [SuppressMessage("ReSharper", "PossibleMultipleEnumeration")]
     private static IEnumerable<T> Wrap_ReEvaluate<T>(this IEnumerable<T> source, int totalCount, ResetStyle resetStyle) {
         using var iterator = new Resettable<T>(source, resetStyle);
 
         if (!iterator.MoveNext()) {
-            throw new IndexOutOfRangeException("EMPTY!");
+            throw new IndexOutOfRangeException($"Could not add repetitions to the {source.GetType().Name} because it was empty!");
         }
 
         yield return iterator.Current;
