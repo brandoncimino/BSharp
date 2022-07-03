@@ -242,7 +242,19 @@ public static partial class Must {
         string? rejectedBy = default
     )
         where SOURCE : ICollection {
-        return Be(actualValues, it => it?.Count > 0, details, parameterName, rejectedBy, reason: "must not be empty");
+        return Be(actualValues, it => it?.Count > 0, details, parameterName, rejectedBy);
+    }
+
+    public static IEnumerable<T> NotBeEmpty<T>(
+        [InstantHandle]
+        IEnumerable<T>? actualValues,
+        string? details = default,
+        [CallerArgumentExpression("actualValues")]
+        string? parameterName = default,
+        [CallerMemberName]
+        string? rejectedBy = default
+    ) {
+        return Be(actualValues, it => it.IsNotEmpty(), details, parameterName, rejectedBy);
     }
 
     #endregion
