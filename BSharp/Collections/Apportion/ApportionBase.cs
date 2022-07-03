@@ -32,7 +32,7 @@ public abstract record ApportionBase<PORTION, SOURCE, SOURCE_ELEMENT> : WrappedI
     protected abstract IEnumerable<PORTION> GetPortions();
     public virtual     PORTION              GetPortion(int index) => Portions[index];
 
-    protected sealed override ImmutableList<PORTION> CreateSlice(IEnumerable<PORTION> elements) => elements.ToImmutableList();
-
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+    public override ImmutableList<PORTION> Slice(int start, int end) => Value.Slice(start, end);
 }

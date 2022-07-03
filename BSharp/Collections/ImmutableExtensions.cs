@@ -108,4 +108,11 @@ public static class ImmutableExtensions {
         );
 
     public static IImmutableList<T> AsImmutableList<T>(this IEnumerable<T> source) => source as IImmutableList<T> ?? source.ToImmutableList();
+
+    /// <summary>
+    /// Delegates to <see cref="ImmutableList{T}.GetRange"/> in a way that places nice with <see cref="System.Range"/>.
+    /// </summary>
+    public static ImmutableList<T> Slice<T>(this ImmutableList<T> source, int start, int length) {
+        return source.GetRange(start, start + length);
+    }
 }
