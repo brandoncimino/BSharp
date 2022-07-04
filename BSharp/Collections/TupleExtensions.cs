@@ -362,7 +362,7 @@ namespace FowlFever.BSharp.Collections {
         #region Difference
 
         /// <param name="tuple">a <see cref="(T1, T2)"/></param>
-        /// <returns><see cref="ValueTuple{T1,T2}.Item2"/> - <see cref="ValueTuple{T1,T2}.Item1"/></returns>
+        /// <returns><see cref="(T1, T2).Item2"/> - <see cref="ValueTuple{T1,T2}.Item1"/></returns>
         public static int Diff(this (int from, int to) tuple) => tuple.to - tuple.from;
 
         #endregion
@@ -376,10 +376,14 @@ namespace FowlFever.BSharp.Collections {
         /// <typeparam name="T1">the <see cref="Type"/> of <see cref="Tuple{T1,T2}.Item1"/></typeparam>
         /// <typeparam name="T2">the <see cref="Type"/> of <see cref="Tuple{T1,T2}.Item2"/></typeparam>
         /// <returns>a <see cref="Tuple{T1,T2}"/> containing the <b>maximum</b> <typeparamref name="T1"/> and <typeparamref name="T2"/> values</returns>
-        public static (T1, T2) Max<T1, T2>(this IEnumerable<(T1, T2)> tuples)
+        public static (T1, T2) MaxItems<T1, T2>(this IEnumerable<(T1, T2)> tuples)
             where T1 : IComparable<T1>
             where T2 : IComparable<T2> {
-            return tuples.Aggregate((a, b) => a.Max(b));
+            return tuples.Aggregate(
+                (a, b) => (
+                              a.Item1.Max(b.Item1),
+                              a.Item2.Max(b.Item2))
+            );
         }
 
         #endregion
@@ -393,10 +397,15 @@ namespace FowlFever.BSharp.Collections {
         /// <typeparam name="T1">the <see cref="Type"/> of <see cref="Tuple{T1,T2}.Item1"/></typeparam>
         /// <typeparam name="T2">the <see cref="Type"/> of <see cref="Tuple{T1,T2}.Item2"/></typeparam>
         /// <returns>a <see cref="Tuple{T1,T2}"/> containing the <b>minimum</b> <typeparamref name="T1"/> and <typeparamref name="T2"/> values</returns>
-        public static (T1, T2) Min<T1, T2>(this IEnumerable<(T1, T2)> tuples)
+        public static (T1, T2) MinItems<T1, T2>(this IEnumerable<(T1, T2)> tuples)
             where T1 : IComparable<T1>
             where T2 : IComparable<T2> {
-            return tuples.Aggregate((a, b) => a.Min(b));
+            return tuples.Aggregate(
+                (a, b) => (
+                              a.Item1.Max(b.Item1),
+                              a.Item2.Max(b.Item2)
+                          )
+            );
         }
 
         #endregion
