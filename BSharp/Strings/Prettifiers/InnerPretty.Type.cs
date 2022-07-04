@@ -45,7 +45,7 @@ internal static partial class InnerPretty {
             var genArgs = genericType.GetGenericArguments();
 
             // Perform a special replacement on the Nullable<> type
-            if (genericType.IsNullable()) {
+            if (genericType.IsNullableValueType()) {
                 return genArgs.Select(it => PrettifyNullableType(it, settings)).JoinString(", ");
             }
 
