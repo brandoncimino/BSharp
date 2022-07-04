@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
@@ -8,8 +7,8 @@ using System.Runtime.CompilerServices;
 
 using FowlFever.BSharp.Collections;
 using FowlFever.BSharp.Exceptions;
-using FowlFever.BSharp.Strings;
-using FowlFever.BSharp.Strings.Prettifiers;
+
+using JetBrains.Annotations;
 
 namespace FowlFever.BSharp.Reflection;
 
@@ -36,11 +35,17 @@ public class VariableInfo : MemberInfo {
     public bool IsProperty => Member is PropertyInfo;
     public bool IsField    => Member is FieldInfo;
 
-    public VariableInfo(MemberInfo member) {
+    /// <summary>
+    /// This is kinda redundant with the specific constructors, but it gets stupid Rider to stop telling me to accept <see cref="MemberInfo"/> instead of specific types.
+    /// </summary>
+    /// <param name="member"></param>
+    /// <exception cref="ArgumentException"></exception>
+    private VariableInfo(MemberInfo member) {
         Member = member switch {
-            PropertyInfo => member,
-            FieldInfo    => member,
-            _            => throw NotAVariableException(member),
+            PropertyInfo   => member,
+            FieldInfo      => member,
+            VariableInfo v => v.Member,
+            _              => throw NotAVariableException(member),
         };
     }
 
@@ -133,13 +138,11 @@ public class VariableInfo : MemberInfo {
     /// <param name="obj">the <see cref="object"/> that owns the variable, or <c>null</c> if the variable is <see cref="System.Reflection.BindingFlags.Static"/></param>
     /// <seealso cref="PropertyInfo.GetValue(object)">GetValue(object) // Properties</seealso>
     /// <seealso cref="FieldInfo.GetValue">GetValue(object) // Fields</seealso>
-    public object? GetValue(object? obj) {
-        return Member switch {
-            PropertyInfo prop => prop.GetValue(obj),
-            FieldInfo field   => field.GetValue(obj),
-            _                 => throw NotAVariableException(Member),
-        };
-    }
+    public object? GetValue(object? obj) => HandleFunc(
+        ValueTuple.Create(obj),
+        static (p, inputs) => p.GetValue(inputs.Item1),
+        static (f, inputs) => f.GetValue(inputs.Item1)
+    );
 
     /// <summary>
     /// Gets the value of this <see cref="VariableInfo"/> using the specified index.
@@ -149,13 +152,14 @@ public class VariableInfo : MemberInfo {
     /// <param name="index">the indexer variables used to access the variable</param>
     /// <returns>the value of this variable</returns>
     /// <exception cref="ArgumentException">if this <see cref="IsField"/></exception>
-    public object? GetValue(object? obj, object[] index) {
-        return Member switch {
-            PropertyInfo prop => prop.GetValue(obj, index),
-            FieldInfo field   => throw IndexedFieldException(field),
-            _                 => throw NotAVariableException(Member),
-        };
-    }
+    public object? GetValue(
+        object?  obj,
+        object[] index
+    ) => HandleFunc(
+        (obj, index),
+        static (p, inputs) => p.GetValue(inputs.obj, inputs.index),
+        static (f, _) => throw IndexedFieldException(f)
+    );
 
     /// <summary>
     /// Gets the value of this <see cref="VariableInfo"/> as type <typeparamref name="T"/>.
@@ -179,61 +183,36 @@ public class VariableInfo : MemberInfo {
     /// <summary>
     /// Sets the value of this <see cref="VariableInfo"/>.
     /// </summary>
-    /// <param name="obj">the owning <see cref="object"/>, or <c>null</c> if this variable is <see cref="System.Reflection.BindingFlags.Static"/></param>
+    /// <param name="owner">the owning <see cref="object"/>, or <c>null</c> if this variable is <see cref="System.Reflection.BindingFlags.Static"/></param>
     /// <param name="value">the new value</param>
     /// <seealso cref="PropertyInfo.SetValue(object,object)"/>
     /// <seealso cref="FieldInfo.SetValue(object,object)"/>
-    public void SetValue(object? obj, object? value) {
-        switch (Member) {
-            case PropertyInfo prop:
-                prop.SetValue(obj, value);
-                return;
-            case FieldInfo field:
-                field.SetValue(obj, value);
-                return;
-            default:
-                throw NotAVariableException(Member);
-        }
-    }
+    public void SetValue(object? owner, object? value) => HandleAction(
+        (owner, value),
+        static (p, inputs) => p.SetValue(inputs.owner, inputs.value),
+        static (f, inputs) => f.SetValue(inputs.owner, inputs.value)
+    );
 
     /// <summary>
     /// Sets the value of this <see cref="VariableInfo"/> using the specified index.
     /// </summary>
-    /// <param name="obj">the owning <see cref="object"/>, or <c>null</c> if this variable is <see cref="System.Reflection.BindingFlags.Static"/></param>
+    /// <param name="owner">the owning <see cref="object"/>, or <c>null</c> if this variable is <see cref="System.Reflection.BindingFlags.Static"/></param>
     /// <param name="value">the new value</param>
     /// <exception cref="ArgumentException">if this <see cref="IsField"/></exception>
     /// <param name="index">the indexer variables used to access the variable</param>
-    public void SetValue(object? obj, object? value, object[] index) {
-        switch (Member) {
-            case PropertyInfo prop:
-                prop.SetValue(obj, value, index);
-                return;
-            case FieldInfo field:
-                throw IndexedFieldException(field);
-            default:
-                throw NotAVariableException(Member);
-        }
-    }
+    public void SetValue(object? owner, object? value, object[] index) => HandleAction(
+        (owner, value, index),
+        static (p, inputs) => p.SetValue(inputs.owner, inputs.value, inputs.index),
+        static (f, _) => throw IndexedFieldException(f)
+    );
 
     #endregion
 
-    public bool CanRead => Member switch {
-        PropertyInfo prop => prop.CanRead,
-        FieldInfo field   => !field.IsAutoPropertyBackingField(),
-        _                 => throw NotAVariableException(Member),
-    };
+    private static readonly ValueTuple Nothing = new ValueTuple();
 
-    public bool CanWrite => Member switch {
-        PropertyInfo prop => prop.CanWrite,
-        FieldInfo field   => field.IsInitOnly == false,
-        _                 => throw NotAVariableException(Member),
-    };
-
-    public Type VariableType => Member switch {
-        PropertyInfo prop => prop.PropertyType,
-        FieldInfo field   => field.FieldType,
-        _                 => throw NotAVariableException(Member),
-    };
+    public bool CanRead      => HandleFunc(Nothing, static (p, _) => p.CanRead,      static (f, _) => !f.IsAutoPropertyBackingField());
+    public bool CanWrite     => HandleFunc(Nothing, static (p, _) => p.CanWrite,     static (f, _) => !f.IsInitOnly);
+    public Type VariableType => HandleFunc(Nothing, static (p, _) => p.PropertyType, static (f, _) => f.FieldType);
 
     public static implicit operator VariableInfo(FieldInfo    field)    => new VariableInfo(field);
     public static implicit operator VariableInfo(PropertyInfo property) => new VariableInfo(property);
@@ -245,113 +224,34 @@ public class VariableInfo : MemberInfo {
     private static ArgumentException IndexedFieldException(FieldInfo noIndexer, [CallerArgumentExpression("noIndexer")] string? parameterName = default, [CallerMemberName] string? rejectedBy = default) {
         return Must.Reject(noIndexer, parameterName, rejectedBy, $"{MemberTypes.Field}s cannot have indexers!");
     }
-}
 
-public static class VariableInfoExtensions {
-    /// <summary>
-    /// "Safely casts" a <see cref="MemberInfo"/> to a <see cref="VariableInfo"/>, returning <c>null</c> if it isn't a <see cref="PropertyInfo"/> or <see cref="FieldInfo"/>.
-    /// </summary>
-    /// <param name="member">a <see cref="MemberInfo"/> that might be a <see cref="VariableInfo"/></param>
-    /// <returns>a new <see cref="VariableInfo"/> instance</returns>
-    public static VariableInfo? AsVariable(this MemberInfo member) => member switch {
-        PropertyInfo prop => prop.AsVariable(),
-        FieldInfo field   => field.AsVariable(),
-        _                 => null,
+    public TOut HandleFunc<TInputs, TOut>(
+        TInputs inputs,
+        [RequireStaticDelegate]
+        Func<PropertyInfo, TInputs, TOut> ifProperty,
+        [RequireStaticDelegate]
+        Func<FieldInfo, TInputs, TOut> ifField
+    ) => Member switch {
+        PropertyInfo p => ifProperty(p, inputs),
+        FieldInfo f    => ifField(f, inputs),
+        _              => throw NotAVariableException(Member),
     };
 
-    public static VariableInfo AsVariable(this     PropertyInfo property)                                                                                                                          => new VariableInfo(property);
-    public static VariableInfo AsVariable(this     FieldInfo    field)                                                                                                                             => new VariableInfo(field);
-    public static PropertyInfo MustBeProperty(this VariableInfo variable, [CallerArgumentExpression("variable")] string? parameterName = default, [CallerMemberName] string? rejectedBy = default) => variable.AsProp  ?? throw Must.RejectWrongType(variable, typeof(PropertyInfo), parameterName, rejectedBy);
-    public static FieldInfo    MustBeField(this    VariableInfo variable, [CallerArgumentExpression("variable")] string? parameterName = default, [CallerMemberName] string? rejectedBy = default) => variable.AsField ?? throw Must.RejectWrongType(variable, typeof(FieldInfo),    parameterName, rejectedBy);
-
-    /// <summary>
-    /// Checks if a <see cref="MemberInfo"/> can be converted to a <see cref="VariableInfo"/>.
-    /// </summary>
-    /// <remarks>
-    /// "Variables" includes both <see cref="Type.GetProperties()"/> and <see cref="Type.GetFields()"/>.
-    /// TODO: Previously, this excluded <see cref="AutoPropertyExtensions.IsAutoPropertyBackingField"/>s. Should that still be the case? Alternatively, should we:
-    ///     - Throw an exception when we construct a <see cref="VariableInfo"/> from an <see cref="AutoPropertyExtensions.IsAutoPropertyBackingField"/>
-    ///     - Construct a <see cref="VariableInfo"/> from an auto-prop backing field's <see cref="BackedProperty.Front"/> instead
-    /// </remarks>
-    /// <param name="member">this <see cref="MemberInfo"/></param>
-    /// <returns>true if the <see cref="MemberInfo"/> is a variable</returns>
-    public static bool IsVariable(this MemberInfo member) => member.AsVariable() != null;
-
-    /// <summary>
-    /// Returns all of the <see cref="IsVariable"/> <see cref="MemberInfo"/>s from the given <paramref name="type"/>.
-    /// </summary>
-    /// <remarks>
-    /// "Variables" includes both <see cref="Type.GetProperties()"/> and <see cref="Type.GetFields()"/>.
-    /// It does <b>not</b> include <see cref="AutoPropertyExtensions.IsAutoPropertyBackingField"/>s.
-    /// </remarks>
-    /// <param name="type">The <see cref="Type"/> to retrieve the fields and properties of.</param>
-    /// <returns>
-    /// </returns>
-    [Pure]
-    public static IEnumerable<VariableInfo> GetVariables(this Type type) => VariableInfo.From(type);
-
-    /// <summary>
-    /// Returns the <see cref="FieldInfo"/> or <see cref="PropertyInfo"/> with the the <see cref="MemberInfo.Name"/> <paramref name="variableName"/>.
-    /// </summary>
-    /// <param name="type">The <see cref="Type"/> that should have a <see cref="FieldInfo"/> or <see cref="PropertyInfo"/> named <paramref name="variableName"/></param>
-    /// <param name="variableName">The expected <see cref="VariableInfo.Name"/></param>
-    /// <returns>The <see cref="FieldInfo"/> or <see cref="PropertyInfo"/> named <paramref name="variableName"/></returns>
-    /// <exception cref="MissingMemberException">If <paramref name="variableName"/> couldn't be retrieved</exception>
-    [Pure]
-    public static VariableInfo MustGetVariable(this Type type, string variableName) => new VariableInfo(type, variableName);
-
-    /// <inheritdoc cref="VariableInfo.From(Type, String, BindingFlags)"/>
-    [Pure]
-    public static VariableInfo? GetVariable(this Type type, string variableName) => VariableInfo.From(type, variableName);
-
-    /// <summary>
-    /// <inheritdoc cref="GetVariable"/>
-    /// </summary>
-    /// <param name="obj">An object to infer <typeparamref name="T"/> from</param>
-    /// <param name="variableName"><inheritdoc cref="GetVariable"/></param>
-    /// <typeparam name="T">The type to retrieve <paramref name="variableName"/> from</typeparam>
-    /// <returns><inheritdoc cref="GetVariable"/></returns>
-    [Pure]
-    public static VariableInfo? GetVariableInfo<T>(this T obj, string variableName) => VariableInfo.From<T>(variableName);
-
-    /// <summary>
-    /// Returns the <b>value</b> (either <see cref="PropertyInfo"/>.<see cref="PropertyInfo.GetValue(object)"/> or <see cref="FieldInfo"/>.<see cref="FieldInfo.GetValue"/>)
-    /// of the <see cref="GetVariable"/> named <paramref name="variableName"/>.
-    /// </summary>
-    /// <param name="obj">The object to retrieve the value from</param>
-    /// <param name="variableName">The name of the variable</param>
-    /// <typeparam name="T">The <b>return type</b> of <b><paramref name="variableName"/></b></typeparam>
-    /// <returns>The value of the <see cref="GetVariable"/></returns>
-    /// <exception cref="InvalidCastException">If the retrieved value cannot be cast to <typeparamref name="T"/></exception>
-    /// <exception cref="MissingMemberException"><inheritdoc cref="GetVariable"/></exception>
-    [Pure]
-    public static T? GetVariableValue<T>(this object obj, string variableName) {
-        var variableInfo = obj.GetType().MustGetVariable(variableName);
-        var value        = variableInfo.GetValue(obj);
-
-        try {
-            //TODO: Handle this better?
-            return (T)value;
-        }
-        catch (Exception e) when (e is NullReferenceException or InvalidCastException) {
-            throw e.ModifyMessage($"A member for {variableInfo.Prettify(TypeNameStyle.Full)} was found on the [{obj.GetType().Name}]'{obj}', but it couldn't be cast to a {typeof(T).PrettifyType(default)}!");
+    public void HandleAction<TInputs>(
+        TInputs inputs,
+        [RequireStaticDelegate]
+        Action<PropertyInfo, TInputs> ifProperty,
+        [RequireStaticDelegate]
+        Action<FieldInfo, TInputs> ifField
+    ) {
+        switch (Member) {
+            case PropertyInfo p:
+                ifProperty(p, inputs);
+                break;
+            case FieldInfo f:
+                ifField(f, inputs);
+                break;
+            default: throw NotAVariableException(Member);
         }
     }
-
-    /// <summary>
-    /// <inheritdoc cref="GetVariableValue{T}"/>
-    /// </summary>
-    /// <param name="obj"><inheritdoc cref="GetVariableValue{T}"/></param>
-    /// <param name="variableName"><inheritdoc cref="GetVariableValue{T}"/></param>
-    /// <returns><inheritdoc cref="GetVariableValue{T}"/></returns>
-    [Pure]
-    //TODO: Could we use `dynamic` here instead of `object`...?
-    public static object? GetVariableValue(object obj, string variableName) => GetVariableValue<object>(obj, variableName);
-
-    public static void SetVariableValue<T>(object obj, string variableName, T newValue) => obj.GetType().GetVariable(variableName)?.SetValue(obj, newValue);
-
-    /// <param name="fieldOrProperty">either a <see cref="FieldInfo"/> or <see cref="PropertyInfo"/></param>
-    /// <returns>true if we <see cref="VariableInfo.CanWrite"/> to this <paramref name="fieldOrProperty"/></returns>
-    [Pure]
-    public static bool IsSettable(this MemberInfo fieldOrProperty) => VariableInfo.From(fieldOrProperty)?.CanWrite == true;
 }
