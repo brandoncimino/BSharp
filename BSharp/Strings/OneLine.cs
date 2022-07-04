@@ -52,8 +52,11 @@ public readonly record struct OneLine : IHas<string>, IEnumerable<GraphemeCluste
     [MaybeNull]
     private readonly TextElementString _stringInfo;
 
+    public override int GetHashCode() => Value.GetHashCode();
+
     #region Equals
 
+    public bool Equals(OneLine              other) => Value == other.Value;
     public bool Equals(string?              other) => this.ValueEquals(other);
     public bool Equals(IHas<string?>?       other) => this.ValueEquals(other);
     public bool Equals(IEquatable<string?>? other) => this.ValueEquals(other);
@@ -76,6 +79,8 @@ public readonly record struct OneLine : IHas<string>, IEnumerable<GraphemeCluste
 
     private static string Validate(string? str) => str.MustNotBeNull()
                                                       .MustNotBe(it => it.ContainsAny(LineBreakChars));
+
+    public OneLine(string? value) : this(value, ShouldValidate.Yes) { }
 
     private enum ShouldValidate { Yes, No }
 
@@ -130,6 +135,7 @@ public readonly record struct OneLine : IHas<string>, IEnumerable<GraphemeCluste
     /// <returns>a new <see cref="OneLine"/></returns>
     /// <exception cref="RejectionException">if the <see cref="string"/> contained <c>\n</c> or <c>\r</c></exception>
     [Pure]
+    //TODO: rename to `Of`
     public static OneLine Create(string? value) => new(value, ShouldValidate.Yes);
 
     [Pure] public static OneLine Create(IEnumerable<GraphemeCluster> value) => new(value, ShouldValidate.Yes);
