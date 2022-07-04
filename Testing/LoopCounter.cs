@@ -33,7 +33,7 @@ public static class LoopCounterExtensions {
     /// <param name="parameterName">see <see cref="CallerArgumentExpressionAttribute"/></param>
     /// <typeparam name="T">the type of elements in <paramref name="source"/></typeparam>
     /// <returns><paramref name="source"/>, so that it can continue to be chained through Linq methods</returns>
-    public static IEnumerable<T> Counting<T>(this IEnumerable<T> source, out LoopCounter<T> loopCounter, Action<T>? onLoop = default, [CallerArgumentExpression("source")] string? parameterName = default) {
+    public static IEnumerable<T> WithCounter<T>(this IEnumerable<T> source, out LoopCounter<T> loopCounter, Action<T>? onLoop = default, [CallerArgumentExpression("source")] string? parameterName = default) {
         loopCounter = new LoopCounter<T> {
             Nickname     = parameterName,
             ActionOnLoop = onLoop

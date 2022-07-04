@@ -101,7 +101,7 @@ public class BloopTests {
     private void _WrapAround(WrapExpectation expectation, Bloop.RepetitionHandling repetitionHandling) {
         expectation = expectation with { RepetitionHandling = repetitionHandling };
         var list = Enumerable.Range(0, expectation.SourceCount)
-                             .Counting(out var counter)
+                             .WithCounter(out var counter)
                              .AssertCounter(counter, 0)
                              .WrapAround(expectation.IterationCount, expectation.RepetitionHandling)
                              .AssertCounter(counter, 0)
