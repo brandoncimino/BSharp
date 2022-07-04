@@ -1,5 +1,6 @@
 using System;
 
+using FowlFever.BSharp;
 using FowlFever.BSharp.Collections;
 using FowlFever.BSharp.Optional;
 
@@ -73,13 +74,15 @@ namespace FowlFever.Testing {
         }
 
         private static void HandleConstraintResult(ConstraintResult result, Func<string>? messageProvider) {
-            if (result.IsSuccess == false) {
-                var mParts = new[] {
-                    messageProvider?.Try().OrDefault(), result.Description
-                };
-
-                Assert.Ignore(mParts.NonNull().JoinLines());
+            if (result.IsSuccess) {
+                return;
             }
+
+            var mParts = new[] {
+                messageProvider?.Try().OrDefault(), result.Description
+            };
+
+            Assert.Ignore(mParts.NonNull().JoinLines());
         }
 
         /// <summary>
@@ -105,32 +108,38 @@ namespace FowlFever.Testing {
             }
         }
 
-        public static void Unless(string heading, params Action[] ignoreActions) {
+        public static void Unless(string? heading, Action ignoreAction, params Action[] moreActions) {
             Ignorer.WithHeading(heading)
-                   .And(ignoreActions)
+                   .And(moreActions)
                    .Invoke();
         }
 
-        public static void Unless(params Action[] assertions) {
-            Unless(null!, assertions);
+        public static void Unless(Action assertion, params Action[] moreAssertions) {
+            Ignorer.WithHeading(default)
+                   .And(assertion)
+                   .And(moreAssertions)
+                   .Invoke();
         }
 
-        public static void Unless<T>(string heading, T actual, params IResolveConstraint[] constraints) {
+        public static void Unless<T>(Supplied<string?> heading, T actual, IResolveConstraint constraint, params IResolveConstraint[] moreConstraints) {
             Ignorer.Against(actual)
                    .WithHeading(heading)
-                   .And(constraints)
+                   .And(constraint)
+                   .And(moreConstraints)
                    .Invoke();
         }
 
-        public static void Unless<T>(T actual, params IResolveConstraint[] constraints) {
+        public static void Unless<T>(T actual, IResolveConstraint constraint, params IResolveConstraint[] moreConstraints) {
             Ignorer.Against(actual)
-                   .And(constraints)
+                   .And(constraint)
+                   .And(moreConstraints)
                    .Invoke();
         }
 
-        public static void Unless<T>(Func<T> actual, params IResolveConstraint[] constraints) {
+        public static void Unless<T>(Func<T> actual, IResolveConstraint constraint, params IResolveConstraint[] moreConstraints) {
             Ignorer.Against(actual)
-                   .And(constraints)
+                   .And(constraint)
+                   .And(moreConstraints)
                    .Invoke();
         }
 

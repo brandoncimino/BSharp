@@ -12,7 +12,7 @@ namespace FowlFever.Testing {
 
         protected override void OnFailure(string results) => Assert.Ignore(results);
 
-        protected override void ResolveFunc<T1>(
+        internal override void ResolveFunc<T1>(
             Func<T1>           actual,
             IResolveConstraint constraint,
             Func<string>?      message
@@ -36,6 +36,6 @@ namespace FowlFever.Testing {
             return new Ignorer<T>(actual);
         }
 
-        public static Ignorer<object> WithHeading(string heading) => new Ignorer<object>().WithHeading(heading);
+        public static Ignorer<object> WithHeading(string? heading) => new Ignorer<object>().WithHeading(heading);
     }
 }
