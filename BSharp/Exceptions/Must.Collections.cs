@@ -260,4 +260,54 @@ public static partial class Must {
     #endregion
 
     #endregion
+
+    #region Tuplizing
+
+    public static T HaveSize<T, T2>(
+        [InstantHandle]
+        T? actualValues,
+        [NonNegativeValue]
+        int requiredSize,
+        string? details = default,
+        [CallerArgumentExpression("actualValues")]
+        string? parameterName = default,
+        [CallerMemberName]
+        string? rejectedBy = default
+    )
+        where T : ICollection<T2> {
+        if (actualValues?.Count != requiredSize) {
+            throw Reject(actualValues, details, parameterName, rejectedBy, $"must contain EXACTLY {requiredSize} items (actual size: {actualValues?.Count.ToString() ?? "⛔"})!");
+        }
+
+        return actualValues;
+    }
+
+    public static (T, T) Have2<T>(
+        [InstantHandle]
+        IEnumerable<T>? actualValues,
+        string? details = default,
+        [CallerArgumentExpression("actualValues")]
+        string? parameterName = default,
+        [CallerMemberName]
+        string? rejectedBy = default
+    ) {
+        var has2 = HaveSize<IList<T>, T>(actualValues?.AsList(), 2, details, parameterName, rejectedBy);
+        return (has2[0], has2[1]);
+    }
+
+    public static (T, T, T) Have3<T>(
+        [InstantHandle]
+        IEnumerable<T>? actualValues,
+        string? details = default,
+        [CallerArgumentExpression("actualValues")]
+        string? parameterName = default,
+        [CallerMemberName]
+        string? rejectedBy = default
+    ) {
+        var has3 = HaveSize<IList<T>, T>(actualValues?.AsList(), 3, details, parameterName, rejectedBy);
+
+        return (has3[0], has3[1], has3[2]);
+    }
+
+    #endregion
 }
