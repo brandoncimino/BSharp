@@ -76,8 +76,9 @@ public static partial class Must {
 
     /// <inheritdoc cref="Be{T}(T,System.Func{T,bool}?,string?,string?,string?,string?)"/>
     public static T Be<T>(
-        T actualValue,
-        T expectedValue,
+        T       actualValue,
+        T       expectedValue,
+        string? details = default,
         [CallerArgumentExpression("actualValue")]
         string? parameterName = default,
         [CallerMemberName]
@@ -88,16 +89,18 @@ public static partial class Must {
         return Be(
             actualValue: actualValue,
             predicate: it => Equals(it, expectedValue),
+            details: details,
             parameterName: parameterName,
             rejectedBy: rejectedBy,
-            reason: $"must equal {reason}"
+            reason: $"must equal {reason} ({expectedValue})"
         );
     }
 
     /// <inheritdoc cref="Be{T}(T,System.Func{T,bool}?,string?,string?,string?,string?)"/>
     public static T Equal<T>(
-        T actualValue,
-        T expectedValue,
+        T       actualValue,
+        T       expectedValue,
+        string? details = default,
         [CallerArgumentExpression("actualValue")]
         string? parameterName = default,
         [CallerMemberName]
@@ -105,18 +108,19 @@ public static partial class Must {
         [CallerArgumentExpression("expectedValue")]
         string? reason = default
     ) {
-        return Be(actualValue, expectedValue, parameterName, rejectedBy, reason);
+        return Be(actualValue, expectedValue, details, parameterName, rejectedBy, reason);
     }
 
-    /// <inheritdoc cref="Be{T}(object,string?,string?)"/>
+    /// <inheritdoc cref="Be{T}(object,string?,string?,string?)"/>
     public static void Be(
-        bool? predicateResult,
+        bool?   predicateResult,
+        string? details = default,
         [CallerArgumentExpression("predicateResult")]
         string? description = default,
         [CallerMemberName]
         string? rejectedBy = default
     ) {
-        Be(predicateResult, true, description, rejectedBy);
+        Be(predicateResult, true, details, description, rejectedBy);
     }
 
     public static T NotBe<T>(
@@ -147,8 +151,9 @@ public static partial class Must {
 
     /// <inheritdoc cref="NotEqual{T}"/>
     public static T NotBe<T>(
-        T actualValue,
-        T expectedValue,
+        T       actualValue,
+        T       expectedValue,
+        string? details = default,
         [CallerArgumentExpression("actualValue")]
         string? parameterName = default,
         [CallerMemberName]
@@ -159,15 +164,17 @@ public static partial class Must {
         return NotEqual(
             actualValue,
             expectedValue,
+            details,
             parameterName,
             rejectedBy,
-            $"must equal {reason}"
+            $"must NOT equal {reason} ({expectedValue})"
         );
     }
 
     public static T NotEqual<T>(
-        T actualValue,
-        T expectedValue,
+        T       actualValue,
+        T       expectedValue,
+        string? details = default,
         [CallerArgumentExpression("actualValue")]
         string? parameterName = default,
         [CallerMemberName]
@@ -178,6 +185,7 @@ public static partial class Must {
         return Be(
             actualValue: actualValue,
             predicate: it => !Equals(it, expectedValue),
+            details: details,
             parameterName: parameterName,
             rejectedBy: rejectedBy,
             reason: $"must NOT equal {reason}"
@@ -187,6 +195,7 @@ public static partial class Must {
     public static T MustBe<T>(
         this T        actualValue,
         Func<T, bool> predicate,
+        string?       details = default,
         [CallerArgumentExpression("actualValue")]
         string? parameterName = default,
         [CallerMemberName]
@@ -194,13 +203,14 @@ public static partial class Must {
         [CallerArgumentExpression("predicate")]
         string? reason = null
     ) {
-        return Be(actualValue, predicate, parameterName, rejectedBy, reason);
+        return Be(actualValue, predicate, details, parameterName, rejectedBy, reason);
     }
 
     public static T MustNotBe<T>(
         this T actualValue,
         [InstantHandle]
         Func<T, bool> predicate,
+        string? details = default,
         [CallerArgumentExpression("actualValue")]
         string? parameterName = default,
         [CallerMemberName]
@@ -208,7 +218,7 @@ public static partial class Must {
         [CallerArgumentExpression("predicate")]
         string? reason = null
     ) {
-        return NotBe(actualValue, predicate, parameterName, rejectedBy, reason);
+        return NotBe(actualValue, predicate, details, parameterName, rejectedBy, reason);
     }
 
     #endregion
@@ -219,13 +229,15 @@ public static partial class Must {
     /// Requires that <paramref name="actualValue"/> is an instance of <typeparamref name="T"/>.
     /// </summary>
     /// <param name="actualValue">the value being tested</param>
+    /// <param name="details">optional additional details</param>
     /// <param name="parameterName">see <see cref="CallerArgumentExpressionAttribute"/></param>
     /// <param name="rejectedBy">see <see cref="CallerMemberNameAttribute"/></param>
     /// <typeparam name="T">the desired output <see cref="Type"/></typeparam>
     /// <returns><paramref name="actualValue"/> cast to type <typeparamref name="T"/></returns>
     /// <exception cref="RejectionException">if <paramref name="actualValue"/> isn't an instance of <typeparamref name="T"/></exception>
     public static T Be<T>(
-        object actualValue,
+        object  actualValue,
+        string? details = default,
         [CallerArgumentExpression("actualValue")]
         string? parameterName = default,
         [CallerMemberName]
@@ -235,17 +247,18 @@ public static partial class Must {
             return t;
         }
 
-        throw Reject(actualValue, parameterName, rejectedBy, reason: $"was not an instance of {typeof(T).PrettifyType(default)}");
+        throw Reject(actualValue, details, parameterName, rejectedBy, reason: $"was not an instance of {typeof(T).PrettifyType(default)}");
     }
 
-    /// <inheritdoc cref="Be{T}(object,string?,string?)"/>
+    /// <inheritdoc cref="Be{T}(object,string?,string?,string?)"/>
     public static T MustBe<T>(
         this object actualValue,
+        string?     details = default,
         [CallerArgumentExpression("actualValue")]
         string? parameterName = default,
         [CallerMemberName]
         string? rejectedBy = default
-    ) => Be<T>(actualValue, parameterName, rejectedBy);
+    ) => Be<T>(actualValue, details, parameterName, rejectedBy);
 
     #endregion
 
@@ -255,6 +268,7 @@ public static partial class Must {
         T                  first,
         ComparisonOperator comparison,
         T2                 second,
+        string?            details = default,
         [CallerArgumentExpression("first")]
         string? firstName = default,
         [CallerArgumentExpression("second")]
@@ -267,6 +281,7 @@ public static partial class Must {
         return Be(
             (first, second),
             (tuple) => comparison.Predicate().Invoke(tuple.Item1, tuple.Item2),
+            details,
             (firstName, secondName).ToString(),
             rejectedBy,
             $"must have {firstName} {comparison.Symbol()} {secondName}"
