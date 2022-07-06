@@ -74,7 +74,7 @@ public static partial class Must {
             details,
             parameterName,
             rejectedBy,
-            $"must contain the index [{requiredIndex}] (actual size: {actualValue.Count}"
+            $"must contain the index [{requiredIndex}] (actual size: {actualValue.Count})"
         );
     }
 
@@ -95,7 +95,7 @@ public static partial class Must {
             details,
             parameterName,
             rejectedBy,
-            $"must contain the index [{requiredIndex}] (actual size: {actualValue.Count}"
+            $"must contain the index [{requiredIndex}] (actual size: {actualValue.Count})"
         );
     }
 
