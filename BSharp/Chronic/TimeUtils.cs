@@ -164,7 +164,7 @@ namespace FowlFever.BSharp.Chronic {
         /// <returns></returns>
         [Pure]
         public static TimeSpan Multiply(this TimeSpan timeSpan, double factor) {
-#if !NETSTANDARD2_0
+#if NETSTANDARD2_1_OR_GREATER || NET5_0_OR_GREATER
             return timeSpan.Multiply(factor);
 #else
             if (double.IsNaN(factor)) {
