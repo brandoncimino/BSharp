@@ -4,3 +4,4 @@ using System.Runtime.CompilerServices;
 // This file should live in the same directory as an `.asmdef` file.
 // The `assemblyName` should refer to the `name:` field in another `.asmdef` file.
 [assembly: InternalsVisibleTo("BrandonUtils.Tests.Standalone")]
+[assembly: InternalsVisibleTo("BSharp.Tests")]
