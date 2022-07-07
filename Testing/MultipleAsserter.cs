@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -19,6 +20,7 @@ using NUnit.Framework.Internal;
 namespace FowlFever.Testing;
 
 [PublicAPI]
+[SuppressMessage("ReSharper", "AccessToStaticMemberViaDerivedType")]
 public abstract class MultipleAsserter<TSelf, TActual> : IMultipleAsserter
     where TSelf : MultipleAsserter<TSelf, TActual>, new() {
     private const string HeadingIcon = "🧪";
@@ -38,7 +40,7 @@ public abstract class MultipleAsserter<TSelf, TActual> : IMultipleAsserter
 
     public int Indent { get; protected set; }
 
-    private Action<string>? CustomActionOnFailure;
+    private Action<IEnumerable<IFailable>>? CustomActionOnFailure;
 
     #region Subtest Types
 
@@ -59,7 +61,7 @@ public abstract class MultipleAsserter<TSelf, TActual> : IMultipleAsserter
         ) {
             static string GetNickname(Supplied<string?>? actualDescription, string? expression, IResolveConstraint? constraint, PrettificationSettings? settings) {
                 var sb = new StringBuilder();
-                if (actualDescription.IsNotBlank()) {
+                if (actualDescription?.Value.IsNotBlank() == true) {
                     sb.Append($"[{actualDescription}]");
                 }
 
@@ -84,7 +86,7 @@ public abstract class MultipleAsserter<TSelf, TActual> : IMultipleAsserter
     ) {
         protected internal override IFailable Test(MultipleAsserter<TSelf, TActual> asserter) {
             return new Assertable(
-                () => asserter.ResolveAction(Action, Constraint, Message?.Supply()),
+                () => asserter.ResolveAction(Action, Constraint, Message.OrDefault),
                 Description
             );
         }
@@ -102,7 +104,7 @@ public abstract class MultipleAsserter<TSelf, TActual> : IMultipleAsserter
     ) {
         protected internal override IFailable Test(MultipleAsserter<TSelf, TActual> asserter) {
             return new Assertable(
-                () => { asserter.ResolveAction(() => Action(asserter.Actual.Value), Constraint, Message.GetValueOrDefault); },
+                () => { asserter.ResolveAction(() => Action(asserter.Actual.Value), Constraint, Message.OrDefault); },
                 Description
             );
         }
@@ -118,7 +120,7 @@ public abstract class MultipleAsserter<TSelf, TActual> : IMultipleAsserter
     ) {
         protected internal override IFailable Test(MultipleAsserter<TSelf, TActual> asserter) {
             return new Assertable(
-                () => asserter.ResolveActual(asserter.Actual.Value, Constraint, Description.GetValueOrDefault),
+                () => asserter.ResolveActual(asserter.Actual.Value, Constraint, Description.OrDefault),
                 Description
             );
         }
@@ -136,7 +138,7 @@ public abstract class MultipleAsserter<TSelf, TActual> : IMultipleAsserter
     ) {
         protected internal override IFailable Test(MultipleAsserter<TSelf, TActual> asserter) {
             return new Assertable(
-                () => asserter.ResolveActual(Target, Constraint, Message.GetValueOrDefault),
+                () => asserter.ResolveActual(Target, Constraint, Message.OrDefault),
                 Description
             );
         }
@@ -154,7 +156,7 @@ public abstract class MultipleAsserter<TSelf, TActual> : IMultipleAsserter
     ) {
         protected internal override IFailable Test(MultipleAsserter<TSelf, TActual> asserter) {
             return new Assertable(
-                () => asserter.ResolveFunc(Target, Constraint, Message.GetValueOrDefault),
+                () => asserter.ResolveFunc(Target, Constraint, Message.OrDefault),
                 Description
             );
         }
@@ -172,7 +174,7 @@ public abstract class MultipleAsserter<TSelf, TActual> : IMultipleAsserter
     ) {
         protected internal override IFailable Test(MultipleAsserter<TSelf, TActual> asserter) {
             return new Assertable(
-                () => asserter.ResolveFunc(() => Transformation.DynamicInvoke(asserter.Actual.Value), Constraint, Message.GetValueOrDefault),
+                () => asserter.ResolveFunc(() => Transformation.DynamicInvoke(asserter.Actual.Value), Constraint, Message.OrDefault),
                 Description
             );
         }
@@ -198,12 +200,17 @@ public abstract class MultipleAsserter<TSelf, TActual> : IMultipleAsserter
         Console.WriteLine(results);
     }
 
-    protected void Fail(string results) {
+    protected virtual string FormatResults(IEnumerable<IFailable> results) {
+        var rapSheet = new RapSheet(results);
+        return rapSheet.Prettify();
+    }
+
+    protected void Fail(IEnumerable<IFailable> results) {
         if (CustomActionOnFailure != null) {
             CustomActionOnFailure.Invoke(results);
         }
         else {
-            OnFailure(results);
+            OnFailure(FormatResults(results));
         }
     }
 
@@ -213,7 +220,7 @@ public abstract class MultipleAsserter<TSelf, TActual> : IMultipleAsserter
 
     #endregion
 
-    protected abstract void ResolveFunc<T>(
+    internal abstract void ResolveFunc<T>(
         Func<T>            actual,
         IResolveConstraint constraint,
         Func<string?>?     message
@@ -332,8 +339,8 @@ public abstract class MultipleAsserter<TSelf, TActual> : IMultipleAsserter
     #region Constraints_AgainstActual
 
     [MustUseReturnValue]
-    public TSelf And(IResolveConstraint constraint, Supplied<string?>? description = default) {
-        return _Add(new Constraint_AgainstActual(constraint, description));
+    public TSelf And(IResolveConstraint constraint, Supplied<string?>? description = default, [CallerArgumentExpression("constraint")] string? expression = default) {
+        return _Add(new Constraint_AgainstActual(constraint, description ?? expression));
     }
 
     [Obsolete("ugliness")]
@@ -395,8 +402,8 @@ public abstract class MultipleAsserter<TSelf, TActual> : IMultipleAsserter
         Supplied<string?>?  description = default,
         [CallerArgumentExpression("tf")]
         string? expression = default
-    ) =>
-        _Add(
+    ) {
+        return _Add(
             new Constraint_AgainstTransformation(
                 tf,
                 constraint,
@@ -404,6 +411,7 @@ public abstract class MultipleAsserter<TSelf, TActual> : IMultipleAsserter
                 expression
             )
         );
+    }
 
     #endregion
 
@@ -463,7 +471,7 @@ public abstract class MultipleAsserter<TSelf, TActual> : IMultipleAsserter
     #region WithActionOnFailure
 
     [MustUseReturnValue]
-    public TSelf WithActionOnFailure(Action<string>? actionOnFailure) {
+    public TSelf WithActionOnFailure(Action<IEnumerable<IFailable>> actionOnFailure) {
         CustomActionOnFailure = actionOnFailure;
         return Self;
     }
@@ -536,7 +544,7 @@ public abstract class MultipleAsserter<TSelf, TActual> : IMultipleAsserter
     /// <returns>either the result of <see cref="Heading"/> or an empty <see cref="IEnumerable{T}"/> of strings</returns>
     private IEnumerable<string> FormatHeading() {
         return Heading
-               .GetValueOrDefault()
+               .OrDefault()
                .IfNotBlank(it => $"{HeadingIcon} {it}")
                .WrapInEnumerable();
     }
@@ -550,7 +558,7 @@ public abstract class MultipleAsserter<TSelf, TActual> : IMultipleAsserter
     public void Invoke() {
         var results = TestEverything().ToList();
         if (results.Any(it => it.Failed)) {
-            Fail(FormatMultipleAssertionMessage(results));
+            Fail(results);
         }
         else {
             Succeed(FormatMultipleAssertionMessage(results));
