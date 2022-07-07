@@ -44,6 +44,8 @@ namespace FowlFever.BSharp.Chronic {
 
         #region Division
 
+#if !NETSTANDARD2_1_OR_GREATER && !NET5_0_OR_GREATER
+
         /// <summary>
         /// A verbatim copy of the <c>/</c> operator in <a href="https://github.com/dotnet/runtime/blob/70652798a59474c2df73d7772f67e3fdb61b85a4/src/libraries/System.Private.CoreLib/src/System/TimeSpan.cs#L489-L493">newer versions of dotnet/runtime</a>.
         /// </summary>
@@ -79,23 +81,14 @@ namespace FowlFever.BSharp.Chronic {
         /// <returns></returns>
         [Pure]
         public static TimeSpan Divide(this TimeSpan dividend, double divisor) {
-#if NETSTANDARD2_0
             if (double.IsNaN(divisor)) {
                 throw new ArgumentException($"Cannot divide a {nameof(TimeSpan)} by {nameof(double.NaN)}!", nameof(divisor));
             }
 
             var ticks = Math.Round(dividend.Ticks / divisor);
             return IntervalFromDoubleTicks(ticks);
-#else
-            return dividend / divisor;
+        }
 #endif
-        }
-
-        /// <inheritdoc cref="Divide(System.TimeSpan,double)"/>
-        [Pure]
-        public static TimeSpan Divide(this DateTime dividend, double divisor) {
-            return dividend.AsTimeSpan().Divide(divisor);
-        }
 
         /// <summary>
         /// Divides <paramref name="dividend" /> by <paramref name="divisor" />, returning the integer quotient.
@@ -110,10 +103,8 @@ namespace FowlFever.BSharp.Chronic {
         /// <param name="divisor">The number by which <paramref name="dividend" /> will be divided (i.e. the bottom of the fraction)</param>
         /// <returns>The number of full spans of <paramref name="divisor"/> that can occur within <see cref="dividend"/></returns>
         [Pure]
-        [SuppressMessage("ReSharper", "PossibleLossOfFraction")]
         public static double Quotient(this TimeSpan dividend, TimeSpan divisor) {
-            // ValidateDivisor(divisor);
-            return Math.Floor(Divide(dividend, divisor));
+            return Math.Floor(dividend.Divide(divisor));
         }
 
         /// <summary>
@@ -143,16 +134,11 @@ namespace FowlFever.BSharp.Chronic {
             return TimeSpan.FromTicks(dividend.Ticks % divisor.Ticks);
         }
 
-        private static void ValidateDivisor(TimeSpan divisor) {
-            if (divisor == TimeSpan.Zero) {
-                throw new DivideByZeroException($"Cannot divide by a zero {nameof(TimeSpan)}!");
-            }
-        }
-
         #endregion
 
         #region Multiplication
 
+#if !NETSTANDARD2_1_OR_GREATER && !NET5_0_OR_GREATER
         /// <summary>
         ///     Multiplies <paramref name="timeSpan" /> by <paramref name="factor" />, returning a new <see cref="TimeSpan" />.
         /// </summary>
@@ -164,9 +150,6 @@ namespace FowlFever.BSharp.Chronic {
         /// <returns></returns>
         [Pure]
         public static TimeSpan Multiply(this TimeSpan timeSpan, double factor) {
-#if NETSTANDARD2_1_OR_GREATER || NET5_0_OR_GREATER
-            return timeSpan.Multiply(factor);
-#else
             if (double.IsNaN(factor)) {
                 throw new ArgumentException($"Cannot multiply a {nameof(TimeSpan)} by {double.NaN}", nameof(factor));
             }
@@ -177,8 +160,8 @@ namespace FowlFever.BSharp.Chronic {
             // precision as possible, and so likely to have the least potential to surprise.
             double ticks = Math.Round(timeSpan.Ticks * factor);
             return IntervalFromDoubleTicks(ticks);
-#endif
         }
+#endif
 
         /// <remarks>
         /// This is taken as verbatim as possible from the source code of <a href="https://docs.microsoft.com/en-us/dotnet/api/system.timespan.op_multiply?view=net-6.0">TimeSpan.Multiply()</a>.
@@ -243,6 +226,7 @@ namespace FowlFever.BSharp.Chronic {
         ///     TODO: Add an example, because this is kinda hard to explain without one.
         ///     TODO: Future Brandon, on 8/16/2021, can confirm past Brandon's assessment from 9/22/2020.
         ///     TODO: Future future Brandon, on 12/11/2021, has discovered that it may be more appropriate to use <see cref="Math.Round(decimal)"/>, which is what .NET Core does for its TimeSpan * and / operators.
+        ///     TODO: Future future future Brandon, on 7/7/2022, can confirm past past Brandon's assessment from 8/16/2021 // 9/22/2020. He also observes that .NET Core might not exist anymore.
         /// </example>
         /// <param name="value"></param>
         /// <param name="unit"></param>
@@ -255,7 +239,7 @@ namespace FowlFever.BSharp.Chronic {
                 TimeUnit.Minutes      => NormalizeMinutes(value),
                 TimeUnit.Hours        => NormalizeHours(value),
                 TimeUnit.Days         => NormalizeDays(value),
-                _                     => throw BEnum.InvalidEnumArgumentException(nameof(unit), unit)
+                _                     => throw BEnum.NotSupported(unit)
             };
         }
 

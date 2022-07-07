@@ -1115,16 +1115,6 @@ public static partial class CollectionUtils {
     }
 
     /// <summary>
-    /// Throws an <see cref="ArgumentNullException"/> if any of the <paramref name="lines"/> <see cref="StringUtils.IsBlank"/>.
-    /// </summary>
-    /// <param name="lines">the <see cref="string"/>s being validated</param>
-    /// <returns>a collection of non-nullable <see cref="string"/>s</returns>
-    /// <exception cref="ArgumentNullException">if any of the <paramref name="lines"/> <see cref="StringUtils.IsBlank"/></exception>
-    public static IEnumerable<string> MustNotContainBlank(this IEnumerable<string?> lines) {
-        return lines.Select(it => it.IsNotBlank() ? it! : throw new ArgumentNullException(nameof(lines), $"Contained a blank string: {lines.Prettify()}"));
-    }
-
-    /// <summary>
     ///
     /// </summary>
     /// <remarks>
@@ -1135,16 +1125,6 @@ public static partial class CollectionUtils {
     /// <seealso cref="NonBlank"/>
     public static IEnumerable<string> NonEmpty(this IEnumerable<string?>? lines) {
         return (lines == null ? Enumerable.Empty<string>() : lines.Where(it => it.IsNotEmpty()))!;
-    }
-
-    /// <summary>
-    /// Throws an <see cref="ArgumentNullException"/> if any of the <paramref name="lines"/> <see cref="StringUtils.IsEmpty"/>.
-    /// </summary>
-    /// <param name="lines">the <see cref="string"/>s being validated</param>
-    /// <returns>a collection of non-nullable <see cref="string"/>s</returns>
-    /// <exception cref="ArgumentNullException">if any of the <paramref name="lines"/> <see cref="StringUtils.IsEmpty"/></exception>
-    public static IEnumerable<string> MustNotContainEmpty(this IEnumerable<string?> lines) {
-        return lines.Select(it => it.IsNotEmpty() ? it! : throw new ArgumentNullException(nameof(lines), $"Contained an empty string: {lines.Prettify()}"));
     }
 
     #endregion
@@ -1279,6 +1259,7 @@ public static partial class CollectionUtils {
     #endregion
 
 #if !NET6_0_OR_GREATER
+
     #region TakeLast
 
     /// <summary>
@@ -1297,6 +1278,8 @@ public static partial class CollectionUtils {
         return source.TakeWhile(takePredicate).Last();
     }
 
+    // Actual good implementations of these are available in .NET Standard 2.1+
+#if !NETSTANDARD2_1_OR_GREATER && !NET6_0_OR_GREATER
     [Pure]
     public static IEnumerable<T> TakeLast<T>(
         [InstantHandle]
@@ -1312,6 +1295,7 @@ public static partial class CollectionUtils {
         [NonNegativeValue]
         int count
     ) => count <= 0 ? source : source.Reverse().Skip(count).Reverse();
+#endif
 
     #endregion
 

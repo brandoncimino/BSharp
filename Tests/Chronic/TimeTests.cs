@@ -40,7 +40,11 @@ public class TimeTests {
         [ValueSource(nameof(Spans))]
         TimeSpan divisor
     ) {
+#if NETSTANDARD2_1_OR_GREATER
         Assert.That(TimeUtils.Divide(dividend, divisor), Is.EqualTo(dividend / divisor));
+#else
+        Ignore.This("Only a valid test in .NET Standard 2.1+");
+#endif
     }
 
     [Test]
@@ -51,7 +55,11 @@ public class TimeTests {
         [ValueSource(nameof(Spans))]
         TimeSpan divisor
     ) {
+#if NETSTANDARD2_1_OR_GREATER
         Assert.That(TimeUtils.Quotient(dividend, divisor), Is.EqualTo(Math.Floor(dividend / divisor)));
+#else
+        Ignore.This("Only a valid test in .NET Standard 2.1+");
+#endif
     }
 
     [Test]
@@ -63,7 +71,8 @@ public class TimeTests {
         TimeSpan divisor
     ) {
         TimeSpan ExpectedModulus() {
-            return (dividend - ((dividend / divisor).Floor() * divisor));
+            var millis = (dividend.TotalMilliseconds - ((dividend.TotalMilliseconds / divisor.TotalMilliseconds).Floor() * divisor.TotalMilliseconds));
+            return TimeSpan.FromMilliseconds(millis);
         }
 
         Console.WriteLine($"{dividend} % {divisor}");
@@ -72,19 +81,6 @@ public class TimeTests {
 
         // NOTE: my MultipleAsserter doesn't handle expected exceptions very well, so this uses the classic style
         Assert.That(() => dividend.Modulus(divisor), expectation);
-    }
-
-    [Test]
-    public void TestMultiply(
-        [ValueSource(nameof(Spans))]
-        TimeSpan multiplicand,
-        [ValueSource(nameof(ValuesInSeconds))]
-        double multiplier
-    ) {
-        Asserter.Against(() => TimeUtils.Multiply(multiplicand, multiplier))
-                .And(Is.EqualTo(multiplicand * multiplier))
-                .And(Is.EqualTo(multiplicand.Multiply(multiplier)))
-                .Invoke();
     }
 
     [Test, Pairwise]
