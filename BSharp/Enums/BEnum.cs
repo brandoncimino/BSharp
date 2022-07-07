@@ -120,8 +120,8 @@ namespace FowlFever.BSharp.Enums {
         /// </summary>
         /// <inheritdoc cref="UnhandledSwitch{T}"/>
         public static InvalidEnumArgumentException NotSupported<T>(
-            T?     actualValue,
-            string details,
+            T?      actualValue,
+            string? details = default,
             [CallerArgumentExpression("actualValue")]
             string? parameterName = default,
             [CallerMemberName]
@@ -132,7 +132,7 @@ namespace FowlFever.BSharp.Enums {
                 actualValue,
                 parameterName,
                 rejectedBy,
-                $"{typeof(T)}.{actualValue.OrNullPlaceholder()} isn't supported for {rejectedBy}!"
+                $"{typeof(T)}.{actualValue.OrNullPlaceholder()} isn't supported for {rejectedBy}{details.IfNotBlank(it => $": {it}")}!"
             );
 
             return new InvalidEnumArgumentException(rejection.Message);
