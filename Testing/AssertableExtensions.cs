@@ -55,7 +55,7 @@ namespace FowlFever.Testing {
 
         private static Affixation GetHeader(IFailable assertable, string passIcon = PassIcon, string failIcon = FailIcon) {
             var icon = assertable.Failed ? failIcon : passIcon;
-            return Affixation.Prefixation((assertable.Description?.Supply().Try()).OrElse(assertable.GetType().Name), icon, " ");
+            return Affixation.Prefixation((assertable.Description?.Supplied().TryGet()).OrElse(assertable.GetType().Name), icon, " ");
         }
     }
 }
