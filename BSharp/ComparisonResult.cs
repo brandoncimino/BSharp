@@ -67,6 +67,35 @@ public static class ComparisonExtensions {
     public static ComparisonResult ComparedWith<T>(this T? self, T? other, Comparison<T?> comparison)
         where T : IComparable<T> => Comparator<T>.Create(comparison).Compare(self, other);
 
+    #region Tuples
+
+    /// <summary>
+    /// Gets the member-wise <see cref="ComparisonResult"/> for each entry in a pair of <see cref="ValueTuple{T1,T2}"/>s.
+    /// </summary>
+    /// <param name="self">this <see cref="ValueTuple{T1,T2}"/></param>
+    /// <param name="other">another <see cref="ValueTuple{T1,T2}"/></param>
+    /// <typeparam name="A">the type of <see cref="ValueTuple{A,B}.Item1"/></typeparam>
+    /// <typeparam name="B">the type of <see cref="ValueTuple{A,B}.Item2"/></typeparam>
+    /// <returns>(<see cref="ComparisonResult"/>, <see cref="ComparisonResult"/>)</returns>
+    public static (ComparisonResult, ComparisonResult) ComparedWith<A, B>(this (A, B) self, (A, B) other) {
+        return (self.Item1.ComparedWith(other.Item1), self.Item2.ComparedWith(other.Item2));
+    }
+
+    /// <summary>
+    /// Gets the member-wise <see cref="ComparisonResult"/> for each entry in a pair of <see cref="ValueTuple{A,B,C}"/>s.
+    /// </summary>
+    /// <param name="self">this <see cref="ValueTuple{A,B,C}"/></param>
+    /// <param name="other">another <see cref="ValueTuple{A,B,C}"/></param>
+    /// <typeparam name="A">the type of <see cref="ValueTuple{A,B,C}.Item1"/></typeparam>
+    /// <typeparam name="B">the type of <see cref="ValueTuple{A,B,C}.Item2"/></typeparam>
+    /// <typeparam name="C">the type of <see cref="ValueTuple{A,B,C}.Item3"/></typeparam>
+    /// <returns>(<see cref="ComparisonResult"/>, <see cref="ComparisonResult"/>)</returns>
+    public static (ComparisonResult, ComparisonResult, ComparisonResult) ComparedWith<A, B, C>(this (A, B, C) self, (A, B, C) other) {
+        return (self.Item1.ComparedWith(other.Item1), self.Item2.ComparedWith(other.Item2), self.Item3.ComparedWith(other.Item3));
+    }
+
+    #endregion
+
     internal static ComparisonResult ToComparisonResult(this int sign) {
         return sign switch {
             < 0 => ComparisonResult.LessThan,
