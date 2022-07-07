@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text.RegularExpressions;
 
@@ -13,6 +14,7 @@ using NUnit.Framework.Constraints;
 
 namespace BSharp.Tests.Strings;
 
+[SuppressMessage("ReSharper", "AccessToStaticMemberViaDerivedType")]
 public class StringUtilsTests {
     [Test]
     [TestCase(
@@ -39,7 +41,7 @@ public class StringUtilsTests {
         string filler,
         string expectedResult
     ) {
-        Assert.That(original.FillRight(desiredLength, filler), Is.EqualTo(expectedResult));
+        Assert.That(original.OneLine().Fill(desiredLength, filler.OneLine()), Is.EqualTo(expectedResult.OneLine()));
     }
 
     [TestCase("abc",  2, "ab")]
@@ -47,8 +49,8 @@ public class StringUtilsTests {
     [TestCase(" ",    6, "      ")]
     [TestCase("yolo", 9, "yoloyoloy")]
     [TestCase("yolo", 0, "")]
-    public void Fill(string filler, int desiredLength, string expectedResult) {
-        Assert.That(filler.Fill(desiredLength), Is.EqualTo(expectedResult));
+    public void RepeatToLength(string filler, int desiredLength, string expectedResult) {
+        Assert.That(filler.OneLine().RepeatToLength(desiredLength), Is.EqualTo(expectedResult));
     }
 
     [Test]
@@ -57,25 +59,12 @@ public class StringUtilsTests {
         int desiredLength
     ) {
         const string str = "yolo";
-        Assert.Throws<ArgumentException>(() => str.FillRight(desiredLength, ""));
-        Assert.Throws<ArgumentException>(() => str.FillLeft(desiredLength, ""));
-        Assert.Throws<ArgumentException>(() => "".Fill(desiredLength));
-    }
-
-    [Test]
-    public void Fill_NullFiller(
-        [Values(0, 1, 2, 3)]
-        int desiredLength
-    ) {
-        Assert.Throws<ArgumentNullException>(() => "".FillRight(desiredLength, null!));
-        Assert.Throws<ArgumentNullException>(() => "".FillLeft(desiredLength, null!));
-        Assert.Throws<ArgumentNullException>(() => default(string)!.Fill(desiredLength));
+        Assert.Throws<ArgumentException>(() => str.Fill(desiredLength, OneLine.Empty));
+        Assert.Throws<ArgumentException>(() => str.Fill(desiredLength, OneLine.Empty));
     }
 
     [Test]
     public void Fill_NegativeLength() {
-        Assert.Throws<ArgumentOutOfRangeException>(() => "a".FillRight(-1, "a"));
-        Assert.Throws<ArgumentOutOfRangeException>(() => "a".FillLeft(-1, "a"));
         Assert.Throws<ArgumentOutOfRangeException>(() => "a".Fill(-1));
     }
 
@@ -110,7 +99,7 @@ public class StringUtilsTests {
         string padding,
         string expectedResult
     ) {
-        Assert.That(StringUtils.FormatHeading(heading, border, padding), Is.EqualTo(expectedResult));
+        Assert.That(StringUtils.FormatHeading(heading, border.OneLine(), padding.OneLine()), Is.EqualTo(expectedResult));
     }
 
     [Test]
