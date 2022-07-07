@@ -1,4 +1,7 @@
 using System;
+using System.Linq;
+
+using FowlFever.BSharp.Strings;
 
 using JetBrains.Annotations;
 
@@ -32,6 +35,12 @@ public static partial class Failables {
     public static IRenderable? GetRenderableExcuse(this IFailable failable, ExceptionSettings? settings = default) {
         settings ??= DefaultExceptionSettings;
         return failable.Excuse?.GetRenderable(settings);
+    }
+
+    public static IRenderable GetRenderable(this RapSheet rapSheet) {
+        var tree = new Tree(rapSheet.GetHeadline().EscapeMarkup());
+        tree.AddNodes(rapSheet.Charges.Select(GetRenderable));
+        return tree;
     }
 
     #endregion

@@ -53,15 +53,15 @@ public class RapSheet : IEnumerable<IFailable>, IPrettifiable, IFailable {
 
     #region Formatting
 
-    public string FailIcon { get; init; } = "💔";
-    public string PassIcon { get; init; } = "🎊";
+    public OneLine FailIcon { get; init; } = "💔".OneLine();
+    public OneLine PassIcon { get; init; } = "🎊".OneLine();
 
-    public  Func<RapSheet, string>?  SummaryFormatter   { get; set; }
+    public  Func<RapSheet, OneLine>? HeadlineFormatter  { get; set; }
     public  Func<object?, string>?   PlaintiffFormatter { get; set; }
     public  Func<IFailable, string>? FailableFormatter  { get; set; }
-    private string                   Icon               => Convictions.Any() ? FailIcon : PassIcon;
+    private OneLine                  Icon               => Convictions.Any() ? FailIcon : PassIcon;
 
-    private string FormatSummary_Default() {
+    private OneLine FormatHeadline_Default() {
         string CountString() => Convictions.IsNotEmpty()
                                     ? $"[{Convictions.Count()}/{Charges.Count()}]"
                                     : $"All {Charges.Count()}";
@@ -72,7 +72,7 @@ public class RapSheet : IEnumerable<IFailable>, IPrettifiable, IFailable {
 
         string VerdictString() => Convictions.IsNotEmpty() ? "stuck" : "were dropped";
 
-        return $"{Icon} {CountString()} charges {AgainstString()}{VerdictString()}!";
+        return $"{Icon} {CountString()} charges {AgainstString()}{VerdictString()}!".OneLine();
     }
 
     private static string FormatPlaintiff_Default(object? plaintiff) => plaintiff switch {
@@ -83,14 +83,18 @@ public class RapSheet : IEnumerable<IFailable>, IPrettifiable, IFailable {
 
     private static string FormatFailable_Default(IFailable failable) => $"{failable}";
 
-    private string GetSummary() => SummaryFormatter?.Invoke(this) ?? FormatSummary_Default();
+    /// <summary>
+    /// The one-line summary of this <see cref="RapSheet"/>
+    /// </summary>
+    /// <returns></returns>
+    public OneLine GetHeadline() => HeadlineFormatter?.Invoke(this) ?? FormatHeadline_Default();
 
-    public override string ToString() => GetSummary();
+    public override string ToString() => GetHeadline();
 
     private string FormatFailable(IFailable failable) => FailableFormatter?.Invoke(failable) ?? FormatFailable_Default(failable);
 
     public string Prettify(PrettificationSettings? settings = default) {
-        var lines = new List<string> { GetSummary() };
+        var lines = new List<string> { GetHeadline() };
         lines.AddRange(Charges.Select(FormatFailable).Indent());
         return lines.JoinLines();
     }
@@ -101,5 +105,5 @@ public class RapSheet : IEnumerable<IFailable>, IPrettifiable, IFailable {
     public bool                         Failed                => Convictions.Any();
     IReadOnlyCollection<Type> IFailable.IgnoredExceptionTypes => throw new NotSupportedException(MethodBase.GetCurrentMethod()?.ToString());
     Exception IFailable.                IgnoredException      => throw new NotSupportedException(MethodBase.GetCurrentMethod()?.ToString());
-    public Supplied<string?>            Description           => GetSummary();
+    public Supplied<string?>            Description           => GetHeadline().ToString();
 }
