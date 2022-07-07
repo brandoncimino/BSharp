@@ -13,7 +13,7 @@ namespace FowlFever.Testing {
 
         protected override void OnFailure(string results) => Assert.Inconclusive(results);
 
-        protected override void ResolveFunc<T1>(
+        internal override void ResolveFunc<T1>(
             Func<T1>           actual,
             IResolveConstraint constraint,
             Func<string?>?     message

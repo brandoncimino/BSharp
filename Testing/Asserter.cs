@@ -10,7 +10,7 @@ using NUnit.Framework.Constraints;
 
 namespace FowlFever.Testing {
     public class Asserter<T> : MultipleAsserter<Asserter<T>, T> {
-        protected override void ResolveFunc<T1>(
+        internal override void ResolveFunc<T1>(
             Func<T1>           actual,
             IResolveConstraint constraint,
             Func<string?>?     message
