@@ -16,7 +16,7 @@ public static partial class ReflectionUtils {
     [Pure]
     public static bool IsTupleType(this Type type) {
 #if NETSTANDARD2_1_OR_GREATER || NET5_0_OR_GREATER
-        return type.IsAssignableTo(typeof(System.Runtime.CompilerServices.ITuple));
+        return typeof(System.Runtime.CompilerServices.ITuple).IsAssignableFrom(type);
 #else
         return type.IsGenericType && TupleTypes.Contains(type.GetGenericTypeDefinition());
 #endif
