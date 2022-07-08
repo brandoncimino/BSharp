@@ -10,7 +10,7 @@ namespace FowlFever.BSharp.Attributes {
     /// The parent class for <see cref="BSharp"/> <see cref="Attribute"/>s like <see cref="EditorInvocationButtonAttribute"/>.
     /// </summary>
     /// <remarks>
-    /// <b>NOTE:</b> Even if an attribute only <b>affects</b> editor functionality (as is the case with <see cref="EditorInvocationButtonAttribute"/>), if it will <b>target</b> runtime code (which is most likely the case), then the <see cref="Attribute"/> class itself should be declared <b>inside <see cref="Packages.BrandonUtils.Runtime"/></b>.
+    /// <b>NOTE:</b> Even if an attribute only <b>affects</b> editor functionality (as is the case with <see cref="EditorInvocationButtonAttribute"/>), if it will <b>target</b> runtime code (which is most likely the case), then the <see cref="Attribute"/> class itself should be declared <b>inside <c>"Runtime"</c></b>.
     /// <p/>
     /// This mimics the setup of Unity's built-in attributes like <c>UnityEngine.HeaderAttribute</c> and <c>UnityEngine.RangeAttribute</c>, which are declared inside of <c>UnityEngine</c> rather than <c>"UnityEditor"</c>.
     /// </remarks>
