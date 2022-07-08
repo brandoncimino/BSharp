@@ -282,6 +282,45 @@ public static partial class Must {
         return actualValues;
     }
 
+    /// <summary>
+    /// Similarly to <see cref="Enumerable.Single{TSource}(System.Collections.Generic.IEnumerable{TSource})"/>, this guarantees that the <paramref name="actualValues"/> contains <paramref name="requiredCount"/> entries.
+    ///
+    /// <b>📎 NOTE:</b> This method will not throw an error until the returned <see cref="IEnumerable{T}"/> is actually enumerated!
+    /// 
+    /// </summary>
+    /// <param name="actualValues">the <see cref="IEnumerable{T}"/> being validated</param>
+    /// <param name="requiredCount">the desired number of <typeparamref name="T"/> entries</param>
+    /// <param name="details">optional additional information</param>
+    /// <param name="parameterName">see <see cref="CallerArgumentExpressionAttribute"/></param>
+    /// <param name="rejectedBy">see <see cref="CallerMemberNameAttribute"/></param>
+    /// <typeparam name="T">the type of the items in <paramref name="actualValues"/></typeparam>
+    /// <returns>an <see cref="IEnumerable{T}"/></returns>
+    /// <exception cref="RejectionException">if, <b>when enumerated</b>, the sequence doesn't contain <b>exactly</b> <paramref name="requiredCount"/> elements</exception>
+    public static IEnumerable<T> TakeExactly<T>(
+        this IEnumerable<T> actualValues,
+        [NonNegativeValue]
+        int requiredCount,
+        string? details = default,
+        [CallerArgumentExpression("actualValues")]
+        string? parameterName = default,
+        [CallerMemberName]
+        string? rejectedBy = default
+    ) {
+        using var iter = actualValues.GetEnumerator();
+        for (int i = 0; i < requiredCount; i++) {
+            if (iter.MoveNext()) {
+                yield return iter.Current;
+            }
+            else {
+                throw Reject(actualValues.ToString(), details, parameterName, rejectedBy, $"must contain EXACTLY {requiredCount} items (actual size: {i})");
+            }
+        }
+
+        if (iter.MoveNext()) {
+            throw Reject(actualValues.ToString(), details, parameterName, rejectedBy, $"must contain EXACTLY {requiredCount} items (actual size: > {requiredCount})");
+        }
+    }
+
     public static (T, T) Have2<T>(
         [InstantHandle]
         IEnumerable<T>? actualValues,
@@ -291,7 +330,8 @@ public static partial class Must {
         [CallerMemberName]
         string? rejectedBy = default
     ) {
-        var has2 = HaveSize<IList<T>, T>(actualValues?.AsList(), 2, details, parameterName, rejectedBy);
+        (T, T) result;
+        var    has2 = HaveSize<IList<T>, T>(actualValues?.AsList(), 2, details, parameterName, rejectedBy);
         return (has2[0], has2[1]);
     }
 
