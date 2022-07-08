@@ -1,6 +1,8 @@
 using System.IO;
 using System.Linq;
 
+using FowlFever.BSharp.Collections;
+
 namespace FowlFever.BSharp.Clerical;
 
 public static class DirectoryInfoExtensions {

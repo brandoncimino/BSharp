@@ -5,6 +5,7 @@ using System.Linq;
 
 using FowlFever.BSharp.Collections;
 using FowlFever.BSharp.Strings;
+using FowlFever.BSharp.Strings.Settings;
 using FowlFever.Conjugal.Affixing;
 
 using JetBrains.Annotations;
@@ -89,7 +90,6 @@ namespace FowlFever.BSharp.Chronic {
             // }
         }
 
-
         public override string ToString() {
             if (Executions == null) {
                 throw new ArgumentNullException(nameof(Executions));
@@ -116,11 +116,7 @@ namespace FowlFever.BSharp.Chronic {
     }
 
     public class AggregateExecutionComparison {
-        public enum Which {
-            First,
-            Second,
-            Neither
-        }
+        public enum Which { First, Second, Neither }
 
         public readonly AggregateExecutionTime FirstTimes;
         public readonly AggregateExecutionTime SecondTimes;
@@ -164,7 +160,6 @@ namespace FowlFever.BSharp.Chronic {
                      .JoinString(", ");
             }
 
-
             public string GetSummary() {
                 return First.duration.CompareTo(Second.duration) switch {
                     -1 => $"[{First.nickname}] is {Mathb.DeltaRatio(Second.duration, First.duration):P0} faster than [{Second.nickname}]",
@@ -184,7 +179,6 @@ namespace FowlFever.BSharp.Chronic {
 
         public TimeComparison Total   => Comparing(it => it.Total);
         public TimeComparison Average => Comparing(it => it.Average);
-
 
         public override string ToString() {
             return new Dictionary<object, object>() {

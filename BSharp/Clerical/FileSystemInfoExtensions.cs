@@ -77,9 +77,7 @@ namespace FowlFever.BSharp.Clerical {
 
         #region MustBeParentOf
 
-        [ContractAnnotation("parent:null => stop")]
-        [ContractAnnotation("child:null => stop")]
-        public static void MustBeParentOf(this DirectoryInfo? parent, FileSystemInfo? child) {
+        public static void MustBeParentOf([NotNull] this DirectoryInfo? parent, [NotNull] FileSystemInfo? child) {
             CheckNull(parent, child);
 
             if (parent.IsParentOf(child) == false) {
@@ -171,9 +169,7 @@ namespace FowlFever.BSharp.Clerical {
             );
         }
 
-        [ContractAnnotation("parent:null => stop")]
-        [ContractAnnotation("child:null => stop")]
-        private static void CheckNull(DirectoryInfo parent, FileSystemInfo child) {
+        private static void CheckNull([NotNull] DirectoryInfo? parent, [NotNull] FileSystemInfo? child) {
             if (parent == null) {
                 throw new ArgumentNullException(nameof(parent), $"{nameof(parent)} was null, so it cannot possibly contain the {nameof(child)} {child.Prettify()}!");
             }
