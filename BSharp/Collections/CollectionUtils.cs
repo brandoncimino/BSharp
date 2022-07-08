@@ -57,12 +57,6 @@ public static partial class CollectionUtils {
         return default;
     }
 
-    [Pure]
-    // ReSharper disable once ReturnTypeCanBeEnumerable.Global
-    public static List<T> ListOf<T>(params T[] stuff) {
-        return new List<T>(stuff);
-    }
-
     /// <summary>
     /// Equivalent to <see cref="Enumerable.OrderBy{TSource,TKey}(System.Collections.Generic.IEnumerable{TSource},System.Func{TSource,TKey})"/> with each entry as the key.
     /// </summary>
@@ -1259,7 +1253,6 @@ public static partial class CollectionUtils {
     #endregion
 
 #if !NET6_0_OR_GREATER
-
     #region TakeLast
 
     /// <summary>
