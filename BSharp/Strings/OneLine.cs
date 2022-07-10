@@ -10,6 +10,7 @@ using FowlFever.BSharp.Collections;
 using FowlFever.BSharp.Enums;
 using FowlFever.BSharp.Exceptions;
 using FowlFever.BSharp.Strings.Enums;
+using FowlFever.BSharp.Strings.Settings;
 
 namespace FowlFever.BSharp.Strings;
 
@@ -281,7 +282,7 @@ public readonly record struct OneLine : IHas<string>, IEnumerable<GraphemeCluste
     public OneLine RepeatToLength(int desiredLength) => CreateRisky(Must.NotBeEmpty(_stringInfo).RepeatToLength(desiredLength));
 
     /// <summary>
-    /// <inheritdoc cref="Fill(FowlFever.BSharp.Strings.FillerSettings?)"/>
+    /// <inheritdoc cref="Fill(FillerSettings?)"/>
     /// </summary>
     /// <param name="desiredLength">see <see cref="FillerSettings.LineLengthLimit"/></param>
     /// <param name="padString">see <see cref="FillerSettings.PadString"/></param>
@@ -302,7 +303,7 @@ public readonly record struct OneLine : IHas<string>, IEnumerable<GraphemeCluste
     /// This method is purely additive, meaning that the output will always contain <b><i>at least</i></b> the original <see cref="Value"/>.
     /// If the <see cref="Length"/> is already greater than <see cref="FillerSettings.LineLengthLimit"/>, then no changes will be applied.
     /// <p/>
-    /// The "destructive" aka "subtractive" equivalent is <see cref="Truncate(int,FowlFever.BSharp.Strings.FillerSettings?)"/>.
+    /// The "destructive" aka "subtractive" equivalent is <see cref="Truncate(int,FillerSettings?)"/>.
     /// </remarks>
     [Pure]
     public OneLine Fill(FillerSettings settings) {
@@ -328,7 +329,7 @@ public readonly record struct OneLine : IHas<string>, IEnumerable<GraphemeCluste
     }
 
     /// <summary>
-    /// Either <see cref="Fill(int,FowlFever.BSharp.Strings.OneLine,FowlFever.BSharp.Strings.FillerSettings?)"/> or <see cref="Truncate(int,FowlFever.BSharp.Strings.FillerSettings?)"/>s
+    /// Either <see cref="Fill(int,FowlFever.BSharp.Strings.OneLine,FillerSettings?)"/> or <see cref="Truncate(int,FillerSettings?)"/>s
     /// this <see cref="OneLine"/> so that it reaches <see cref="FillerSettings.LineLengthLimit"/>.
     /// </summary>
     /// <param name="settings">determines how the alignment should be performed</param>
