@@ -7,7 +7,7 @@ using FowlFever.BSharp.Strings;
 namespace FowlFever.BSharp.Exceptions;
 
 public static class Reject {
-    public readonly record struct TypeName(string? Value) : IHas<string?> {
+    private readonly record struct TypeName(string? Value) : IHas<string?> {
         private TypeName(object? obj) : this(
             obj switch {
                 Type t   => t.Name,
@@ -39,5 +39,21 @@ public static class Reject {
 
     public static ReadOnlyException ReadOnly(object? type = default, string? details = default, [CallerMemberName] string? methodName = default) {
         return new ReadOnlyException(GetNotSupportedMessage(TypeName.From(type), details, methodName));
+    }
+
+    [Pure]
+    public static RejectionException UnhandledSwitchType<T>(
+        T? actualValue,
+        [CallerArgumentExpression("actualValue")]
+        string? parameterName = default,
+        [CallerMemberName]
+        string? rejectedBy = default
+    ) {
+        return new RejectionException(
+            actualValue,
+            parameterName,
+            rejectedBy,
+            reason: $"Value of type {actualValue?.GetType() ?? typeof(T)} was unhandled by any switch branch!"
+        );
     }
 }

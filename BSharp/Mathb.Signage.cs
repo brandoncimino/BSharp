@@ -85,7 +85,7 @@ namespace FowlFever.BSharp {
                 double d   => d.IsPositive(),
                 decimal d  => d.IsPositive(),
                 TimeSpan t => t.IsPositive(),
-                _          => throw Must.RejectUnhandledSwitchType(value, nameof(value), nameof(IsPositive)),
+                _          => throw Reject.UnhandledSwitchType(value, nameof(value), nameof(IsPositive)),
             };
         }
 
@@ -118,7 +118,7 @@ namespace FowlFever.BSharp {
                 double d   => d.IsStrictlyPositive(),
                 decimal d  => d.IsStrictlyPositive(),
                 TimeSpan t => t.IsStrictlyPositive(),
-                _          => throw Must.RejectUnhandledSwitchType(value, nameof(value), nameof(IsStrictlyPositive)),
+                _          => throw Reject.UnhandledSwitchType(value, nameof(value), nameof(IsStrictlyPositive)),
             };
         }
 
@@ -151,7 +151,7 @@ namespace FowlFever.BSharp {
                 double d   => d.IsNegative(),
                 decimal d  => d.IsNegative(),
                 TimeSpan t => t.IsNegative(),
-                _          => throw Must.RejectUnhandledSwitchType(value, nameof(value), nameof(IsNegative)),
+                _          => throw Reject.UnhandledSwitchType(value, nameof(value), nameof(IsNegative)),
             };
         }
 
