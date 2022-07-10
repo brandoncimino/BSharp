@@ -6,6 +6,7 @@ using FowlFever.BSharp.Exceptions;
 using FowlFever.BSharp.Optional;
 using FowlFever.BSharp.Reflection;
 using FowlFever.BSharp.Strings;
+using FowlFever.BSharp.Strings.Settings;
 using FowlFever.BSharp.Sugar;
 
 using JetBrains.Annotations;
@@ -133,7 +134,7 @@ public record ValidatorMethod<T> : Wrapped<MethodInfo>, IValidatorMethod<T> {
         value switch {
             T t             => TryValidate(t),
             IValidated<T> t => TryValidate(t),
-            _               => throw Must.RejectUnhandledSwitchType(value),
+            _               => throw Reject.UnhandledSwitchType(value),
         };
 
     #endregion
