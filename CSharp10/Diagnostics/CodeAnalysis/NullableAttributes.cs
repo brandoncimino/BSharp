@@ -1,8 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+namespace System.Diagnostics.CodeAnalysis;
+
 #if !NETCOREAPP3_0_OR_GREATER && !NETSTANDARD2_1_OR_GREATER && !NET5_0_OR_GREATER
-namespace System.Diagnostics.CodeAnalysis {
     // These attributes already shipped with .NET Core 3.1 in System.Runtime
     // NOTE: This is Brandon's implementation of future .NET version stuff...but I can't find where I originally got it from...
     //  It used to have a bunch of conditional stuff based on `#if SYSTEM_PRIVATE_CORELIB`, but I dunno where that came from...
@@ -98,6 +99,10 @@ namespace System.Diagnostics.CodeAnalysis {
         public string[] Members { get; }
     }
 
+#endif
+
+// Super obnoxiously, `[MemberNotNullWhen]` is only available in .NET 5+ and _not_ in .NET Standard 2.1, unlike everything else...
+#if !NETCOREAPP3_0_OR_GREATER && !NET5_0_OR_GREATER
     /// <summary>Specifies that the method or property will ensure that the listed field and property members have not-null values when returning with the specified return value condition.</summary>
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Property, Inherited = false, AllowMultiple = true)]
     public sealed class MemberNotNullWhenAttribute : Attribute {
@@ -110,7 +115,7 @@ namespace System.Diagnostics.CodeAnalysis {
         /// </param>
         public MemberNotNullWhenAttribute(bool returnValue, string member) {
             ReturnValue = returnValue;
-            Members     = new[] { member };
+            Members = new[] { member };
         }
 
         /// <summary>Initializes the attribute with the specified return value condition and list of field and property members.</summary>
@@ -122,7 +127,7 @@ namespace System.Diagnostics.CodeAnalysis {
         /// </param>
         public MemberNotNullWhenAttribute(bool returnValue, params string[] members) {
             ReturnValue = returnValue;
-            Members     = members;
+            Members = members;
         }
 
         /// <summary>Gets the return value condition.</summary>
@@ -131,5 +136,4 @@ namespace System.Diagnostics.CodeAnalysis {
         /// <summary>Gets field or property member names.</summary>
         public string[] Members { get; }
     }
-}
 #endif
