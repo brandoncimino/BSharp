@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 
+using FowlFever.BSharp.Attributes;
 using FowlFever.BSharp.Collections;
 
 using JetBrains.Annotations;
@@ -296,6 +297,7 @@ public static partial class Must {
     /// <typeparam name="T">the type of the items in <paramref name="actualValues"/></typeparam>
     /// <returns>an <see cref="IEnumerable{T}"/></returns>
     /// <exception cref="RejectionException">if, <b>when enumerated</b>, the sequence doesn't contain <b>exactly</b> <paramref name="requiredCount"/> elements</exception>
+    [Experimental("This doesn't quite work as I'd like to yet - if you TakeExactly(3) and then Take(2), a collection with 2 will pass or something like that")]
     public static IEnumerable<T> TakeExactly<T>(
         this IEnumerable<T> actualValues,
         [NonNegativeValue]
@@ -318,6 +320,35 @@ public static partial class Must {
 
         if (iter.MoveNext()) {
             throw Reject(actualValues.ToString(), details, parameterName, rejectedBy, $"must contain EXACTLY {requiredCount} items (actual size: > {requiredCount})");
+        }
+    }
+
+    [Experimental("Still needs fiddling")]
+    private record TakeExactlyEnumerator<T>(IEnumerator<T> Source, int Count) : IEnumerator<T> {
+        private int _taken = 0;
+
+        public bool MoveNext() {
+            _taken += 1;
+            if (_taken >= Count || !Source.MoveNext()) {
+                throw new Exception($"too many!");
+            }
+
+            return true;
+        }
+
+        public void Reset() {
+            throw new NotImplementedException();
+        }
+
+        public T            Current => Source.Current;
+        object? IEnumerator.Current => Current;
+
+        public void Dispose() {
+            if (_taken != Count) { }
+
+            if (MoveNext()) {
+                throw new Exception("Still had some left!!");
+            }
         }
     }
 
