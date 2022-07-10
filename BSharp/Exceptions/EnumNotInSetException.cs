@@ -6,6 +6,7 @@ using System.Linq;
 using FowlFever.BSharp.Collections;
 using FowlFever.BSharp.Strings;
 using FowlFever.BSharp.Strings.Prettifiers;
+using FowlFever.BSharp.Strings.Settings;
 
 namespace FowlFever.BSharp.Exceptions {
     public class EnumNotInSetException<T> : InvalidEnumArgumentException {
