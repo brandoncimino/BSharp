@@ -7,7 +7,7 @@ namespace FowlFever.BSharp.Collections.Implementors;
 /// Delegates the <see cref="IList{T}"/> implementation to the <see cref="AsList"/> property.
 /// </summary>
 /// <typeparam name="T"></typeparam>
-public interface IAmList<T> : IList<T> {
+public interface IHasList<T> : IList<T> {
     public IList<T>               AsList                            { get; }
     IEnumerator<T> IEnumerable<T>.GetEnumerator()                   => AsList.GetEnumerator();
     IEnumerator IEnumerable.      GetEnumerator()                   => ((IEnumerable)AsList).GetEnumerator();
