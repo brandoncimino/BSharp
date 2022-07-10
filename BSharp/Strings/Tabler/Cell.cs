@@ -2,6 +2,7 @@ using System.Runtime.CompilerServices;
 
 using FowlFever.BSharp.Enums;
 using FowlFever.BSharp.Optional;
+using FowlFever.BSharp.Strings.Settings;
 
 using JetBrains.Annotations;
 
