@@ -1,10 +1,7 @@
 namespace FowlFever.BSharp.Strings.Markup;
 
 public enum MarkupLanguage {
-    Html,
-    Markdown,
-    AsciiDoc,
-    SpectreConsole,
+    Html, Markdown, AsciiDoc,
 }
 
 public interface IMarkupMarkdown {
@@ -17,8 +14,4 @@ public interface IMarkupHtml {
 
 public interface IMarkupAsciidoc {
     string MarkupAsciidoc();
-}
-
-public interface IMarkupSpectre {
-    string MarkupSpectre();
 }

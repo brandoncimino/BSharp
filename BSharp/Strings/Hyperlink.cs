@@ -1,6 +1,7 @@
 using System;
 
 using FowlFever.BSharp.Strings.Markup;
+using FowlFever.BSharp.Strings.Spectral;
 
 using Spectre.Console;
 using Spectre.Console.Rendering;
@@ -16,25 +17,22 @@ namespace FowlFever.BSharp.Strings;
 /// TODO: Add a custom editor for this!
 /// </remarks>
 [Serializable]
-public record Hyperlink(string DisplayText, string Url) : IMarkupHtml, IMarkupAsciidoc, IMarkupMarkdown, IMarkupSpectre {
+public record Hyperlink(string Url) : IMarkupHtml, IMarkupAsciidoc, IMarkupMarkdown, IHasRenderable {
+    private string? _displayText;
+    public string DisplayText {
+        get => _displayText.IfBlank(Url);
+        init => _displayText = value;
+    }
+    private readonly Style _style = new(Color.Blue, decoration: Decoration.Underline, link: Url);
+    public Style Style {
+        get => _style.Link(Url);
+        init => _style = value;
+    }
+
     //TODO: a variable to store an icon (like the twitter logo or something)
 
-    public string MarkupMarkdown() => $"[{DisplayText}]({Url})";
-    public string MarkupHtml()     => $"<a href=\"{Url}\">{DisplayText}</a>";
-    public string MarkupAsciidoc() => $"link::{Url}[{DisplayText}]";
-
-    /// <summary>
-    /// Formats a hyperlink for use with <see cref="Spectre.Console"/>'s <see cref="Markup"/>.
-    /// <p/>
-    /// From <a href="https://github.com/spectreconsole/spectre.console/blob/main/examples/Console/Links/Program.cs">Spectre.Console examples</a>:
-    /// <code><![CDATA[
-    /// AnsiConsole.MarkupLine("[link=https://patriksvensson.se]Click to visit my blog[/]!");
-    /// ]]></code>
-    /// </summary>
-    /// <returns>a <see cref="Markup"/> string</returns>
-    public string MarkupSpectre() => $"[link={Url.EscapeMarkup()}]{DisplayText.EscapeMarkup()}[/]";
-
-    public IRenderable GetRenderable() {
-        return new Spectre.Console.Markup(MarkupSpectre());
-    }
+    public string      MarkupMarkdown() => $"[{DisplayText}]({Url})";
+    public string      MarkupHtml()     => $"<a href=\"{Url}\">{DisplayText}</a>";
+    public string      MarkupAsciidoc() => $"link::{Url}[{DisplayText}]";
+    public IRenderable GetRenderable()  => _displayText.EscapeSpectre(Style);
 }
