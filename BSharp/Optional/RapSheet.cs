@@ -7,6 +7,7 @@ using System.Reflection;
 using FowlFever.BSharp.Collections;
 using FowlFever.BSharp.Exceptions;
 using FowlFever.BSharp.Strings;
+using FowlFever.BSharp.Strings.Settings;
 
 using JetBrains.Annotations;
 
