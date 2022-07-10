@@ -1,5 +1,5 @@
 using FowlFever.BSharp;
-using FowlFever.BSharp.Strings;
+using FowlFever.BSharp.Strings.Settings;
 
 namespace FowlFever.Testing {
     public interface IMultipleAsserter {

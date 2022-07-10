@@ -4,6 +4,7 @@ using FowlFever.BSharp;
 using FowlFever.BSharp.Collections;
 using FowlFever.BSharp.Optional;
 using FowlFever.BSharp.Strings;
+using FowlFever.BSharp.Strings.Settings;
 using FowlFever.BSharp.Sugar;
 
 using NUnit.Framework;
@@ -53,7 +54,7 @@ namespace FowlFever.Testing {
             static string GetNickname(IPrettifiable? actualString, IResolveConstraint? constraint, PrettificationSettings? settings) {
                 var dName = actualString?.Prettify(settings);
                 var cName = constraint?.Prettify(settings);
-                return dName.JoinNonBlank(cName, " 🗜 ");
+                return StringUtils.JoinNonBlank(dName, cName, " 🗜 ");
             }
 
             return Lazily.Get(() => GetNickname(actualDescription, constraint, settings))!;

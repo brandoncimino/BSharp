@@ -9,6 +9,7 @@ using FowlFever.BSharp;
 using FowlFever.BSharp.Collections;
 using FowlFever.BSharp.Optional;
 using FowlFever.BSharp.Strings;
+using FowlFever.BSharp.Strings.Settings;
 using FowlFever.BSharp.Sugar;
 
 using JetBrains.Annotations;
