@@ -1,5 +1,6 @@
 using System;
 
+using FowlFever.BSharp.Enums;
 using FowlFever.BSharp.Strings.Markup;
 using FowlFever.BSharp.Strings.Spectral;
 
@@ -35,4 +36,13 @@ public record Hyperlink(string Url) : IMarkupHtml, IMarkupAsciidoc, IMarkupMarkd
     public string      MarkupHtml()     => $"<a href=\"{Url}\">{DisplayText}</a>";
     public string      MarkupAsciidoc() => $"link::{Url}[{DisplayText}]";
     public IRenderable GetRenderable()  => _displayText.EscapeSpectre(Style);
+
+    public string ToMarkup(MarkupLanguage language) {
+        return language switch {
+            MarkupLanguage.Markdown => MarkupMarkdown(),
+            MarkupLanguage.Html     => MarkupHtml(),
+            MarkupLanguage.AsciiDoc => MarkupAsciidoc(),
+            _                       => throw BEnum.UnhandledSwitch(language),
+        };
+    }
 }
