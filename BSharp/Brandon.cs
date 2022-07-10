@@ -1,19 +1,29 @@
 using System;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Runtime.CompilerServices;
 
-using FowlFever.BSharp.Exceptions;
+using FowlFever.BSharp.Collections;
 using FowlFever.BSharp.Strings;
-using FowlFever.BSharp.Strings.Json;
-using FowlFever.BSharp.Strings.Tabler;
+using FowlFever.BSharp.Strings.Spectral;
+
+using Spectre.Console;
+using Spectre.Console.Rendering;
 
 namespace FowlFever.BSharp;
 
 [SuppressMessage("ReSharper", "ExplicitCallerInfoArgument")]
-internal static class Brandon {
-    public static CallerInfo<T> Info<T>(
+public static class Brandon {
+    static Brandon() {
+        static void ForceAnsi() {
+            AnsiConsole.WriteLine($"Forcing the default {nameof(AnsiConsole)} to use {AnsiSupport.Yes.Prettify()}, despite its better judgement.");
+            AnsiConsole.Console = AnsiConsole.Create(new AnsiConsoleSettings { Ansi = AnsiSupport.Yes });
+        }
+
+        ForceAnsi();
+    }
+
+    public static (string?, CallerInfo) Info<T>(
         T value,
         [CallerArgumentExpression("value")]
         string? argumentExpression = default,
@@ -23,15 +33,22 @@ internal static class Brandon {
         string? filePath = default,
         [CallerLineNumber]
         int lineNumber = default
-    ) => new(value, argumentExpression, memberName, filePath, lineNumber);
+    ) => (argumentExpression, new CallerInfo(memberName, filePath, lineNumber));
 
     public static T Print<T>(
         T value,
         [CallerArgumentExpression("value")]
         string? expression = default
     ) {
-        var str = Row.Of(expression, value).Prettify();
-        Console.WriteLine(str);
+        var spectre = new Panel(value.Prettify().EscapeMarkup()) {
+            Header      = new PanelHeader(expression.EscapeMarkup()),
+            Expand      = false,
+            Border      = BoxBorder.Rounded,
+            BorderStyle = new Style(Color.DarkOrange),
+        };
+
+        AnsiConsole.Write(spectre);
+
         return value;
     }
 
@@ -51,47 +68,35 @@ internal static class Brandon {
         Console.WriteLine(str);
         return str;
     }
-
-    internal static ConsoleTraceWriter Start(
-        TraceLevel level = TraceLevel.Info,
-        [CallerMemberName]
-        string? caller = default,
-        string? owner = default,
-        [CallerFilePath]
-        string? callerFile = default
-    ) {
-        owner ??= Path.GetFileNameWithoutExtension(callerFile);
-        return ConsoleTraceWriter.Start(level, caller, owner);
-    }
 }
 
-public record CallerInfo<T>(
-    T Value,
-    [CallerArgumentExpression("Value")]
-    string? ArgumentExpression = default,
+public record CallerInfo(
     [CallerMemberName]
     string? MemberName = default,
     [CallerFilePath]
     string? FilePath = default,
     [CallerLineNumber]
     int LineNumber = default
-) {
-    public Type    Type     => typeof(T);
+) : IHasRenderable {
     public string? FileName => Path.GetFileNameWithoutExtension(FilePath);
 
-    public static implicit operator CallerInfo<T>(T obj) {
-        return new CallerInfo<T>(obj);
+    public Hyperlink? GetLineLink() {
+        return FilePath switch {
+            { Length: > 0 } => new Hyperlink(FilePath) {
+                DisplayText = $"{FileName}:{LineNumber}"
+            },
+            _ => null
+        };
     }
 
-    public override string ToString() {
-        const int calledByLength = 30;
-        var       memberNameStr  = $"::{MemberName}";
-        var       remaining      = calledByLength - memberNameStr.Length;
-        var       fileNameStr    = FileName?.Truncate(remaining);
-        var       callerStr      = $"{fileNameStr}{memberNameStr}".Align(width: calledByLength, alignment: StringAlignment.Right);
-        Must.Equal(callerStr.Length, calledByLength);
-        var exp   = $"{ArgumentExpression}".Align(40);
-        var value = $"{Value.Prettify()}";
-        return $"{callerStr}  {exp}  {value}";
+    public IRenderable GetRenderable() {
+        var epitaph = new Epitaph().AddNonNull(new Epitaph(MemberName));
+
+        if (GetLineLink() != null) {
+            epitaph.Add(" @ ")
+                   .Add(FilePath);
+        }
+
+        return epitaph;
     }
 }
