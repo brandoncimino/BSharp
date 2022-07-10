@@ -7,6 +7,7 @@ using System.Runtime.Serialization;
 using FowlFever.BSharp.Exceptions;
 using FowlFever.BSharp.Strings;
 using FowlFever.BSharp.Strings.Prettifiers;
+using FowlFever.BSharp.Strings.Settings;
 
 using JetBrains.Annotations;
 
