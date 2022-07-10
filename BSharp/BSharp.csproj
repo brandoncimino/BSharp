@@ -5,30 +5,26 @@
         <Nullable>enable</Nullable>
         <RootNamespace>FowlFever.BSharp</RootNamespace>
         <AssemblyName>FowlFever.BSharp</AssemblyName>
-        <TargetFrameworks>net6.0;netstandard2.0</TargetFrameworks>
+        <TargetFrameworks>net6.0;netstandard2.1</TargetFrameworks>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="BenchmarkDotNet" Version="0.13.1" />
-        <PackageReference Include="FowlFever.Conjugal" Version="1.0.0" />
-        <PackageReference Include="IndexRange" Version="1.0.0" />
+        <PackageReference Include="BenchmarkDotNet" Version="0.13.1"/>
+        <PackageReference Include="FowlFever.Conjugal" Version="1.0.0"/>
+        <PackageReference Include="IndexRange" Version="1.0.0"/>
         <PackageReference Include="IsExternalInit" Version="1.0.2">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="JetBrains.Annotations" Version="2022.1.0" />
-        <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+        <PackageReference Include="JetBrains.Annotations" Version="2022.1.0"/>
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.1"/>
+        <PackageReference Include="Spectre.Console" Version="0.44.0"/>
         <PackageReference Include="System.Collections.Concurrent" Version="4.3.0"/>
-        <PackageReference Include="System.Text.Json" Version="6.0.1" />
+        <PackageReference Include="System.Text.Json" Version="6.0.1"/>
         <PackageReference Include="TA.System.Runtime.CompilerServices.RuntimeHelpers.GetSubArray" Version="1.0.1">
-          <PrivateAssets>all</PrivateAssets>
-          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-    </ItemGroup>
-
-    <ItemGroup>
-      <Compile Remove="Mathb.Logical.cs" />
-        <Compile Remove="Strings\StringFitter.cs"/>
     </ItemGroup>
 
 
@@ -37,6 +33,12 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </ProjectReference>
+    </ItemGroup>
+
+
+    <ItemGroup>
+        <Compile Remove="Blog.cs"/>
+        <Compile Remove="Collections\ITypeKeyed.cs"/>
     </ItemGroup>
 
 </Project>
