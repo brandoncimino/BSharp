@@ -45,8 +45,8 @@ namespace FowlFever.BSharp {
         /// </remarks>
         /// <param name="oneTimeAction">an <see cref="Action"/> that will only be executed once</param>
         /// <returns>a new <see cref="Lazy{T}"/></returns>
-        public static Lazy<byte> Lazily(this Action oneTimeAction) {
-            return new Lazy<byte>(
+        public static Lazy<bool> Lazily(this Action oneTimeAction) {
+            return new Lazy<bool>(
                 () => {
                     oneTimeAction.Invoke();
                     return default;
@@ -55,8 +55,8 @@ namespace FowlFever.BSharp {
         }
 
         /// <inheritdoc cref="Lazily"/>
-        public static Lazy<byte> Lazily<T>(this Action<T> oneTimeAction, T input) {
-            return new Lazy<byte>(
+        public static Lazy<bool> Lazily<T>(this Action<T> oneTimeAction, T input) {
+            return new Lazy<bool>(
                 () => {
                     oneTimeAction.Invoke(input);
                     return default;
