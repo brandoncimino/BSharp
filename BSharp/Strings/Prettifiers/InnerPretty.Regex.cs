@@ -4,6 +4,7 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 
 using FowlFever.BSharp.Exceptions;
+using FowlFever.BSharp.Strings.Settings;
 
 namespace FowlFever.BSharp.Strings.Prettifiers;
 

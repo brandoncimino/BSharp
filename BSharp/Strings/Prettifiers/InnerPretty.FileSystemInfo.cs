@@ -5,6 +5,7 @@ using System.Linq;
 
 using FowlFever.BSharp.Clerical;
 using FowlFever.BSharp.Collections;
+using FowlFever.BSharp.Strings.Settings;
 using FowlFever.Conjugal.Affixing;
 
 using JetBrains.Annotations;
@@ -19,18 +20,15 @@ namespace FowlFever.BSharp.Strings.Prettifiers {
                        : PrettifyWithChildren(item, settings).JoinLines();
         }
 
-
         private static IEnumerable<string> SummarizeChildren(DirectoryInfo directoryInfo) {
             var childCount = directoryInfo.EnumerateFileSystemInfos().Count();
             return new[] { $"{StringUtils.Ellipsis}({childCount} children)" };
         }
 
-
         private static IEnumerable<string> EnumerateChildren(DirectoryInfo dir, PrettificationSettings? settings, int depthLimit, int currentDepth) {
             return dir.EnumerateFileSystemInfos()
                       .SelectMany(it => PrettifyWithChildren(it, settings, depthLimit, currentDepth));
         }
-
 
         private static string GetIcon(FileSystemInfo item) {
             return item switch {
@@ -44,7 +42,6 @@ namespace FowlFever.BSharp.Strings.Prettifiers {
             var itemName = currentDepth == 0 ? item.ToUri().ToString() : item.Name;
             return itemName.Prefix(GetIcon(item), " ");
         }
-
 
         private static IEnumerable<string> PrettifyWithChildren(FileSystemInfo item, PrettificationSettings? settings, [NonNegativeValue] int depthLimit = 2, int currentDepth = 0) {
             /*

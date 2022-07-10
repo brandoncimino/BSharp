@@ -6,6 +6,7 @@ using System.Linq;
 using FowlFever.BSharp.Collections;
 using FowlFever.BSharp.Enums;
 using FowlFever.BSharp.Strings.Json;
+using FowlFever.BSharp.Strings.Settings;
 
 using JetBrains.Annotations;
 

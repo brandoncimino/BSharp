@@ -8,6 +8,7 @@ using FowlFever.BSharp.Collections;
 using FowlFever.BSharp.Collections.Apportion;
 using FowlFever.BSharp.Exceptions;
 using FowlFever.BSharp.Reflection;
+using FowlFever.BSharp.Strings.Settings;
 using FowlFever.BSharp.Strings.Tabler;
 
 namespace FowlFever.BSharp.Strings.Prettifiers {

@@ -6,6 +6,7 @@ using System.Runtime.CompilerServices;
 using FowlFever.BSharp.Collections;
 using FowlFever.BSharp.Enums;
 using FowlFever.BSharp.Reflection;
+using FowlFever.BSharp.Strings.Settings;
 
 [assembly: InternalsVisibleTo("BrandonUtils.BSharp.Strings")]
 

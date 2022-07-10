@@ -3,6 +3,7 @@ using System.Reflection;
 
 using FowlFever.BSharp.Collections;
 using FowlFever.BSharp.Enums;
+using FowlFever.BSharp.Strings.Settings;
 using FowlFever.Conjugal.Affixing;
 
 namespace FowlFever.BSharp.Strings.Prettifiers {
@@ -10,11 +11,7 @@ namespace FowlFever.BSharp.Strings.Prettifiers {
         /// <summary>
         /// TODO: Finish moving logic from InnerPretty.Delegate -> InnerPretty.MemberInfo
         /// </summary>
-        internal enum MethodStyle {
-            MethodReference,
-            Lambda,
-            Constructor
-        }
+        internal enum MethodStyle { MethodReference, Lambda, Constructor }
 
         private static string GetIcon(this MethodStyle style) {
             return style switch {

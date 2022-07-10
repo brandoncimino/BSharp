@@ -3,6 +3,7 @@ using System.Reflection;
 
 using FowlFever.BSharp.Enums;
 using FowlFever.BSharp.Reflection;
+using FowlFever.BSharp.Strings.Settings;
 
 namespace FowlFever.BSharp.Strings.Prettifiers {
     internal partial class InnerPretty {
