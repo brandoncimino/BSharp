@@ -4,6 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
 using FowlFever.BSharp.Strings;
+using FowlFever.BSharp.Strings.Settings;
 
 using JetBrains.Annotations;
 
@@ -107,6 +108,8 @@ public abstract record Wrapped<T> : IHas<T>,
     [return: NotNullIfNotNull("wrapper")]
     public static implicit operator T?(Wrapped<T>? wrapper) => wrapper == null ? default : wrapper.Value;
 
+    public static implicit operator Wrapped<T>(T obj) => new Simply(obj);
+
     #endregion
 
     #region Formatting
@@ -145,4 +148,8 @@ public abstract record Wrapped<T> : IHas<T>,
     public virtual string Prettify(PrettificationSettings? settings = default) => Describe();
 
     #endregion
+
+    private record Simply(T Value) : Wrapped<T> {
+        public override T Value { get; } = Value;
+    }
 }
