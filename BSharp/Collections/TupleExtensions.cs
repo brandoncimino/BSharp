@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
 using JetBrains.Annotations;
 
@@ -26,6 +27,8 @@ namespace FowlFever.BSharp.Collections {
         [Pure] public static T[] ToArray<T>(this (T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T)    tuple) => new[] { tuple.Item1, tuple.Item2, tuple.Item3, tuple.Item4, tuple.Item5, tuple.Item6, tuple.Item7, tuple.Item8, tuple.Item9, tuple.Item10, tuple.Item11, tuple.Item12, tuple.Item13, tuple.Item14, tuple.Item15, tuple.Item16 };
         [Pure] public static T[] ToArray<T>(this (T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T) tuple) => new[] { tuple.Item1, tuple.Item2, tuple.Item3, tuple.Item4, tuple.Item5, tuple.Item6, tuple.Item7, tuple.Item8, tuple.Item9, tuple.Item10, tuple.Item11, tuple.Item12, tuple.Item13, tuple.Item14, tuple.Item15, tuple.Item16, tuple.Item17 };
 
+        // These methods were an ugly old workaround for the lack of access to the `ITuple` interface.
+#if NETSTANDARD2_0
         [Pure] public static object?[] ToObjArray<T, T2>(this                                                                     (T, T2)                                                                     tuple) => new object?[] { tuple.Item1, tuple.Item2 };
         [Pure] public static object?[] ToObjArray<T, T2, T3>(this                                                                 (T, T2, T3)                                                                 tuple) => new object?[] { tuple.Item1, tuple.Item2, tuple.Item3 };
         [Pure] public static object?[] ToObjArray<T, T2, T3, T4>(this                                                             (T, T2, T3, T4)                                                             tuple) => new object?[] { tuple.Item1, tuple.Item2, tuple.Item3, tuple.Item4 };
@@ -42,8 +45,24 @@ namespace FowlFever.BSharp.Collections {
         [Pure] public static object?[] ToObjArray<T, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>(this           (T, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15)           tuple) => new object?[] { tuple.Item1, tuple.Item2, tuple.Item3, tuple.Item4, tuple.Item5, tuple.Item6, tuple.Item7, tuple.Item8, tuple.Item9, tuple.Item10, tuple.Item11, tuple.Item12, tuple.Item13, tuple.Item14, tuple.Item15 };
         [Pure] public static object?[] ToObjArray<T, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>(this      (T, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16)      tuple) => new object?[] { tuple.Item1, tuple.Item2, tuple.Item3, tuple.Item4, tuple.Item5, tuple.Item6, tuple.Item7, tuple.Item8, tuple.Item9, tuple.Item10, tuple.Item11, tuple.Item12, tuple.Item13, tuple.Item14, tuple.Item15, tuple.Item16 };
         [Pure] public static object?[] ToObjArray<T, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17>(this (T, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17) tuple) => new object?[] { tuple.Item1, tuple.Item2, tuple.Item3, tuple.Item4, tuple.Item5, tuple.Item6, tuple.Item7, tuple.Item8, tuple.Item9, tuple.Item10, tuple.Item11, tuple.Item12, tuple.Item13, tuple.Item14, tuple.Item15, tuple.Item16, tuple.Item17 };
+#endif
 
         #endregion
+
+#if !NETSTANDARD2_0
+        /// <summary>
+        /// Enumerates the <see cref="ITuple.this"/> items of an <see cref="ITuple"/>.
+        /// </summary>
+        /// <param name="tuple">an <see cref="ITuple"/></param>
+        /// <typeparam name="T">an <see cref="ITuple"/> type</typeparam>
+        /// <returns>an <see cref="IEnumerable{T}"/> of each <see cref="ITuple.this"/> item</returns>
+        public static IEnumerable<object?> EachItem<T>(this T tuple)
+            where T : ITuple {
+            for (int i = 0; i < tuple.Length; i++) {
+                yield return tuple[i];
+            }
+        }
+#endif
 
         #region Sort
 
@@ -362,7 +381,7 @@ namespace FowlFever.BSharp.Collections {
         #region Difference
 
         /// <param name="tuple">a <see cref="(T1, T2)"/></param>
-        /// <returns><see cref="(T1, T2).Item2"/> - <see cref="ValueTuple{T1,T2}.Item1"/></returns>
+        /// <returns><see cref="ValueTuple{T1,T2}.Item2"/> - <see cref="ValueTuple{T1,T2}.Item1"/></returns>
         public static int Diff(this (int from, int to) tuple) => tuple.to - tuple.from;
 
         #endregion
