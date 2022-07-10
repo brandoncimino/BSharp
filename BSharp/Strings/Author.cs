@@ -1,24 +1,15 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 
 using FowlFever.BSharp.Collections;
+using FowlFever.BSharp.Strings.Markup;
 
-namespace FowlFever.BSharp.Strings {
-    [Serializable]
-    public class Author {
-        public List<string> NameParts;
-        public Hyperlink    Website;
+namespace FowlFever.BSharp.Strings;
 
-        public string FullName => NameParts.Where(n => !string.IsNullOrWhiteSpace(n)).JoinString(" ");
-
-        public string Citation(Hyperlink.MarkupLanguage markupLanguage = Hyperlink.MarkupLanguage.HTML) {
-            return $"{FullName} ({Website.ToString(markupLanguage)})";
-        }
-
-        public Author(string firstName, string lastName, string websiteDisplay, string websiteUrl) {
-            NameParts = new List<string> { firstName, lastName };
-            Website   = new Hyperlink(websiteDisplay, websiteUrl);
-        }
+[Obsolete("this just doesn't do that much to be useful")]
+[Serializable]
+public record Author(string Name, params Hyperlink[] Websites) {
+    public string Citation(MarkupLanguage markupLanguage, string? websiteJoiner = " // ") {
+        return $"{Name} ({Websites.Select(it => it.ToMarkup(markupLanguage)).JoinString(websiteJoiner)}";
     }
 }
