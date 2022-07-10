@@ -3,6 +3,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 
 using FowlFever.BSharp.Strings;
+using FowlFever.BSharp.Strings.Settings;
 
 namespace FowlFever.BSharp.Reflection {
     public static class ReflectionException {
