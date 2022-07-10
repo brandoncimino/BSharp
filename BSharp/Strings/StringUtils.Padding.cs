@@ -4,6 +4,7 @@ using System.Text.RegularExpressions;
 using FowlFever.BSharp.Enums;
 using FowlFever.BSharp.Exceptions;
 using FowlFever.BSharp.Optional;
+using FowlFever.BSharp.Strings.Settings;
 using FowlFever.BSharp.Strings.Tabler;
 
 using JetBrains.Annotations;

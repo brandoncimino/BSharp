@@ -7,6 +7,7 @@ using System.Text.RegularExpressions;
 using FowlFever.BSharp.Collections;
 using FowlFever.BSharp.Enums;
 using FowlFever.BSharp.Exceptions;
+using FowlFever.BSharp.Strings.Settings;
 using FowlFever.Conjugal.Affixing;
 
 using JetBrains.Annotations;

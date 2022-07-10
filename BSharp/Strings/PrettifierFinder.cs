@@ -5,6 +5,7 @@ using System.Linq;
 using FowlFever.BSharp.Optional;
 using FowlFever.BSharp.Reflection;
 using FowlFever.BSharp.Strings.Json;
+using FowlFever.BSharp.Strings.Settings;
 
 using JetBrains.Annotations;
 
@@ -19,7 +20,6 @@ namespace FowlFever.BSharp.Strings {
         //  public static readonly PrettifierFinder FromPrettifiable     = (db, t, s) => t.Implements(typeof(IPrettifiable)) ? PrettifierDatabase.PrettifiablePrettifier : null;
         //  public static readonly PrettifierFinder FromToString         = (db, t, s) => t.GetToStringOverride() != null ? PrettifierDatabase.ToStringPrettifier : null;
         //  public static readonly PrettifierFinder ConsentingPrettifier = (db, t, s) => db.Find(it => it.CanPrettify(t));
-
 
         internal static OptionalPrettifierFinder[] GetDefaultFinders() => new OptionalPrettifierFinder[] {
             FindExactPrettifier,

@@ -5,12 +5,11 @@ using FowlFever.BSharp.Enums;
 using FowlFever.BSharp.Reflection;
 using FowlFever.BSharp.Strings.Json;
 using FowlFever.BSharp.Strings.Prettifiers;
+using FowlFever.BSharp.Strings.Settings;
 
 namespace FowlFever.BSharp.Strings {
     public enum TypeNameStyle {
-        None  = 0,
-        Short = 1,
-        Full  = 2,
+        None = 0, Short = 1, Full = 2,
     }
 
     public static class TypeNameStyleExtensions {

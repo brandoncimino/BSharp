@@ -1,6 +1,7 @@
 using System;
 
 using FowlFever.BSharp.Collections;
+using FowlFever.BSharp.Strings.Settings;
 
 namespace FowlFever.BSharp.Strings {
     public interface IPrettifier : IPrimaryKeyed<Type> {

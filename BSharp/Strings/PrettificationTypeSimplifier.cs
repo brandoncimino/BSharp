@@ -6,8 +6,7 @@ using System.Collections.ObjectModel;
 using FowlFever.BSharp.Exceptions;
 using FowlFever.BSharp.Reflection;
 using FowlFever.BSharp.Strings.Json;
-
-using JetBrains.Annotations;
+using FowlFever.BSharp.Strings.Settings;
 
 namespace FowlFever.BSharp.Strings {
     /// <summary>
@@ -26,11 +25,9 @@ namespace FowlFever.BSharp.Strings {
                 Settings    = settings;
             }
 
-
             private Type Simplify() {
                 return SimplifyType(Original, Settings);
             }
-
 
             public override string ToString() {
                 return $"{Original.Name} 🤏 {Simplified.Name}";

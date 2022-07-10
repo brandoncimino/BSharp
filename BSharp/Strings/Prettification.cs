@@ -2,6 +2,7 @@ using System;
 
 using FowlFever.BSharp.Optional;
 using FowlFever.BSharp.Strings.Json;
+using FowlFever.BSharp.Strings.Settings;
 
 using JetBrains.Annotations;
 

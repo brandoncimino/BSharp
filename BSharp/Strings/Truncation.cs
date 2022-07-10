@@ -1,12 +1,13 @@
 using System;
 
 using FowlFever.BSharp.Enums;
+using FowlFever.BSharp.Strings.Settings;
 
 namespace FowlFever.BSharp.Strings;
 
 internal static class Truncation {
     /// <summary>
-    /// The results of a <see cref="Truncation.PlanTruncation(int,FowlFever.BSharp.Strings.FillerSettings)"/> operation.
+    /// The results of a <see cref="Truncation.PlanTruncation(int,FillerSettings)"/> operation.
     /// </summary>
     public readonly ref struct TruncationPlan {
         public Range FinalCut   { get; init; }

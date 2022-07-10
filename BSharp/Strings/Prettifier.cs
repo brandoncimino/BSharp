@@ -5,6 +5,7 @@ using FowlFever.BSharp.Collections;
 using FowlFever.BSharp.Reflection;
 using FowlFever.BSharp.Strings.Json;
 using FowlFever.BSharp.Strings.Prettifiers;
+using FowlFever.BSharp.Strings.Settings;
 
 namespace FowlFever.BSharp.Strings {
     public class Prettifier<T> : IPrettifier<T> {

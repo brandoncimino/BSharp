@@ -3,10 +3,12 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 
 using FowlFever.BSharp.Collections;
 using FowlFever.BSharp.Strings.Prettifiers;
+using FowlFever.BSharp.Strings.Settings;
 
 namespace FowlFever.BSharp.Strings {
     public interface IPrettifierDatabase {
@@ -41,7 +43,7 @@ namespace FowlFever.BSharp.Strings {
             Prettifiers.Add(prettifier.PrimaryKey, prettifier);
         }
 
-        public IPrettifier Deregister(Type type) {
+        public IPrettifier? Deregister(Type type) {
             if (type == null) {
                 throw new ArgumentNullException(nameof(type));
             }
@@ -49,12 +51,9 @@ namespace FowlFever.BSharp.Strings {
             return Prettifiers.Grab(type);
         }
 
-        public IPrettifier Find(Type type) {
-            Prettifiers.TryGetValue(type, out IPrettifier result);
-            return result;
-        }
+        public IPrettifier? Find(Type type) => Prettifiers.Grab(type);
 
-        public IPrettifier Find(Func<IPrettifier, bool> predicate) {
+        public IPrettifier? Find(Func<IPrettifier, bool> predicate) {
             return Prettifiers.Where(it => predicate(it.Value))
                               .Select(it => it.Value)
                               .FirstOrDefault();
@@ -69,6 +68,7 @@ namespace FowlFever.BSharp.Strings {
                 new Prettifier<IDictionary>(InnerPretty.PrettifyDictionary3),
                 new Prettifier<KeyedList<object, object>>(InnerPretty.PrettifyKeyedList),
                 new Prettifier<Match>(InnerPretty.PrettifyRegexMatch),
+#if NETSTANDARD2_0
                 new Prettifier<(object, object)>(InnerPretty.Tuple2),
                 new Prettifier<(object, object, object)>(InnerPretty.Tuple3),
                 new Prettifier<(object, object, object, object)>(InnerPretty.Tuple4),
@@ -76,6 +76,9 @@ namespace FowlFever.BSharp.Strings {
                 new Prettifier<(object, object, object, object, object, object)>(InnerPretty.Tuple6),
                 new Prettifier<(object, object, object, object, object, object, object)>(InnerPretty.Tuple7),
                 new Prettifier<(object, object, object, object, object, object, object, object)>(InnerPretty.Tuple8Plus),
+#else
+                new Prettifier<ITuple>(InnerPretty.PrettifyTuple),
+#endif
                 new Prettifier<IEnumerable>(InnerPretty.PrettifyEnumerable),
                 new Prettifier<MethodInfo>(InnerPretty.PrettifyMethodInfo),
                 new Prettifier<ParameterInfo>(InnerPretty.PrettifyParameterInfo),
@@ -86,7 +89,9 @@ namespace FowlFever.BSharp.Strings {
         }
 
         internal static string PrettifyPrettifiable(IPrettifiable prettifiable, PrettificationSettings? settings) => prettifiable.Prettify(settings);
-        internal static string PrettifyToString(object            obj,          PrettificationSettings? settings) => obj.ToString();
+
+        internal static string PrettifyToString<T>(T obj, PrettificationSettings? settings)
+            where T : notnull => obj.ToString().OrNullPlaceholder(settings);
 
         #region Special High-Priority Prettifiers
 
