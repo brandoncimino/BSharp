@@ -1,7 +1,9 @@
 using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Runtime.CompilerServices;
 
+using FowlFever.BSharp.Collections;
 using FowlFever.BSharp.Strings;
 
 namespace FowlFever.BSharp.Exceptions;
@@ -33,12 +35,28 @@ public static class Reject {
         }
     }
 
-    public static NotSupportedException Unsupported(object? type = default, string? details = default, [CallerMemberName] string? methodName = default) {
-        return new NotSupportedException(GetNotSupportedMessage(TypeName.From(type), details, methodName));
+    public static NotSupportedException Unsupported(object? typeIdentifier = default, string? details = default, [CallerMemberName] string? methodName = default) {
+        return new NotSupportedException(GetNotSupportedMessage(TypeName.From(typeIdentifier), details, methodName));
     }
 
-    public static ReadOnlyException ReadOnly(object? type = default, string? details = default, [CallerMemberName] string? methodName = default) {
-        return new ReadOnlyException(GetNotSupportedMessage(TypeName.From(type), details, methodName));
+    public static ReadOnlyException ReadOnly(object? typeIdentifier = default, string? details = default, [CallerMemberName] string? methodName = default) {
+        return new ReadOnlyException(GetNotSupportedMessage(TypeName.From(typeIdentifier), details, methodName));
+    }
+
+    public static RejectionException BadType(
+        object                     typeIdentifier,
+        IEnumerable<Type>          legalTypes,
+        string?                    details       = default,
+        string?                    parameterName = default,
+        [CallerMemberName] string? rejectedBy    = default
+    ) {
+        return new RejectionException(
+            TypeName.From(typeIdentifier),
+            details,
+            parameterName,
+            rejectedBy,
+            $"[{typeIdentifier}] is not one of the valid types: [{legalTypes.JoinString(",", "[", "]")}"
+        );
     }
 
     [Pure]
