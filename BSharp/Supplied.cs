@@ -1,7 +1,5 @@
 using System;
-using System.Collections.Concurrent;
 
-using FowlFever.BSharp.Collections;
 using FowlFever.BSharp.Enums;
 using FowlFever.BSharp.Optional;
 
@@ -50,11 +48,18 @@ public record Supplied<T> : Wrapped<T?> {
 
     public Supplied(Func<T>? supplier) : this(supplier?.Lazily()) { }
 
-    private static readonly ConcurrentDictionary<Type, Lazy<Supplied<T>>> EmptiesCache = new();
-    public static           Supplied<T>                                   Empty => EmptiesCache.GetOrAddLazily(typeof(T), _ => new Supplied<T>());
+    /// <remarks>
+    /// 📎 Static variables in generics are unique to each type parameter combination and computed when they are first accessed, meaning that this essentially
+    /// acts as a cache.
+    /// </remarks>
+    public static readonly Supplied<T> Empty = new();
 
     public static implicit operator Supplied<T>(T        value)    => new(value);
     public static implicit operator Supplied<T>(Lazy<T>? lazy)     => new(lazy);
     public static implicit operator Supplied<T>(Func<T>? supplier) => new(supplier);
-    public static implicit operator T(Supplied<T>        supplied) => supplied.Value;
+    public static implicit operator T?(Supplied<T>       supplied) => supplied.Value;
+}
+
+public static class SuppliedExtensions {
+    public static Supplied<T> OrEmpty<T>(this Supplied<T>? supplied) => supplied ?? Supplied<T>.Empty;
 }
