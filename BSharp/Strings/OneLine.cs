@@ -18,6 +18,7 @@ namespace FowlFever.BSharp.Strings;
 /// Represents a <see cref="string"/> that doesn't contain any <see cref="LineBreakChars"/>.
 ///
 /// TODO: What about adding a <see cref="StringMirroring"/> property?
+/// TODO: Ensure proper serializability!
 /// </summary>
 public readonly record struct OneLine : IHas<string>, IEnumerable<GraphemeCluster>, IEquivalent<string> {
     #region "Constants"
@@ -30,7 +31,8 @@ public readonly record struct OneLine : IHas<string>, IEnumerable<GraphemeCluste
 
     #endregion
 
-    public string Value => _stringInfo?.StringSource ?? "";
+    public string              Value      => _stringInfo?.StringSource ?? "";
+    string IEquivalent<string>.Equivalent => _stringInfo?.StringSource ?? "";
     [MemberNotNullWhen(false, nameof(_stringInfo))]
     public bool IsEmpty => Length == 0;
     public bool IsBlank => IsEmpty || _stringInfo.All(it => it.IsBlank);
@@ -54,23 +56,6 @@ public readonly record struct OneLine : IHas<string>, IEnumerable<GraphemeCluste
     private readonly TextElementString _stringInfo;
 
     public override int GetHashCode() => Value.GetHashCode();
-
-    #region Equals
-
-    public bool Equals(OneLine              other) => Value == other.Value;
-    public bool Equals(string?              other) => this.ValueEquals(other);
-    public bool Equals(IHas<string?>?       other) => this.ValueEquals(other);
-    public bool Equals(IEquatable<string?>? other) => this.ValueEquals(other);
-
-    #endregion
-
-    #region Comparison
-
-    public int CompareTo(string?               other) => Comparer<string>.Default.Compare(Value, other!);
-    public int CompareTo(IHas<string?>?        other) => Comparer<string>.Default.Compare(Value, other.OrDefault()!);
-    public int CompareTo(IComparable<string?>? other) => other?.CompareTo(Value) ?? 1;
-
-    #endregion
 
     /// <inheritdoc cref="Value"/>
     [Pure]
