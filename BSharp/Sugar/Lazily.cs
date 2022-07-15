@@ -21,6 +21,8 @@ public static class Lazily {
     public static T Get<T>(this Lazy<T> lazy) => lazy.Value;
 
     public static LazyHas<T> AsHas<T>(this Lazy<T> lazy) => lazy.IsValueCreated ? Get(lazy.Value) : Get(lazy.Get);
+
+    public static T? OrDefault<T>(this Lazy<T>? lazy) => lazy == null ? default : lazy.Value;
 }
 
 /// <inheritdoc cref="Lazy{T}"/>
