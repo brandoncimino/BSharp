@@ -6,9 +6,15 @@ using JetBrains.Annotations;
 namespace FowlFever.BSharp.Optional {
     /// <summary>
     /// A mockery of Java's <a href="https://docs.oracle.com/javase/8/docs/api/java/util/Optional.html">Optional</a> class.
+    ///
+    /// TODO: Add default implementations
+    /// TODO: Investigate <see cref="Microsoft.CodeAnalysis.Optional{T}"/> and see if I can achieve the functionality I want from <see cref="IOptional{T}"/> (<see cref="Optional.Select{TIn,TOut}(FowlFever.BSharp.Optional.IOptional{TIn},System.Func{TIn,TOut})"/>, for example) using that
     /// </summary>
     /// <remarks>
     /// After an amount of deliberation, on 9/2/2021 I have decided that an <see cref="IOptional{T}"/> must, by default, assume that <see cref="IHas{T}.Value"/> <see cref="CanBeNullAttribute"/>.
+    /// <br/><b>UPDATE:</b> As of 7/15/2022, it seems that I am no longer respecting past me's decisions. I must revisit them.
+    ///
+    /// <p/>
     ///
     /// Specific implementations might be more strict; for example, I think there may be value in having <see cref="Optional{T}"/>, the primary implementation, never return null.
     ///
