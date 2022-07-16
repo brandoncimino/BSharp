@@ -1,6 +1,6 @@
 using FowlFever.BSharp.Exceptions;
 
-namespace FowlFever.Clerical.Ratification;
+namespace Ratified;
 
 public static partial class Ratifier<T> {
     private record NegativeRatifier : IPredicateRatifier<T> {
@@ -19,11 +19,14 @@ public static partial class Ratifier<T> {
         bool IPredicateRatifier<T>._evaluate(T? target) => PositiveRatifier.TryRatify(target).Failed;
     }
 
-    public static IRatifier<T> Negate(IRatifier<T> og) {
-        if (og is NegativeRatifier neg) {
+    /// <param name="ratifier">the <see cref="IRatifier{T}"/> that will be negated</param>
+    /// <typeparam name="T">the type being ratified</typeparam>
+    /// <returns>an <see cref="IRatifier{T}"/> that succeeds where this <see cref="IRatifier{T}"/> has failed</returns>
+    public static IRatifier<T> Negate(IRatifier<T> ratifier) {
+        if (ratifier is NegativeRatifier neg) {
             return neg.PositiveRatifier;
         }
 
-        return new NegativeRatifier(og);
+        return new NegativeRatifier(ratifier);
     }
 }

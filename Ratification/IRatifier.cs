@@ -1,20 +1,19 @@
 using System.Runtime.CompilerServices;
 
 using FowlFever.BSharp;
-using FowlFever.BSharp.Exceptions;
 using FowlFever.BSharp.Optional;
 using FowlFever.BSharp.Sugar;
 
-namespace FowlFever.Clerical.Ratification;
+namespace Ratified;
 
 /// <summary>
 /// Another attempt at making a nice class for assertions.
 /// </summary>
 /// <remarks>
 /// <ul>
-/// <li>Uses default implementations to work with <see cref="IHas{T}"/>, <see cref="Lazy{T}"/>, etc.</li>
-/// <li>The <see cref="Ratify(T?,string?,string?)"/> methods throw <see cref="RejectionException"/>s on failure</li>
-/// <li>The <see cref="TryRatify(T?,string?,string?)"/> methods return <see cref="IFailable"/>s containing the results</li>
+/// <li>Uses default implementations to work with <see cref="FowlFever.BSharp.IHas{T}"/>, <see cref="System.Lazy{T}"/>, etc.</li>
+/// <li>The <see cref="Ratify(T?,string?,string?)"/> methods throw <see cref="FowlFever.BSharp.Exceptions.RejectionException"/>s on failure</li>
+/// <li>The <see cref="TryRatify(T?,string?,string?)"/> methods return <see cref="FowlFever.BSharp.Optional.IFailable"/>s containing the results</li>
 /// </ul>
 /// </remarks>
 /// <typeparam name="T">the type being ratified</typeparam>

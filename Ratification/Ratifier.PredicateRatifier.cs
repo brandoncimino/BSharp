@@ -2,7 +2,7 @@ using System.Runtime.CompilerServices;
 
 using JetBrains.Annotations;
 
-namespace FowlFever.Clerical.Ratification;
+namespace Ratified;
 
 public static partial class Ratifier<T> {
     internal delegate bool Evaluator<in TDel, in TArg>(TDel delgato, T? target, TArg args);

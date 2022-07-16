@@ -5,7 +5,7 @@ using FowlFever.BSharp.Strings;
 
 using JetBrains.Annotations;
 
-namespace FowlFever.Clerical.Ratification;
+namespace Ratified;
 
 public static partial class Ratifier<T> {
     private record FailableRatifier([RequireStaticDelegate] Func<T?, IFailable> FailableFactory, string? Description) : IRatifier<T> {

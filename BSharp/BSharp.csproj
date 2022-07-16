@@ -33,12 +33,19 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </ProjectReference>
+        <ProjectReference Include="..\Implementors\Implementors.csproj"/>
     </ItemGroup>
 
 
     <ItemGroup>
         <Compile Remove="Blog.cs"/>
         <Compile Remove="Collections\ITypeKeyed.cs"/>
+        <Compile Remove="Exceptions\MustFunc.cs"/>
+    </ItemGroup>
+
+
+    <ItemGroup>
+        <Folder Include="Collections\Implementors"/>
     </ItemGroup>
 
 </Project>

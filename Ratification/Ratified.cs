@@ -1,6 +1,6 @@
 using FowlFever.BSharp;
 
-namespace FowlFever.Clerical.Ratification;
+namespace Ratified;
 
 /// <summary>
 /// A wrapper around a <see cref="Value"/> stored as a <see cref="RatifiedProp{T}"/>.

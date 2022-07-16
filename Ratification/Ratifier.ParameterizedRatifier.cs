@@ -2,7 +2,7 @@ using System.Runtime.CompilerServices;
 
 using JetBrains.Annotations;
 
-namespace FowlFever.Clerical.Ratification;
+namespace Ratified;
 
 public static partial class Ratifier<T> {
     public record ParameterizedRatifier<TArg>(

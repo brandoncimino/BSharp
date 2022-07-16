@@ -1,7 +1,7 @@
 using FowlFever.BSharp.Exceptions;
 using FowlFever.BSharp.Optional;
 
-namespace FowlFever.Clerical.Ratification;
+namespace Ratified;
 
 internal interface IPredicateRatifier<in T> : IRatifier<T>
     where T : notnull {

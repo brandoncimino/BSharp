@@ -1,4 +1,4 @@
-namespace FowlFever.Clerical.Ratification;
+namespace Ratified;
 
 /// <summary>
 /// Provides static methods to construct <see cref="IRatifier{T}"/>s.
