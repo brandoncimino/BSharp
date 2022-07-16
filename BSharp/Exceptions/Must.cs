@@ -289,4 +289,29 @@ public static partial class Must {
     }
 
     #endregion
+
+    #region Actions
+
+    [return: NotNullIfNotNull("actualValue")]
+    public static T NotThrow<T>(
+        T         actualValue,
+        Action<T> assertion,
+        string?   details = default,
+        [CallerArgumentExpression("actualValue")]
+        string? parameterName = default,
+        [CallerMemberName]
+        string? rejectedBy = default,
+        [CallerArgumentExpression("assertion")]
+        string? reason = default
+    ) {
+        try {
+            assertion(actualValue);
+            return actualValue;
+        }
+        catch (Exception e) {
+            throw new RejectionException(actualValue, details, parameterName, rejectedBy, reason, e);
+        }
+    }
+
+    #endregion
 }
