@@ -13,6 +13,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Clerical", "Clerical\Cleric
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CSharp10", "CSharp10\CSharp10.csproj", "{22B11EA3-CC52-4256-9667-2340F0EE5B1B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ratification", "Ratification\Ratification.csproj", "{CFD08B19-C4C3-4C44-BC5F-CF41A35D23D1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Implementors", "Implementors\Implementors.csproj", "{51081EE7-3359-4EF8-9BB6-9BE133AF39AD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,5 +43,13 @@ Global
 		{22B11EA3-CC52-4256-9667-2340F0EE5B1B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{22B11EA3-CC52-4256-9667-2340F0EE5B1B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{22B11EA3-CC52-4256-9667-2340F0EE5B1B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CFD08B19-C4C3-4C44-BC5F-CF41A35D23D1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CFD08B19-C4C3-4C44-BC5F-CF41A35D23D1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CFD08B19-C4C3-4C44-BC5F-CF41A35D23D1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CFD08B19-C4C3-4C44-BC5F-CF41A35D23D1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{51081EE7-3359-4EF8-9BB6-9BE133AF39AD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{51081EE7-3359-4EF8-9BB6-9BE133AF39AD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{51081EE7-3359-4EF8-9BB6-9BE133AF39AD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{51081EE7-3359-4EF8-9BB6-9BE133AF39AD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
