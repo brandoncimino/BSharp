@@ -4,9 +4,9 @@ using System.Collections.Generic;
 namespace FowlFever.BSharp.Collections.Implementors;
 
 /// <summary>
-/// Delegates the <see cref="IList{T}"/> implementation to the <see cref="AsList"/> property.
+/// Delegates the implementation of <see cref="IList{T}"/> to the <see cref="AsList"/> property.
 /// </summary>
-/// <typeparam name="T"></typeparam>
+/// <typeparam name="T">the type of the entries in <see cref="AsList"/></typeparam>
 public interface IHasList<T> : IList<T> {
     public IList<T>               AsList                            { get; }
     IEnumerator<T> IEnumerable<T>.GetEnumerator()                   => AsList.GetEnumerator();

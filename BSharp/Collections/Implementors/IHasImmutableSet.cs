@@ -4,6 +4,10 @@ using System.Collections.Immutable;
 
 namespace FowlFever.BSharp.Collections.Implementors;
 
+/// <summary>
+/// Delegates the implementation of <see cref="IImmutableSet{T}"/> to the <see cref="AsImmutableSet"/> property.
+/// </summary>
+/// <typeparam name="T">the type of the entries in <see cref="AsImmutableSet"/></typeparam>
 public interface IHasImmutableSet<T> : IImmutableSet<T> {
     public IImmutableSet<T>           AsImmutableSet                                                   { get; }
     IEnumerator<T> IEnumerable<T>.    GetEnumerator()                                                  => AsImmutableSet.GetEnumerator();
