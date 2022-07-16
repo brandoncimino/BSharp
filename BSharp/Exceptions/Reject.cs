@@ -23,6 +23,7 @@ public static class Reject {
         public static                   TypeName? From(object? obj)  => obj  == null ? null : new TypeName(obj);
     }
 
+    [Pure]
     private static string GetNotSupportedMessage(TypeName? type, string? details, string? methodName) {
         var detailStr = details.IfNotBlank(it => $": {it}");
         if (methodName.IsBlank()) {
@@ -35,27 +36,58 @@ public static class Reject {
         }
     }
 
+    // TODO: rename to NotSupported
+    [Pure]
     public static NotSupportedException Unsupported(object? typeIdentifier = default, string? details = default, [CallerMemberName] string? methodName = default) {
         return new NotSupportedException(GetNotSupportedMessage(TypeName.From(typeIdentifier), details, methodName));
     }
 
-    public static ReadOnlyException ReadOnly(object? typeIdentifier = default, string? details = default, [CallerMemberName] string? methodName = default) {
-        return new ReadOnlyException(GetNotSupportedMessage(TypeName.From(typeIdentifier), details, methodName));
+    [Pure]
+    public static ReadOnlyException ReadOnly(object? typeIdentifier = default, [CallerMemberName] string? methodName = default) {
+        var typeName = TypeName.From(typeIdentifier);
+        return new ReadOnlyException(GetNotSupportedMessage(typeName, $"this {typeName} is read-only", methodName));
     }
 
-    public static RejectionException BadType(
-        object                     typeIdentifier,
-        IEnumerable<Type>          legalTypes,
-        string?                    details       = default,
-        string?                    parameterName = default,
-        [CallerMemberName] string? rejectedBy    = default
+    [Pure]
+    public static NotImplementedException DefaultImplementation(object? typeIdentifier = default, [CallerMemberName] string? methodName = default) {
+        return new NotImplementedException(GetNotSupportedMessage(TypeName.From(typeIdentifier), "(default implementation)", methodName));
+    }
+
+    [Pure]
+    public static RejectionException BadType<T>(
+        T       badObj,
+        string? details = default,
+        [CallerMemberName]
+        string? parameterName = default,
+        [CallerMemberName]
+        string? rejectedBy = default
     ) {
+        var typeName = TypeName.From(badObj);
         return new RejectionException(
-            TypeName.From(typeIdentifier),
+            typeName,
             details,
             parameterName,
             rejectedBy,
-            $"[{typeIdentifier}] is not one of the valid types: [{legalTypes.JoinString(",", "[", "]")}"
+            $"[{typeName}] isn't allowed!"
+        );
+    }
+
+    [Pure]
+    public static RejectionException BadType(
+        object            typeIdentifier,
+        IEnumerable<Type> legalTypes,
+        string?           details       = default,
+        string?           parameterName = default,
+        [CallerMemberName]
+        string? rejectedBy = default
+    ) {
+        var typeName = TypeName.From(typeIdentifier);
+        return new RejectionException(
+            typeName,
+            details,
+            parameterName,
+            rejectedBy,
+            $"[{typeName}] is not one of the valid types: [{legalTypes.JoinString(",", "[", "]")}"
         );
     }
 
