@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 
 using FowlFever.BSharp.Collections;
 using FowlFever.BSharp.Exceptions;
@@ -102,9 +101,7 @@ public class RapSheet : IEnumerable<IFailable>, IPrettifiable, IFailable {
 
     #endregion
 
-    public Exception?                   Excuse                => ExceptionUtils.Aggregate(Convictions.Select(it => it.Excuse));
-    public bool                         Failed                => Convictions.Any();
-    IReadOnlyCollection<Type> IFailable.IgnoredExceptionTypes => throw new NotSupportedException(MethodBase.GetCurrentMethod()?.ToString());
-    Exception IFailable.                IgnoredException      => throw new NotSupportedException(MethodBase.GetCurrentMethod()?.ToString());
-    public Supplied<string?>            Description           => GetHeadline().ToString();
+    public Exception?        Excuse      => ExceptionUtils.Aggregate(Convictions.Select(it => it.Excuse));
+    public bool              Failed      => Convictions.Any();
+    public Supplied<string?> Description => GetHeadline().ToString();
 }
