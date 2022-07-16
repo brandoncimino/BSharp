@@ -8,7 +8,10 @@ namespace Implementors;
 /// </summary>
 /// <typeparam name="T">the type of the entries in <see cref="AsImmutableSet"/></typeparam>
 public interface IHasImmutableSet<T> : IImmutableSet<T> {
-    public IImmutableSet<T>           AsImmutableSet                                                   { get; }
+    protected IImmutableSet<T> AsImmutableSet { get; }
+
+    #region Implementation
+
     IEnumerator<T> IEnumerable<T>.    GetEnumerator()                                                  => AsImmutableSet.GetEnumerator();
     IEnumerator IEnumerable.          GetEnumerator()                                                  => ((IEnumerable)AsImmutableSet).GetEnumerator();
     int IReadOnlyCollection<T>.       Count                                                            => AsImmutableSet.Count;
@@ -27,4 +30,6 @@ public interface IHasImmutableSet<T> : IImmutableSet<T> {
     IImmutableSet<T> IImmutableSet<T>.SymmetricExcept(IEnumerable<T>    other)                         => AsImmutableSet.SymmetricExcept(other);
     bool IImmutableSet<T>.            TryGetValue(T                     equalValue, out T actualValue) => AsImmutableSet.TryGetValue(equalValue, out actualValue);
     IImmutableSet<T> IImmutableSet<T>.Union(IEnumerable<T>              other) => AsImmutableSet.Union(other);
+
+    #endregion
 }

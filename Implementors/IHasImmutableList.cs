@@ -8,7 +8,10 @@ namespace Implementors;
 /// </summary>
 /// <typeparam name="T">the type of the entries in <see cref="AsImmutableList"/></typeparam>
 public interface IHasImmutableList<T> : IImmutableList<T> {
-    public IImmutableList<T>      AsImmutableList { get; }
+    protected IImmutableList<T> AsImmutableList { get; }
+
+    #region Implementation
+
     IEnumerator<T> IEnumerable<T>.GetEnumerator() => AsImmutableList.GetEnumerator();
     IEnumerator IEnumerable.      GetEnumerator() => ((IEnumerable)AsImmutableList).GetEnumerator();
     int IReadOnlyCollection<T>.   Count           => AsImmutableList.Count;
@@ -27,4 +30,6 @@ public interface IHasImmutableList<T> : IImmutableList<T> {
     IImmutableList<T> IImmutableList<T>.RemoveRange(int            index,    int                   count)                                            => AsImmutableList.RemoveRange(index, count);
     IImmutableList<T> IImmutableList<T>.Replace(T                  oldValue, T                     newValue, IEqualityComparer<T>? equalityComparer) => AsImmutableList.Replace(oldValue, newValue, equalityComparer);
     IImmutableList<T> IImmutableList<T>.SetItem(int                index,    T                     value) => AsImmutableList.SetItem(index, value);
+
+    #endregion
 }
