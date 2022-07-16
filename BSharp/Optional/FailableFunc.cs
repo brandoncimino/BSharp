@@ -20,6 +20,11 @@ public record FailableFunc<TValue> : Failable, IFailableFunc<TValue>, IEquatable
         _value = value;
     }
 
+    internal FailableFunc(IFailable failableAction, Optional<TValue> value)
+        : base(failableAction) {
+        _value = value;
+    }
+
     public static FailableFunc<TValue> Invoke(Func<TValue> failableFunc, [CallerArgumentExpression("failableFunc")] string? expression = default) {
         try {
             return new FailableFunc<TValue>(Optional.Of(failableFunc.Invoke()), default, expression);

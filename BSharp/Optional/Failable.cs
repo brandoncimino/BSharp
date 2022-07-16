@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Runtime.CompilerServices;
 
@@ -17,12 +17,10 @@ namespace FowlFever.BSharp.Optional {
      * <inheritdoc cref="IFailable"/>
      */
     public record Failable : IFailable {
-        public Exception? Excuse { get; }
-        [MemberNotNullWhen(true, nameof(Excuse))]
-        public bool Failed => Excuse != null;
-        public IReadOnlyCollection<Type> IgnoredExceptionTypes { get; }
-        public Exception?                IgnoredException      { get; }
-        public Supplied<string?>?        Description           { get; }
+        public Exception?           Excuse                { get; }
+        public ImmutableArray<Type> IgnoredExceptionTypes { get; }
+        public Exception?           IgnoredException      { get; }
+        public Supplied<string?>    Description           { get; }
 
         internal Failable(
             Exception?         excuse,
@@ -32,11 +30,16 @@ namespace FowlFever.BSharp.Optional {
         ) {
             Excuse                = excuse;
             IgnoredException      = ignoredException;
-            IgnoredExceptionTypes = ignoredExceptionTypes?.ToArray() ?? Array.Empty<Type>();
-            Description           = description;
+            IgnoredExceptionTypes = ignoredExceptionTypes?.ToImmutableArray() ?? ImmutableArray<Type>.Empty;
+            Description           = description.OrEmpty();
         }
 
-        protected Failable(IFailable other, Supplied<string?>? description = default) : this(other.Excuse, other.IgnoredExceptionTypes, other.IgnoredException, description ?? other.Description) { }
+        /// <summary>
+        /// Constructs a copy of the given <see cref="IFailable"/> but with a new <see cref="Description"/>.
+        /// </summary>
+        /// <param name="other">the <see cref="IFailable"/> to be copied</param>
+        /// <param name="description">the new <see cref="Description"/></param>
+        public Failable(IFailable other, Supplied<string?>? description = default) : this(other.Excuse, other.IgnoredExceptionTypes, other.IgnoredException, description ?? other.Description) { }
 
         public static Failable Invoke(
             [InstantHandle]
@@ -67,6 +70,9 @@ namespace FowlFever.BSharp.Optional {
             }
         }
 
+        public static Failable Success(Supplied<string?>? description                            = default) => new Failable(null,   null, null, description);
+        public static Failable Failure(Exception          excuse, Supplied<string?>? description = default) => new Failable(excuse, null, null, description);
+
         public static Failable Invoke(
             [InstantHandle]
             Action failableAction,
@@ -79,7 +85,10 @@ namespace FowlFever.BSharp.Optional {
         }
 
         public override string ToString() {
-            return $"{(Failed ? $"{this.GetIcon()} [{Excuse}]" : this.GetIcon())} {Description.GetValueOrDefault().IfBlank(GetType().Name)}";
+            var statusString      = this.AsFailable().Failed ? $"{this.GetIcon()} [{Excuse}]" : this.GetIcon();
+            var descriptionString = Description.OrDefault().IfBlank(GetType().Name);
+            var ignoredString     = IgnoredException == null ? "" : $" [Ignored: {IgnoredException}]";
+            return $"{statusString} {descriptionString}{ignoredString}";
         }
     }
 }

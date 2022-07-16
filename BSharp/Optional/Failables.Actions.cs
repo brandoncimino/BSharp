@@ -42,7 +42,7 @@ public partial class Failables {
 
     /// <inheritdoc cref="Try(System.Action,string?,System.Type[])"/>
     public static Failable Try<A, B>(
-        [InstantHandle]
+        [InstantHandle] [RequireStaticDelegate]
         this Action<A, B> failableAction,
         A a,
         B b,
@@ -84,6 +84,13 @@ public partial class Failables {
 
     public static IEnumerable<Failable> TryEach<T>([InstantHandle] this IEnumerable<T> enumerable, [InstantHandle] Action<T>      action,          [CallerArgumentExpression("action")]          string? expression = default) => enumerable.Select(it => Try(action, it, expression));
     public static IEnumerable<Failable> TryEach<T>([InstantHandle] this IEnumerable<T> enumerable, [InstantHandle] Action<T, int> actionWithIndex, [CallerArgumentExpression("actionWithIndex")] string? expression = default) => enumerable.Select((it, i) => actionWithIndex.Try(it, i, expression));
+
+    #endregion
+
+    #region TryAll
+
+    public static IEnumerable<Failable> TryAll([InstantHandle] this    IEnumerable<Action>    actions)          => actions.Select(it => it.Try());
+    public static IEnumerable<Failable> TryAll<T>([InstantHandle] this IEnumerable<Action<T>> actions, T input) => actions.Select(it => it.Try(input));
 
     #endregion
 
