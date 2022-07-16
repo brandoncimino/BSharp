@@ -8,11 +8,8 @@ using System.Text.RegularExpressions;
 
 using FowlFever.BSharp.Collections;
 using FowlFever.BSharp.Enums;
-using FowlFever.BSharp.Optional;
 using FowlFever.BSharp.Strings;
 using FowlFever.Conjugal.Affixing;
-
-using JetBrains.Annotations;
 
 namespace FowlFever.BSharp.Clerical;
 
@@ -66,12 +63,6 @@ public class BPath {
     #region ⚠ OBSOLETE ⚠ Validation
 
     [Obsolete]
-    public static Failable ValidatePath(string? maybePath) {
-        Action<string> action = Validate.PathString;
-        return action!.Try(maybePath);
-    }
-
-    [Obsolete]
     private static class Validate {
         public static void PathString(string? maybePath) {
             // ValidationExtensions.ValidateMultiple(
@@ -117,12 +108,6 @@ public class BPath {
                 throw new ArgumentException($"[{maybeFile}] contains invalid file name characters: [{badChars.JoinString(",")}]");
             }
         }
-    }
-
-    [Obsolete]
-    [ContractAnnotation("null => false")]
-    public static bool IsValidPath(string? maybePath) {
-        return ValidatePath(maybePath).Failed == false;
     }
 
     #endregion
