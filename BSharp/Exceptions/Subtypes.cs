@@ -2,8 +2,9 @@ using System;
 using System.Collections.Immutable;
 
 using FowlFever.BSharp.Attributes;
-using FowlFever.BSharp.Collections.Implementors;
 using FowlFever.BSharp.Reflection;
+
+using Implementors;
 
 namespace FowlFever.BSharp.Exceptions;
 
