@@ -1,5 +1,5 @@
 using System;
-using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 
 using JetBrains.Annotations;
@@ -29,11 +29,32 @@ public interface IFailable {
     /// </ul>
     /// </remarks>
     [MemberNotNullWhen(true, nameof(Excuse))]
-    public bool Failed { get; }
+    public bool Failed => Excuse != null;
 
-    IReadOnlyCollection<Type> IgnoredExceptionTypes { get; }
+    /// <summary>
+    /// The inverse of <see cref="Failed"/>.
+    /// </summary>
+    public sealed bool Passed => !Failed;
 
-    Exception? IgnoredException { get; }
+    /// <summary>
+    /// <see cref="Exception"/> types that shouldn't cause this <see cref="IFailable"/> to fail.
+    /// <p/>
+    /// If one of the <see cref="IgnoredExceptionTypes"/> is caught, it is put into <see cref="IgnoredException"/> rather than <see cref="Excuse"/>.
+    /// </summary>
+    /// <remarks>
+    /// This property does not have to be implemented.
+    /// However, if it is, <see cref="IgnoredException"/> should also be implemented.
+    /// </remarks>
+    ImmutableArray<Type> IgnoredExceptionTypes => ImmutableArray<Type>.Empty;
+
+    /// <summary>
+    /// If an <see cref="Exception"/> of one of the <see cref="IgnoredExceptionTypes"/> is caught, it will be placed here instead of <see cref="Excuse"/>.
+    /// </summary>
+    /// <remarks>
+    /// This property does not have to be implemented.
+    /// However, if it is, <see cref="IgnoredExceptionTypes"/> should also be implemented.
+    /// </remarks>
+    Exception? IgnoredException => null;
 
     /// <summary>
     /// A description of the code that this <see cref="IFailable"/> represents.
@@ -41,5 +62,5 @@ public interface IFailable {
     /// <remarks>
     /// Should ideally be retrieved via <see cref="System.Runtime.CompilerServices.CallerArgumentExpressionAttribute"/>.
     /// </remarks>
-    public Supplied<string?>? Description { get; }
+    public Supplied<string?> Description { get; }
 }
