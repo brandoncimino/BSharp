@@ -1,13 +1,18 @@
 using System.Collections;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Implementors;
 
 /// <summary>
-/// Delegates the implementation of <see cref="AsList"/> to the <see cref="AsList"/> property.
+/// Delegates the implementation of <see cref="IList{T}"/> to the <see cref="AsList"/> property.
 /// </summary>
 /// <typeparam name="T">the type of the entries in <see cref="IList{T}"/></typeparam>
-public interface IHasList<T> : IList<T> {
-    public IList<T>               AsList                            { get; }
+[SuppressMessage("ReSharper", "PossibleInterfaceMemberAmbiguity")]
+public interface IHasList<T> : IList<T>, IReadOnlyList<T> {
+    protected IList<T> AsList { get; }
+
+    #region Implementation
+
     IEnumerator<T> IEnumerable<T>.GetEnumerator()                   => AsList.GetEnumerator();
     IEnumerator IEnumerable.      GetEnumerator()                   => ((IEnumerable)AsList).GetEnumerator();
     void ICollection<T>.          Add(T item)                       => AsList.Add(item);
@@ -27,4 +32,8 @@ public interface IHasList<T> : IList<T> {
         get => AsList[index];
         set => AsList[index] = value;
     }
+    int IReadOnlyCollection<T>.Count => AsList.Count;
+    T IReadOnlyList<T>.this[int index] => AsList[index];
+
+    #endregion
 }
