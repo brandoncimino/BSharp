@@ -4,6 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 using FowlFever.BSharp.Collections;
+using FowlFever.BSharp.Optional;
 using FowlFever.BSharp.Strings;
 using FowlFever.BSharp.Strings.Settings;
 using FowlFever.Conjugal.Affixing;
@@ -43,7 +44,7 @@ namespace FowlFever.BSharp.Chronic {
 
         public TimeSpan Total => TimeSpan.FromTicks(TotalTicks);
 
-        public double SuccessRate => (double)Executions.Count(it => it.Execution.Failed == false) / Executions.Length;
+        public double SuccessRate => (double)Executions.Count(it => it.Execution.AsFailable().Failed == false) / Executions.Length;
 
         internal AggregateExecutionTime(string nickname, IEnumerable<ExecutionTime> executions) {
             Executions = executions.ToArray();
