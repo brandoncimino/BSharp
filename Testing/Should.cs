@@ -2,7 +2,6 @@ using System.Diagnostics.CodeAnalysis;
 
 using FowlFever.BSharp.Enums;
 
-using NUnit.Framework;
 using NUnit.Framework.Constraints;
 
 namespace FowlFever.Testing {
