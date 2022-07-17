@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Diagnostics.CodeAnalysis;
 
+using FowlFever.Implementors.NonGeneric;
+
 namespace FowlFever.Implementors;
 
 /// <summary>
@@ -8,7 +10,7 @@ namespace FowlFever.Implementors;
 /// </summary>
 /// <typeparam name="T">the type of entries in <see cref="AsCollection"/></typeparam>
 [SuppressMessage("ReSharper", "PossibleInterfaceMemberAmbiguity")]
-public interface IHasCollection<T> : ICollection<T>, IReadOnlyCollection<T> {
+public interface IHasCollection<T> : ICollection<T>, IReadOnlyCollection<T>, IHasNonGenericCollection {
     protected ICollection<T> AsCollection { get; }
 
     #region Implementation

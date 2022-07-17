@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Diagnostics.CodeAnalysis;
 
+using FowlFever.Implementors.NonGeneric;
+
 namespace FowlFever.Implementors;
 
 /// <summary>
@@ -8,7 +10,7 @@ namespace FowlFever.Implementors;
 /// </summary>
 /// <typeparam name="T">the type of the entries in <see cref="IList{T}"/></typeparam>
 [SuppressMessage("ReSharper", "PossibleInterfaceMemberAmbiguity")]
-public interface IHasList<T> : IList<T>, IReadOnlyList<T> {
+public interface IHasList<T> : IList<T>, IReadOnlyList<T>, IHasNonGenericList {
     protected IList<T> AsList { get; }
 
     #region Implementation

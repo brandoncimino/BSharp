@@ -1,11 +1,13 @@
 using System.Collections;
 using System.Diagnostics.CodeAnalysis;
 
+using FowlFever.Implementors.NonGeneric;
+
 namespace FowlFever.Implementors;
 
 /// <inheritdoc cref="IDictionary{K,V}"/>
 [SuppressMessage("ReSharper", "PossibleInterfaceMemberAmbiguity")]
-public interface IHasDictionary<K, V> : IDictionary<K, V>, IReadOnlyDictionary<K, V> {
+public interface IHasDictionary<K, V> : IDictionary<K, V>, IReadOnlyDictionary<K, V>, IHasNonGenericDictionary {
     protected IDictionary<K, V>                                     AsDictionary    { get; }
     IEnumerator<KeyValuePair<K, V>> IEnumerable<KeyValuePair<K, V>>.GetEnumerator() => AsDictionary.GetEnumerator();
 
