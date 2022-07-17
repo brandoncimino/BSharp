@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Collections.Immutable;
 
-namespace Implementors;
+namespace FowlFever.Implementors;
 
 /// <summary>
 /// Delegates the implementation of <see cref="IImmutableList{T}"/> to the <see cref="AsImmutableList"/> property.

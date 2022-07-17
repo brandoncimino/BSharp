@@ -3,8 +3,7 @@ using System.Collections.Immutable;
 
 using FowlFever.BSharp.Attributes;
 using FowlFever.BSharp.Reflection;
-
-using Implementors;
+using FowlFever.Implementors;
 
 namespace FowlFever.BSharp.Exceptions;
 

@@ -3,8 +3,7 @@ using System.Collections.Immutable;
 using System.Linq;
 
 using FowlFever.BSharp.Collections;
-
-using Implementors;
+using FowlFever.Implementors;
 
 using Spectre.Console;
 using Spectre.Console.Rendering;

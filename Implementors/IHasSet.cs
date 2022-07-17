@@ -1,6 +1,6 @@
 using System.Collections;
 
-namespace Implementors;
+namespace FowlFever.Implementors;
 
 /// <summary>
 /// Delegates the implementation of <see cref="ISet{T}"/> to the <see cref="AsSet"/> property.

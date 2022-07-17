@@ -5,6 +5,8 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <LangVersion>latest</LangVersion>
+        <AssemblyName>FowlFever.Implementors</AssemblyName>
+        <RootNamespace>FowlFever.Implementors</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>

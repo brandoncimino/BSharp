@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Diagnostics.CodeAnalysis;
 
-namespace Implementors;
+namespace FowlFever.Implementors;
 
 /// <summary>
 /// Delegates implementation of <see cref="ICollection{T}"/> and <see cref="IReadOnlyCollection{T}"/> to the <see cref="AsCollection"/> property.

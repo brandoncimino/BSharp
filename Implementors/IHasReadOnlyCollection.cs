@@ -1,6 +1,6 @@
 using System.Collections;
 
-namespace Implementors;
+namespace FowlFever.Implementors;
 
 /// <inheritdoc/>
 public interface IHasReadOnlyCollection<out T> : IReadOnlyCollection<T> {

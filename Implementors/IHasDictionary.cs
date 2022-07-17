@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Diagnostics.CodeAnalysis;
 
-namespace Implementors;
+namespace FowlFever.Implementors;
 
 /// <inheritdoc cref="IDictionary{K,V}"/>
 [SuppressMessage("ReSharper", "PossibleInterfaceMemberAmbiguity")]

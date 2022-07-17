@@ -1,8 +1,7 @@
 using System.Collections.Immutable;
 
 using FowlFever.BSharp.Optional;
-
-using Implementors;
+using FowlFever.Implementors;
 
 namespace Ratified;
 

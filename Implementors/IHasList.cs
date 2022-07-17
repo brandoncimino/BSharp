@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Diagnostics.CodeAnalysis;
 
-namespace Implementors;
+namespace FowlFever.Implementors;
 
 /// <summary>
 /// Delegates the implementation of <see cref="IList{T}"/> to the <see cref="AsList"/> property.
