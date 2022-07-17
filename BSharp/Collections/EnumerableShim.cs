@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 
+using FowlFever.Implementors;
+
 namespace FowlFever.BSharp.Collections;
 
 /// <summary>

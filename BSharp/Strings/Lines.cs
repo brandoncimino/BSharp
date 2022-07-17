@@ -5,6 +5,7 @@ using System.Collections.Immutable;
 using System.Linq;
 
 using FowlFever.BSharp.Collections;
+using FowlFever.Implementors;
 
 namespace FowlFever.BSharp.Strings;
 

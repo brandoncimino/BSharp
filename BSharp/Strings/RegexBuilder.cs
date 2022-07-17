@@ -1,5 +1,7 @@
 using System.Text.RegularExpressions;
 
+using FowlFever.Implementors;
+
 namespace FowlFever.BSharp.Strings;
 
 /// <summary>

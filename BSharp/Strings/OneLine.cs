@@ -9,6 +9,7 @@ using FowlFever.BSharp.Collections;
 using FowlFever.BSharp.Enums;
 using FowlFever.BSharp.Exceptions;
 using FowlFever.BSharp.Strings.Enums;
+using FowlFever.Implementors;
 
 namespace FowlFever.BSharp.Strings;
 

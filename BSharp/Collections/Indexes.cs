@@ -6,6 +6,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 
 using FowlFever.BSharp.Exceptions;
+using FowlFever.Implementors;
 
 using JetBrains.Annotations;
 

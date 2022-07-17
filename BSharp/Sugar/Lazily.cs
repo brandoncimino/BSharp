@@ -2,6 +2,8 @@ using System;
 using System.Linq;
 using System.Threading;
 
+using FowlFever.Implementors;
+
 namespace FowlFever.BSharp.Sugar;
 
 public static class Lazily {

@@ -2,6 +2,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 
+using FowlFever.Implementors;
+
 namespace FowlFever.BSharp.Strings;
 
 /// <summary>

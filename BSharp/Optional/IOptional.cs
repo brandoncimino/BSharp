@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 
+using FowlFever.Implementors;
+
 using JetBrains.Annotations;
 
 namespace FowlFever.BSharp.Optional {

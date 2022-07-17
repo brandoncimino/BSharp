@@ -3,6 +3,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 
 using FowlFever.BSharp.Collections;
+using FowlFever.Implementors;
 
 using JetBrains.Annotations;
 

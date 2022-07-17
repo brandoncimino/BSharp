@@ -6,6 +6,7 @@ using System.Linq;
 
 using FowlFever.BSharp.Strings;
 using FowlFever.BSharp.Strings.Settings;
+using FowlFever.Implementors;
 
 using JetBrains.Annotations;
 

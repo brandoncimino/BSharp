@@ -18,15 +18,15 @@ public interface IHasDictionary<K, V> : IDictionary<K, V>, IReadOnlyDictionary<K
     int ICollection<KeyValuePair<K, V>>. Count                             => AsDictionary.Count;
     bool ICollection<KeyValuePair<K, V>>.IsReadOnly                        => AsDictionary.IsReadOnly;
     void IDictionary<K, V>.              Add(K         key, V value)       => AsDictionary.Add(key, value);
-    bool IDictionary<K, V>.              ContainsKey(K key)              => AsDictionary.ContainsKey(key);
-    bool IReadOnlyDictionary<K, V>.      TryGetValue(K key, out V value) => AsDictionary.TryGetValue(key, out value);
+    bool IDictionary<K, V>.              ContainsKey(K key)                                     => AsDictionary.ContainsKey(key);
+    bool IReadOnlyDictionary<K, V>.      TryGetValue(K key, [MaybeNullWhen(false)] out V value) => AsDictionary.TryGetValue(key, out value);
 
     V IReadOnlyDictionary<K, V>.this[K key] => AsDictionary[key];
-    IEnumerable<K> IReadOnlyDictionary<K, V>.Keys                            => AsDictionary.Keys;
-    IEnumerable<V> IReadOnlyDictionary<K, V>.Values                          => AsDictionary.Values;
-    bool IDictionary<K, V>.                  Remove(K      key)              => AsDictionary.Remove(key);
-    bool IReadOnlyDictionary<K, V>.          ContainsKey(K key)              => AsDictionary.ContainsKey(key);
-    bool IDictionary<K, V>.                  TryGetValue(K key, out V value) => AsDictionary.TryGetValue(key, out value);
+    IEnumerable<K> IReadOnlyDictionary<K, V>.Keys                                                   => AsDictionary.Keys;
+    IEnumerable<V> IReadOnlyDictionary<K, V>.Values                                                 => AsDictionary.Values;
+    bool IDictionary<K, V>.                  Remove(K      key)                                     => AsDictionary.Remove(key);
+    bool IReadOnlyDictionary<K, V>.          ContainsKey(K key)                                     => AsDictionary.ContainsKey(key);
+    bool IDictionary<K, V>.                  TryGetValue(K key, [MaybeNullWhen(false)] out V value) => AsDictionary.TryGetValue(key, out value);
 
     V IDictionary<K, V>.this[K key] {
         get => AsDictionary[key];

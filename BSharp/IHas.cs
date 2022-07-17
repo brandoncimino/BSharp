@@ -1,18 +1,10 @@
 using System;
 
+using FowlFever.Implementors;
+
 namespace FowlFever.BSharp;
 
-/// <summary>
-/// Indicates that the implementer contains a meaningful <typeparamref name="T"/> instance, stored in the <see cref="Value"/> parameter.
-/// </summary>
-/// <typeparam name="T">the <see cref="Type"/> of the underlying <see cref="IHas{T}.Value"/></typeparam>
-public interface IHas<out T> {
-    /// <summary>
-    /// The actual, underlying <typeparamref name="T"/> instance.
-    /// </summary>
-    T Value { get; }
-}
-
+/// TODO: Move into <see cref="FowlFever.Implementors"/>
 public static class HasExtensions {
     [Obsolete($"Please use {nameof(OrDefault)} instead")]
     public static T? GetValueOrDefault<T>(this IHas<T>? self) => self.OrDefault();

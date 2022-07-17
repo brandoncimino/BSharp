@@ -3,6 +3,7 @@ using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 
 using FowlFever.BSharp.Exceptions;
+using FowlFever.Implementors;
 
 namespace FowlFever.BSharp;
 

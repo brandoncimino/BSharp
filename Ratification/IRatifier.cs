@@ -3,6 +3,7 @@ using System.Runtime.CompilerServices;
 using FowlFever.BSharp;
 using FowlFever.BSharp.Optional;
 using FowlFever.BSharp.Sugar;
+using FowlFever.Implementors;
 
 namespace Ratified;
 
@@ -11,7 +12,7 @@ namespace Ratified;
 /// </summary>
 /// <remarks>
 /// <ul>
-/// <li>Uses default implementations to work with <see cref="FowlFever.BSharp.IHas{T}"/>, <see cref="System.Lazy{T}"/>, etc.</li>
+/// <li>Uses default implementations to work with <see cref="IHas{T}"/>, <see cref="System.Lazy{T}"/>, etc.</li>
 /// <li>The <see cref="Ratify(T?,string?,string?)"/> methods throw <see cref="FowlFever.BSharp.Exceptions.RejectionException"/>s on failure</li>
 /// <li>The <see cref="TryRatify(T?,string?,string?)"/> methods return <see cref="FowlFever.BSharp.Optional.IFailable"/>s containing the results</li>
 /// </ul>

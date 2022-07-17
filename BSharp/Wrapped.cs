@@ -5,6 +5,7 @@ using System.Text;
 
 using FowlFever.BSharp.Strings;
 using FowlFever.BSharp.Strings.Settings;
+using FowlFever.Implementors;
 
 using JetBrains.Annotations;
 

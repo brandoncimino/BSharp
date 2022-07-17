@@ -1,5 +1,7 @@
 using System;
 
+using FowlFever.Implementors;
+
 namespace FowlFever.BSharp.Optional;
 
 public static partial class Failables {

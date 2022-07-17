@@ -3,6 +3,7 @@ using System.Globalization;
 
 using FowlFever.BSharp.Enums;
 using FowlFever.BSharp.Exceptions;
+using FowlFever.Implementors;
 
 namespace FowlFever.BSharp.Strings;
 

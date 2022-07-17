@@ -4,6 +4,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 
 using FowlFever.BSharp.Sugar;
+using FowlFever.Implementors;
 
 using JetBrains.Annotations;
 

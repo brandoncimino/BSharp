@@ -5,6 +5,7 @@ using System.Runtime.CompilerServices;
 
 using FowlFever.BSharp.Collections;
 using FowlFever.BSharp.Strings;
+using FowlFever.Implementors;
 
 namespace FowlFever.BSharp.Exceptions;
 
