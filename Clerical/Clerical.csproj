@@ -12,12 +12,16 @@
     <ItemGroup>
         <PackageReference Include="DiffPlex" Version="1.7.1"/>
         <PackageReference Include="FluentValidation" Version="11.0.1"/>
-        <PackageReference Include="IndexRange" Version="1.0.0"/>
-        <PackageReference Include="IsExternalInit" Version="1.0.2">
+        <PackageReference Include="IndexRange" Version="1.0.2"/>
+        <PackageReference Include="IsExternalInit" Version="1.0.3">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <PackageReference Include="JetBrains.Annotations" Version="2022.1.0"/>
+        <PackageReference Include="Nullable" Version="1.3.1">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
         <PackageReference Include="Serialize.Linq" Version="2.0.0"/>
         <PackageReference Include="System.Text.Json" Version="6.0.5"/>
         <PackageReference Include="TA.System.Runtime.CompilerServices.RuntimeHelpers.GetSubArray" Version="1.0.1">
@@ -31,6 +35,15 @@
         <ProjectReference Include="..\CSharp10\CSharp10.csproj">
             <PrivateAssets>all</PrivateAssets>
         </ProjectReference>
+        <ProjectReference Include="..\Ratification\Ratification.csproj"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Compile Remove="Validated\PathString_2.cs"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Folder Include="Ratification"/>
     </ItemGroup>
 
 </Project>

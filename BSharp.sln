@@ -10,6 +10,9 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Testing", "Testing\Testing.csproj", "{8353799B-4B88-4372-8D06-F1C4AE451F44}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Clerical", "Clerical\Clerical.csproj", "{0C76CA7C-B23C-4CE1-B9BD-E677B4BE593C}"
+	ProjectSection(ProjectDependencies) = postProject
+		{CFD08B19-C4C3-4C44-BC5F-CF41A35D23D1} = {CFD08B19-C4C3-4C44-BC5F-CF41A35D23D1}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CSharp10", "CSharp10\CSharp10.csproj", "{22B11EA3-CC52-4256-9667-2340F0EE5B1B}"
 EndProject
