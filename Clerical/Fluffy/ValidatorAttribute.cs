@@ -12,6 +12,7 @@ namespace FowlFever.Clerical.Fluffy;
 /// </summary>
 [AttributeUsage(AttributeTargets.Method)]
 [MeansImplicitUse]
+[Experimental("Should probably be reworked to play nice with the System.Component.DataModel validation attributes")]
 public class ValidatorAttribute : BrandonAttribute {
     /// <summary>
     /// A detailed <see cref="IValidatorMethod.Description"/> of this validation.
