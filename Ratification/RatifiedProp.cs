@@ -1,18 +1,20 @@
 using System.Diagnostics.CodeAnalysis;
 
+using FowlFever.BSharp;
 using FowlFever.BSharp.Enums;
 using FowlFever.BSharp.Exceptions;
+using FowlFever.Implementors;
 
 namespace Ratified;
 
 public enum MustRatify { Yes, No }
 
-public record RatifiedProp<T>
+public sealed record RatifiedProp<T> : IHas<T>, IEquivalent<T>
     where T : notnull {
-    private T            _value;
-    private IRatifier<T> Ratifier { get; }
-
+    private T                     _value;
+    private IRatifier<T>          Ratifier      { get; }
     private IEqualityComparer<T?> ChangeChecker { get; }
+    T IEquivalent<T>.             Equivalent    => Value;
 
     [MemberNotNull(nameof(_value))]
     public T Value {
