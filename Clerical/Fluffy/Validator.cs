@@ -23,8 +23,10 @@ namespace FowlFever.Clerical.Fluffy;
 /// TODO: This should have a cuter name! Both because I want one and also to avoid conflicts with <see cref="FluentValidation"/> stuff.
 ///     Maybe derived from "Approve"?
 /// </remarks>
-[Experimental($"Probably should be abandoned in favor of {nameof(Ratified)}, and/or rebuilt to play nice with the built-in Validator stuff (from the ASP MVC project or something)")]
+[Experimental(ExperimentalMessage)]
 public static class Validator {
+    internal const string ExperimentalMessage = "Assumming that Code Generators are viable, they would probably provide a much easier implementation of this idea than the current one, and would DEFINITELY be way more efficient.";
+
     private static readonly ConcurrentDictionary<Type, Lazy<IValidatorMethod[]>> Cache = new();
 
     private static IValidatorMethod[] _GetValidatorMethods(Type sourceType) {

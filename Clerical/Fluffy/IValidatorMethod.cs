@@ -1,13 +1,15 @@
 using System.Reflection;
 
-using FowlFever.BSharp;
+using FowlFever.BSharp.Attributes;
 using FowlFever.BSharp.Optional;
+using FowlFever.Implementors;
 
 namespace FowlFever.Clerical.Fluffy;
 
 /// <summary>
 /// Acts as a bridge between different method signatures of <see cref="ValidatorStyle"/>.
 /// </summary>
+[Experimental(Validator.ExperimentalMessage)]
 public interface IValidatorMethod : IHas<MethodInfo> {
     /// <summary>
     /// Describes the method signature of the underlying <see cref="IHas{T}.Value"/>.

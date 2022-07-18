@@ -1,5 +1,8 @@
+using FowlFever.BSharp.Attributes;
+
 namespace FowlFever.Clerical.Fluffy;
 
+[Experimental(Validator.ExperimentalMessage)]
 public enum ValidatorStyle {
     /// <summary>
     /// A method with 1 input that returns a <see cref="bool"/>.

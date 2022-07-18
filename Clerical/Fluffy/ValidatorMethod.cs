@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Reflection;
 
 using FowlFever.BSharp;
+using FowlFever.BSharp.Attributes;
 using FowlFever.BSharp.Exceptions;
 using FowlFever.BSharp.Optional;
 using FowlFever.BSharp.Reflection;
@@ -17,6 +18,7 @@ namespace FowlFever.Clerical.Fluffy;
 /// The core implementation of <see cref="IValidatorMethod"/>.
 /// </summary>
 /// <typeparam name="T"></typeparam>
+[Experimental(Validator.ExperimentalMessage)]
 public record ValidatorMethod<T> : Wrapped<MethodInfo>, IValidatorMethod<T> {
     private readonly Lazy<Action<T?>>     _assertion;
     private readonly Lazy<Func<T?, bool>> _predicate;
@@ -83,6 +85,7 @@ public record ValidatorMethod<T> : Wrapped<MethodInfo>, IValidatorMethod<T> {
         checkpoint.ToPredicate()
     ) { }
 
+    [Obsolete]
     private static ValidatorMethod<T> From(Delegate delgato, string? description = default) =>
         delgato switch {
             Action<T?> asserter      => new ValidatorMethod<T>(asserter,   description),
@@ -91,11 +94,13 @@ public record ValidatorMethod<T> : Wrapped<MethodInfo>, IValidatorMethod<T> {
             _                        => throw new ArgumentException($"{delgato.Prettify()} isn't an appropriate {nameof(ValidatorMethod<T>)}!"),
         };
 
+    [Obsolete]
     public static ValidatorMethod<T> From(MethodInfo method, string? description = default) {
         var delegateType = Validator.CreateDelegate(method);
         return From(delegateType, description.IfBlank(method.Name));
     }
 
+    [Obsolete]
     public static ValidatorMethod<T> From(Annotated<MethodInfo, ValidatorAttribute> annotatedMethod) {
         return From(annotatedMethod.Member, annotatedMethod.Attributes.Single().Description);
     }
