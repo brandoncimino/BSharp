@@ -3,13 +3,14 @@ using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
-using FowlFever.BSharp;
+using FowlFever.BSharp.Attributes;
 using FowlFever.BSharp.Collections;
 using FowlFever.BSharp.Enums;
 using FowlFever.BSharp.Exceptions;
 using FowlFever.BSharp.Optional;
 using FowlFever.BSharp.Reflection;
 using FowlFever.BSharp.Strings;
+using FowlFever.Implementors;
 
 using JetBrains.Annotations;
 
@@ -22,6 +23,7 @@ namespace FowlFever.Clerical.Fluffy;
 /// TODO: This should have a cuter name! Both because I want one and also to avoid conflicts with <see cref="FluentValidation"/> stuff.
 ///     Maybe derived from "Approve"?
 /// </remarks>
+[Experimental($"Probably should be abandoned in favor of {nameof(Ratified)}, and/or rebuilt to play nice with the built-in Validator stuff (from the ASP MVC project or something)")]
 public static class Validator {
     private static readonly ConcurrentDictionary<Type, Lazy<IValidatorMethod[]>> Cache = new();
 
@@ -179,7 +181,7 @@ public static class Validator {
     #endregion
 
     [StackTraceHidden]
-    private static Type GetValidatedType(MethodInfo method) {
+    internal static Type GetValidatedType(MethodInfo method) {
         static Type? FromParameters(MethodInfo methodInfo) {
             return methodInfo.FindSingleParameter()?.ParameterType;
         }
