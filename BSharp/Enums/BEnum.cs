@@ -11,6 +11,7 @@ using FowlFever.BSharp.Collections;
 using FowlFever.BSharp.Exceptions;
 using FowlFever.BSharp.Strings;
 using FowlFever.BSharp.Strings.Prettifiers;
+using FowlFever.BSharp.Strings.Settings;
 
 using JetBrains.Annotations;
 
@@ -91,12 +92,14 @@ namespace FowlFever.BSharp.Enums {
         /// <c>switch</c> statement didn't have a branch to account for <paramref name="actualValue"/>.
         /// </summary>
         /// <param name="actualValue">the <typeparamref name="T"/> value that didn't have a switch branch</param>
+        /// <param name="details">optional additional details</param>
         /// <param name="parameterName">the parameter that caused this exception</param>
         /// <param name="rejectedBy">the method that caused this exception</param>
         /// <typeparam name="T">an <see cref="Enum"/> <see cref="Type"/></typeparam>
         /// <returns>a nice <see cref="System.ComponentModel.InvalidEnumArgumentException"/></returns>
         public static InvalidEnumArgumentException UnhandledSwitch<T>(
-            T? actualValue,
+            T?      actualValue,
+            string? details = default,
             [CallerArgumentExpression("actualValue")]
             string? parameterName = default,
             [CallerMemberName]
@@ -105,9 +108,32 @@ namespace FowlFever.BSharp.Enums {
             where T : Enum? {
             var rejection = new RejectionException(
                 actualValue,
+                details,
                 parameterName,
                 rejectedBy,
                 $"{typeof(T)}.{actualValue.OrNullPlaceholder()} was not handled by any switch branch!"
+            );
+
+            return new InvalidEnumArgumentException(rejection.Message);
+        }
+
+        /// <inheritdoc cref="UnhandledSwitch{T}"/>
+        public static InvalidEnumArgumentException UnhandledSwitch<T, T2>(
+            (T, T2) actualCombo,
+            string? details = default,
+            [CallerArgumentExpression("actualCombo")]
+            string? parameterName = default,
+            [CallerMemberName]
+            string? rejectedBy = default
+        )
+            where T : Enum
+            where T2 : Enum {
+            var rejection = new RejectionException(
+                actualCombo,
+                details,
+                parameterName,
+                rejectedBy,
+                $"{actualCombo.PrettifyTuple(PrettificationSettings.Default)} was not handled by any switch branch!"
             );
 
             return new InvalidEnumArgumentException(rejection.Message);
