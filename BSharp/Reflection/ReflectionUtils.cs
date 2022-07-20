@@ -309,17 +309,17 @@ namespace FowlFever.BSharp.Reflection {
             return type.FindInterfaces((type1, criteria) => true, default);
         }
 
-        private static IEnumerable<Type> _GetAllInterfaces(this Type? type, IEnumerable<Type>? soFar = default) {
-            var ints = (type?.GetInterfaces()).NonNull().ToList();
-            soFar = soFar.NonNull();
+        private static ImmutableHashSet<Type>.Builder _GetAllInterfaces(this Type? type, ImmutableHashSet<Type>.Builder? soFar = default) {
+            soFar ??= ImmutableHashSet.CreateBuilder<Type>();
             if (type?.IsInterface == true) {
-                soFar = soFar.Union(type);
+                soFar.Add(type);
             }
 
-            return (soFar ?? new List<Type>())
-                   .Union(ints)
-                   .Concat(ints.SelectMany(ti => _GetAllInterfaces(ti, soFar)))
-                   .Distinct();
+            var ints = type?.GetInterfaces() ?? Array.Empty<Type>();
+            return ints.Aggregate(
+                soFar,
+                (builder, next) => _GetAllInterfaces(next, builder)
+            );
         }
 
         /// <summary>
