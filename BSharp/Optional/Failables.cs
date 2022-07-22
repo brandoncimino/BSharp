@@ -48,4 +48,9 @@ public static partial class Failables {
     public static IFailableFunc<T> WithOutput<T>(this IFailable failableAction, Optional<T> outputValue) {
         return new FailableFunc<T>(failableAction, outputValue);
     }
+
+    /// <inheritdoc cref="WithOutput{T}(FowlFever.BSharp.Optional.IFailable,FowlFever.BSharp.Optional.Optional{T})"/>
+    public static IFailableFunc<T> WithOutput<T>(this IFailable failableAction, T outputValue) {
+        return new FailableFunc<T>(failableAction, outputValue);
+    }
 }
