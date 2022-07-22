@@ -10,13 +10,13 @@ using FowlFever.BSharp.Enums;
 namespace FowlFever.BSharp.Strings;
 
 internal sealed record RegexCharacterSet(IEnumerable<char>? Inclusions = default, IEnumerable<char>? Exclusions = default) : RegexBuilder {
-    private ImmutableArray<string> _inclusions = EscapeChars(Inclusions).ToImmutableArray();
-    private ImmutableArray<string> _exclusions = EscapeChars(Exclusions).ToImmutableArray();
+    private readonly IImmutableSet<string> _inclusions = EscapeChars(Inclusions).ToImmutableHashSet();
+    private readonly IImmutableSet<string> _exclusions = EscapeChars(Exclusions).ToImmutableHashSet();
 
     private enum RegexCharacterSetStyle { Inclusive, Exclusive, Subtractive }
 
-    private bool HasInclusions => _inclusions.IsDefaultOrEmpty == false;
-    private bool HasExclusions => _exclusions.IsDefaultOrEmpty == false;
+    private bool HasInclusions => _inclusions.IsNotEmpty();
+    private bool HasExclusions => _exclusions.IsNotEmpty();
 
     private RegexCharacterSetStyle Style => this switch {
         { HasInclusions: true, HasExclusions: true }  => RegexCharacterSetStyle.Subtractive,
