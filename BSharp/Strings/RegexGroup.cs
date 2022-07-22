@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 
 using FowlFever.BSharp.Enums;
@@ -10,6 +11,7 @@ namespace FowlFever.BSharp.Strings;
 /// <summary>
 /// Keeps a <see cref="Name"/> and <see cref="Subexpression"/> together and formats them nicely with different <see cref="RegexGroupStyle"/>s.
 /// </summary>
+/// <param name="Name">the desired <see cref="Name"/>. Defaults to <see cref="CallerMemberNameAttribute"/></param>
 /// <remarks>A "named group" is more properly known as a <a href="https://docs.microsoft.com/en-us/dotnet/standard/base-types/grouping-constructs-in-regular-expressions#named_matched_subexpression">named matched subexpression</a>.</remarks>
 /// <example>
 /// The following would match a standard US phone number in the format <c>203-481-1845</c>:
@@ -32,31 +34,16 @@ namespace FowlFever.BSharp.Strings;
 /// <see cref="Name"/>
 /// <code>area_code</code>
 /// </example>
-[PublicAPI]
-public sealed record RegexGroup(RegexGroupStyle Style, string Subexpression, string? Name = default) : RegexBuilder {
+public sealed record RegexGroup([CallerMemberName] string? Name = default) : RegexBuilder {
+    private string? _name = Name;
     /// <summary>
     /// The <see cref="System.Text.RegularExpressions.Group"/> name of this <a href="https://docs.microsoft.com/en-us/dotnet/standard/base-types/grouping-constructs-in-regular-expressions#named_matched_subexpression">named matched subexpression</a>.
     /// </summary>
-    /// <remarks>
-    /// When a <see cref="RegexGroup"/> is constructed,
-    /// <see cref="RegexGroupStyle.Named"/> groups without a <see cref="Name"/> will still be captured, but will be assigned a numbered group in a <see cref="GroupCollection"/>.
-    /// <p/>
-    /// Other <see cref="RegexGroupStyle"/>s are <b>only</b> captured if they have a <see cref="Name"/> (though they are still matched).
-    /// </remarks>
     /// <example><c>number</c> in <c><![CDATA[(?<number>\d{3})]]></c></example>
     public string Name {
-        get {
-            if (ExplicitName.IsNotBlank()) {
-                return ExplicitName!;
-            }
-
-            return RequiresExplicitName(Style) ? throw new InvalidOperationException() : _autoName.Value;
-        }
+        get => _name ??= Guid.NewGuid().ToString();
+        init => _name = value;
     }
-
-    private Lazy<string> _autoName = new(() => Guid.NewGuid().ToString());
-
-    public string? ExplicitName { get; } = Name;
 
     /// <summary>
     /// The <see cref="System.Text.RegularExpressions.Regex"/> that this group will match.
@@ -65,43 +52,22 @@ public sealed record RegexGroup(RegexGroupStyle Style, string Subexpression, str
     /// <c>\w+</c> in <c><![CDATA[(?<word>\w+)]]></c>
     /// </example>
     [RegexPattern]
-    public string Subexpression { get; init; } = Subexpression;
+    public string Subexpression { get;  init; }
+    public RegexGroupStyle Style { get; init; } = RegexGroupStyle.Named;
 
     #region Constructors
 
-    public RegexGroup(string name, string subexpression) : this(RegexGroupStyle.Named, subexpression, name) { }
+    public RegexGroup(ReadOnlySpan<char> name, ReadOnlySpan<char> subexpression) : this(subexpression, name.ToString()) { }
 
-    public RegexGroup(string name, Regex subexpression) : this(name, subexpression.ToString()) {
-        Options = subexpression.Options;
-    }
-
-    public RegexGroup(RegexGroupStyle style, Regex subexpression, string? name = default) : this(style, subexpression.ToString(), name) {
-        Options = subexpression.Options;
+    /// <inheritdoc cref="RegexGroup"/>
+    public RegexGroup(ReadOnlySpan<char> subexpression, [CallerMemberName] string? name = default) : this(name) {
+        Subexpression = subexpression.ToString();
     }
 
     #endregion
 
-    private static bool RequiresExplicitName(RegexGroupStyle style) => style != RegexGroupStyle.Named;
-
-    /// TODO: something here doesn't add up...
-    private bool _ShouldCaptureWithoutName() => Style == RegexGroupStyle.Named;
-
-    private string _WithName()     => $"(?<{Name}>{Subexpression})";
-    private string _SansName()     => _ShouldCaptureWithoutName() ? $"({Subexpression})" : Subexpression;
-    private string _CaptureGroup() => Name == null ? _SansName() : _WithName();
-
-    private string _CapGroup() {
-        if (!RequiresExplicitName(Style) || ExplicitName.IsNotBlank()) {
-            return _WithName();
-        }
-        else {
-            return _SansName();
-        }
-    }
-
     protected override string BuildPattern() {
-        // var captureGroup = _CaptureGroup();
-        var captureGroup = _CapGroup();
+        var captureGroup = (string)$"(?<{Name}>{Subexpression})";
         return Style switch {
             RegexGroupStyle.Named              => captureGroup,
             RegexGroupStyle.Lookahead          => $"(?={captureGroup})",
@@ -115,21 +81,35 @@ public sealed record RegexGroup(RegexGroupStyle Style, string Subexpression, str
     /// <param name="name"><see cref="Name"/></param>
     /// <param name="subexpression"><see cref="Subexpression"/></param>
     /// <returns>a <see cref="RegexGroupStyle.Named"/> <see cref="RegexGroup"/></returns>
-    public static RegexGroup Named(string name, string subexpression) {
-        return new RegexGroup(RegexGroupStyle.Named, subexpression, name);
+    public static RegexGroup Named(ReadOnlySpan<char> name, string subexpression) {
+        return new RegexGroup(subexpression, name) {
+            Style = RegexGroupStyle.Named
+        };
+    }
+
+    public enum LookDirection { Ahead, Behind }
+
+    public static RegexGroup Looker(ReadOnlySpan<char> subexpression, LookDirection direction, Polarity polarity = Polarity.Positive) {
+        var style = (direction, polarity) switch {
+            (LookDirection.Ahead, Polarity.Positive)  => RegexGroupStyle.Lookahead,
+            (LookDirection.Ahead, Polarity.Negative)  => RegexGroupStyle.NegativeLookahead,
+            (LookDirection.Behind, Polarity.Positive) => RegexGroupStyle.Lookbehind,
+            (LookDirection.Behind, Polarity.Negative) => RegexGroupStyle.NegativeLookbehind,
+            _                                         => throw BEnum.UnhandledSwitch((direction, polarity))
+        };
+
+        return new RegexGroup(subexpression) {
+            Style = style
+        };
     }
 
     /// <param name="subexpression"><see cref="Subexpression"/></param>
-    /// <param name="isPositive">if <c>false</c>, <see cref="RegexGroupStyle.NegativeLookahead"/> is used instead of <see cref="RegexGroupStyle.Lookahead"/></param>
+    /// <param name="polarity">whether this is a <see cref="RegexGroupStyle.Lookahead"/> or a <see cref="RegexGroupStyle.NegativeLookahead"/></param>
     /// <returns>a <see cref="RegexGroupStyle.Lookahead"/> or <see cref="RegexGroupStyle.NegativeLookahead"/> <see cref="RegexGroup"/></returns>
-    public static RegexGroup Lookahead(string subexpression, bool isPositive = true) {
-        return new RegexGroup(isPositive ? RegexGroupStyle.Lookahead : RegexGroupStyle.NegativeLookahead, subexpression);
-    }
+    public static RegexGroup Lookahead(ReadOnlySpan<char> subexpression, Polarity polarity = Polarity.Positive) => Looker(subexpression, LookDirection.Ahead, polarity);
 
     /// <param name="subexpression"><see cref="Subexpression"/></param>
-    /// <param name="isPositive">if <c>false</c>, <see cref="RegexGroupStyle.NegativeLookbehind"/> is used instead of <see cref="RegexGroupStyle.Lookbehind"/></param>
+    /// <param name="polarity">whether this is a <see cref="RegexGroupStyle.Lookbehind"/> or a <see cref="RegexGroupStyle.NegativeLookbehind"/></param>
     /// <returns>a <see cref="RegexGroupStyle.Lookbehind"/> or <see cref="RegexGroupStyle.NegativeLookbehind"/> <see cref="RegexGroup"/></returns>
-    public static RegexGroup Lookbehind(string subexpression, bool isPositive = true) {
-        return new RegexGroup(isPositive ? RegexGroupStyle.Lookbehind : RegexGroupStyle.NegativeLookbehind, subexpression);
-    }
+    public static RegexGroup Lookbehind(ReadOnlySpan<char> subexpression, Polarity polarity) => Looker(subexpression, LookDirection.Behind, polarity);
 }
