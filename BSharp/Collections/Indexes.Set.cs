@@ -30,7 +30,7 @@ public readonly partial record struct Indexes : IImmutableSet<int>, ISet<int> {
     public bool                           IsProperSubsetOf(IEnumerable<int>   other) => AsSet.IsProperSubsetOf(other);
     public bool                           IsProperSupersetOf(IEnumerable<int> other) => AsSet.IsProperSupersetOf(other);
     public bool                           IsSubsetOf(IEnumerable<int>         other) => AsSet.IsSubsetOf(other);
-    public bool                           IsSupersetOf(IEnumerable<int>       other) => AsSet.IsSupersetOf();
+    public bool                           IsSupersetOf(IEnumerable<int>       other) => AsSet.IsSupersetOf(other);
     public bool                           Overlaps(IEnumerable<int>           other) => AsSet.Overlaps(other);
 
     #endregion
