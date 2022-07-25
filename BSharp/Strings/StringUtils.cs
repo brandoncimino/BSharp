@@ -108,10 +108,9 @@ public static partial class StringUtils {
     }
 
     public static IEnumerable<string> IndentAbsolute(
-        IEnumerable<string?> toIndent,
-        [NonNegativeValue]
-        int indentCount = 1,
-        string indentString = DefaultIndentString
+        IEnumerable<string?>   toIndent,
+        [NonNegativeValue] int indentCount  = 1,
+        string                 indentString = DefaultIndentString
     ) {
         Must.Be(indentCount, Mathb.IsStrictlyPositive);
         Must.BePositive(indentCount, nameof(indentCount), nameof(IndentAbsolute));
@@ -304,20 +303,23 @@ public static partial class StringUtils {
     /**
          * <inheritdoc cref="ContainsAny(string,System.Collections.Generic.IEnumerable{string})"/>
          */
-    public static bool ContainsAny(this string str, params string[] substrings) {
-        return ContainsAny(str, substrings.AsEnumerable());
-    }
+    public static bool ContainsAny(this string str, params string[] substrings) => ContainsAny(str, substrings.AsEnumerable());
+
+    /// <summary>
+    /// Returns <c>true</c> if this <see cref="string"/> contains any of the given <see cref="char"/>s.
+    /// </summary>
+    /// <remarks>
+    /// Similar to <see cref="CollectionUtils.ContainsAny{T}(System.Collections.Generic.IEnumerable{T},System.Collections.Generic.IEnumerable{T})"/>, except that this uses <see cref="Regex"/> matching which appears to be slightly faster while also not causing any allocations.
+    /// TODO: ...Except that when I saw no allocations, I believe I had manually cached the regex...I should run that benchmark again...
+    /// </remarks>
+    /// <param name="str"></param>
+    /// <param name="chars"></param>
+    /// <returns></returns>
+    public static bool ContainsAny(this string str, IEnumerable<char> chars) => RegexPatterns.InclusiveSet(chars).IsMatch(str);
+
+    public static bool ContainsAny(this ReadOnlySpan<char> str, ReadOnlySpan<char> chars) => str.IndexOfAny(chars) != -1;
 
     #endregion
-
-    #region DoesNotContain
-
-    /// <param name="str">this <see cref="string"/></param>
-    /// <param name="substring">the <see cref="string"/> that shouldn't be inside of <paramref name="str"/></param>
-    /// <returns>the inverse of <see cref="string.Contains(string)"/></returns>
-    public static bool DoesNotContain(this string str, string substring) {
-        return !str.Contains(substring);
-    }
 
     #endregion
 
@@ -326,16 +328,14 @@ public static partial class StringUtils {
     /// <param name="str">this <see cref="string"/></param>
     /// <param name="substrings">the <see cref="string"/>s that shouldn't be inside of <paramref name="str"/></param>
     /// <returns>the inverse of <see cref="ContainsAny(string,System.Collections.Generic.IEnumerable{string})"/></returns>
-    public static bool DoesNotContainAny(this string str, IEnumerable<string> substrings) {
-        return !str.ContainsAny(substrings);
-    }
+    public static bool ContainsNone(this string str, IEnumerable<string> substrings) => !str.ContainsAny(substrings);
 
     /// <param name="str">this <see cref="string"/></param>
     /// <param name="substrings">the <see cref="string"/>s that shouldn't be inside of <paramref name="str"/></param>
     /// <returns>the inverse of <see cref="ContainsAny(string,System.Collections.Generic.IEnumerable{string})"/></returns>
-    public static bool DoesNotContainAny(this string str, params string[] substrings) {
-        return !ContainsAny(str, substrings);
-    }
+    public static bool ContainsNone(this string str, params string[] substrings) => !ContainsAny(str, substrings);
+
+    public static bool ContainsNone(this ReadOnlySpan<char> str, ReadOnlySpan<char> chars) => str.IndexOfAny(chars) == -1;
 
     #endregion
 
@@ -357,8 +357,6 @@ public static partial class StringUtils {
     public static bool ContainsAll(this string str, params string[] substrings) {
         return ContainsAll(str, substrings.AsEnumerable());
     }
-
-    #endregion
 
     #endregion
 
@@ -454,10 +452,9 @@ public static partial class StringUtils {
 
     [Pure]
     public static IEnumerable<string> IndentWithLabel(
-        [InstantHandle]
-        this IEnumerable<string?> lines,
-        string? label,
-        string? joiner = " "
+        [InstantHandle] this IEnumerable<string?> lines,
+        string?                                   label,
+        string?                                   joiner = " "
     ) {
         if (label == null) {
             return lines.Select(it => $"{it}");
