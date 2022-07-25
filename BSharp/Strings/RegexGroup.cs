@@ -2,6 +2,7 @@ using System;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 
+using FowlFever.BSharp.Attributes;
 using FowlFever.BSharp.Enums;
 
 using JetBrains.Annotations;
@@ -34,7 +35,8 @@ namespace FowlFever.BSharp.Strings;
 /// <see cref="Name"/>
 /// <code>area_code</code>
 /// </example>
-public sealed record RegexGroup([CallerMemberName] string? Name = default) : RegexBuilder {
+[Experimental()]
+public sealed record RegexGroup(string Subexpression, [CallerMemberName] string? Name = default) : RegexBuilder {
     private string? _name = Name;
     /// <summary>
     /// The <see cref="System.Text.RegularExpressions.Group"/> name of this <a href="https://docs.microsoft.com/en-us/dotnet/standard/base-types/grouping-constructs-in-regular-expressions#named_matched_subexpression">named matched subexpression</a>.
@@ -52,17 +54,13 @@ public sealed record RegexGroup([CallerMemberName] string? Name = default) : Reg
     /// <c>\w+</c> in <c><![CDATA[(?<word>\w+)]]></c>
     /// </example>
     [RegexPattern]
-    public string Subexpression { get;  init; }
+    public string Subexpression { get;  init; } = Subexpression;
     public RegexGroupStyle Style { get; init; } = RegexGroupStyle.Named;
 
     #region Constructors
 
-    public RegexGroup(ReadOnlySpan<char> name, ReadOnlySpan<char> subexpression) : this(subexpression, name.ToString()) { }
-
     /// <inheritdoc cref="RegexGroup"/>
-    public RegexGroup(ReadOnlySpan<char> subexpression, [CallerMemberName] string? name = default) : this(name) {
-        Subexpression = subexpression.ToString();
-    }
+    public RegexGroup(ReadOnlySpan<char> subexpression, [CallerMemberName] string? name = default) : this(subexpression.ToString(), name) { }
 
     #endregion
 
@@ -81,7 +79,7 @@ public sealed record RegexGroup([CallerMemberName] string? Name = default) : Reg
     /// <param name="name"><see cref="Name"/></param>
     /// <param name="subexpression"><see cref="Subexpression"/></param>
     /// <returns>a <see cref="RegexGroupStyle.Named"/> <see cref="RegexGroup"/></returns>
-    public static RegexGroup Named(ReadOnlySpan<char> name, string subexpression) {
+    public static RegexGroup Named(string subexpression, string name) {
         return new RegexGroup(subexpression, name) {
             Style = RegexGroupStyle.Named
         };
