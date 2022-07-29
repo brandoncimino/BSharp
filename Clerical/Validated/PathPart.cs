@@ -1,39 +1,26 @@
-using System.Collections.Immutable;
-
-using FowlFever.BSharp.Clerical;
-using FowlFever.BSharp.Exceptions;
-using FowlFever.BSharp.Strings;
-using FowlFever.Clerical.Fluffy;
+using Ratified;
 
 namespace FowlFever.Clerical.Validated;
 
 /// <summary>
-/// Ensures that the <see cref="PathPart.Value"/>:
-/// <ul>
-/// <li>Doesn't contain <see cref="DirectorySeparator"/>s</li>
-/// <li>Doesn't contain any <see cref="Path.GetInvalidPathChars"/></li>
-/// <li>Doesn't contain any <see cref="Path.GetInvalidFileNameChars"/></li>
-/// </ul>
+/// Represents a <b>single section</b> <i>(i.e., without any <see cref="Clerk.DirectorySeparatorChars"/>)</i> of a <see cref="FileSystemInfo.FullPath"/>, such as a <see cref="FileSystemInfo.Name"/>.
 /// </summary>
-/// <remarks>
-/// This is a less-strict version of <see cref="FileNamePart"/>.
-/// </remarks>
-/// <seealso cref="FileNamePart"/>
-public record PathPart(string Value) : Validated<string>(Value) {
-    public static readonly ImmutableHashSet<char> InvalidChars = Path.GetInvalidPathChars()
-                                                                     .Union(Path.GetInvalidFileNameChars())
-                                                                     .Union(Clerk.DirectorySeparatorChars)
-                                                                     .ToImmutableHashSet();
-
-    internal override string BeforeValidation(string value) {
-        return base.BeforeValidation(value)
-                   .TrimStart(Clerk.DirectorySeparatorPattern, 1)
-                   .TrimEnd(Clerk.DirectorySeparatorPattern, 1);
+public record PathPart : PathString {
+    private static void Ratify(ReadOnlySpan<char> pathPart) {
+        BadCharException.Assert(pathPart, Clerk.InvalidPathPartChars);
     }
 
-    public static implicit operator PathPart(string str) => new(str);
+    public PathPart(string value) : this(value, MustRatify.Yes) { }
 
-    [Validator] internal void NoInvalidPathChars() => Must.NotContain(Value, InvalidChars);
+    private PathPart(string value, MustRatify mustRatify) : base(value, MustRatify.No) {
+        if (mustRatify == MustRatify.Yes) {
+            Ratify(value);
+        }
 
-    [Validator] internal void NotBlank() => Must.NotBeBlank(Value);
+        Value = value;
+    }
+
+    internal new static PathPart Force(string value) => new(value, MustRatify.No);
+
+    public override string ToString() => Value;
 }
