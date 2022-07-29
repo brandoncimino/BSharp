@@ -70,6 +70,10 @@ public static class SpanExtensions {
         where T : IEquatable<T> => span.IndexOf(entry) >= 0;
 
     [Pure]
+    public static bool Contains<T>(this ReadOnlySpan<T> span, ReadOnlySpan<T> subSpan)
+        where T : IEquatable<T> => span.IndexOf(subSpan) >= 0;
+
+    [Pure]
     public static bool ContainsAny<T>(this ReadOnlySpan<T> span, ReadOnlySpan<T> soughtAfter)
         where T : IEquatable<T> => span.IndexOfAny(soughtAfter) >= 0;
 
