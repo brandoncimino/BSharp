@@ -62,4 +62,16 @@ public static class SpanExtensions {
         where T : IEquatable<T> => BeforeIndex(span, span.LastIndexOfAny(splitters));
 
     #endregion
+
+    #region Containment
+
+    [Pure]
+    public static bool Contains<T>(this ReadOnlySpan<T> span, T entry)
+        where T : IEquatable<T> => span.IndexOf(entry) >= 0;
+
+    [Pure]
+    public static bool ContainsAny<T>(this ReadOnlySpan<T> span, ReadOnlySpan<T> soughtAfter)
+        where T : IEquatable<T> => span.IndexOfAny(soughtAfter) >= 0;
+
+    #endregion
 }
