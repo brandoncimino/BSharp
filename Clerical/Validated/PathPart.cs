@@ -6,21 +6,15 @@ namespace FowlFever.Clerical.Validated;
 /// Represents a <b>single section</b> <i>(i.e., without any <see cref="Clerk.DirectorySeparatorChars"/>)</i> of a <see cref="FileSystemInfo.FullPath"/>, such as a <see cref="FileSystemInfo.Name"/>.
 /// </summary>
 public record PathPart : PathString {
-    private static void Ratify(ReadOnlySpan<char> pathPart) {
-        BadCharException.Assert(pathPart, Clerk.InvalidPathPartChars);
-    }
+    public PathPart(string pathPart) : this(pathPart, MustRatify.Yes) { }
 
-    public PathPart(string value) : this(value, MustRatify.Yes) { }
-
-    private PathPart(string value, MustRatify mustRatify) : base(value, MustRatify.No) {
+    internal PathPart(string pathPart, MustRatify mustRatify) : base(pathPart, MustRatify.No) {
         if (mustRatify == MustRatify.Yes) {
-            Ratify(value);
+            BadCharException.Assert(pathPart, Clerk.InvalidPathPartChars);
         }
 
-        Value = value;
+        Value = pathPart;
     }
-
-    internal new static PathPart Force(string value) => new(value, MustRatify.No);
 
     public override string ToString() => Value;
 }

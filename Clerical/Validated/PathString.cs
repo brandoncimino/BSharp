@@ -12,23 +12,17 @@ namespace FowlFever.Clerical.Validated;
 /// incurs a new <see cref="string"/> creation (even if no modifications were performed).
 /// </remarks>
 public record PathString : IHas<string> {
-    public string Value { get; init; }
-
-    private static void Ratify(ReadOnlySpan<char> pathString) {
-        BadCharException.Assert(pathString, Clerk.InvalidPathChars);
-    }
+    public string Value { get; protected init; }
 
     public PathString(string pathString) : this(pathString, MustRatify.Yes) { }
 
-    protected PathString(string pathString, MustRatify mustRatify) {
+    internal PathString(string pathString, MustRatify mustRatify) {
         if (mustRatify == MustRatify.Yes) {
-            Ratify(pathString);
+            BadCharException.Assert(pathString, Clerk.InvalidPathChars);
         }
 
         Value = pathString;
     }
-
-    internal static PathString Force(string pathString) => new(pathString, MustRatify.No);
 
     public override string ToString() => Value;
 }

@@ -1,6 +1,4 @@
-using FowlFever.BSharp.Exceptions;
-using FowlFever.BSharp.Strings;
-using FowlFever.Clerical.Fluffy;
+using Ratified;
 
 namespace FowlFever.Clerical.Validated;
 
@@ -17,8 +15,16 @@ namespace FowlFever.Clerical.Validated;
 ///                                   [sln]           [user]
 /// ]]></code>
 /// </example>
-public record FileNamePart(string Value) : PathPart(Value) {
-    internal override string BeforeValidation(string value) => base.BeforeValidation(value).TrimStart(".", 1);
+public record FileNamePart : PathPart {
+    public FileNamePart(string fileNamePart) : this(fileNamePart, MustRatify.Yes) { }
 
-    [Validator] private void NoPeriods() => Must.NotContain(Value, ".");
+    internal FileNamePart(string fileNamePart, MustRatify mustRatify) : base(fileNamePart, MustRatify.No) {
+        if (mustRatify == MustRatify.Yes) {
+            BadCharException.Assert(fileNamePart, Clerk.InvalidFileNamePartChars);
+        }
+
+        Value = fileNamePart;
+    }
+
+    public override string ToString() => Value;
 }
