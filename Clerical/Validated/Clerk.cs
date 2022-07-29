@@ -13,18 +13,23 @@ namespace FowlFever.Clerical.Validated;
 /// Contains factory methods for <see cref="Validated"/> objects like <see cref="PathPart"/> and <see cref="FileName"/>.
 /// </summary>
 [PublicAPI]
-public static class Clerk {
+public static partial class Clerk {
     #region Constants
 
     /// <summary>
     /// The valid <see cref="DirectorySeparator"/>s, <c>/</c> and <c>\</c>.
     /// </summary>
-    public static readonly ImmutableHashSet<char> DirectorySeparatorChars = new HashSet<char> { '\\', '/' }.ToImmutableHashSet();
+    public static readonly ImmutableArray<char> DirectorySeparatorChars = ImmutableArray.Create('\\', '/');
 
     /// <summary>
-    /// Combines <see cref="Path.GetInvalidPathChars"/> and <see cref="Path.GetInvalidFileNameChars"/> into a single <see cref="ImmutableHashSet{T}"/>.
+    /// Combines <see cref="Path.GetInvalidPathChars"/> and <see cref="Path.GetInvalidFileNameChars"/>.
     /// </summary>
-    public static readonly ImmutableHashSet<char> InvalidPathChars = Path.GetInvalidPathChars().Union(Path.GetInvalidFileNameChars()).ToImmutableHashSet();
+    public static readonly ImmutableArray<char> InvalidPathChars = Path.GetInvalidPathChars().Union(Path.GetInvalidFileNameChars()).ToImmutableArray();
+
+    /// <summary>
+    /// Combines <see cref="InvalidPathChars"/> and <see cref="DirectorySeparatorChars"/>.
+    /// </summary>
+    public static readonly ImmutableArray<char> InvalidPathPartChars = InvalidPathChars.Union(DirectorySeparatorChars).ToImmutableArray();
 
     /// <summary>
     /// A <see cref="Regex"/> pattern matching <see cref="DirectorySeparatorChars"/>.
