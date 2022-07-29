@@ -317,8 +317,6 @@ public static partial class StringUtils {
     /// <returns></returns>
     public static bool ContainsAny(this string str, IEnumerable<char> chars) => RegexPatterns.InclusiveSet(chars).IsMatch(str);
 
-    public static bool ContainsAny(this ReadOnlySpan<char> str, ReadOnlySpan<char> chars) => str.IndexOfAny(chars) != -1;
-
     #endregion
 
     #endregion
