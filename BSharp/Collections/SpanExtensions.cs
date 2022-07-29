@@ -1,8 +1,7 @@
 using System;
 
-namespace FowlFever.BSharp;
+namespace FowlFever.BSharp.Collections;
 
-[Pure]
 public static class SpanExtensions {
     [Pure]
     public static ReadOnlySpan<T> AfterIndex<T>(ReadOnlySpan<T> span, int index) => index switch {
