@@ -1,3 +1,4 @@
+using FowlFever.BSharp.Enums;
 using FowlFever.Implementors;
 
 using Ratified;
@@ -11,18 +12,19 @@ namespace FowlFever.Clerical.Validated;
 /// Not using <see cref="ReadOnlySpan{T}"/> because we aren't modifying the <see cref="string"/>, and conversion to <see cref="ReadOnlySpan{T}"/> and <i>back</i> <see cref="ReadOnlySpan{T}.ToString"/>
 /// incurs a new <see cref="string"/> creation (even if no modifications were performed).
 /// </remarks>
-public record PathString : IHas<string> {
-    public string Value { get; protected init; }
+public readonly record struct PathString : IHas<string>, IPathString {
+    public string Value { get; }
 
     public PathString(string pathString) : this(pathString, MustRatify.Yes) { }
 
     internal PathString(string pathString, MustRatify mustRatify) {
-        if (mustRatify == MustRatify.Yes) {
-            BadCharException.Assert(pathString, Clerk.InvalidPathChars);
-        }
-
-        Value = pathString;
+        Value = mustRatify switch {
+            MustRatify.Yes => IPathString.Ratify(pathString),
+            MustRatify.No  => pathString,
+            _              => throw BEnum.UnhandledSwitch(mustRatify)
+        };
     }
 
-    public override string ToString() => Value;
+    public override string     ToString()     => Value;
+    public          PathString ToPathString() => this;
 }
