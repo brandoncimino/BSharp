@@ -11,10 +11,6 @@ public static class HasExtensions {
 
     public static T? OrDefault<T>(this IHas<T>? self) => self == null ? default : self.Value;
 
-    /// <inheritdoc cref="OrDefault{T}(FowlFever.Implementors.IHas{T}?)"/>
-    public static string OrDefault<SELF>(this SELF? self)
-        where SELF : IHas<string?> => self?.Value ?? "";
-
     /// <param name="self">this <see cref="IHas{T}"/></param>
     /// <typeparam name="T">the type of the wrapped <see cref="IHas{T}.Value"/></typeparam>
     /// <returns>this <see cref="IHas{T}"/>.<see cref="IHas{T}.Value"/></returns>
