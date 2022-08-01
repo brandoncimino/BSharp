@@ -12,29 +12,46 @@ namespace FowlFever.Clerical.Validated;
 /// <summary>
 /// Contains factory methods for <see cref="Validated"/> objects like <see cref="PathPart"/> and <see cref="FileName"/>.
 /// </summary>
-[PublicAPI]
-public static partial class Clerk {
+public static class Clerk {
     #region Constants
 
     /// <summary>
-    /// The valid <see cref="DirectorySeparator"/>s, <c>/</c> and <c>\</c>.
+    /// The valid <see cref="DirectorySeparator"/>s; <b><c>/</c></b> and <b><c>\</c></b>.
     /// </summary>
     public static readonly ImmutableArray<char> DirectorySeparatorChars = ImmutableArray.Create('\\', '/');
 
     /// <summary>
     /// Combines <see cref="Path.GetInvalidPathChars"/> and <see cref="Path.GetInvalidFileNameChars"/>.
     /// </summary>
-    public static readonly ImmutableArray<char> InvalidPathChars = Path.GetInvalidPathChars().Union(Path.GetInvalidFileNameChars()).ToImmutableArray();
+    public static readonly ImmutableArray<char> InvalidPathChars = Enumerable.Union(Path.GetInvalidPathChars(), Path.GetInvalidFileNameChars()).ToImmutableArray();
 
     /// <summary>
     /// Combines <see cref="InvalidPathChars"/> and <see cref="DirectorySeparatorChars"/>.
     /// </summary>
     public static readonly ImmutableArray<char> InvalidPathPartChars = InvalidPathChars.Union(DirectorySeparatorChars).ToImmutableArray();
 
+    /// <inheritdoc cref="InvalidPathChars"/>
+    public static ImmutableArray<char> InvalidFileNameChars => InvalidPathChars;
+    /// <summary>
+    /// Combines <see cref="InvalidFileNameChars"/> with <c>.</c> <i>(period)</i>.
+    /// </summary>
+    public static ImmutableArray<char> InvalidFileNamePartChars = InvalidPathChars.Add('.');
+
     /// <summary>
     /// A <see cref="Regex"/> pattern matching <see cref="DirectorySeparatorChars"/>.
     /// </summary>
     public static readonly Regex DirectorySeparatorPattern = new(@"[\\\/]");
+    public static readonly Regex OuterSeparatorPattern = RegexPatterns.OuterMatch(DirectorySeparatorPattern);
+    public static readonly Regex InnerSeparatorPattern = RegexPatterns.InnerMatch(DirectorySeparatorPattern);
+
+    /// <summary>
+    /// Matches <b>any</b> single <see cref="FileExtension"/>.
+    /// </summary>
+    internal static readonly RegexGroup SingleExtensionGroup = new(@"\.[^.]+");
+    /// <summary>
+    /// Matches a contiguous sequence of <see cref="FileExtension"/>s at the <b>end</b> of a <see cref="string"/>.
+    /// </summary>
+    internal static readonly RegexGroup ExtensionGroup = new($@"({SingleExtensionGroup})+$");
 
     #endregion
 
