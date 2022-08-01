@@ -1,9 +1,11 @@
 using System.Collections.Immutable;
-using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
 
 using FowlFever.BSharp.Clerical;
+using FowlFever.BSharp.Collections;
 using FowlFever.BSharp.Strings;
+using FowlFever.Clerical.Validated.Atomic;
+using FowlFever.Clerical.Validated.Composed;
 
 using JetBrains.Annotations;
 
@@ -56,10 +58,10 @@ public static class Clerk {
     #endregion
 
     /// <summary>
-    /// Extracts the <see cref="Path.GetFileName"/> without <b>ANY</b> <see cref="FileExtension"/>s from the given <paramref name="path"/>.
+    /// Extracts the <see cref="Path.GetFileName(System.ReadOnlySpan{char})"/> without <b>ANY</b> <see cref="FileExtension"/>s from the given <paramref name="path"/>.
     /// <p/>
     /// If the <paramref name="path"/> doesn't contain a base file name (for example, it <see cref="string.IsNullOrEmpty"/>, or begins with a period like <c>.ssh</c>),
-    /// then <c>null</c> is returned instead.
+    /// then <see cref="FileNamePart.Empty"/> is returned instead.
     /// </summary>
     /// <example>
     /// <code><![CDATA[
@@ -109,31 +111,17 @@ public static class Clerk {
             .ToImmutableArray(span => new FileExtension(span.ToString()));
     }
 
-    public static IEnumerable<PathPart>      SplitPath(string         path) => BPath.SplitPath(path).Select(PathPart.From);
-    public static IEnumerable<FileExtension> GetFileExtensions(string path) => BPath.GetExtensions(path).Select(it => new FileExtension(it));
-    public static FileName                   GetFileName(string       path) => new FileName(Path.GetFileName(path));
+    private static SpanSpliterator<char> EnumerateExtensions(ReadOnlySpan<char> path) => new(GetFullExtension(path), '.');
 
-    /// <summary>
-    /// Validates and creates a <see cref="DirectoryPath"/>.
-    /// </summary>
-    /// <param name="path"></param>
-    /// <param name="separator"></param>
-    /// <returns></returns>
-    public static DirectoryPath GetDirectoryPath(string path, DirectorySeparator separator = default) {
-        return new DirectoryPath(separator, path);
-    }
+    public static FileName GetFileName(string             path) => new(path);
+    public static FileName GetFileName(ReadOnlySpan<char> path) => GetFileName(path.ToString());
 
-    public static FilePath GetFilePath(string path, DirectorySeparator separator = default) {
-        if (BPath.EndsWithSeparator(path)) {
-            throw new ArgumentException("Path ended with a separator, implying that it is a DIRECTORY!");
-        }
-
-        return new FilePath(
-            "",
-            // GetDirectoryPath(path, separator),
-            // GetFileName(path),
-            separator
-        );
+    public static bool EndsInDirectorySeparator(string path) {
+#if NET6_0_OR_GREATER
+        return Path.EndsInDirectorySeparator(path);
+#else
+        return DirectorySeparatorChars.Contains(path.Last());
+#endif
     }
 
     /// <summary>
@@ -146,9 +134,12 @@ public static class Clerk {
     /// <summary>
     /// The <see cref="FileName"/>-flavored version of <see cref="Path.GetTempFileName"/>.
     /// </summary>
+    /// <remarks>
+    /// ⚠ The built-in method, <see cref="Path.GetTempFileName"/> is <b>incorrectly named</b>! It actually <b>creates a new file!</b>
+    /// </remarks>
     /// <returns>a <see cref="FileName"/> equivalent of <see cref="Path.GetTempFileName"/></returns>
     [Pure]
-    public static FileName GetTempFileName() => GetFileName(Path.GetTempFileName());
+    public static FileName CreateTempFile() => GetFileName(Path.GetTempFileName());
 
     /// <summary>
     /// <see cref="FileName"/>-flavored version of <see cref="Path.GetRandomFileName"/>.
