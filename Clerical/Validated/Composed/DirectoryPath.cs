@@ -73,7 +73,8 @@ public readonly record struct DirectoryPath() : IDirectoryPath, IHasDirectoryInf
 
     #endregion
 
-    public override string        ToString()        => Value;
-    public          PathString    ToPathString()    => new(Value, MustRatify.No);
-    public          DirectoryPath ToDirectoryPath() => this;
+    public          bool          Equals(string? other) => Value.Equals(other);
+    public override string        ToString()            => Value;
+    public          PathString    ToPathString()        => new(Value, MustRatify.No);
+    public          DirectoryPath ToDirectoryPath()     => this;
 }

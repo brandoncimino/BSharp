@@ -1,6 +1,6 @@
 namespace FowlFever.Clerical.Validated.Atomic;
 
-public interface IPathString {
+public interface IPathString : IEquatable<string?> {
     public bool       IsEmpty { get; }
     public PathString ToPathString();
 

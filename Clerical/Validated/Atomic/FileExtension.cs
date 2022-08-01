@@ -38,8 +38,9 @@ public readonly record struct FileExtension : IHas<string>, IFileExtension {
 
     public override string ToString() => Value;
 
-    public PathString    ToPathString()    => new(Value, MustRatify.No);
-    public PathPart      ToPathPart()      => new(Value, MustRatify.No);
-    public FileNamePart  ToFileNamePart()  => new(Value[1..], MustRatify.No);
-    public FileExtension ToFileExtension() => this;
+    public PathString    ToPathString()        => new(Value, MustRatify.No);
+    public PathPart      ToPathPart()          => new(Value, MustRatify.No);
+    public FileNamePart  ToFileNamePart()      => new(Value[1..], MustRatify.No);
+    public FileExtension ToFileExtension()     => this;
+    public bool          Equals(string? other) => Value.Equals(other);
 }

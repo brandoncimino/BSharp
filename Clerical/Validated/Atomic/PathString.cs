@@ -29,6 +29,7 @@ public readonly record struct PathString : IHas<string>, IPathString {
         };
     }
 
-    public override string     ToString()     => Value;
-    public          PathString ToPathString() => this;
+    public override string     ToString()            => Value;
+    public          PathString ToPathString()        => this;
+    public          bool       Equals(string? other) => Value.Equals(other);
 }

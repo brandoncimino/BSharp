@@ -64,7 +64,8 @@ public readonly record struct FileName() : IFileName {
         Extensions = extensions;
     }
 
-    public FileName   ToFileName()   => this;
-    public PathPart   ToPathPart()   => new(Value, MustRatify.No);
-    public PathString ToPathString() => new(Value, MustRatify.No);
+    public FileName   ToFileName()          => this;
+    public PathPart   ToPathPart()          => new(Value, MustRatify.No);
+    public PathString ToPathString()        => new(Value, MustRatify.No);
+    public bool       Equals(string? other) => Value.Equals(other);
 }

@@ -108,7 +108,8 @@ public readonly record struct FilePath() : IFilePath, IHas<string> {
 
     #endregion
 
-    public PathString  ToPathString() => new(Value, MustRatify.No);
-    public FileName    ToFileName()   => FileName;
-    PathPart IPathPart.ToPathPart()   => FileName.ToPathPart();
+    public PathString  ToPathString()        => new(Value, MustRatify.No);
+    public FileName    ToFileName()          => FileName;
+    PathPart IPathPart.ToPathPart()          => FileName.ToPathPart();
+    public bool        Equals(string? other) => Value.Equals(other);
 }
