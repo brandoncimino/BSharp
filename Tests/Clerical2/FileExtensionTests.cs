@@ -1,7 +1,7 @@
 using System;
 
 using FowlFever.BSharp.Optional;
-using FowlFever.Clerical.Validated;
+using FowlFever.Clerical.Validated.Atomic;
 using FowlFever.Testing;
 
 using NUnit.Framework;
@@ -14,6 +14,7 @@ public class FileExtensionTests {
     public static FileExtensionExpectation[] FileExtensionExpectations = {
         new("a", Should.Pass),
         new(".a", Should.Pass),
+        new(".json5", Should.Pass),
         new("a.b", Should.Fail),
         new("..a", Should.Fail),
         new(" ", Should.Fail),
