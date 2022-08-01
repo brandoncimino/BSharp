@@ -129,7 +129,7 @@ public static class Clerk {
     /// </summary>
     /// <returns>a <see cref="DirectoryPath"/> equivalent of <see cref="Path.GetTempPath"/></returns>
     [Pure]
-    public static DirectoryPath GetTempPath() => new(Path.GetTempPath());
+    public static DirectoryPath GetTempFolder() => new(Path.GetTempPath());
 
     /// <summary>
     /// The <see cref="FileName"/>-flavored version of <see cref="Path.GetTempFileName"/>.
