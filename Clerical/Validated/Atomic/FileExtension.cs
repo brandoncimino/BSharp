@@ -14,6 +14,8 @@ namespace FowlFever.Clerical.Validated.Atomic;
 /// </ul>
 /// </summary>
 public readonly record struct FileExtension : IHas<string>, IFileExtension {
+    public static readonly FileExtension Empty = new();
+
     public string Value   { get; }
     public bool   IsEmpty => Value.IsEmpty();
 

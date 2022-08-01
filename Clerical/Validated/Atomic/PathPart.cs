@@ -10,6 +10,8 @@ namespace FowlFever.Clerical.Validated.Atomic;
 /// Represents a <b>single section</b> <i>(i.e., without any <see cref="Clerk.DirectorySeparatorChars"/>)</i> of a <see cref="FileSystemInfo.FullPath"/>, such as a <see cref="FileSystemInfo.Name"/>.
 /// </summary>
 public readonly record struct PathPart : IHas<string>, IPathPart {
+    public static readonly PathPart Empty = new();
+
     public string Value { get; }
 
     public PathPart(string pathPart) : this(pathPart, MustRatify.Yes) { }

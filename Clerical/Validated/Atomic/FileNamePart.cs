@@ -20,6 +20,8 @@ namespace FowlFever.Clerical.Validated.Atomic;
 /// ]]></code>
 /// </example>
 public readonly record struct FileNamePart : IHas<string>, IFileNamePart {
+    public static readonly FileNamePart Empty = new();
+
     public string Value { get; }
 
     public FileNamePart(string fileNamePart) : this(fileNamePart, MustRatify.Yes) { }

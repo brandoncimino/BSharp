@@ -16,6 +16,8 @@ namespace FowlFever.Clerical.Validated.Composed;
 /// </summary>
 [SuppressMessage("ReSharper", "InvertIf")]
 public readonly record struct FilePath : IFilePath, IHas<string> {
+    public static readonly FilePath Empty = new();
+
     [MaybeNull] private readonly StrongBox<string> _value = new();
     public string Value => _value switch {
         null     => "",
