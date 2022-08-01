@@ -19,12 +19,17 @@ public static partial class CollectionUtils {
     /// <typeparam name="TSource"><inheritdoc cref="Enumerable.Any{TSource}(System.Collections.Generic.IEnumerable{TSource})"/></typeparam>
     /// <returns>the inverse of <see cref="Enumerable.Any{TSource}(System.Collections.Generic.IEnumerable{TSource})"/></returns>
     /// <remarks>
+    /// Specifically delegates to <see cref="string.Length"/> if possible.
     /// TODO: Experiment on whether it makes sense to have a special version of <see cref="IsEmpty{TSource}(System.Collections.Generic.IEnumerable{TSource}?)"/> as an <see cref="IOptional{T}"/> extension method, which would return the inverse of <see cref="IOptional{T}.HasValue"/>. The problem is that this method causes ambiguity with the <see cref="IEnumerable{T}"/> version of <see cref="IOptional{T}"/>
     /// </remarks>
     /// <seealso cref="None{T}(System.Collections.Generic.IEnumerable{T})"/>
     [Pure]
     public static bool IsEmpty<TSource>([NotNullWhen(false)] [InstantHandle] this IEnumerable<TSource>? source) {
-        return source == null || !source.Any();
+        return source switch {
+            null     => true,
+            string s => s.Length == 0,
+            _        => !source.Any()
+        };
     }
 
     /// <summary>
