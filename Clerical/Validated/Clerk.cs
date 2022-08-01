@@ -125,14 +125,14 @@ public static class Clerk {
     }
 
     /// <summary>
-    /// The <see cref="DirectoryPath"/>-flavored version of <see cref="Path.GetTempPath"/>.
+    /// <inheritdoc cref="Path.GetTempPath"/>
     /// </summary>
     /// <returns>a <see cref="DirectoryPath"/> equivalent of <see cref="Path.GetTempPath"/></returns>
     [Pure]
     public static DirectoryPath GetTempFolder() => new(Path.GetTempPath());
 
     /// <summary>
-    /// The <see cref="FileName"/>-flavored version of <see cref="Path.GetTempFileName"/>.
+    /// <inheritdoc cref="Path.GetTempFileName"/>
     /// </summary>
     /// <remarks>
     /// ⚠ The built-in method, <see cref="Path.GetTempFileName"/> is <b>incorrectly named</b>! It actually <b>creates a new file!</b>
@@ -142,7 +142,7 @@ public static class Clerk {
     public static FileName CreateTempFile() => GetFileName(Path.GetTempFileName());
 
     /// <summary>
-    /// <see cref="FileName"/>-flavored version of <see cref="Path.GetRandomFileName"/>.
+    /// <inheritdoc cref="Path.GetRandomFileName"/>
     /// </summary>
     /// <returns>a <see cref="FileName"/> equivalent of <see cref="Path.GetRandomFileName"/></returns>
     [Pure]
