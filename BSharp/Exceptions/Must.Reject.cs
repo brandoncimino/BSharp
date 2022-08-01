@@ -7,14 +7,13 @@ public static partial class Must {
     [Pure]
     public static RejectionException Reject<T>(
         T?      actualValue,
-        string? details,
+        string? details = default,
         [CallerArgumentExpression("actualValue")]
         string? parameterName = default,
-        string?    rejectedBy = default,
-        string?    reason     = default,
-        Exception? causedBy   = default,
-        [CallerMemberName]
-        string? caller = default
+        string?                    rejectedBy = default,
+        string?                    reason     = default,
+        Exception?                 causedBy   = default,
+        [CallerMemberName] string? caller     = default
     ) {
         return new RejectionException(
             actualValue,
@@ -32,8 +31,7 @@ public static partial class Must {
         Type desiredType,
         [CallerArgumentExpression("actualValue")]
         string? parameterName = default,
-        [CallerMemberName]
-        string? rejectedBy = default
+        [CallerMemberName] string? rejectedBy = default
     ) {
         return new RejectionException(
             actualValue,
@@ -52,12 +50,9 @@ public static partial class Must {
     /// <returns>a new <see cref="RejectionException"/></returns>
     [Pure]
     public static RejectionException RejectUnreachable(
-        [CallerMemberName]
-        string? rejectedBy = default,
-        [CallerFilePath]
-        string? file = default,
-        [CallerLineNumber]
-        int? lineNo = default
+        [CallerMemberName] string? rejectedBy = default,
+        [CallerFilePath]   string? file       = default,
+        [CallerLineNumber] int?    lineNo     = default
     ) {
         return new RejectionException($"{file}:line {lineNo}", rejectedBy: rejectedBy, reason: "this code should be unreachable!");
     }
