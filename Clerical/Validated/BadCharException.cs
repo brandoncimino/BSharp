@@ -34,10 +34,11 @@ public class BadCharException : BrandonException {
             line2[i] = badChars.Contains(source[i]) ? source[i] : ' ';
         }
 
-        var sb = new StringBuilder($"{sourceExp} contained {badExp}!");
-        sb.AppendLine(source.ToString());
-        sb.AppendLine(line2.ToString());
-        return sb.ToString();
+        return new StringBuilder()
+               .AppendLine($"{sourceExp} contained {badExp}!")
+               .AppendLine(source.ToString())
+               .AppendLine(line2.ToString())
+               .ToString();
     }
 
     public static void Assert(ReadOnlySpan<char> source, ReadOnlySpan<char> badChars, [CallerArgumentExpression("source")] string? sourceExp = default, [CallerArgumentExpression("badChars")] string? badExp = default) {
