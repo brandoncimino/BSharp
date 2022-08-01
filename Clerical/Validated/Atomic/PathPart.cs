@@ -35,6 +35,7 @@ public readonly record struct PathPart : IHas<string>, IPathPart {
     }
 
     public override string     ToString()     => Value;
+    public          bool       IsEmpty        => Value.IsEmpty();
     public          PathString ToPathString() => new(Value, MustRatify.No);
     public          PathPart   ToPathPart()   => this;
 }

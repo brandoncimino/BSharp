@@ -1,3 +1,4 @@
+using FowlFever.BSharp.Collections;
 using FowlFever.BSharp.Enums;
 using FowlFever.Implementors;
 
@@ -33,6 +34,7 @@ public readonly record struct FileNamePart : IHas<string>, IFileNamePart {
 
     public override string ToString() => Value;
 
+    public bool         IsEmpty          => Value.IsEmpty();
     public PathString   ToPathString()   => new(Value, MustRatify.No);
     public PathPart     ToPathPart()     => new(Value, MustRatify.No);
     public FileNamePart ToFileNamePart() => this;

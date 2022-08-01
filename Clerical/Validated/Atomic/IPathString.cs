@@ -1,6 +1,7 @@
 namespace FowlFever.Clerical.Validated.Atomic;
 
 public interface IPathString {
+    public bool       IsEmpty { get; }
     public PathString ToPathString();
 
     public static ReadOnlySpan<char> Ratify(ReadOnlySpan<char> pathString) {

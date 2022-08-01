@@ -1,3 +1,4 @@
+using FowlFever.BSharp.Collections;
 using FowlFever.BSharp.Enums;
 using FowlFever.Implementors;
 
@@ -13,7 +14,8 @@ namespace FowlFever.Clerical.Validated.Atomic;
 /// </ul>
 /// </summary>
 public readonly record struct FileExtension : IHas<string>, IFileExtension {
-    public string Value { get; }
+    public string Value   { get; }
+    public bool   IsEmpty => Value.IsEmpty();
 
     /// <summary>
     /// Ensures that <see cref="PathString.Value"/>:

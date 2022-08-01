@@ -1,3 +1,4 @@
+using FowlFever.BSharp.Collections;
 using FowlFever.BSharp.Enums;
 using FowlFever.Implementors;
 
@@ -13,7 +14,8 @@ namespace FowlFever.Clerical.Validated.Atomic;
 /// incurs a new <see cref="string"/> creation (even if no modifications were performed).
 /// </remarks>
 public readonly record struct PathString : IHas<string>, IPathString {
-    public string Value { get; }
+    public string Value   { get; }
+    public bool   IsEmpty => Value.IsEmpty();
 
     public PathString(string pathString) : this(pathString, MustRatify.Yes) { }
 
