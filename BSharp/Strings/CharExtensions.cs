@@ -8,14 +8,15 @@ public static class CharExtensions {
 
     private static readonly Regex WordCharacter    = new(@"^\w$");
     private static readonly Regex NonWordCharacter = new(@"^\W$");
-    public static           bool  IsWordCharacter(this    char character) => WordCharacter.IsMatch(character.ToString());
-    public static           bool  IsNonWordCharacter(this char character) => NonWordCharacter.IsMatch(character.ToString());
+    public static           bool  IsWordCharacter(this    char c) => WordCharacter.IsMatch(c.ToString());
+    public static           bool  IsNonWordCharacter(this char c) => NonWordCharacter.IsMatch(c.ToString());
 
     private const char ZeroWidthJoiner = '\u200D';
-    public static bool IsZeroWidthJoiner(this char character) => character == ZeroWidthJoiner;
 
-    /// <param name="c">this <see cref="char"/></param>
-    /// <returns>true if <paramref name="c"/> is <c>/</c> or <c>\</c></returns>
+    /// <returns>true if this is the <a href="https://en.wikipedia.org/wiki/Zero-width_joiner">zero-width joiner</a></returns>
+    public static bool IsZeroWidthJoiner(this char c) => c == ZeroWidthJoiner;
+
+    /// <returns>true if this is <c>/</c> or <c>\</c></returns>
     public static bool IsDirectorySeparator(this char c) => c is '\\' or '/';
 
     #region Built-In Method Extensions
