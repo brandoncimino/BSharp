@@ -4,7 +4,7 @@ using FowlFever.Implementors;
 
 using Ratified;
 
-namespace FowlFever.Clerical.Validated;
+namespace FowlFever.Clerical.Validated.Atomic;
 
 /// <summary>
 /// Represents a <b>single section</b> <i>(i.e., without any <see cref="Clerk.DirectorySeparatorChars"/>)</i> of a <see cref="FileSystemInfo.FullPath"/>, such as a <see cref="FileSystemInfo.Name"/>.

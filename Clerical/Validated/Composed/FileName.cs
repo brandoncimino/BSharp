@@ -3,14 +3,13 @@ using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
 using FowlFever.Clerical.Validated.Atomic;
-using FowlFever.Clerical.Validated.Composed;
 using FowlFever.Implementors;
 
 using JetBrains.Annotations;
 
 using Ratified;
 
-namespace FowlFever.Clerical.Validated;
+namespace FowlFever.Clerical.Validated.Composed;
 
 public readonly record struct ArgLazy<T, ARG> {
     private                      Func<ARG, T> ValueFactory { get; }

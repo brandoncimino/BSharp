@@ -2,15 +2,15 @@ using System.Collections.Immutable;
 using System.Runtime.CompilerServices;
 
 using FowlFever.BSharp.Clerical;
-using FowlFever.Clerical.Validated.Composed;
+using FowlFever.Clerical.Validated.Atomic;
 using FowlFever.Implementors;
 
 using Ratified;
 
-namespace FowlFever.Clerical.Validated;
+namespace FowlFever.Clerical.Validated.Composed;
 
 /// <summary>
-/// Represents a group of <see cref="PathPart"/>s
+/// Represents a group of <see cref="PathPart"/>s.
 /// </summary>
 public readonly record struct DirectoryPath : IDirectoryPath, IHasDirectoryInfo, IHas<string> {
     private readonly StrongBox<string>        _value = new();

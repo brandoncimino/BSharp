@@ -1,4 +1,4 @@
-namespace FowlFever.Clerical.Validated;
+namespace FowlFever.Clerical.Validated.Atomic;
 
 public interface IFileNamePart : IPathPart {
     public FileNamePart ToFileNamePart();

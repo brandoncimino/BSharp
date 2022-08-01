@@ -1,5 +1,7 @@
 using System.Collections.Immutable;
 
+using FowlFever.Clerical.Validated.Atomic;
+
 namespace FowlFever.Clerical.Validated.Composed;
 
 public interface IFileSystemPath : IPathString {

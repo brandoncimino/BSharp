@@ -3,7 +3,7 @@ using FowlFever.Implementors;
 
 using Ratified;
 
-namespace FowlFever.Clerical.Validated;
+namespace FowlFever.Clerical.Validated.Atomic;
 
 /// <summary>
 /// Represents a string that doesn't contain any <see cref="Path.GetInvalidPathChars"/> or <see cref="Path.GetInvalidFileNameChars"/>.

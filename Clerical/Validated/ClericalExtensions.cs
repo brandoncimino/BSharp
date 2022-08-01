@@ -1,4 +1,5 @@
 using FowlFever.BSharp.Clerical;
+using FowlFever.Clerical.Validated.Atomic;
 
 namespace FowlFever.Clerical.Validated;
 

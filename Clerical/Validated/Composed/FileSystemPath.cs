@@ -1,4 +1,4 @@
-namespace FowlFever.Clerical.Validated;
+namespace FowlFever.Clerical.Validated.Composed;
 
 // public abstract record FileSystemPath : IFileSystemPath {
 //     public ImmutableArray<PathPart> Parts     { get; }

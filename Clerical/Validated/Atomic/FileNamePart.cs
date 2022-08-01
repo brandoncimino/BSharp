@@ -1,10 +1,9 @@
 using FowlFever.BSharp.Enums;
-using FowlFever.Clerical.Validated.Atomic;
 using FowlFever.Implementors;
 
 using Ratified;
 
-namespace FowlFever.Clerical.Validated;
+namespace FowlFever.Clerical.Validated.Atomic;
 
 /// <summary>
 /// Represents one part of a <see cref="FileInfo"/>.<see cref="FileInfo.Name"/> - either the base name or a <see cref="FileExtension"/>.
