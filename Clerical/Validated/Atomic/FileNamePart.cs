@@ -1,4 +1,5 @@
 using FowlFever.BSharp.Enums;
+using FowlFever.Clerical.Validated.Atomic;
 using FowlFever.Implementors;
 
 using Ratified;

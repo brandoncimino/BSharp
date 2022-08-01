@@ -1,4 +1,5 @@
 using FowlFever.BSharp.Enums;
+using FowlFever.BSharp.Strings;
 using FowlFever.Implementors;
 
 using Ratified;
@@ -13,9 +14,21 @@ public readonly record struct PathPart : IHas<string>, IPathPart {
 
     public PathPart(string pathPart) : this(pathPart, MustRatify.Yes) { }
 
+    private static ReadOnlySpan<char> TrimDirectorySeparators(ReadOnlySpan<char> pathPart) {
+        if (pathPart[0].IsDirectorySeparator()) {
+            pathPart = pathPart[1..];
+        }
+
+        if (pathPart[^1].IsDirectorySeparator()) {
+            pathPart = pathPart[..^1];
+        }
+
+        return pathPart;
+    }
+
     internal PathPart(string pathPart, MustRatify mustRatify) {
         Value = mustRatify switch {
-            MustRatify.Yes => IPathPart.Ratify(pathPart),
+            MustRatify.Yes => IPathPart.Ratify(TrimDirectorySeparators(pathPart.AsSpan())).ToString(),
             MustRatify.No  => pathPart,
             _              => throw BEnum.UnhandledSwitch(mustRatify)
         };

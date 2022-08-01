@@ -3,7 +3,7 @@ using FowlFever.Implementors;
 
 using Ratified;
 
-namespace FowlFever.Clerical.Validated;
+namespace FowlFever.Clerical.Validated.Atomic;
 
 /// <summary>
 /// Ensures that <see cref="PathString.Value"/>:
