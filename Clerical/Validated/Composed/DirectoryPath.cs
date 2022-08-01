@@ -66,6 +66,11 @@ public readonly record struct DirectoryPath : IDirectoryPath, IHasDirectoryInfo,
         Separator = separator;
     }
 
+    public DirectoryPath(
+        string             directoryPath,
+        DirectorySeparator separator = DirectorySeparator.Universal
+    ) : this(Clerk.SplitPath(directoryPath), separator) { }
+
     #endregion
 
     public override string        ToString()        => Value;
