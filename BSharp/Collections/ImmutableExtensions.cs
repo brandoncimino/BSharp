@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
@@ -114,5 +115,23 @@ public static class ImmutableExtensions {
     /// </summary>
     public static ImmutableList<T> Slice<T>(this ImmutableList<T> source, int start, int length) {
         return source.GetRange(start, start + length);
+    }
+
+    /// <summary>
+    /// TODO: this could probably be more efficient
+    /// </summary>
+    /// <param name="source"></param>
+    /// <param name="range"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public static ImmutableArray<T> Slice<T>(this ImmutableArray<T> source, Range range) {
+        var (off, len) = range.GetOffsetAndLength(source.Length);
+        var builder = ImmutableArray.CreateBuilder<T>(len);
+
+        for (int i = 0; i < builder.Count; i++) {
+            builder[i] = source[off + i];
+        }
+
+        return builder.MoveToImmutable();
     }
 }
