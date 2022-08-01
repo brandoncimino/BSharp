@@ -141,14 +141,14 @@ public static class Clerk {
     /// </summary>
     /// <returns>a <see cref="DirectoryPath"/> equivalent of <see cref="Path.GetTempPath"/></returns>
     [Pure]
-    public static DirectoryPath GetTempDirectoryPath() => GetDirectoryPath(Path.GetTempPath());
+    public static DirectoryPath GetTempPath() => new(Path.GetTempPath());
 
     /// <summary>
     /// The <see cref="FileName"/>-flavored version of <see cref="Path.GetTempFileName"/>.
     /// </summary>
     /// <returns>a <see cref="FileName"/> equivalent of <see cref="Path.GetTempFileName"/></returns>
     [Pure]
-    public static FileName CreateTempFileName() => GetFileName(Path.GetTempFileName());
+    public static FileName GetTempFileName() => GetFileName(Path.GetTempFileName());
 
     /// <summary>
     /// <see cref="FileName"/>-flavored version of <see cref="Path.GetRandomFileName"/>.
