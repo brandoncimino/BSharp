@@ -46,9 +46,13 @@ public readonly record struct FileName : IFileName {
 
     #region Construction
 
-    public FileName(string     pathPart) : this(Clerk.GetBaseName(pathPart), Clerk.GetExtensions(pathPart)) { }
-    public FileName(PathPart   pathPart) : this(Clerk.GetBaseName(pathPart.ToString()), Clerk.GetExtensions(pathPart.ToString())) { }
-    public FileName(PathString pathString) : this(Clerk.GetBaseName(pathString.ToString()), Clerk.GetExtensions(pathString.ToString())) { }
+    internal FileName(string fileName, MustRatify mustRatify) : this(Clerk.GetBaseName(fileName), Clerk.GetExtensions(fileName)) {
+        if (mustRatify == MustRatify.Yes) {
+            IFileName.Ratify(fileName);
+        }
+    }
+
+    public FileName(string fileName) : this(fileName, MustRatify.Yes) { }
 
     #endregion
 

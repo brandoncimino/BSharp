@@ -95,7 +95,7 @@ public readonly record struct FilePath : IFilePath, IHas<string> {
 
     public FilePath(IEnumerable<PathPart> parts, DirectorySeparator separator = DirectorySeparator.Universal) : this() {
         Parts      = parts.ToImmutableArray();
-        FileName   = new FileName(Parts.Last());
+        FileName   = new FileName(Parts.Last().Value);
         _directory = new DirectoryPath(Parts.Slice(..^1));
         Separator  = separator;
     }

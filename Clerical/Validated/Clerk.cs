@@ -71,21 +71,42 @@ public static class Clerk {
     /// ]]></code>
     /// </example>
     /// <param name="path">the full <see cref="Path"/></param>
-    /// <returns>the "base name" for the path, </returns>
-    public static FileNamePart? GetBaseName(string? path) {
-        [return: NotNullIfNotNull("_path")]
-        static string? _GetBaseName(string? _path) {
-            if (_path == null) {
-                return null;
-            }
+    /// <returns>the "base name" for the path, without any <see cref="FileExtension"/>s</returns>
+    [Pure]
+    public static FileNamePart GetBaseName(string? path) {
+        var bn = GetBaseName(path.AsSpan());
+        return new FileNamePart(bn.ToString());
+    }
 
-            var fileName    = Path.GetFileName(_path);
-            var firstPeriod = fileName.IndexOf(".", StringComparison.Ordinal);
-            return firstPeriod < 0 ? fileName : fileName[..firstPeriod];
-        }
+    public static ReadOnlySpan<char> GetBaseName(ReadOnlySpan<char> path) {
+        var fileName    = Path.GetFileName(path);
+        var firstPeriod = fileName.IndexOf('.');
+        return firstPeriod < 0 ? path : path[..firstPeriod];
+    }
 
-        var bn = _GetBaseName(path);
-        return bn.IsEmpty() ? null : new FileNamePart(bn);
+    public static ReadOnlySpan<char> GetFullExtension(ReadOnlySpan<char> path) {
+        var fileName    = Path.GetFileName(path);
+        var firstPeriod = fileName.IndexOf('.');
+        return firstPeriod < 0 ? ReadOnlySpan<char>.Empty : path[firstPeriod..];
+    }
+
+    public static IEnumerable<PathPart> SplitPath(string? path) {
+        return EnumeratePathParts(path)
+            .ToImmutableArray(span => new PathPart(span.ToString()));
+    }
+
+    private static SpanSpliterator<char> EnumeratePathParts(ReadOnlySpan<char> path) => new(path, DirectorySeparatorChars.AsSpan());
+
+    /// <summary>
+    /// Extracts each <b>individual</b> <see cref="FileExtension"/> from a path.
+    /// </summary>
+    /// <remarks>This uses the <see cref="SingleExtensionGroup"/> <see cref="RegexGroup"/> for matching.</remarks>
+    /// <param name="path">a path or file name</param>
+    /// <returns><b>all</b> of the extensions at the end of the <paramref name="path"/></returns>
+    /// <remarks>This method is similar to <see cref="Path.GetExtension(System.ReadOnlySpan{char})"/>, except that it can retrieve multiple extensions, i.e. <c>game.sav.json</c> -> <c>[.sav, .json]</c></remarks>
+    public static ImmutableArray<FileExtension> GetExtensions(string? path) {
+        return EnumerateExtensions(path)
+            .ToImmutableArray(span => new FileExtension(span.ToString()));
     }
 
     public static IEnumerable<PathPart>      SplitPath(string         path) => BPath.SplitPath(path).Select(PathPart.From);

@@ -14,7 +14,7 @@ public interface IFileName : IPathPart {
         return fileName;
     }
 
-    public new string Ratify(string fileName) {
+    public new static string Ratify(string fileName) {
         Ratify(fileName.AsSpan());
         return fileName;
     }
