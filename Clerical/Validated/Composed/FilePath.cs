@@ -15,7 +15,7 @@ namespace FowlFever.Clerical.Validated.Composed;
 /// Combines a <see cref="DirectoryPath"/> with a <see cref="FileName"/>.
 /// </summary>
 [SuppressMessage("ReSharper", "InvertIf")]
-public readonly record struct FilePath : IFilePath, IHas<string> {
+public readonly record struct FilePath() : IFilePath, IHas<string> {
     public static readonly FilePath Empty = new();
 
     [MaybeNull] private readonly StrongBox<string> _value = new();
@@ -24,7 +24,7 @@ public readonly record struct FilePath : IFilePath, IHas<string> {
         not null => _value.Value ??= Parts.JoinPathString(Separator) + FileName,
     };
     public bool                     IsEmpty => Value.IsEmpty();
-    public ImmutableArray<PathPart> Parts   { get; }
+    public ImmutableArray<PathPart> Parts   { get; } = new();
 
     public DirectoryPath Parent {
         get => Directory;
@@ -36,7 +36,7 @@ public readonly record struct FilePath : IFilePath, IHas<string> {
         }
     }
 
-    private readonly FileName _fileName;
+    private readonly FileName _fileName = new();
     public FileName FileName {
         get => _fileName;
         init {
@@ -57,7 +57,7 @@ public readonly record struct FilePath : IFilePath, IHas<string> {
         }
     }
 
-    private readonly DirectoryPath _directory;
+    private readonly DirectoryPath _directory = new();
     public DirectoryPath Directory {
         get => _directory;
         init {

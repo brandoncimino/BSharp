@@ -13,7 +13,7 @@ namespace FowlFever.Clerical.Validated.Composed;
 /// Represents a <see cref="FileSystemInfo"/>-safe name.
 /// </summary>
 [SuppressMessage("ReSharper", "InvertIf")]
-public readonly record struct FileName : IFileName {
+public readonly record struct FileName() : IFileName {
     public static readonly FileName Empty = new();
 
     [MaybeNull] private readonly StrongBox<string> _value = new();
@@ -23,7 +23,7 @@ public readonly record struct FileName : IFileName {
     };
     public bool IsEmpty => Value.IsEmpty();
 
-    private readonly FileNamePart _baseName;
+    private readonly FileNamePart _baseName = new();
     public FileNamePart BaseName {
         get => _baseName;
         init {
@@ -33,7 +33,7 @@ public readonly record struct FileName : IFileName {
             }
         }
     }
-    private readonly ImmutableArray<FileExtension> _extensions;
+    private readonly ImmutableArray<FileExtension> _extensions = ImmutableArray<FileExtension>.Empty;
     public ImmutableArray<FileExtension> Extensions {
         get => _extensions;
         init {

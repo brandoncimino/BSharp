@@ -15,7 +15,7 @@ namespace FowlFever.Clerical.Validated.Composed;
 /// Represents a group of <see cref="PathPart"/>s.
 /// </summary>
 [SuppressMessage("ReSharper", "InvertIf")]
-public readonly record struct DirectoryPath : IDirectoryPath, IHasDirectoryInfo, IHas<string> {
+public readonly record struct DirectoryPath() : IDirectoryPath, IHasDirectoryInfo, IHas<string> {
     public static readonly DirectoryPath Empty = new();
 
     [MaybeNull] private readonly StrongBox<string> _value = new();
@@ -26,7 +26,7 @@ public readonly record struct DirectoryPath : IDirectoryPath, IHasDirectoryInfo,
 
     #region "Fields"
 
-    private readonly ImmutableArray<PathPart> _parts;
+    private readonly ImmutableArray<PathPart> _parts = ImmutableArray<PathPart>.Empty;
     public ImmutableArray<PathPart> Parts {
         get => _parts;
         init {
@@ -37,7 +37,7 @@ public readonly record struct DirectoryPath : IDirectoryPath, IHasDirectoryInfo,
         }
     }
 
-    private readonly DirectorySeparator _separator;
+    private readonly DirectorySeparator _separator = DirectorySeparator.Universal;
     public DirectorySeparator Separator {
         get => _separator;
         init {
