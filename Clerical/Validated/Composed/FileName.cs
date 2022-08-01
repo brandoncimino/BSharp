@@ -2,6 +2,7 @@ using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
+using FowlFever.BSharp.Collections;
 using FowlFever.Clerical.Validated.Atomic;
 
 using Ratified;
@@ -18,6 +19,7 @@ public readonly record struct FileName : IFileName {
         null     => "",
         not null => _value.Value ??= $"{BaseName}{string.Join("", Extensions)}",
     };
+    public bool IsEmpty => Value.IsEmpty();
 
     private readonly FileNamePart _baseName;
     public FileNamePart BaseName {
@@ -42,12 +44,11 @@ public readonly record struct FileName : IFileName {
 
     #region Construction
 
+    public FileName(string     pathPart) : this(Clerk.GetBaseName(pathPart), Clerk.GetExtensions(pathPart)) { }
     public FileName(PathPart   pathPart) : this(Clerk.GetBaseName(pathPart.ToString()), Clerk.GetExtensions(pathPart.ToString())) { }
     public FileName(PathString pathString) : this(Clerk.GetBaseName(pathString.ToString()), Clerk.GetExtensions(pathString.ToString())) { }
 
     #endregion
-
-    public FileName(string pathPart) : this(Clerk.GetBaseName(pathPart), Clerk.GetExtensions(pathPart)) { }
 
     /// <summary>
     /// Represents a <see cref="FileSystemInfo"/>-safe name.
@@ -57,6 +58,7 @@ public readonly record struct FileName : IFileName {
         Extensions = extensions;
     }
 
-    public FileName ToFileName() => this;
-    public PathPart ToPathPart() => new(Value, MustRatify.No);
+    public FileName   ToFileName()   => this;
+    public PathPart   ToPathPart()   => new(Value, MustRatify.No);
+    public PathString ToPathString() => new(Value, MustRatify.No);
 }
