@@ -31,6 +31,34 @@ public static partial class Mathb {
     [Pure] public static byte    Clamp(this byte    value, byte    min, byte    max = byte.MaxValue)    => value <= min ? min : value >= max ? max : value;
     [Pure] public static sbyte   Clamp(this sbyte   value, sbyte   min, sbyte   max = sbyte.MaxValue)   => value <= min ? min : value >= max ? max : value;
 
+    /// <summary>
+    /// Limits an <see cref="Index"/> so that it is valid for a collection of <paramref name="length"/> items: if the <see cref="Index.GetOffset"/> would be out-of-bounds,
+    /// returns either <see cref="Index.Start"/> or <see cref="Index.End"/> as appropriate.
+    /// </summary>
+    /// <param name="index">this <see cref="Index"/></param>
+    /// <param name="length">the number of items in a theoretically indexable collection</param>
+    /// <returns><see cref="Index.Start"/>, <see cref="Index.End"/>, or the original <paramref name="index"/></returns>
+    [Pure]
+    public static Index Clamp(this Index index, int length) {
+        var offset = index.GetOffset(length);
+        return offset switch {
+            < 0                     => Index.Start,
+            _ when offset >= length => Index.End,
+            _                       => index
+        };
+    }
+
+    /// <summary>
+    /// <see cref="Clamp(Index, int)"/>s both the <see cref="Range.Start"/> and <see cref="Range.End"/>.
+    /// </summary>
+    /// <param name="range">this <see cref="Range"/></param>
+    /// <param name="length">the number of items in a theoretically indexable collection</param>
+    /// <returns>(<see cref="Range.Start"/>..<see cref="Range.End"/>), <see cref="Clamp(Index, int)"/>ped, as a new <see cref="Range"/></returns>
+    [Pure]
+    public static Range Clamp(this Range range, int length) {
+        return range.Start.Clamp(length)..range.End.Clamp(length);
+    }
+
     #region Clamp01
 
     [Pure] public static float   Clamp01(this float   value) => value.Clamp(0, 1);
