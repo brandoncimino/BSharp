@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Immutable;
 
+using JetBrains.Annotations;
+
 namespace FowlFever.BSharp.Collections;
 
 public static class SpanExtensions {
@@ -84,10 +86,29 @@ public static class SpanExtensions {
 
     #region Trimming
 
-    public static ReadOnlySpan<T> Skip<T>(this     ReadOnlySpan<T> span, int toSkip) => span[toSkip..];
-    public static ReadOnlySpan<T> SkipLast<T>(this ReadOnlySpan<T> span, int toSkip) => span[..^toSkip];
-    public static ReadOnlySpan<T> Take<T>(this     ReadOnlySpan<T> span, int toTake) => span[..toTake];
-    public static ReadOnlySpan<T> TakeLast<T>(this ReadOnlySpan<T> span, int toTake) => span[^toTake..];
+    [Pure]
+    public static ReadOnlySpan<T> Skip<T>(this ReadOnlySpan<T> span, int toSkip) =>
+        toSkip < 0 || toSkip >= span.Length
+            ? ReadOnlySpan<T>.Empty
+            : span[toSkip..];
+
+    [Pure]
+    public static ReadOnlySpan<T> SkipLast<T>(this ReadOnlySpan<T> span, int toSkip) =>
+        toSkip < 0 || toSkip >= span.Length
+            ? ReadOnlySpan<T>.Empty
+            : span[..^toSkip];
+
+    [Pure]
+    public static ReadOnlySpan<T> Take<T>(this ReadOnlySpan<T> span, int toTake) =>
+        toTake < 0 || toTake >= span.Length
+            ? span
+            : span[..toTake];
+
+    [Pure]
+    public static ReadOnlySpan<T> TakeLast<T>(this ReadOnlySpan<T> span, int toTake) =>
+        toTake < 0 || toTake >= span.Length
+            ? span
+            : span[^toTake..];
 
     public static int StartingMatches<T>(this ReadOnlySpan<T> span, T toMatch, int? matchLimit = default)
         where T : IEquatable<T> {
@@ -125,6 +146,8 @@ public static class SpanExtensions {
 
     #endregion
 
+    #region Spliterator
+
     [Pure]
     public static SpanSpliterator<T> Spliterate<T>(this ReadOnlySpan<T> span, params T[] splitters)
         where T : IEquatable<T> {
@@ -150,6 +173,8 @@ public static class SpanExtensions {
 
     public delegate TOut ReadOnlySpanFunc<TIn, in TArg, out TOut>(ReadOnlySpan<TIn> span, TArg arg);
     public delegate TOut ReadOnlySpanFunc<TIn, out TOut>(ReadOnlySpan<TIn>          span);
+    public delegate TOut SpanFunc<TIn, in TArg, out TOut>(Span<TIn>                 span, TArg arg);
+    public delegate TOut SpanFunc<TIn, out TOut>(Span<TIn>                          span);
 
     public static ImmutableArray<TOut> ToImmutableArray<TIn, TArg, TOut>(this SpanSpliterator<TIn> spliterator, ReadOnlySpanFunc<TIn, TArg, TOut> factory, TArg arg)
         where TIn : IEquatable<TIn> {
@@ -163,15 +188,25 @@ public static class SpanExtensions {
         return arr.MoveToImmutable();
     }
 
-    public static ImmutableArray<TOut> ToImmutableArray<TIn, TOut>(this SpanSpliterator<TIn> spliterator, ReadOnlySpanFunc<TIn, TOut> factory)
-        where TIn : IEquatable<TIn> {
-        var arr          = ImmutableArray.CreateBuilder<TOut>();
-        int currentIndex = 0;
+    public static ImmutableArray<TOut> ToImmutableArray<TSpan, TOut>(this SpanSpliterator<TSpan> spliterator, [RequireStaticDelegate] ReadOnlySpanFunc<TSpan, TOut> factory)
+        where TSpan : IEquatable<TSpan> {
+        var arr = ImmutableArray.CreateBuilder<TOut>();
         foreach (var span in spliterator) {
-            arr[currentIndex] =  factory(span);
-            currentIndex      += 1;
+            arr.Add(factory(span));
         }
 
         return arr.MoveToImmutable();
     }
+
+    public static TOut Aggregate<TSpan, TOut>(this SpanSpliterator<TSpan> spliterator, [RequireStaticDelegate] Func<TOut> initialFactory, [RequireStaticDelegate] ReadOnlySpanFunc<TSpan, TOut, TOut> aggregator)
+        where TSpan : IEquatable<TSpan> {
+        var soFar = initialFactory();
+        foreach (var span in spliterator) {
+            soFar = aggregator(span, soFar);
+        }
+
+        return soFar;
+    }
+
+    #endregion
 }
