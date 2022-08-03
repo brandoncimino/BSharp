@@ -23,8 +23,8 @@ public readonly partial record struct IntRange : IEnumerable<int> {
         _set             = new Lazy<ImmutableHashSet<int>>(Enumerable.Range(Offset, Length).ToImmutableHashSet);
     }
 
-    public IntRange(Range range, int count) {
-        (Offset, Length) = range.GetOffsetAndLength(count);
+    public IntRange(Range range, int length) {
+        (Offset, Length) = range.GetOffsetAndLength(length);
         _list            = new Lazy<ImmutableList<int>>(Enumerable.Range(Offset,    Length).ToImmutableList);
         _set             = new Lazy<ImmutableHashSet<int>>(Enumerable.Range(Offset, Length).ToImmutableHashSet);
     }
