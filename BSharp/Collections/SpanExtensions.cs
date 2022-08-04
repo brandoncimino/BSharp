@@ -6,27 +6,15 @@ using JetBrains.Annotations;
 namespace FowlFever.BSharp.Collections;
 
 public static class SpanExtensions {
-    [Pure]
-    public static ReadOnlySpan<T> AfterIndex<T>(ReadOnlySpan<T> span, int index) => index switch {
-        < 0 => default,
-        _   => span[index..]
-    };
-
-    [Pure]
-    public static ReadOnlySpan<T> BeforeIndex<T>(ReadOnlySpan<T> span, int index) => index switch {
-        < 0 => default,
-        _   => span[..index]
-    };
-
     #region AfterFirst
 
     [Pure]
     public static ReadOnlySpan<T> AfterFirst<T>(this ReadOnlySpan<T> span, T splitter)
-        where T : IEquatable<T> => AfterIndex(span, span.IndexOf(splitter));
+        where T : IEquatable<T> => span.Skip(span.IndexOf(splitter));
 
     [Pure]
     public static ReadOnlySpan<T> AfterFirstAny<T>(this ReadOnlySpan<T> span, ReadOnlySpan<T> splitters)
-        where T : IEquatable<T> => AfterIndex(span, span.IndexOfAny(splitters));
+        where T : IEquatable<T> => span.Skip(span.IndexOfAny(splitters));
 
     #endregion
 
@@ -34,11 +22,11 @@ public static class SpanExtensions {
 
     [Pure]
     public static ReadOnlySpan<T> BeforeFirst<T>(this ReadOnlySpan<T> span, T splitter)
-        where T : IEquatable<T> => BeforeIndex(span, span.IndexOf(splitter));
+        where T : IEquatable<T> => span.Take(span.IndexOf(splitter));
 
     [Pure]
     public static ReadOnlySpan<T> BeforeFirstAny<T>(this ReadOnlySpan<T> span, ReadOnlySpan<T> splitters)
-        where T : IEquatable<T> => BeforeIndex(span, span.IndexOfAny(splitters));
+        where T : IEquatable<T> => span.Take(span.IndexOfAny(splitters));
 
     #endregion
 
@@ -46,11 +34,11 @@ public static class SpanExtensions {
 
     [Pure]
     public static ReadOnlySpan<T> AfterLast<T>(this ReadOnlySpan<T> span, T splitter)
-        where T : IEquatable<T> => AfterIndex(span, span.LastIndexOf(splitter));
+        where T : IEquatable<T> => span.Skip(span.LastIndexOf(splitter));
 
     [Pure]
     public static ReadOnlySpan<T> AfterLastAny<T>(this ReadOnlySpan<T> span, ReadOnlySpan<T> splitters)
-        where T : IEquatable<T> => AfterIndex(span, span.LastIndexOfAny(splitters));
+        where T : IEquatable<T> => span.Skip(span.LastIndexOfAny(splitters));
 
     #endregion
 
@@ -58,11 +46,11 @@ public static class SpanExtensions {
 
     [Pure]
     public static ReadOnlySpan<T> BeforeLast<T>(this ReadOnlySpan<T> span, T splitter)
-        where T : IEquatable<T> => BeforeIndex(span, span.LastIndexOf(splitter));
+        where T : IEquatable<T> => span.Take(span.LastIndexOf(splitter));
 
     [Pure]
     public static ReadOnlySpan<T> BeforeLastAny<T>(this ReadOnlySpan<T> span, ReadOnlySpan<T> splitters)
-        where T : IEquatable<T> => BeforeIndex(span, span.LastIndexOfAny(splitters));
+        where T : IEquatable<T> => span.Take(span.LastIndexOfAny(splitters));
 
     #endregion
 
@@ -86,31 +74,55 @@ public static class SpanExtensions {
 
     #region Trimming
 
+    /// <summary>
+    /// Roughly equivalent to .NET 6's <a href="https://docs.microsoft.com/en-us/dotnet/api/system.linq.enumerable.take?view=net-6.0#system-linq-enumerable-take-1(system-collections-generic-ienumerable((-0))-system-range)">Enumerable.Take(source, Range)</a>
+    /// </summary>
+    /// <param name="span">this <see cref="ReadOnlySpan{T}"/></param>
+    /// <param name="range">the desired <see cref="Range"/> of entries</param>
+    /// <typeparam name="T">the type of entries in the <paramref name="span"/></typeparam>
+    /// <returns>as much of the <paramref name="span"/> as the <see cref="Range"/> overlaps</returns>
     [Pure]
-    public static ReadOnlySpan<T> Skip<T>(this ReadOnlySpan<T> span, int toSkip) =>
-        toSkip < 0 || toSkip >= span.Length
-            ? ReadOnlySpan<T>.Empty
-            : span[toSkip..];
+    public static ReadOnlySpan<T> SafeSlice<T>(this ReadOnlySpan<T> span, Range range) => span[range.Clamp(span.Length)];
+
+    #region Skip
 
     [Pure]
-    public static ReadOnlySpan<T> SkipLast<T>(this ReadOnlySpan<T> span, int toSkip) =>
-        toSkip < 0 || toSkip >= span.Length
-            ? ReadOnlySpan<T>.Empty
-            : span[..^toSkip];
+    public static ReadOnlySpan<T> Skip<T>(this ReadOnlySpan<T> span, int toSkip) => toSkip switch {
+        < 0 => span,
+        _   => span.SafeSlice(toSkip..)
+    };
 
     [Pure]
-    public static ReadOnlySpan<T> Take<T>(this ReadOnlySpan<T> span, int toTake) =>
-        toTake < 0 || toTake >= span.Length
-            ? span
-            : span[..toTake];
+    public static ReadOnlySpan<T> SkipLast<T>(this ReadOnlySpan<T> span, int toSkip) {
+        return toSkip switch {
+            < 0 => span,
+            _   => span.SafeSlice(..^toSkip)
+        };
+    }
+
+    #endregion
+
+    #region Skip
 
     [Pure]
-    public static ReadOnlySpan<T> TakeLast<T>(this ReadOnlySpan<T> span, int toTake) =>
-        toTake < 0 || toTake >= span.Length
-            ? span
-            : span[^toTake..];
+    public static ReadOnlySpan<T> Take<T>(this ReadOnlySpan<T> span, int toTake) {
+        return toTake switch {
+            < 0 => default,
+            _   => span.SafeSlice(..toTake)
+        };
+    }
 
-    public static int StartingMatches<T>(this ReadOnlySpan<T> span, T toMatch, int? matchLimit = default)
+    [Pure]
+    public static ReadOnlySpan<T> TakeLast<T>(this ReadOnlySpan<T> span, int toTake) {
+        return toTake switch {
+            < 0 => default,
+            _   => span.SafeSlice(^toTake..)
+        };
+    }
+
+    #endregion
+
+    public static int StartingMatchCount<T>(this ReadOnlySpan<T> span, T toMatch, int? matchLimit = default)
         where T : IEquatable<T> {
         var ml = matchLimit ?? span.Length;
         for (int i = 0; i < ml; i++) {
@@ -122,7 +134,7 @@ public static class SpanExtensions {
         return ml;
     }
 
-    public static int EndingMatches<T>(this ReadOnlySpan<T> span, T toMatch, int? matchLimit = default)
+    public static int EndingMatchCount<T>(this ReadOnlySpan<T> span, T toMatch, int? matchLimit = default)
         where T : IEquatable<T> {
         var ml = matchLimit ?? span.Length;
         for (int i = 0; i < ml; i++) {
@@ -136,12 +148,12 @@ public static class SpanExtensions {
 
     public static ReadOnlySpan<T> TrimStart<T>(this ReadOnlySpan<T> span, T toTrim, int? numberToTrim = default)
         where T : IEquatable<T> {
-        return span.Skip(span.StartingMatches(toTrim, numberToTrim));
+        return span.Skip(span.StartingMatchCount(toTrim, numberToTrim));
     }
 
     public static ReadOnlySpan<T> TrimEnd<T>(this ReadOnlySpan<T> span, T toTrim, int? numberToTrim = default)
         where T : IEquatable<T> {
-        return span.SkipLast(span.StartingMatches(toTrim, numberToTrim));
+        return span.SkipLast(span.StartingMatchCount(toTrim, numberToTrim));
     }
 
     #endregion
