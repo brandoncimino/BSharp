@@ -30,7 +30,7 @@ public class FailableTests {
     #endregion
 
     private static class Validate {
-        public static void FailedFailable<T>(FailableFunc<T> failableFunc) {
+        public static void FailedFailable<T>(IFailableFunc<T> failableFunc) {
             Asserter.Against(failableFunc)
                     .And(Has.Property(nameof(failableFunc.HasValue)).False)
                     .And(Has.Property(nameof(failableFunc.Failed)).True)
@@ -40,7 +40,7 @@ public class FailableTests {
                     .Invoke();
         }
 
-        public static void PassedFailable<T>(FailableFunc<T> failableFunc) {
+        public static void PassedFailable<T>(IFailableFunc<T> failableFunc) {
             Asserter.Against(failableFunc)
                     .WithHeading("A failable that PASSED")
                     .And(Has.Property(nameof(failableFunc.HasValue)).True)
