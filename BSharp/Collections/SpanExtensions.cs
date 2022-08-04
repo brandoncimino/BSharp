@@ -206,7 +206,7 @@ public static class SpanExtensions {
             arr.Add(factory(span));
         }
 
-        return arr.MoveToImmutable();
+        return arr.MoveToImmutableSafely();
     }
 
     public static TOut Aggregate<TSpan, TOut>(this SpanSpliterator<TSpan> spliterator, [RequireStaticDelegate] Func<TOut> initialFactory, [RequireStaticDelegate] ReadOnlySpanFunc<TSpan, TOut, TOut> aggregator)
