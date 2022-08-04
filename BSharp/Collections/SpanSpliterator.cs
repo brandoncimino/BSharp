@@ -1,27 +1,32 @@
 using System;
 
+using FowlFever.BSharp.Enums;
+
 namespace FowlFever.BSharp.Collections;
 
 public ref struct SpanSpliterator<T>
     where T : IEquatable<T> {
     private readonly ReadOnlySpan<T> _splitters;
+    private readonly SplitterStyle   _splitterStyle;
     private          ReadOnlySpan<T> _remaining;
     private          ReadOnlySpan<T> _current;
     private          bool            _isEnumeratorActive;
+    private readonly int             _splitterSize;
 
-    public SpanSpliterator(ReadOnlySpan<T> buffer, ReadOnlySpan<T> splitters) {
+    public SpanSpliterator(ReadOnlySpan<T> buffer, ReadOnlySpan<T> splitters, SplitterStyle splitterStyle) {
         _remaining          = buffer;
         _current            = default;
         _isEnumeratorActive = true;
         _splitters          = splitters;
+        _splitterStyle      = splitterStyle;
+        _splitterSize = splitterStyle switch {
+            SplitterStyle.AnyEntry    => 1,
+            SplitterStyle.SubSequence => splitters.Length,
+            _                         => throw BEnum.UnhandledSwitch(splitterStyle)
+        };
     }
 
-    public SpanSpliterator(ReadOnlySpan<T> buffer, params T[] splitters) {
-        _remaining          = buffer;
-        _current            = default;
-        _isEnumeratorActive = true;
-        _splitters          = splitters;
-    }
+    public SpanSpliterator(ReadOnlySpan<T> buffer, T[] splitters, SplitterStyle splitterStyle) : this(buffer, splitters.AsSpan(), splitterStyle) { }
 
     /// <summary>
     /// Gets the current file extension.
@@ -45,10 +50,10 @@ public ref struct SpanSpliterator<T>
             return false; // EOF previously reached or enumerator was never initialized
         }
 
-        var idx = _remaining.IndexOfAny(_splitters);
+        var idx = NextSplitIndex();
         if (idx >= 0) {
             _current   = _remaining[..idx];
-            _remaining = _remaining[idx..];
+            _remaining = _remaining.Skip(idx + _splitterSize);
         }
         else {
             // We've reached EOF, but we still need to return 'true' for this final
@@ -61,4 +66,14 @@ public ref struct SpanSpliterator<T>
 
         return true;
     }
+
+    public int NextSplitIndex() {
+        return _splitterStyle switch {
+            SplitterStyle.AnyEntry    => _remaining.IndexOfAny(_splitters),
+            SplitterStyle.SubSequence => _remaining.IndexOf(_splitters),
+            _                         => throw BEnum.UnhandledSwitch(_splitterStyle),
+        };
+    }
 }
+
+public enum SplitterStyle { AnyEntry, SubSequence }

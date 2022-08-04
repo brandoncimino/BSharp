@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 
 using FowlFever.BSharp;
@@ -85,26 +84,28 @@ public class SpanExtensionTests {
 
     [Test]
     [TestCase("a-b-c", '-', "a", "b", "c")]
-    public void SpliterateString(string source, char splitter, params string[] expectedParts) {
+    public void SpliterateString_Simple(string source, char splitter, params string[] expectedParts) {
         var span        = source.AsSpan();
         var spliterator = span.Spliterate(splitter);
-        var ls          = new List<string>();
+        var parts       = spliterator.ToStringArray();
+        Assert.That(parts, Is.EquivalentTo(expectedParts));
+    }
 
-        if (spliterator.MoveNext()) {
-            Console.WriteLine($"first: {spliterator.Current.ToString()}");
-        }
+    [Test]
+    [TestCase("a-b!c-d*e", "-!", "a", "b", "c", "d*e")]
+    public void SpliteratString_Any(string source, string splitters, params string[] expectedParts) {
+        var span        = source.AsSpan();
+        var spliterator = span.Spliterate(splitters.AsSpan(), SplitterStyle.AnyEntry);
+        var parts       = spliterator.ToStringArray();
+        Assert.That(parts, Is.EquivalentTo(expectedParts));
+    }
 
-        if (spliterator.MoveNext()) {
-            Console.WriteLine($"second: {spliterator.Current.ToString()}");
-        }
-
-        return;
-
-        foreach (var part in spliterator) {
-            Console.WriteLine(part.ToString());
-            ls.Add(part.ToString());
-        }
-
-        Assert.That(ls, Is.EquivalentTo(expectedParts));
+    [Test]
+    [TestCase("a1b12c21d12e", "12", "a1b", "c21d", "e")]
+    public void SpliterateString_SubSeq(string source, string splitSeq, params string[] expectedParts) {
+        var span        = source.AsSpan();
+        var spliterator = span.Spliterate(splitSeq.AsSpan(), SplitterStyle.SubSequence);
+        var parts       = spliterator.ToStringArray();
+        Assert.That(parts, Is.EquivalentTo(expectedParts));
     }
 }

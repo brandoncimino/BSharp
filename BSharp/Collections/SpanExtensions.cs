@@ -163,24 +163,23 @@ public static class SpanExtensions {
     [Pure]
     public static SpanSpliterator<T> Spliterate<T>(this ReadOnlySpan<T> span, params T[] splitters)
         where T : IEquatable<T> {
-        return new SpanSpliterator<T>(span, splitters);
+        return new SpanSpliterator<T>(span, splitters, SplitterStyle.AnyEntry);
     }
 
     [Pure]
-    public static SpanSpliterator<T> Spliterate<T>(this ReadOnlySpan<T> span, ReadOnlySpan<T> splitters)
+    public static SpanSpliterator<T> Spliterate<T>(this ReadOnlySpan<T> span, ReadOnlySpan<T> splitters, SplitterStyle splitterStyle = SplitterStyle.AnyEntry)
         where T : IEquatable<T> {
-        return new SpanSpliterator<T>(span, splitters);
+        return new SpanSpliterator<T>(span, splitters, splitterStyle);
     }
 
     public static ImmutableArray<string> ToStringArray(this SpanSpliterator<char> spliterator) {
-        var arr          = ImmutableArray.CreateBuilder<string>();
-        int currentIndex = 0;
+        var arr = ImmutableArray.CreateBuilder<string>();
+
         foreach (var span in spliterator) {
-            arr[currentIndex] =  span.ToString();
-            currentIndex      += 1;
+            arr.Add(span.ToString());
         }
 
-        return arr.MoveToImmutable();
+        return arr.MoveToImmutableSafely();
     }
 
     public delegate TOut ReadOnlySpanFunc<TIn, in TArg, out TOut>(ReadOnlySpan<TIn> span, TArg arg);
