@@ -134,4 +134,26 @@ public static class ImmutableExtensions {
 
         return builder.MoveToImmutable();
     }
+
+    /// <summary>
+    /// Calls <see cref="ImmutableArray{T}.Builder.MoveToImmutable"/>, updating the <see cref="ImmutableArray{T}.Builder.Capacity"/> if necessary.
+    /// </summary>
+    /// <remarks>
+    /// Comparison:
+    /// <code><![CDATA[
+    /// MoveToImmutable         Re-uses the underlying array IF it has the exact same size
+    /// ToArray                 ALWAYS creates a new array, even if the size is the same
+    /// MoveToImmutableSafely   prefers re-using the array; if it can't, re-sizes it and then uses that one
+    /// ]]></code>
+    /// </remarks>
+    /// <param name="builder">this <see cref="ImmutableArray{T}.Builder"/></param>
+    /// <typeparam name="T">the type of entries in the <see cref="ImmutableArray{T}.Builder"/></typeparam>
+    /// <returns>an <see cref="ImmutableArray{T}"/> with the entries from the <paramref name="builder"/></returns>
+    public static ImmutableArray<T> MoveToImmutableSafely<T>(this ImmutableArray<T>.Builder builder) {
+        if (builder.Capacity != builder.Count) {
+            builder.Capacity = builder.Count;
+        }
+
+        return builder.MoveToImmutable();
+    }
 }
