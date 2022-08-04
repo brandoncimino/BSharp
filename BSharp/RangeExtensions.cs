@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+using FowlFever.BSharp.Attributes;
 using FowlFever.BSharp.Enums;
 using FowlFever.BSharp.Exceptions;
 
@@ -13,6 +14,7 @@ public static class RangeExtensions {
     /// <param name="clusivity">determines whether the <see cref="Range.Start"/> and <see cref="Range.End"/> values should be considered</param>
     /// <returns><c>true</c> if this <see cref="Range"/> contains the given <paramref name="value"/></returns>
     /// <exception cref="NotSupportedException">if the <see cref="Range.Start"/> or <see cref="Range.End"/> <see cref="Index.IsFromEnd"/></exception>
+    [Experimental("Can't handle Index.IsFromEnd == true")]
     public static bool Contains(this Range range, int value, Clusivity clusivity = Clusivity.Inclusive) {
         if (range.Start.IsFromEnd || range.End.IsFromEnd) {
             throw new NotSupportedException($"How would I even handle {nameof(Index.IsFromEnd)}?!");
@@ -21,6 +23,7 @@ public static class RangeExtensions {
         return value.IsInRange(range.Start.Value, range.End.Value, clusivity);
     }
 
+    [Experimental]
     public static IEnumerable<T> EnumerateSlice<T>(this Range range, IEnumerable<T> source) {
         static IEnumerable<T> Collection(ICollection<T> src, Range rng) {
             var (off, len) = rng.GetOffsetAndLength(src.Count);
