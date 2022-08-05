@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -37,10 +38,9 @@ public class BrandomTests {
 
     [Pure]
     private static IDictionary<T, double> BuildWeightedPortion<T, T2>(
-        [InstantHandle]
-        IEnumerable<(T choice, T2 weight)> weighted
+        [InstantHandle] IEnumerable<(T choice, T2 weight)> weighted
     )
-        where T2 : struct
+        where T2 : struct, IConvertible
         where T : notnull {
         weighted = weighted.ToList();
         var totalWeight = weighted.Select(it => it.Item2)
@@ -58,9 +58,8 @@ public class BrandomTests {
     }
 
     private static void AssertPicks(
-        IReadOnlyCollection<string?> picks,
-        [InstantHandle]
-        IEnumerable<(string choice, int weight)> weighted
+        IReadOnlyCollection<string?>                             picks,
+        [InstantHandle] IEnumerable<(string choice, int weight)> weighted
     ) {
         weighted = weighted.ToArray();
         var choices = weighted.Select(it => it.choice);
