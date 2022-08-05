@@ -90,7 +90,7 @@ public ref struct SpanSpliterator<T>
         return entry switch {
             char c => c.IsWhitespace(),
 #if NET5_0_OR_GREATER
-            Rune r => Rune.IsWhiteSpace(r),
+            System.Text.Rune r => System.Text.Rune.IsWhiteSpace(r),
 #endif
             null => true,
             _    => false
