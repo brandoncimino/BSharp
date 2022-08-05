@@ -2,7 +2,7 @@ using System;
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 
-using FowlFever.BSharp.Exceptions;
+using FowlFever.BSharp.Attributes;
 using FowlFever.Implementors;
 
 namespace FowlFever.BSharp;
@@ -145,51 +145,65 @@ public static class PrimitiveUtils {
     #region Convert.To{x}
 
     public static short ToShort<T>(this T obj)
-        where T : struct => Convert.ToInt16(obj);
+        where T : IConvertible => obj.ToInt16(default);
 
     public static ushort ToUShort<T>(this T obj)
-        where T : struct => Convert.ToUInt16(obj);
+        where T : IConvertible => obj.ToUInt16(default);
 
     public static int ToInt<T>(this T obj)
-        where T : struct => Convert.ToInt32(obj);
+        where T : IConvertible => obj.ToInt32(default);
 
     public static uint ToUInt<T>(this T obj)
-        where T : struct => Convert.ToUInt32(obj);
+        where T : IConvertible => obj.ToUInt32(default);
 
     public static long ToLong<T>(this T obj)
-        where T : struct => Convert.ToInt64(obj);
+        where T : IConvertible => obj.ToInt64(default);
 
     public static ulong ToULong<T>(this T obj)
-        where T : struct => Convert.ToUInt64(obj);
+        where T : IConvertible => obj.ToUInt64(default);
 
     public static float ToFloat<T>(this T obj)
-        where T : struct => Convert.ToSingle(obj);
+        where T : IConvertible => obj.ToSingle(default);
 
     public static double ToDouble<T>(this T obj)
-        where T : struct => Convert.ToDouble(obj);
+        where T : IConvertible => obj.ToDouble(default);
 
     public static decimal ToDecimal<T>(this T obj)
-        where T : struct => Convert.ToDecimal(obj);
+        where T : IConvertible => obj.ToDecimal(default);
 
     public static byte ToByte<T>(this T obj)
-        where T : struct => Convert.ToByte(obj);
+        where T : IConvertible => obj.ToByte(default);
 
     public static sbyte ToSByte<T>(this T obj)
-        where T : struct => Convert.ToSByte(obj);
+        where T : IConvertible => obj.ToSByte(default);
 
     public static bool ToBool<T>(this T obj)
-        where T : struct => Convert.ToBoolean(obj);
+        where T : IConvertible => obj.ToBoolean(default);
 
     #endregion
 
     /// <summary>
-    /// A nicer way to chain <c>x as y</c>.
-    /// <p/>
-    /// For a chain-friendly hard-cast, see <see cref="Must.MustBe{T}(object,string?,string?)"/>.
+    /// Attempts to avoid:
+    /// <ul>
+    /// <li>Boxing <paramref name="self"/> as <see cref="object"/></li>
+    /// <li>Needing to specify 2 type parameters (i.e. <c><![CDATA[(stringObject).As<object, string>()]]></c>)</li>
+    /// </ul>
+    ///
+    /// The "optional" type parameter (<typeparamref name="T2"/>) can be specified by <c>default(T2)</c>, making the theoretical syntax:
+    /// <code><![CDATA[
+    /// object x = "abc";
+    /// string s = x.As(default(string));
+    /// ]]></code>
     /// </summary>
-    public static T? As<T>(this object self)
-        where T : class {
-        return self as T;
+    /// <param name="self">this <typeparamref name="T"/> instance</param>
+    /// <param name="_">any instance of <typeparamref name="T2"/>, such as <c>default(T2)</c></param>
+    /// <typeparam name="T">the original <see cref="Type"/></typeparam>
+    /// <typeparam name="T2">the destination <see cref="Type"/></typeparam>
+    /// <returns><paramref name="self"/> as <typeparamref name="T2"/></returns>
+    [Experimental]
+    public static T2? As2<T, T2>(this T self, T2 _)
+        where T2 : class {
+        return self as T2;
     }
 
     /// <summary>
