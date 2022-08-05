@@ -3,8 +3,8 @@ using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 using System.Text;
 
-using FowlFever.BSharp.Collections;
 using FowlFever.BSharp.Exceptions;
+using FowlFever.BSharp.Memory;
 
 namespace FowlFever.Clerical.Validated;
 
