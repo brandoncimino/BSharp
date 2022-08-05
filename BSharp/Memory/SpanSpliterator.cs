@@ -15,12 +15,6 @@ public ref struct SpanSpliterator<T>
     private          bool               _isEnumeratorActive;
     private readonly int                _splitterSize;
 
-    /// <summary>
-    /// 📝 <see cref="StringSplitOptions"/>.<a href="https://docs.microsoft.com/en-us/dotnet/api/system.stringsplitoptions?view=net-6.0#system-stringsplitoptions-trimentries">TrimEntries</a> doesn't exist until .NET 5,
-    /// but we can pretend it does by hard-casting its <see cref="int"/> value, <c>2</c>, directly to <see cref="StringSplitOptions"/>.
-    /// </summary>
-    private const StringSplitOptions TrimEntries = (StringSplitOptions)2;
-
     public SpanSpliterator(ReadOnlySpan<T> buffer, ReadOnlySpan<T> splitters, SplitterStyle splitterStyle, StringSplitOptions options) {
         _remaining          = buffer;
         _current            = default;
@@ -64,7 +58,7 @@ public ref struct SpanSpliterator<T>
             _current   = _remaining[..idx];
             _remaining = _remaining.Skip(idx + _splitterSize);
 
-            if (_options.HasFlag(TrimEntries)) {
+            if (_options.HasFlag(StringUtils.TrimEntriesOption)) {
                 _current = _current.SkipWhile(static equatable => IsTrimmable(equatable));
             }
 

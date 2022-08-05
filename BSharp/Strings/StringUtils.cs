@@ -20,6 +20,11 @@ namespace FowlFever.BSharp.Strings;
 public static partial class StringUtils {
     public const int    DefaultIndentSize   = 2;
     public const string DefaultIndentString = "  ";
+    /// <summary>
+    /// 📝 <see cref="StringSplitOptions"/>.<a href="https://docs.microsoft.com/en-us/dotnet/api/system.stringsplitoptions?view=net-6.0#system-stringsplitoptions-trimentries">TrimEntries</a> doesn't exist until .NET 5,
+    /// but we can pretend it does by hard-casting its <see cref="int"/> value, <c>2</c>, directly to <see cref="StringSplitOptions"/>.
+    /// </summary>
+    internal const StringSplitOptions TrimEntriesOption = (StringSplitOptions)2;
 
     /// <summary>
     /// A <see cref="string"/> for a single-glyph <a href="https://en.wikipedia.org/wiki/Ellipsis">ellipsis</a>, i.e. <c>'…'</c>.
