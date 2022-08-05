@@ -3,6 +3,7 @@ using System.Linq;
 
 using FowlFever.BSharp;
 using FowlFever.BSharp.Collections;
+using FowlFever.BSharp.Memory;
 
 using NUnit.Framework;
 
