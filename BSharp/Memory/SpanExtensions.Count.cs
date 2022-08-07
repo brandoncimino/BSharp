@@ -11,6 +11,10 @@ public static partial class SpanExtensions {
     [NonNegativeValue]
     public static int Count<T, T2>(this ReadOnlySpan<T> span, [RequireStaticDelegate] Func<T, T2> selector, T2 expected, int countLimit = int.MaxValue)
         where T2 : IEquatable<T2> {
+        if (span.IsEmpty) {
+            return 0;
+        }
+
         countLimit = Math.Max(span.Length, countLimit);
 
         int hits = 0;
@@ -36,7 +40,11 @@ public static partial class SpanExtensions {
     [NonNegativeValue]
     public static int CountWhile<T, T2>(this ReadOnlySpan<T> span, [RequireStaticDelegate] Func<T, T2> selector, T2 expected, int countLimit = int.MaxValue)
         where T2 : IEquatable<T2> {
-        countLimit = Math.Max(span.Length, countLimit);
+        if (span.IsEmpty) {
+            return 0;
+        }
+
+        countLimit = Math.Min(span.Length, countLimit);
 
         for (int i = 0; i < countLimit; i++) {
             if (selector(span[i]).Equals(expected) == false) {
@@ -47,13 +55,17 @@ public static partial class SpanExtensions {
         return countLimit;
     }
 
-    [Pure] [NonNegativeValue] public static int CountWhile<T>(this ReadOnlySpan<T> span, [RequireStaticDelegate] Func<T, bool> predicate, int countLimit = int.MaxValue) => span.CountWhile(predicate, true);
+    [Pure] [NonNegativeValue] public static int CountWhile<T>(this ReadOnlySpan<T> span, [RequireStaticDelegate] Func<T, bool> predicate, int countLimit = int.MaxValue) => span.CountWhile(predicate, true, countLimit);
 
     [Pure]
     [NonNegativeValue]
     public static int CountLastWhile<T, T2>(this ReadOnlySpan<T> span, [RequireStaticDelegate] Func<T, T2> selector, T2 expected, int countLimit = int.MaxValue)
         where T2 : IEquatable<T2> {
-        countLimit = Math.Max(span.Length, countLimit);
+        if (span.IsEmpty) {
+            return 0;
+        }
+
+        countLimit = Math.Min(span.Length, countLimit);
 
         for (int i = 0; i < span.Length; i++) {
             if (selector(span[^(i + 1)]).Equals(expected) == false) {
