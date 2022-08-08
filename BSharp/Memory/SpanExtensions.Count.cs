@@ -11,7 +11,7 @@ public static partial class SpanExtensions {
     [NonNegativeValue]
     public static int Count<T, T2>(this ReadOnlySpan<T> span, [RequireStaticDelegate] Func<T, T2> selector, T2 expected, int countLimit = int.MaxValue)
         where T2 : IEquatable<T2> {
-        if (span.IsEmpty) {
+        if (span.IsEmpty || countLimit <= 0) {
             return 0;
         }
 
@@ -40,7 +40,7 @@ public static partial class SpanExtensions {
     [NonNegativeValue]
     public static int CountWhile<T, T2>(this ReadOnlySpan<T> span, [RequireStaticDelegate] Func<T, T2> selector, T2 expected, int countLimit = int.MaxValue)
         where T2 : IEquatable<T2> {
-        if (span.IsEmpty) {
+        if (span.IsEmpty || countLimit <= 0) {
             return 0;
         }
 
@@ -61,7 +61,7 @@ public static partial class SpanExtensions {
     [NonNegativeValue]
     public static int CountLastWhile<T, T2>(this ReadOnlySpan<T> span, [RequireStaticDelegate] Func<T, T2> selector, T2 expected, int countLimit = int.MaxValue)
         where T2 : IEquatable<T2> {
-        if (span.IsEmpty) {
+        if (span.IsEmpty || countLimit <= 0) {
             return 0;
         }
 
