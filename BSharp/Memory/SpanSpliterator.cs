@@ -18,7 +18,7 @@ public ref struct SpanSpliterator<T>
     public SpanSpliterator(ReadOnlySpan<T> buffer, ReadOnlySpan<T> splitters, SplitterStyle splitterStyle, StringSplitOptions options) {
         _remaining          = buffer;
         _current            = default;
-        _isEnumeratorActive = true;
+        _isEnumeratorActive = buffer.IsEmpty == false;
         _splitters          = splitters;
         _splitterStyle      = splitterStyle;
         _options            = options;
@@ -57,15 +57,6 @@ public ref struct SpanSpliterator<T>
         if (idx >= 0) {
             _current   = _remaining[..idx];
             _remaining = _remaining.Skip(idx + _splitterSize);
-
-            if (_options.HasFlag(StringUtils.TrimEntriesOption)) {
-                _current = _current.SkipWhile(static equatable => IsTrimmable(equatable));
-            }
-
-            if (_options.HasFlag(StringSplitOptions.RemoveEmptyEntries) && _current.IsEmpty) {
-                // ReSharper disable once TailRecursiveCall
-                return MoveNext();
-            }
         }
         else {
             // We've reached EOF, but we still need to return 'true' for this final
@@ -76,19 +67,38 @@ public ref struct SpanSpliterator<T>
             _isEnumeratorActive = false;
         }
 
+        #region Handle _options flags
+
+        if (_options.HasFlag(StringUtils.TrimEntriesOption)) {
+            _current = GenericTrim(_current);
+        }
+
+        while (_options.HasFlag(StringSplitOptions.RemoveEmptyEntries) && _current.IsEmpty) {
+            if (MoveNext() == false) {
+                return false;
+            }
+        }
+
+        #endregion
 
         return true;
     }
 
-    private static bool IsTrimmable(T entry) {
+    internal static bool IsTrimmable(T? entry) {
         return entry switch {
             char c => c.IsWhitespace(),
 #if NET5_0_OR_GREATER
             System.Text.Rune r => System.Text.Rune.IsWhiteSpace(r),
 #endif
-            null => true,
-            _    => false
+            string s => string.IsNullOrWhiteSpace(s),
+            null     => true,
+            _        => false
         };
+    }
+
+    internal static ReadOnlySpan<T> GenericTrim(ReadOnlySpan<T> span) {
+        return span.SkipWhile(static it => IsTrimmable(it))
+                   .SkipLastWhile(static it => IsTrimmable(it));
     }
 
     private int NextSplitIndex() {
