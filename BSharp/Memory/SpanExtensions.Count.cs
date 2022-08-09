@@ -34,7 +34,18 @@ public static partial class SpanExtensions {
         return span.Length;
     }
 
-    [Pure] [NonNegativeValue] public static int Count<T>(this ReadOnlySpan<T> span, [RequireStaticDelegate] Func<T, bool> predicate, int countLimit = int.MaxValue) => span.Count(predicate, true, countLimit);
+    [Pure]
+    [NonNegativeValue]
+    public static int Count<T>(
+        this                    ReadOnlySpan<T> span,
+        [RequireStaticDelegate] Func<T, bool>   predicate,
+        int                                     countLimit = int.MaxValue
+    ) =>
+        span.Count(
+            predicate,
+            true,
+            countLimit
+        );
 
     [Pure]
     [NonNegativeValue]
@@ -45,8 +56,13 @@ public static partial class SpanExtensions {
         }
 
         countLimit = Math.Min(span.Length, countLimit);
+        Brandon.Print(countLimit);
+        Brandon.Print(selector.Method.Name);
 
         for (int i = 0; i < countLimit; i++) {
+            Brandon.Print(i);
+            Brandon.Print(span[i]);
+            Brandon.Print(selector(span[i]));
             if (selector(span[i]).Equals(expected) == false) {
                 return i;
             }
@@ -55,7 +71,18 @@ public static partial class SpanExtensions {
         return countLimit;
     }
 
-    [Pure] [NonNegativeValue] public static int CountWhile<T>(this ReadOnlySpan<T> span, [RequireStaticDelegate] Func<T, bool> predicate, int countLimit = int.MaxValue) => span.CountWhile(predicate, true, countLimit);
+    [Pure]
+    [NonNegativeValue]
+    public static int CountWhile<T>(
+        this                    ReadOnlySpan<T> span,
+        [RequireStaticDelegate] Func<T, bool>   predicate,
+        int                                     countLimit = int.MaxValue
+    ) =>
+        span.CountWhile(
+            predicate,
+            true,
+            countLimit
+        );
 
     [Pure]
     [NonNegativeValue]
@@ -76,7 +103,14 @@ public static partial class SpanExtensions {
         return countLimit;
     }
 
-    [Pure] [NonNegativeValue] public static int CountLastWhile<T>(this ReadOnlySpan<T> span, [RequireStaticDelegate] Func<T, bool> predicate, int countLimit = int.MaxValue) => span.CountLastWhile(predicate, true, countLimit);
+    [Pure]
+    [NonNegativeValue]
+    public static int CountLastWhile<T>(
+        this                    ReadOnlySpan<T> span,
+        [RequireStaticDelegate] Func<T, bool>   predicate,
+        int                                     countLimit = int.MaxValue
+    ) =>
+        span.CountLastWhile(predicate, true, countLimit);
 
     #endregion
 }

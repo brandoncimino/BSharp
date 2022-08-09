@@ -11,7 +11,7 @@ namespace BSharp.Tests.Memory.SpanExtensions;
 
 public class CountWhileTests {
     public record IsLetterCount(string Source, int Starting, int Ending) {
-        public readonly Func<char, bool> Predicate = static c => char.IsWhiteSpace(c);
+        public readonly Func<char, bool> Predicate = static c => char.IsLetter(c);
     }
 
     public static IsLetterCount[] IsLetterCounts = {
@@ -41,22 +41,17 @@ public class CountWhileTests {
 
     [Test]
     public void Span_CountWhile_IsLetter_Limited([ValueSource(nameof(IsLetterCounts))] IsLetterCount isLetterCount, [ValueSource(nameof(Limits))] int limit) {
-        static void RunTest(IsLetterCount data, int limit) {
-            var span          = data.Source.AsSpan();
-            var actualCount   = span.CountWhile(data.Predicate, limit);
-            var expectedCount = data.Starting.Clamp(0, limit.Max(0));
-            Assert.That(actualCount, Is.EqualTo(expectedCount));
-        }
+        var span          = isLetterCount.Source.AsSpan();
+        var actualCount   = span.CountWhile(isLetterCount.Predicate, limit);
+        var expectedCount = isLetterCount.Starting.Clamp(0, limit.Max(0));
+        Assert.That(actualCount, Is.EqualTo(expectedCount));
+    }
 
-        RunTest(isLetterCount, limit);
-
-        // var ass = Asserter.Against(isLetterCount);
-        // ass = Enumerable.Range(-3, isLetterCount.Source.Length +2)
-        //                 .Aggregate(
-        //                     ass,
-        //                     (current, limit) => current.And(it => RunTest(it!, limit))
-        //                     );
-        //
-        // ass.Invoke();
+    [Test]
+    public void Span_CountWhileLast_IsLetter_Limited([ValueSource(nameof(IsLetterCounts))] IsLetterCount data, [ValueSource(nameof(Limits))] int limit) {
+        var span          = data.Source.AsSpan();
+        var actualCount   = span.CountLastWhile(data.Predicate, limit);
+        var expectedCount = data.Starting.Clamp(0, limit.Max(0));
+        Assert.That(actualCount, Is.EqualTo(expectedCount));
     }
 }

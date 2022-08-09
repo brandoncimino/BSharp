@@ -28,7 +28,7 @@ public static partial class SpanExtensions {
     public static ReadOnlySpan<T> Take<T>(this ReadOnlySpan<T> span, int toTake) => toTake switch {
         <= 0                         => default,
         _ when toTake >= span.Length => span,
-        _                            => span[..^toTake]
+        _                            => span[..toTake]
     };
 
     #region {x}Last
@@ -51,7 +51,17 @@ public static partial class SpanExtensions {
         where T2 : IEquatable<T2> =>
         span.SkipLast(span.CountLastWhile(selector, equals, skipLimit));
 
-    [Pure] public static ReadOnlySpan<T> SkipLastWhile<T>(this ReadOnlySpan<T> span, [RequireStaticDelegate] Func<T, bool> predicate, int skipLimit = int.MaxValue) => span.SkipLastWhile(predicate, true, skipLimit);
+    [Pure]
+    public static ReadOnlySpan<T> SkipLastWhile<T>(
+        this                    ReadOnlySpan<T> span,
+        [RequireStaticDelegate] Func<T, bool>   predicate,
+        int                                     skipLimit = int.MaxValue
+    ) =>
+        span.SkipLastWhile(
+            predicate,
+            true,
+            skipLimit
+        );
 
     #endregion
 
