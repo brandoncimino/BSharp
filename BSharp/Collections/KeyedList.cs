@@ -34,7 +34,8 @@ namespace FowlFever.BSharp.Collections {
     /// <typeparam name="TKey">the type of the <see cref="Keys"/></typeparam>
     /// <typeparam name="TValue">the type of the <see cref="Values"/></typeparam>
     [PublicAPI]
-    public class KeyedList<TKey, TValue> : KeyedCollection<TKey, TValue> {
+    public class KeyedList<TKey, TValue> : KeyedCollection<TKey, TValue>
+        where TKey : notnull {
         protected readonly Func<TValue, TKey> KeyExtractor;
 
         protected override TKey GetKeyForItem(TValue item) {

@@ -12,7 +12,9 @@ namespace FowlFever.BSharp.Collections {
     /// <typeparam name="TValue"></typeparam>
     [PublicAPI]
     [Serializable]
-    public class PrimaryKeyedList<TKey, TValue> : KeyedList<TKey, TValue> where TValue : IPrimaryKeyed<TKey> {
+    public class PrimaryKeyedList<TKey, TValue> : KeyedList<TKey, TValue>
+        where TValue : IPrimaryKeyed<TKey>
+        where TKey : notnull {
         public PrimaryKeyedList(IEnumerable<TValue> collection) : base(it => it.PrimaryKey, collection) { }
         public PrimaryKeyedList() : base(it => it.PrimaryKey) { }
     }
