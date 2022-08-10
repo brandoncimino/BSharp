@@ -142,7 +142,7 @@ namespace FowlFever.BSharp.Reflection {
         /// <returns>true if this <see cref="Type"/>, or one of its ancestors, implements <paramref name="interfaceType"/></returns>
         public static bool Implements(this Type self, Type interfaceType) {
             if (interfaceType.IsInterface != true) {
-                throw new ArgumentException(nameof(interfaceType), $"The type {interfaceType.Prettify()} was not an interface!");
+                throw new ArgumentException($"The type {interfaceType.Prettify()} was not an interface!", nameof(interfaceType));
             }
 
             // when self is an interface, we have to do some extra checks, because GetInterface() won't return itself
@@ -429,9 +429,8 @@ namespace FowlFever.BSharp.Reflection {
 
         [Pure]
         public static bool IsInstanceOf(
-            this object obj,
-            [InstantHandle]
-            IEnumerable<Type> possibleTypes
+            this            object            obj,
+            [InstantHandle] IEnumerable<Type> possibleTypes
         ) {
             if (obj == null) {
                 throw new ArgumentNullException(nameof(obj));
