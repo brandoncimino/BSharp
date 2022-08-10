@@ -63,7 +63,7 @@ namespace FowlFever.BSharp.Strings.Prettifiers {
             return Table.Of(
                             InferType(dictionary.Keys),
                             InferType(dictionary.Values),
-                            dictionary.ToGeneric()
+                            dictionary.ToKeyValuePairs<object, object>()
                         )
                         .Prettify(settings);
         }
