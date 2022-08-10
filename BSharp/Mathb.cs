@@ -18,18 +18,17 @@ public static partial class Mathb {
 
     //TODO: alternatively, the Clamp methods could accept a nullable types - but maybe that would be better with a custom "Brange" struct?
 
-    [Pure] public static short Clamp(this short value, short min, short max = short.MaxValue) => value <= min ? min : value >= max ? max : value;
-
-    [Pure] public static int     Clamp(this int     value, int     min, int     max = int.MaxValue)     => value <= min ? min : value >= max ? max : value;
-    [Pure] public static long    Clamp(this long    value, long    min, long    max = long.MaxValue)    => value <= min ? min : value >= max ? max : value;
-    [Pure] public static float   Clamp(this float   value, float   min, float   max = float.MaxValue)   => value <= min ? min : value >= max ? max : value;
-    [Pure] public static double  Clamp(this double  value, double  min, double  max = double.MaxValue)  => value <= min ? min : value >= max ? max : value;
-    [Pure] public static decimal Clamp(this decimal value, decimal min, decimal max = decimal.MaxValue) => value <= min ? min : value >= max ? max : value;
-    [Pure] public static ushort  Clamp(this ushort  value, ushort  min, ushort  max = ushort.MaxValue)  => value <= min ? min : value >= max ? max : value;
-    [Pure] public static uint    Clamp(this uint    value, uint    min, uint    max = uint.MaxValue)    => value <= min ? min : value >= max ? max : value;
-    [Pure] public static ulong   Clamp(this ulong   value, ulong   min, ulong   max = ulong.MaxValue)   => value <= min ? min : value >= max ? max : value;
-    [Pure] public static byte    Clamp(this byte    value, byte    min, byte    max = byte.MaxValue)    => value <= min ? min : value >= max ? max : value;
-    [Pure] public static sbyte   Clamp(this sbyte   value, sbyte   min, sbyte   max = sbyte.MaxValue)   => value <= min ? min : value >= max ? max : value;
+    [Pure] public static short   Clamp(this short   value, short   min, short   max = short.MaxValue)   => Math.Clamp(value, min, max);
+    [Pure] public static int     Clamp(this int     value, int     min, int     max = int.MaxValue)     => Math.Clamp(value, min, max);
+    [Pure] public static long    Clamp(this long    value, long    min, long    max = long.MaxValue)    => Math.Clamp(value, min, max);
+    [Pure] public static float   Clamp(this float   value, float   min, float   max = float.MaxValue)   => Math.Clamp(value, min, max);
+    [Pure] public static double  Clamp(this double  value, double  min, double  max = double.MaxValue)  => Math.Clamp(value, min, max);
+    [Pure] public static decimal Clamp(this decimal value, decimal min, decimal max = decimal.MaxValue) => Math.Clamp(value, min, max);
+    [Pure] public static ushort  Clamp(this ushort  value, ushort  min, ushort  max = ushort.MaxValue)  => Math.Clamp(value, min, max);
+    [Pure] public static uint    Clamp(this uint    value, uint    min, uint    max = uint.MaxValue)    => Math.Clamp(value, min, max);
+    [Pure] public static ulong   Clamp(this ulong   value, ulong   min, ulong   max = ulong.MaxValue)   => Math.Clamp(value, min, max);
+    [Pure] public static byte    Clamp(this byte    value, byte    min, byte    max = byte.MaxValue)    => Math.Clamp(value, min, max);
+    [Pure] public static sbyte   Clamp(this sbyte   value, sbyte   min, sbyte   max = sbyte.MaxValue)   => Math.Clamp(value, min, max);
 
     /// <summary>
     /// Limits an <see cref="Index"/> so that it is valid for a collection of <paramref name="length"/> items: if the <see cref="Index.GetOffset"/> would be out-of-bounds,
@@ -69,17 +68,19 @@ public static partial class Mathb {
 
     #region Limit
 
-    [Pure] public static short   Limit(this short   value, short   max) => value >= max ? max : value;
-    [Pure] public static int     Limit(this int     value, int     max) => value >= max ? max : value;
-    [Pure] public static long    Limit(this long    value, long    max) => value >= max ? max : value;
-    [Pure] public static float   Limit(this float   value, float   max) => value >= max ? max : value;
-    [Pure] public static double  Limit(this double  value, double  max) => value >= max ? max : value;
-    [Pure] public static decimal Limit(this decimal value, decimal max) => value >= max ? max : value;
-    [Pure] public static ushort  Limit(this ushort  value, ushort  max) => value >= max ? max : value;
-    [Pure] public static uint    Limit(this uint    value, uint    max) => value >= max ? max : value;
-    [Pure] public static ulong   Limit(this ulong   value, ulong   max) => value >= max ? max : value;
-    [Pure] public static byte    Limit(this byte    value, byte    max) => value >= max ? max : value;
-    [Pure] public static sbyte   Limit(this sbyte   value, sbyte   max) => value >= max ? max : value;
+    //TODO: Should the `Limit` methods work with negative numbers? For example: -10.Limit(5) => -5 or -10.Limit(-5) => -5
+
+    [Pure, NonNegativeValue] public static short   Limit(this short   value, short   max) => Math.Clamp(value, default, Math.Abs(max));
+    [Pure, NonNegativeValue] public static int     Limit(this int     value, int     max) => Math.Clamp(value, default, Math.Abs(max));
+    [Pure, NonNegativeValue] public static long    Limit(this long    value, long    max) => Math.Clamp(value, default, Math.Abs(max));
+    [Pure, NonNegativeValue] public static float   Limit(this float   value, float   max) => Math.Clamp(value, default, Math.Abs(max));
+    [Pure, NonNegativeValue] public static double  Limit(this double  value, double  max) => Math.Clamp(value, default, Math.Abs(max));
+    [Pure, NonNegativeValue] public static decimal Limit(this decimal value, decimal max) => Math.Clamp(value, default, Math.Abs(max));
+    [Pure, NonNegativeValue] public static ushort  Limit(this ushort  value, ushort  max) => Math.Clamp(value, default, max);
+    [Pure, NonNegativeValue] public static uint    Limit(this uint    value, uint    max) => Math.Clamp(value, default, max);
+    [Pure, NonNegativeValue] public static ulong   Limit(this ulong   value, ulong   max) => Math.Clamp(value, default, max);
+    [Pure, NonNegativeValue] public static byte    Limit(this byte    value, byte    max) => Math.Clamp(value, default, max);
+    [Pure, NonNegativeValue] public static sbyte   Limit(this sbyte   value, sbyte   max) => Math.Clamp(value, default, max);
 
     #endregion
 
