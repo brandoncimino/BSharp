@@ -40,6 +40,8 @@ public static partial class CollectionUtils {
 
     /// <summary>
     /// <see cref="IDictionary{TKey,TValue}.Remove(TKey)"/>s an entry from this <see cref="IDictionary{TKey,TValue}"/>, returning the removed <see cref="TValue"/>.
+    ///
+    /// TODO: Consider updating this to return a <see cref="(TValue, Boolean)">(TValue, bool)</see> instead
     /// </summary>
     /// <remarks>
     /// This works identically to <see cref="IDictionary{TKey,TValue}.Remove(TKey)"/>, except that it returns the actual removed value instead of a <see cref="bool"/>.
@@ -628,11 +630,10 @@ public static partial class CollectionUtils {
     /// <inheritdoc cref="ContainsAny{T}(System.Collections.Generic.IEnumerable{T},System.Collections.Generic.IEnumerable{T})"/>
     [Pure]
     public static bool ContainsAny<T>(
-        [InstantHandle]
-        this IEnumerable<T> enumerable,
-        T          other,
-        T          another,
-        params T[] more
+        [InstantHandle] this IEnumerable<T> enumerable,
+        T                                   other,
+        T                                   another,
+        params T[]                          more
     ) {
         return ContainsAny(enumerable, more.Prepend(another).Prepend(other));
     }
@@ -1058,10 +1059,8 @@ public static partial class CollectionUtils {
     /// <typeparam name="T"></typeparam>
     /// <returns>an <see cref="Optional{T}"/> containing the <typeparamref name="T"/> value that matched the <paramref name="predicate"/></returns>
     public static Optional<T?> FindFirst<T>(
-        [InstantHandle]
-        this IEnumerable<T?>? source,
-        [InstantHandle]
-        Func<T?, bool>? predicate = default
+        [InstantHandle] this IEnumerable<T?>? source,
+        [InstantHandle]      Func<T?, bool>?  predicate = default
     ) {
         source = predicate == default ? source.OrEmpty() : source.OrEmpty().Where(predicate);
         return source.Take(1).ToOptional();
@@ -1084,9 +1083,8 @@ public static partial class CollectionUtils {
     /// <inheritdoc cref="Find{TKey,TValue}(System.Collections.Generic.IDictionary{TKey,TValue},TKey)"/>
     [Pure]
     public static Optional<TValue> Find<TKey, TValue>(
-        [ItemCanBeNull]
-        this KeyedCollection<TKey, TValue>? source,
-        TKey key
+        [ItemCanBeNull] this KeyedCollection<TKey, TValue>? source,
+        TKey                                                key
     ) {
         if (source == null) {
             return default;
@@ -1174,7 +1172,6 @@ public static partial class CollectionUtils {
     #endregion
 
 #if !NET6_0_OR_GREATER
-
     #region TakeLast
 
     /// <summary>
@@ -1298,10 +1295,8 @@ public static partial class CollectionUtils {
 
     [ItemNotNull]
     public static IEnumerable<T> Intersection<T>(
-        [InstantHandle]
-        this IEnumerable<T> source,
-        [InstantHandle]
-        IEnumerable<IEnumerable<T>> others
+        [InstantHandle] this IEnumerable<T>              source,
+        [InstantHandle]      IEnumerable<IEnumerable<T>> others
     ) {
         if (source == null) {
             throw new ArgumentNullException(nameof(source));
@@ -1354,107 +1349,6 @@ public static partial class CollectionUtils {
 
     public static HashSet<T> ToHashSet<T>(this IEnumerable<T> source, IEqualityComparer<T>? comparer = default) {
         return new HashSet<T>(source, comparer);
-    }
-
-    #endregion
-
-    #region Dictionaries After Dark
-
-    /// <summary>
-    /// Shorthand to go from an <see cref="IEnumerable{T}"/> of <see cref="KeyValuePair{TKey,TValue}"/>s back to an <see cref="IDictionary{TKey,TValue}"/> via <see cref="Enumerable.ToDictionary{TSource,TKey,TValue}(System.Collections.Generic.IEnumerable{TSource},System.Func{TSource,TKey},System.Func{TSource,TValue})"/>
-    /// </summary>
-    /// <param name="source">a collection of <see cref="KeyValuePair{TKey,TValue}"/>s</param>
-    /// <typeparam name="TKey">the type of <see cref="IDictionary{TKey,TValue}.Keys"/></typeparam>
-    /// <typeparam name="TVal">the type of <see cref="IDictionary{TKey,TValue}.Values"/></typeparam>
-    /// <returns>a new <see cref="IDictionary{TKey,TValue}"/></returns>
-    public static IDictionary<TKey, TVal> ToDictionary<TKey, TVal>([InstantHandle] this IEnumerable<KeyValuePair<TKey, TVal>> source) {
-        return source.ToDictionary(pair => pair.Key, pair => pair.Value);
-    }
-
-    /// <summary>
-    /// Converts a non-generic <see cref="IDictionary"/> to an <see cref="IDictionary{TKey,TValue}"/> of <see cref="object"/>s.
-    /// </summary>
-    /// <remarks>
-    /// This essentially uses <see cref="Enumerable.Cast{TResult}"/> on both the <see cref="IDictionary.Keys"/> and <see cref="IDictionary.Values"/>.
-    /// </remarks>
-    /// <param name="dictionary">the original, non-generic <see cref="IDictionary"/></param>
-    /// <returns>a generic <see cref="IDictionary{TKey,TValue}"/></returns>
-    public static IDictionary<object, object> ToGeneric(this IDictionary dictionary) {
-        var keys = dictionary.Keys.Cast<object>().ToArray();
-        var vals = dictionary.Values.Cast<object>().ToArray();
-        return keys.Select((k, i) => new KeyValuePair<object, object>(k, vals[i])).ToDictionary();
-    }
-
-    /// <summary>
-    /// Similar to <see cref="NonNull{T}(System.Collections.Generic.IEnumerable{T})"/>, but checks for null <see cref="KeyValuePair{TKey,TValue}"/>.<see cref="KeyValuePair{TKey,TValue}.Value"/>s in a <see cref="IDictionary{TKey,TValue}"/>.
-    /// </summary>
-    /// <param name="source"></param>
-    /// <typeparam name="TKey"></typeparam>
-    /// <typeparam name="TVal"></typeparam>
-    /// <returns></returns>
-    public static IDictionary<TKey, TVal> NonNull<TKey, TVal>(this IDictionary<TKey, TVal> source) {
-        return source.Where(it => it.Value != null).ToDictionary();
-    }
-
-    /// <summary>
-    /// Performs a <see cref="Enumerable.Select{TSource,TResult}(System.Collections.Generic.IEnumerable{TSource},System.Func{TSource,TResult})"/> that only transforms the <see cref="IDictionary{TKey,TValue}.Values"/>.
-    /// </summary>
-    /// <param name="source">the original <see cref="IDictionary{TKey,TValue}"/></param>
-    /// <param name="selector">the <see cref="Func{TOld,TNew}"/> applied to each <see cref="KeyValuePair{TKey,TValue}.Value"/></param>
-    /// <typeparam name="TKey">the type of the <see cref="IDictionary{TKey,TValue}.Keys"/></typeparam>
-    /// <typeparam name="TOld">the type of the original <see cref="IDictionary{TKey,TValue}.Values"/></typeparam>
-    /// <typeparam name="TNew">the type of the new <see cref="IDictionary{TKey,TValue}.Values"/></typeparam>
-    /// <returns>a new <see cref="IDictionary{TKey,TValue}"/></returns>
-    public static IDictionary<TKey, TNew> SelectValues<TKey, TOld, TNew>(this IDictionary<TKey, TOld> source, Func<TOld, TNew> selector) {
-        return source.ToDictionary(
-            it => it.Key,
-            it => selector(it.Value)
-        );
-    }
-
-    /// <summary>
-    /// A variation of the built-int <see cref="Enumerable.ToDictionary{TSource,TKey}(System.Collections.Generic.IEnumerable{TSource},System.Func{TSource,TKey})"/>
-    /// that "deconstructs" the <see cref="KeyValuePair{TKey,TValue}"/> to a separate <see cref="KeyValuePair{TKey,TValue}.Key"/> and <see cref="KeyValuePair{TKey,TValue}.Value"/>.
-    /// </summary>
-    /// <param name="source">the original <see cref="IDictionary{TKey,TValue}"/></param>
-    /// <param name="selector">the <see cref="Func{TResult}"/> that transforms each <see cref="KeyValuePair{TKey,TValue}"/></param>
-    /// <typeparam name="TKey">the <see cref="Type"/> of <paramref name="source"/>'s <see cref="IDictionary{TKey,TValue}.Keys"/></typeparam>
-    /// <typeparam name="TOld">the <see cref="Type"/> of <paramref name="source"/>'s <see cref="IDictionary{TKey,TValue}.Values"/></typeparam>
-    /// <typeparam name="TNew">the <see cref="Type"/> of the <b>new</b> <see cref="IDictionary.Values"/></typeparam>
-    /// <returns>a new <see cref="Dictionary{TKey,TValue}"/></returns>
-    public static Dictionary<TKey, TNew> ToDictionary<TKey, TOld, TNew>(this IDictionary<TKey, TOld> source, Func<TKey, TOld, TNew> selector) {
-        return source.ToDictionary(
-            kvp => kvp.Key,
-            kvp => selector(kvp.Key, kvp.Value)
-        );
-    }
-
-    /// <summary>
-    /// A variation of the built-in <see cref="Enumerable.Select{TSource,TResult}(System.Collections.Generic.IEnumerable{TSource},System.Func{TSource,TResult})"/>
-    /// that separates the <see cref="KeyValuePair{TKey,TValue}.Key"/> and <see cref="KeyValuePair{TKey,TValue}.Value"/> before sending them to the <paramref name="selector"/> <see cref="Func{T1,T2,TResult}"/>.
-    /// </summary>
-    /// <param name="source">the original <see cref="IDictionary{TKey,TValue}"/></param>
-    /// <param name="selector">the <see cref="Func{T1,T2,TResult}"/> that performs a transformation against each <see cref="KeyValuePair{TKey,TValue}.Key"/> and <see cref="KeyValuePair{TKey,TValue}.Value"/></param>
-    /// <typeparam name="TKey">the type of <paramref name="source"/>'s <see cref="IDictionary{TKey,TValue}.Keys"/></typeparam>
-    /// <typeparam name="TVal">the type of <paramref name="source"/>'s <see cref="IDictionary{TKey,TValue}.Values"/></typeparam>
-    /// <typeparam name="TNew">the type of the new <see cref="IEnumerable{T}"/></typeparam>
-    /// <returns>a new <see cref="IEnumerable{T}"/> containing the results of the <paramref name="selector"/></returns>
-    /// <seealso cref="ForEach{TKey,TVal}(System.Collections.Generic.IDictionary{TKey,TVal},System.Action{TKey,TVal})"/>
-    [Pure]
-    public static IEnumerable<TNew> Select<TKey, TVal, TNew>(this IDictionary<TKey, TVal> source, Func<TKey, TVal, TNew> selector) {
-        return source.Select(kvp => selector.Invoke(kvp.Key, kvp.Value));
-    }
-
-    /// <summary>
-    /// Returns a new <see cref="IDictionary{TKey,TValue}"/> containing only the elements of <paramref name="source"/> whose <see cref="KeyValuePair{TKey,TValue}.Value"/> satisfies the given <paramref name="predicate"/>.
-    /// </summary>
-    /// <param name="source">the original <see cref="IDictionary{TKey,TValue}"/></param>
-    /// <param name="predicate">the <see cref="Func{T,Boolean}"/> used to test each <see cref="KeyValuePair{TKey,TValue}.Value"/></param>
-    /// <typeparam name="TKey">the type of the <see cref="IDictionary{TKey,TValue}.Keys"/></typeparam>
-    /// <typeparam name="TVal">the type of the <see cref="IDictionary{TKey,TValue}.Values"/></typeparam>
-    /// <returns>a new <see cref="IDictionary{TKey,TValue}"/></returns>
-    public static IDictionary<TKey, TVal> WhereValues<TKey, TVal>(this IDictionary<TKey, TVal> source, Func<TVal, bool> predicate) {
-        return source.Where(it => predicate(it.Value)).ToDictionary();
     }
 
     #endregion

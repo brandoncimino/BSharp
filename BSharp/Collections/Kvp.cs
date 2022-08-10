@@ -1,6 +1,8 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 
 using JetBrains.Annotations;
 
@@ -34,7 +36,7 @@ public static class Kvp {
 
     /// <inheritdoc cref="Of{T,K,V}(T,Func{T,K},Func{T,V})"/>
     /// <seealso cref="Of{T,K,V}(T,Func{T,K},Func{T,V})"/>
-    public static KeyValuePair<K, V> ToKvp<T, K, V>(this T input, Func<T, K> keySelector, Func<T, V> valSelector)
+    public static KeyValuePair<K, V> ToKeyValuePair<T, K, V>(this T input, Func<T, K> keySelector, Func<T, V> valSelector)
         where K : notnull => Of(input, keySelector, valSelector);
 
     /// <summary>
@@ -52,8 +54,9 @@ public static class Kvp {
 
     /// <inheritdoc cref="Of{T,K}(T,Func{T,K})"/>
     /// <seealso cref="Of{T,K}(T,Func{T,K})"/>
+    /// <remarks>Made this one a bit more verbose to prevent it from cluttering up auto-complete suggestions too much, since it's an extension on any type.</remarks>
     [Pure]
-    public static KeyValuePair<K, T> ToKvp<T, K>(this T input, Func<T, K> keySelector)
+    public static KeyValuePair<K, T> ToKeyValuePair<T, K>(this T input, Func<T, K> keySelector)
         where K : notnull => Of(input, keySelector);
 
     /// <summary>
@@ -63,10 +66,10 @@ public static class Kvp {
     /// <typeparam name="K">the <see cref="KeyValuePair{TKey,TValue}.Key"/> type</typeparam>
     /// <typeparam name="V">the <see cref="KeyValuePair{TKey,TValue}.Value"/> type</typeparam>
     /// <returns>a new <see cref="KeyValuePair{TKey,TValue}"/></returns>
-    public static KeyValuePair<K, V> ToKvp<K, V>(this (K key, V value) tuple)
+    public static KeyValuePair<K, V> ToKeyValuePair<K, V>(this (K key, V value) tuple)
         where K : notnull => KeyValuePair.Create(tuple.key, tuple.value);
 
-    public static KeyValuePair<K, T> ToKvp<T, K>(this T primaryKeyed)
+    public static KeyValuePair<K, T> ToKeyValuePair<T, K>(this T primaryKeyed)
         where T : IPrimaryKeyed<K> {
         return KeyValuePair.Create(primaryKeyed.PrimaryKey, primaryKeyed);
     }
@@ -141,6 +144,44 @@ public static class Kvp {
             keySelector(keyValuePair.Key, keyValuePair.Value),
             keyValuePair.Value
         );
+    }
+
+    #endregion
+
+    #region Non-generic DictionaryEntry
+
+    /// <summary>
+    /// Converts a <see cref="DictionaryEntry"/> to a <see cref="KeyValuePair{TKey,TValue}"/> by casting its <see cref="KeyValuePair{TKey,TValue}.Key"/> and <see cref="KeyValuePair{TKey,TValue}.Value"/>.
+    /// </summary>
+    /// <remarks>
+    /// This performs an explicit hard-cast - i.e. <c><![CDATA[(K)key]]></c> - because using the <c>as</c> or <c>instanceof</c> operators or the <see cref="Enumerable.Cast{TResult}"/> function
+    /// wouldn't take user-defined <c>implicit</c> or <c>explicit</c> conversion <c>operator</c>s into account.
+    /// </remarks>
+    /// <param name="entry">this <see cref="DictionaryEntry"/></param>
+    /// <typeparam name="K">the <see cref="KeyValuePair{TKey,TValue}"/>'s <see cref="KeyValuePair{TKey,TValue}.Key"/> type</typeparam>
+    /// <typeparam name="V">the <see cref="KeyValuePair{TKey,TValue}"/>'s <see cref="KeyValuePair{TKey,TValue}.Value"/> type</typeparam>
+    /// <returns>an equivalent <see cref="KeyValuePair{TKey,TValue}"/></returns>
+    /// <exception cref="InvalidCastException">if the <see cref="DictionaryEntry"/>'s <see cref="DictionaryEntry.Key"/> or <see cref="DictionaryEntry.Value"/> couldn't be cast to the appropriate type</exception>
+    [Pure]
+    public static KeyValuePair<K, V?> ToKeyValuePair<K, V>(this DictionaryEntry entry)
+        where K : notnull {
+        [return: NotNullIfNotNull("o")]
+        static T? TryCastObj<T>(object? o) {
+            return o switch {
+                T t => t,
+                _   => (T?)o,
+            };
+        }
+
+        try {
+            var key = TryCastObj<K>(entry.Key);
+            var val = TryCastObj<V>(entry.Value);
+            return Of(key, val);
+        }
+        catch (Exception e) {
+            var fromType = (entry.Key.GetType().Name, entry.Value?.GetType().Name ?? "⛔");
+            throw new InvalidCastException($"Unable to cast the {nameof(DictionaryEntry)} {entry} from {fromType} ➡ <{typeof(K).Name}, {typeof(V).Name}>!");
+        }
     }
 
     #endregion

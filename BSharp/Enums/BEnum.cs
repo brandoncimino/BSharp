@@ -102,8 +102,7 @@ namespace FowlFever.BSharp.Enums {
             string? details = default,
             [CallerArgumentExpression("actualValue")]
             string? parameterName = default,
-            [CallerMemberName]
-            string? rejectedBy = default
+            [CallerMemberName] string? rejectedBy = default
         )
             where T : Enum? {
             var rejection = new RejectionException(
@@ -123,8 +122,7 @@ namespace FowlFever.BSharp.Enums {
             string? details = default,
             [CallerArgumentExpression("actualCombo")]
             string? parameterName = default,
-            [CallerMemberName]
-            string? rejectedBy = default
+            [CallerMemberName] string? rejectedBy = default
         )
             where T : Enum
             where T2 : Enum {
@@ -150,8 +148,7 @@ namespace FowlFever.BSharp.Enums {
             string? details = default,
             [CallerArgumentExpression("actualValue")]
             string? parameterName = default,
-            [CallerMemberName]
-            string? rejectedBy = default
+            [CallerMemberName] string? rejectedBy = default
         )
             where T : Enum? {
             var rejection = new RejectionException(
@@ -176,14 +173,16 @@ namespace FowlFever.BSharp.Enums {
 
             var msg = $"{enumType.PrettifyType(default)} values {badValues.Prettify()} aren't among the allowed values!";
 
-            var dic = new Dictionary<object, object?>() {
-                    ["Enum type"]      = enumType,
-                    ["Parameter name"] = paramName,
-                    ["Allowed values"] = allowedValues,
-                    ["Checked values"] = checkedValues,
-                    ["Bad values"]     = badValues
-                }.SelectValues(it => Prettification.Prettify(it))
-                 .WhereValues(it => it.IsNotBlank());
+            var dic = new Dictionary<string, object?> {
+                          ["Enum type"]      = enumType,
+                          ["Parameter name"] = paramName,
+                          ["Allowed values"] = allowedValues,
+                          ["Checked values"] = checkedValues,
+                          ["Bad values"]     = badValues
+                      }
+                      .Select(kvp => Kvp.Of(kvp.Key, kvp.Value.Prettify<object>()))
+                      .Where(kvp => kvp.Value.IsNotBlank())
+                      .ToDictionary();
 
             var prettyDic = dic.Prettify(HeaderStyle.None);
 
