@@ -1,11 +1,9 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
 using System.Runtime.CompilerServices;
+using System.Text;
 
-using FowlFever.BSharp.Collections;
 using FowlFever.BSharp.Strings;
-using FowlFever.BSharp.Strings.Spectral;
 
 using Spectre.Console;
 using Spectre.Console.Rendering;
@@ -23,80 +21,87 @@ public static class Brandon {
         ForceAnsi();
     }
 
-    public static (string?, CallerInfo) Info<T>(
-        T value,
-        [CallerArgumentExpression("value")]
-        string? argumentExpression = default,
-        [CallerMemberName]
-        string? memberName = default,
-        [CallerFilePath]
-        string? filePath = default,
-        [CallerLineNumber]
-        int lineNumber = default
-    ) => (argumentExpression, new CallerInfo(memberName, filePath, lineNumber));
+    public static void Render<T>(T renderable)
+        where T : IRenderable {
+        AnsiConsole.Write(renderable);
+    }
 
+    /// <summary>
+    /// Prints an <see cref="expression"/> and a <see cref="value"/> in a <see cref="Panel"/>.
+    /// </summary>
+    /// <param name="value"></param>
+    /// <param name="label"></param>
+    /// <param name="expression"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
     public static T Print<T>(
-        T value,
-        [CallerArgumentExpression("value")]
-        string? expression = default
+        T                                           value,
+        string?                                     label      = default,
+        [CallerArgumentExpression("value")] string? expression = default
     ) {
-        var spectre = new Panel(value.Prettify().EscapeMarkup()) {
-            Header      = new PanelHeader(expression.EscapeMarkup()),
+        var renderable = value switch {
+            IRenderable r => r,
+            _             => _Pretty_Panel(value, label, expression),
+        };
+        Render(renderable);
+        return value;
+    }
+
+    private static IRenderable _Pretty_Panel<T>(T value, string? label, string? expression) {
+        var header  = label.IfBlank(expression);
+        var content = value.Prettify().PadRight(header?.Length ?? 0);
+        var spectre = new Panel(content.EscapeMarkup()) {
+            Header      = new PanelHeader(header.EscapeMarkup()),
             Expand      = false,
             Border      = BoxBorder.Rounded,
             BorderStyle = new Style(Color.DarkOrange),
         };
 
-        AnsiConsole.Write(spectre);
-
-        return value;
+        return spectre;
     }
 
-    public static string Verbose<T>(
-        T value,
-        [CallerArgumentExpression("value")]
-        string? argumentExpression = default,
-        [CallerMemberName]
-        string? memberName = default,
-        [CallerFilePath]
-        string? filePath = default,
-        [CallerLineNumber]
-        int lineNumber = default
-    ) {
-        var info = Info(value, argumentExpression, memberName, filePath, lineNumber);
-        var str  = info.Prettify();
-        Console.WriteLine(str);
-        return str;
-    }
-}
+    /// <summary>
+    /// Similar to <see cref="Print{T}(T,string?,string?)"/>, but accepts a <see cref="ReadOnlySpan{T}"/>.
+    /// </summary>
+    /// <param name="span">this <see cref="ReadOnlySpan{T}"/></param>
+    /// <param name="expression">see <see cref="CallerArgumentExpressionAttribute"/></param>
+    /// <typeparam name="T">the type of entries in the span</typeparam>
+    /// <returns>this <paramref name="span"/></returns>
+    public static ReadOnlySpan<T> Print<T>(ReadOnlySpan<T> span, [CallerArgumentExpression("span")] string? expression = default) {
+        static string Prettify(ReadOnlySpan<T> span) {
+            var sb = new StringBuilder();
+            sb.Append($"ReadOnlySpan<{typeof(T).Name}>[{span.Length}]");
+            sb.Append('{');
+            foreach (var it in span) {
+                sb.Append(it.OrNullPlaceholder());
+                sb.Append(", ");
+            }
 
-public record CallerInfo(
-    [CallerMemberName]
-    string? MemberName = default,
-    [CallerFilePath]
-    string? FilePath = default,
-    [CallerLineNumber]
-    int LineNumber = default
-) : IHasRenderable {
-    public string? FileName => Path.GetFileNameWithoutExtension(FilePath);
-
-    public Hyperlink? GetLineLink() {
-        return FilePath switch {
-            { Length: > 0 } => new Hyperlink(FilePath) {
-                DisplayText = $"{FileName}:{LineNumber}"
-            },
-            _ => null
-        };
-    }
-
-    public IRenderable GetRenderable() {
-        var epitaph = new Epitaph().AddNonNull(new Epitaph(MemberName));
-
-        if (GetLineLink() != null) {
-            epitaph.Add(" @ ")
-                   .Add(FilePath);
+            sb.Append('}');
+            return sb.ToString();
         }
 
-        return epitaph;
+        var pretty = Prettify(span);
+
+        var spectre = new Panel(pretty.EscapeMarkup()) {
+            Header      = new PanelHeader(expression.EscapeMarkup()),
+            Expand      = false,
+            Border      = BoxBorder.Rounded,
+            BorderStyle = new Style(Color.DarkOrange)
+        };
+
+        Render(spectre);
+        return span;
+    }
+
+    /// <summary>
+    /// Prints a horizontal <see cref="Rule"/> with the current <see cref="CallerMemberNameAttribute"/>.
+    /// </summary>
+    /// <param name="callerMemberName">see <see cref="CallerMemberNameAttribute"/></param>
+    /// <returns>see <see cref="CallerMemberNameAttribute"/></returns>
+    public static string PrintThisMember([CallerMemberName] string callerMemberName = "") {
+        var spectre = new Rule(callerMemberName);
+        AnsiConsole.Write(spectre);
+        return callerMemberName;
     }
 }
