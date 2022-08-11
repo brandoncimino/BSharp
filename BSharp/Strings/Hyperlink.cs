@@ -15,11 +15,11 @@ namespace FowlFever.BSharp.Strings;
 /// <param name="DisplayText">the actual <see cref="string"/> that a user will see</param>
 /// <param name="Url">the destination url</param>
 /// <remarks>
-/// TODO: Add a custom editor for this!
+/// TODO: Add a custom Unity editor for this!
 /// </remarks>
 [Serializable]
-public record Hyperlink(string Url) : IMarkupHtml, IMarkupAsciidoc, IMarkupMarkdown, IHasRenderable {
-    private string? _displayText;
+public record Hyperlink(string Url, string? DisplayText = default) : IMarkupHtml, IMarkupAsciidoc, IMarkupMarkdown, IHasRenderable {
+    private string? _displayText = DisplayText;
     public string DisplayText {
         get => _displayText.IfBlank(Url);
         init => _displayText = value;
