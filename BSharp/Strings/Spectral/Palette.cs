@@ -22,8 +22,9 @@ public readonly record struct Palette {
     /// This <see cref="Palette"/> has been compiled and can <b>never</b> change.
     /// </summary>
     public static readonly Palette HardCoded = new() {
-        Numbers = new Style(Color.Purple),
-        Strings = new Style(Color.DodgerBlue1, decoration: Decoration.Italic),
+        Numbers    = new Style(Color.Purple),
+        Strings    = new Style(Color.DodgerBlue1, decoration: Decoration.Italic),
+        Hyperlinks = new Style(Color.Blue,        decoration: Decoration.Underline),
         Severity = new SeverityColors {
             Good = Color.Green,
             Bad  = Color.Red
