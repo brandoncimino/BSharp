@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-
-
 /*
  * This class contains a version of <a href="https://docs.microsoft.com/en-us/dotnet/api/system.memoryextensions.enumeratelines?view=net-6.0#system-memoryextensions-enumeratelines(system-readonlyspan((system-char)))">EnumerateLines</a>
  * stolen as verbatim as possible from the .NET 6 source code.
@@ -11,8 +9,8 @@
 #if !NET6_0_OR_GREATER
 namespace System {
     public static partial class MemoryExtensions {
-        public static SpanLineEnumerator EnumerateLines(this ReadOnlySpan<char> span) {
-            return new SpanLineEnumerator(span);
+        public static System.Text.SpanLineEnumerator EnumerateLines(this ReadOnlySpan<char> span) {
+            return new System.Text.SpanLineEnumerator(span);
         }
     }
 }
@@ -30,8 +28,8 @@ namespace System.Text {
         private bool               _isEnumeratorActive;
 
         internal SpanLineEnumerator(ReadOnlySpan<char> buffer) {
-            _remaining = buffer;
-            _current = default;
+            _remaining          = buffer;
+            _current            = default;
             _isEnumeratorActive = true;
         }
 
@@ -59,15 +57,15 @@ namespace System.Text {
 
             int idx = IndexOfNewlineChar(_remaining, out int stride);
             if (idx >= 0) {
-                _current = _remaining.Slice(0, idx);
+                _current   = _remaining.Slice(0, idx);
                 _remaining = _remaining.Slice(idx + stride);
             }
             else {
                 // We've reached EOF, but we still need to return 'true' for this final
                 // iteration so that the caller can query the Current property once more.
 
-                _current = _remaining;
-                _remaining = default;
+                _current            = _remaining;
+                _remaining          = default;
                 _isEnumeratorActive = false;
             }
 
