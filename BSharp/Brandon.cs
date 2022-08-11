@@ -4,6 +4,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 
 using FowlFever.BSharp.Strings;
+using FowlFever.BSharp.Strings.Spectral;
 
 using Spectre.Console;
 using Spectre.Console.Rendering;
@@ -26,6 +27,8 @@ public static class Brandon {
         AnsiConsole.Write(renderable);
     }
 
+    public static IRenderwerks Renderwerks { get; set; } = new Panelwerks();
+
     /// <summary>
     /// Prints an <see cref="expression"/> and a <see cref="value"/> in a <see cref="Panel"/>.
     /// </summary>
@@ -41,23 +44,10 @@ public static class Brandon {
     ) {
         var renderable = value switch {
             IRenderable r => r,
-            _             => _Pretty_Panel(value, label, expression),
+            _             => Renderwerks.GetRenderable(value),
         };
         Render(renderable);
         return value;
-    }
-
-    private static IRenderable _Pretty_Panel<T>(T value, string? label, string? expression) {
-        var header  = label.IfBlank(expression);
-        var content = value.Prettify().PadRight(header?.Length ?? 0);
-        var spectre = new Panel(content.EscapeMarkup()) {
-            Header      = new PanelHeader(header.EscapeMarkup()),
-            Expand      = false,
-            Border      = BoxBorder.Rounded,
-            BorderStyle = new Style(Color.DarkOrange),
-        };
-
-        return spectre;
     }
 
     /// <summary>
