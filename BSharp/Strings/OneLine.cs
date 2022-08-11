@@ -65,11 +65,21 @@ public readonly partial record struct OneLine : IHas<string>, IEnumerable<Graphe
     private static string Validate(string? str) => str.MustNotBeNull()
                                                       .MustNotBe(it => it.ContainsAny(LineBreakChars));
 
+    internal static ReadOnlySpan<char> Validate(ReadOnlySpan<char> span) {
+        var lineEnumerator = span.EnumerateLines();
+
+        if (lineEnumerator.MoveNext() && lineEnumerator.MoveNext()) {
+            throw new RejectionException(span.ToString(), reason: "must contain exactly 1 line");
+        }
+
+        return span;
+    }
+
     public OneLine(string? value) : this(value, ShouldValidate.Yes) { }
 
-    private enum ShouldValidate { Yes, No }
+    internal enum ShouldValidate { Yes, No }
 
-    private OneLine(string? value, ShouldValidate shouldValidate) {
+    internal OneLine(string? value, ShouldValidate shouldValidate) {
         if (string.IsNullOrEmpty(value)) {
             _stringInfo = TextElementString.Empty;
             return;
@@ -82,6 +92,21 @@ public readonly partial record struct OneLine : IHas<string>, IEnumerable<Graphe
         };
 
         _stringInfo = new TextElementString(value!);
+    }
+
+    internal OneLine(ReadOnlySpan<char> value, ShouldValidate shouldValidate) {
+        if (value.IsEmpty) {
+            _stringInfo = TextElementString.Empty;
+            return;
+        }
+
+        value = shouldValidate switch {
+            ShouldValidate.Yes => Validate(value),
+            ShouldValidate.No  => value,
+            _                  => throw BEnum.UnhandledSwitch(shouldValidate)
+        };
+
+        _stringInfo = new TextElementString(value.ToString());
     }
 
     private OneLine(IEnumerable<GraphemeCluster> value, ShouldValidate shouldValidate) {
