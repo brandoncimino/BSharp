@@ -1,5 +1,4 @@
 using System;
-using System.Globalization;
 
 using FowlFever.BSharp.Enums;
 using FowlFever.BSharp.Exceptions;
@@ -22,19 +21,43 @@ public readonly record struct GraphemeCluster : IHas<string> {
     public          bool   IsBlank    => Value.IsBlank();
     public override string ToString() => Value;
 
-    private GraphemeCluster(string? value, Range range, ShouldValidate shouldValidate) {
-        Must.NotBeEmpty(value);
+    internal static ReadOnlySpan<char> Validate(ReadOnlySpan<char> value) {
+        Must.Have(value.IsEmpty, false);
+        var enumerator = value.EnumerateTextElements();
+        Must.Have(enumerator.MoveNext() && enumerator.MoveNext(), false);
+        return value;
+    }
 
-        value = value[range];
+    internal static string Validate(string? value) {
+        Validate(value.AsSpan());
+        return value!;
+    }
+
+    internal GraphemeCluster(string? fullString, Range clusterRange, ShouldValidate shouldValidate) {
+        Must.NotBeEmpty(fullString);
+
+        fullString = fullString[clusterRange];
 
         Value = shouldValidate switch {
-            ShouldValidate.Yes => value.MustBe(it => new StringInfo(it).LengthInTextElements == 1),
-            ShouldValidate.No  => value,
+            ShouldValidate.Yes => Validate(fullString),
+            ShouldValidate.No  => fullString,
             _                  => throw BEnum.UnhandledSwitch(shouldValidate),
         };
     }
 
-    private enum ShouldValidate { Yes, No }
+    public GraphemeCluster(string fullString, Range clusterRange) : this(fullString, clusterRange, ShouldValidate.Yes) { }
+
+    internal GraphemeCluster(ReadOnlySpan<char> span, ShouldValidate shouldValidate) {
+        Value = shouldValidate switch {
+            ShouldValidate.Yes => Validate(span).ToString(),
+            ShouldValidate.No  => span.ToString(),
+            _                  => throw BEnum.UnhandledSwitch(shouldValidate)
+        };
+    }
+
+    public GraphemeCluster(ReadOnlySpan<char> span) : this(span, ShouldValidate.Yes) { }
+
+    internal enum ShouldValidate { Yes, No }
 
     public static GraphemeCluster Create(string?      value)              => new(value, Range.All, ShouldValidate.Yes);
     public static GraphemeCluster Create(string?      value, Range range) => new(value, range, ShouldValidate.Yes);

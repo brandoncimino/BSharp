@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -28,8 +29,17 @@ public static class GraphemeClusterExtensions {
         }
     }
 
+    /// <summary>
+    /// Creates a <see cref="SpanTextElementEnumerator"/> for each of the <a href="https://docs.microsoft.com/en-us/dotnet/standard/base-types/character-encoding-introduction#grapheme-clusters">"text elements"</a> in a <see cref="ReadOnlySpan{T}"/> of <see cref="char"/>s.
+    /// </summary>
+    /// <param name="str">this <see cref="ReadOnlySpan{T}"/> of <see cref="char"/>s</param>
+    /// <returns>a new <see cref="SpanTextElementEnumerator"/></returns>
+    public static SpanTextElementEnumerator EnumerateTextElements(this ReadOnlySpan<char> str) {
+        return new SpanTextElementEnumerator(str);
+    }
+
     /// <inheritdoc cref="EnumerateTextElements(string?)"/>
-    public static IEnumerable<GraphemeCluster> EnumerateTextElements(this IHas<string?>? str) => str.GetValueOrDefault().EnumerateTextElements();
+    public static IEnumerable<GraphemeCluster> EnumerateTextElements(this IHas<string?>? str) => str.OrDefault().EnumerateTextElements();
 
     /// <summary>
     /// Gets the "visible" length of a <see cref="string"/> by counting the number of <a href="https://www.unicode.org/glossary/#grapheme_cluster">grapheme clusters</a>,
@@ -41,7 +51,7 @@ public static class GraphemeClusterExtensions {
     public static int VisibleLength(this string? str) => str == null ? 0 : new StringInfo(str).LengthInTextElements;
 
     /// <inheritdoc cref="VisibleLength(string?)"/>
-    public static int VisibleLength(this IHas<string?>? str) => str.GetValueOrDefault().VisibleLength();
+    public static int VisibleLength(this IHas<string?>? str) => str.OrDefault().VisibleLength();
 
     /// <summary>
     /// <see cref="Bloop.WrapAround{T}"/>s <paramref name="source"/> until we reach <paramref name="desiredLength"/>.
