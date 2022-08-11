@@ -45,8 +45,11 @@ namespace FowlFever.BSharp.Strings {
 
         #endregion
 
-        [Pure] public static string Prettify<T>(this T?      cinderella) => cinderella.Prettify(default);
-        [Pure] public static string Prettify(this    object? cinderella) => cinderella.Prettify(default);
+        [Pure] public static string Prettify<T>(this T? cinderella) => cinderella.Prettify(default);
+
+        [Obsolete($"Used the generic {nameof(Prettify)}<T> instead")]
+        [Pure]
+        public static string Prettify(this object? cinderella) => cinderella.Prettify(default);
 
         [Pure]
         public static string Prettify<T>(this T? cinderella, PrettificationSettings? settings) {
@@ -73,7 +76,9 @@ namespace FowlFever.BSharp.Strings {
                 );
         }
 
-        [Pure] public static string Prettify(this object? cinderella, PrettificationSettings? settings) => cinderella.Prettify<object>(settings);
+        [Obsolete($"Use the generic {nameof(Prettify)}<T> instead")]
+        [Pure]
+        public static string Prettify(this object? cinderella, PrettificationSettings? settings) => cinderella.Prettify<object>(settings);
 
         private static string _Safely<T>(T? cinderella, Func<T?, PrettificationSettings?, string> prettifyFunc, PrettificationSettings? settings) {
             settings = settings.Resolve();
@@ -89,7 +94,8 @@ namespace FowlFever.BSharp.Strings {
         internal static string LastResortPrettifier(object? cinderella, PrettificationSettings? settings) {
             settings = settings.Resolve();
             settings.TraceWriter.Verbose(() => $"⛑ Using the LAST RESORT prettifier for [{cinderella?.GetType()}]: {nameof(Convert.ToString)}!");
-            return Convert.ToString(cinderella);
+            // 📎 The documentation for `Convert.ToString()` describes is as returning "" if the input is `null`, but I don't think that's actually correct...
+            return Convert.ToString(cinderella) ?? DefaultNullPlaceholder;
         }
     }
 }
