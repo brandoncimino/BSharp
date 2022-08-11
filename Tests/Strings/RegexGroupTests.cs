@@ -23,7 +23,7 @@ public class RegexGroupTests {
         string expectedPattern,
         string expectedMatch
     ) {
-        var group = RegexGroup.Named(name, subexpression);
+        RegexGroup group = new(subexpression, name);
         Asserter.Against(group)
                 .And(Has.Property(nameof(group.Name)).EqualTo(name))
                 .And(Has.Property(nameof(group.Subexpression)).EqualTo(subexpression))

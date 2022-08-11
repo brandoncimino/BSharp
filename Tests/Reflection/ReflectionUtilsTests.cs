@@ -16,6 +16,7 @@ using FowlFever.BSharp.Collections;
 using FowlFever.BSharp.Reflection;
 using FowlFever.BSharp.Strings;
 using FowlFever.BSharp.Strings.Prettifiers;
+using FowlFever.BSharp.Strings.Settings;
 using FowlFever.Testing;
 
 using NUnit.Framework;
@@ -169,8 +170,7 @@ public partial class ReflectionUtilsTests {
 
     [Test]
     public void GetVariable(
-        [ValueSource(nameof(AllVariables))]
-        VariableExpectation expectedGettableVariable
+        [ValueSource(nameof(AllVariables))] VariableExpectation expectedGettableVariable
     ) {
         var setInt = expectedGettableVariable.Name == nameof(Privacy<int>.Prop_Static_Get_Only) ? Prop_Static_Get_Only_Default_Value : new Random().Next();
 
@@ -227,8 +227,7 @@ public partial class ReflectionUtilsTests {
 
     [Test]
     public void GetBackedPropertyName(
-        [ValueSource(nameof(AllVariables))]
-        VariableExpectation propertyWithBackingField
+        [ValueSource(nameof(AllVariables))] VariableExpectation propertyWithBackingField
     ) {
         if (propertyWithBackingField.MemberType != MemberTypes.Property) {
             throw new IgnoreException($"{propertyWithBackingField} is not a {MemberTypes.Property}!");
@@ -245,8 +244,7 @@ public partial class ReflectionUtilsTests {
 
     [Test]
     public void BackingField(
-        [ValueSource(nameof(AllProperties))]
-        VariableExpectation propertyWithBackingField
+        [ValueSource(nameof(AllProperties))] VariableExpectation propertyWithBackingField
     ) {
         Assume.That(propertyWithBackingField.MemberType, Is.EqualTo(MemberTypes.Property));
         var propertyInfo = typeof(Privacy<int>).GetProperty(propertyWithBackingField.Name, BindingFlags.Default | BindingFlags.Instance | BindingFlags.Public | BindingFlags.Static | BindingFlags.NonPublic);
@@ -266,8 +264,7 @@ public partial class ReflectionUtilsTests {
     /// <param name="propertyWithBackingField"></param>
     [Test]
     public void IsBackingField(
-        [ValueSource(nameof(AllProperties))]
-        VariableExpectation propertyWithBackingField
+        [ValueSource(nameof(AllProperties))] VariableExpectation propertyWithBackingField
     ) {
         Assume.That(propertyWithBackingField.MemberType, Is.EqualTo(MemberTypes.Property));
         var backingFieldInfo = typeof(Privacy<int>).GetField(propertyWithBackingField.BackingFieldName, BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static);

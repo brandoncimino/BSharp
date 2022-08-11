@@ -17,6 +17,7 @@ using FowlFever.BSharp.Reflection;
 using FowlFever.BSharp.Strings;
 using FowlFever.BSharp.Strings.Json;
 using FowlFever.BSharp.Strings.Prettifiers;
+using FowlFever.BSharp.Strings.Settings;
 using FowlFever.BSharp.Strings.Tabler;
 using FowlFever.Testing;
 
@@ -273,7 +274,7 @@ int (int, string)
             Prettification.Prettifiers,
             cinderellaType,
             default,
-            PrettifierFinders.GetDefaultFinders()
+            PrettifierFinders.DefaultFinders
         );
         Asserter.Against(prettifier)
                 .WithHeading($"Prettifier for 🧇 {cinderellaType.Prettify()} 🧇 {cinderellaType}")
@@ -298,7 +299,7 @@ int (int, string)
             Prettification.Prettifiers,
             keyedList.GetType(),
             default,
-            PrettifierFinders.GetDefaultFinders()
+            PrettifierFinders.DefaultFinders
         );
 
         Console.WriteLine(prettifier);
@@ -347,7 +348,7 @@ int (int, string)
             Prettification.Prettifiers,
             actualType,
             default,
-            PrettifierFinders.GetDefaultFinders()
+            PrettifierFinders.DefaultFinders
         );
         Console.WriteLine(prettifier);
 
@@ -556,7 +557,7 @@ List<int>[
             Prettification.Prettifiers,
             type,
             default,
-            PrettifierFinders.GetDefaultFinders()
+            PrettifierFinders.DefaultFinders
         );
         Asserter.Against(prettifier)
                 .And(Has.Property(nameof(prettifier.HasValue)).EqualTo(true))
