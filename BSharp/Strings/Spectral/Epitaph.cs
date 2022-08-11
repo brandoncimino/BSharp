@@ -1,9 +1,11 @@
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 
 using FowlFever.BSharp.Collections;
 using FowlFever.Implementors;
+using FowlFever.Implementors.NonGeneric;
 
 using Spectre.Console;
 using Spectre.Console.Rendering;
@@ -14,7 +16,9 @@ namespace FowlFever.BSharp.Strings.Spectral;
 /// A lazily-evaluated, "buildable" version of <see cref="Spectre.Console.Text"/> / <see cref="Spectre.Console.Markup"/> / <see cref="Spectre.Console.Paragraph"/>.
 /// </summary>
 public record Epitaph() : IHasList<IStylized>, IHasRenderable {
-    IList<IStylized> IHasList<IStylized>.AsList { get; } = ImmutableList.CreateBuilder<IStylized>();
+    private readonly ImmutableList<IStylized>.Builder _asList = ImmutableList.CreateBuilder<IStylized>();
+    IList<IStylized> IHasList<IStylized>.             AsList           => _asList;
+    IList IHasNonGenericList.                         AsNonGenericList => _asList;
 
     public Epitaph(string? content, Style? style = default) : this() {
         Add(content, style);
