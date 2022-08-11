@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -7,12 +8,18 @@ using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 
 using FowlFever.BSharp.Collections;
+using FowlFever.BSharp.Reflection;
 using FowlFever.BSharp.Strings.Prettifiers;
 using FowlFever.BSharp.Strings.Settings;
 
 namespace FowlFever.BSharp.Strings {
     public interface IPrettifierDatabase {
-        IPrettifier? Find(Type type);
+        /// <summary>
+        /// Retrieves an <see cref="IPrettifier"/> with an <b>exactly</b> matching <see cref="IPrettifier.PrettifierType"/> for the given <see cref="Type"/>. 
+        /// </summary>
+        /// <param name="type">the <see cref="IPrettifier.PrettifierType"/> to search for</param>
+        /// <returns>the matching <see cref="IPrettifier"/>, if any</returns>
+        IPrettifier? FindExact(Type type);
 
         void         Register(IPrettifier prettifier);
         IPrettifier? Deregister(Type      type);
@@ -26,11 +33,13 @@ namespace FowlFever.BSharp.Strings {
         /// </summary>
         /// <remarks>
         /// <see cref="IDictionary{TKey,TValue}"/> is used to make sure that retrieval via indexer is efficient.
+        /// <br/>
+        /// Update August 9, 2022: I have no idea what I meant by this.
         /// </remarks>
-        private readonly IDictionary<Type, IPrettifier> Prettifiers;
+        private readonly ConcurrentDictionary<Type, IPrettifier> Prettifiers;
 
         public PrettifierDatabase(IEnumerable<IPrettifier> prettifiers) {
-            Prettifiers = new PrimaryKeyedList<Type, IPrettifier>(prettifiers).ToDictionary();
+            Prettifiers = prettifiers.ToKeyValuePairs(it => it.PrimaryKey).ToConcurrentDictionary();
         }
 
         public PrettifierDatabase(params IPrettifier[] prettifiers) : this(prettifiers.AsEnumerable()) { }
@@ -40,7 +49,7 @@ namespace FowlFever.BSharp.Strings {
                 throw new ArgumentNullException(nameof(prettifier));
             }
 
-            Prettifiers.Add(prettifier.PrimaryKey, prettifier);
+            Prettifiers.TryAdd(prettifier.PrimaryKey, prettifier);
         }
 
         public IPrettifier? Deregister(Type type) {
@@ -48,10 +57,20 @@ namespace FowlFever.BSharp.Strings {
                 throw new ArgumentNullException(nameof(type));
             }
 
-            return Prettifiers.Grab(type);
+            return Prettifiers.TryRemove(type, out var removed) ? removed : null;
         }
 
-        public IPrettifier? Find(Type type) => Prettifiers.Grab(type);
+        public IPrettifier? FindExact(Type type) {
+            if (type == typeof(string)) {
+                return StringPrettifier;
+            }
+
+            if (type.Implements(typeof(IPrettifiable))) {
+                return PrettifiablePrettifier;
+            }
+
+            return Prettifiers.ContainsKey(type) ? Prettifiers[type] : default;
+        }
 
         public IPrettifier? Find(Func<IPrettifier, bool> predicate) {
             return Prettifiers.Where(it => predicate(it.Value))
@@ -61,8 +80,8 @@ namespace FowlFever.BSharp.Strings {
 
         public static PrettifierDatabase GetDefaultPrettifiers() {
             return new PrettifierDatabase(
-                new Prettifier<string>(Convert.ToString),
-                new Prettifier<IPrettifiable>(PrettifyPrettifiable),
+                StringPrettifier,
+                PrettifiablePrettifier,
                 new Prettifier<Enum>(InnerPretty.PrettifyEnum),
                 new Prettifier<Type>(InnerPretty.PrettifyType),
                 new Prettifier<IDictionary>(InnerPretty.PrettifyDictionary3),
@@ -95,6 +114,7 @@ namespace FowlFever.BSharp.Strings {
 
         #region Special High-Priority Prettifiers
 
+        internal static readonly IPrettifier StringPrettifier         = new Prettifier<string>(Convert.ToString);
         internal static readonly IPrettifier PrettifiablePrettifier   = new Prettifier<IPrettifiable>(PrettifyPrettifiable);
         internal static readonly IPrettifier ObjectToStringPrettifier = new Prettifier<object>(PrettifyToString);
 

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Immutable;
 
 using FowlFever.BSharp.Optional;
 using FowlFever.BSharp.Strings.Json;
@@ -15,12 +16,7 @@ namespace FowlFever.BSharp.Strings {
         internal const           string              DefaultNullPlaceholder = "⛔";
         internal static readonly IPrettifierDatabase Prettifiers            = PrettifierDatabase.GetDefaultPrettifiers();
 
-        internal static readonly OptionalPrettifierFinder[] Finders = {
-            PrettifierFinders.FindExactPrettifier,
-            PrettifierFinders.FindToStringOverridePrettifier,
-            PrettifierFinders.FindGenericallyTypedPrettifier,
-            PrettifierFinders.FindInheritedPrettifier,
-        };
+        internal static ImmutableArray<OptionalPrettifierFinder> Finders { get; set; } = PrettifierFinders.DefaultFinders.ToImmutableArray();
 
         [Obsolete] public static PrettificationSettings DefaultPrettificationSettings => PrettificationSettings.Default;
 
@@ -47,7 +43,7 @@ namespace FowlFever.BSharp.Strings {
 
         [Pure] public static string Prettify<T>(this T? cinderella) => cinderella.Prettify(default);
 
-        [Obsolete($"Used the generic {nameof(Prettify)}<T> instead")]
+        [Obsolete($"Use the generic {nameof(Prettify)}<T> instead")]
         [Pure]
         public static string Prettify(this object? cinderella) => cinderella.Prettify(default);
 
