@@ -20,6 +20,8 @@ namespace FowlFever.BSharp.Strings;
 /// TODO: Ensure proper serializability!
 /// </summary>
 public readonly partial record struct OneLine : IHas<string>, IEnumerable<GraphemeCluster>, IEquivalent<string> {
+    internal enum ShouldValidate { Yes, No }
+
     #region "Constants"
 
     public static readonly OneLine Empty          = CreateRisky("");
@@ -60,7 +62,7 @@ public readonly partial record struct OneLine : IHas<string>, IEnumerable<Graphe
     [Pure]
     public override string ToString() => Value;
 
-    #region Construction
+    #region Validation
 
     private static string Validate(string? str) => str.MustNotBeNull()
                                                       .MustNotBe(it => it.ContainsAny(LineBreakChars));
@@ -75,9 +77,11 @@ public readonly partial record struct OneLine : IHas<string>, IEnumerable<Graphe
         return span;
     }
 
-    public OneLine(string? value) : this(value, ShouldValidate.Yes) { }
+    #endregion
 
-    internal enum ShouldValidate { Yes, No }
+    #region Construction
+
+    public OneLine(string? value) : this(value, ShouldValidate.Yes) { }
 
     internal OneLine(string? value, ShouldValidate shouldValidate) {
         if (string.IsNullOrEmpty(value)) {
@@ -93,6 +97,8 @@ public readonly partial record struct OneLine : IHas<string>, IEnumerable<Graphe
 
         _stringInfo = new TextElementString(value!);
     }
+
+    public OneLine(ReadOnlySpan<char> value) : this(value, ShouldValidate.Yes) { }
 
     internal OneLine(ReadOnlySpan<char> value, ShouldValidate shouldValidate) {
         if (value.IsEmpty) {
