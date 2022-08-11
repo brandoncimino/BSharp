@@ -655,12 +655,18 @@ public static partial class StringUtils {
     /// <returns><see cref="string.IsNullOrWhiteSpace"/></returns>
     public static bool IsBlank([NotNullWhen(false)] this string? str) => string.IsNullOrWhiteSpace(str);
 
+    /// <returns>true if the <paramref name="span"/> <see cref="MemoryExtensions.Trim(System.ReadOnlySpan{char})"/>s to be <see cref="ReadOnlySpan{T}.IsEmpty"/></returns>
+    public static bool IsBlank(this ReadOnlySpan<char> span) => span.Trim().IsEmpty;
+
     /// <summary>
     /// The inverse of <see cref="IsBlank(string?)"/>
     /// </summary>
     /// <param name="str">this <see cref="string"/></param>
     /// <returns><b>NOT</b> <see cref="string.IsNullOrWhiteSpace"/></returns>
     public static bool IsNotBlank([NotNullWhen(true)] this string? str) => !str.IsBlank();
+
+    /// <returns>true if the <paramref name="span"/> <see cref="MemoryExtensions.Trim(System.Memory{char})"/>s to be not-<see cref="ReadOnlySpan{T}.IsEmpty"/></returns>
+    public static bool IsNotBlank(this ReadOnlySpan<char> span) => !span.IsBlank();
 
     #endregion
 
