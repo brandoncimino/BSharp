@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Text;
 
 using FowlFever.BSharp.Collections;
 using FowlFever.Implementors;
@@ -13,7 +14,7 @@ namespace FowlFever.BSharp.Strings;
 /// Represents a collection of <see cref="OneLine"/> <see cref="string"/>s.
 /// </summary>
 public readonly record struct Lines : IImmutableList<OneLine>, IHas<string>, IEquatable<string?> {
-    private readonly ImmutableList<OneLine> _lines = ImmutableList<OneLine>.Empty;
+    private readonly ImmutableArray<OneLine> _lines = ImmutableArray<OneLine>.Empty;
     /// <summary>
     /// The largest <see cref="GraphemeClusterExtensions.VisibleLength(string?)"/> of any of the individual <see cref="Lines"/>.
     /// </summary>
@@ -22,14 +23,24 @@ public readonly record struct Lines : IImmutableList<OneLine>, IHas<string>, IEq
     /// The number of <see cref="Lines"/>.
     /// </summary>
     /// <remarks>This is identical to <see cref="ICollection.Count"/>, but is more idiomatic when combined with <see cref="Width"/>.</remarks>
-    public int Height => _lines.Count;
+    public int Height => _lines.Length;
     /// <summary>
     /// Combines (<see cref="Width"/>, <see cref="Height"/>).
     /// </summary>
     public (int width, int height) Dimensions => (Width, Height);
 
-    internal Lines(IEnumerable<OneLine>? lines) => _lines = lines?.ToImmutableList() ?? ImmutableList<OneLine>.Empty;
-    internal Lines(OneLine               line) => _lines = _lines.Add(line);
+    internal Lines(IEnumerable<OneLine>? lines) => _lines = lines?.ToImmutableArray() ?? ImmutableArray<OneLine>.Empty;
+
+    internal Lines(SpanLineEnumerator lineEnumerator) {
+        var lineBuilder = ImmutableArray.CreateBuilder<OneLine>();
+        foreach (var line in lineEnumerator) {
+            lineBuilder.Add(new OneLine(line, OneLine.ShouldValidate.No));
+        }
+
+        _lines = lineBuilder.MoveToImmutableSafely();
+    }
+
+    internal Lines(OneLine line) => _lines = _lines.Add(line);
     private IEnumerable<OneLine> LineEnumerable() => _lines;
     public  IEnumerator<OneLine> GetEnumerator()  => LineEnumerable().GetEnumerator();
     IEnumerator IEnumerable.     GetEnumerator()  => GetEnumerator();
@@ -44,7 +55,7 @@ public readonly record struct Lines : IImmutableList<OneLine>, IHas<string>, IEq
             return Enumerable.Empty<OneLine>();
         }
 
-        return str?.Split(LineBreakSplitters, StringSplitOptions.None).Select(OneLine.CreateRisky) ?? Enumerable.Empty<OneLine>();
+        return str.Split(LineBreakSplitters, StringSplitOptions.None).Select(OneLine.CreateRisky);
     }
 
     #region Split (factory methods)
@@ -53,6 +64,7 @@ public readonly record struct Lines : IImmutableList<OneLine>, IHas<string>, IEq
     public static Lines Split(IHas<string?>?               source) => Split(source.OrDefault());
     public static Lines Split(IEnumerable<string?>?        source) => new(source?.Select(_SplitStringLines).AggregateImmutableList());
     public static Lines Split(IEnumerable<IHas<string?>?>? source) => new(source?.Select(it => _SplitStringLines(it.OrDefault())).AggregateImmutableList());
+    public static Lines Split(ReadOnlySpan<char>           source) => new(source.EnumerateLines());
 
     #endregion
 
@@ -72,8 +84,7 @@ public readonly record struct Lines : IImmutableList<OneLine>, IHas<string>, IEq
     /// Limits the <see cref="Lines"/> to a <see cref="Height"/> of <paramref name="maxLineCount"/>.
     /// </summary>
     /// <param name="maxLineCount">the maximum allows <see cref="Height"/></param>
-    /// <param name="includeMessage">if <c>true</c>, the final entry in the output will be a message describing the number of omitted lines</param>
-    /// <param name="truncationMessage"></param>
+    /// <param name="truncationMessage">optionally produces a message describing the number of lines that were truncated</param>
     /// <returns></returns>
     public Lines Truncate(int maxLineCount, Func<int, OneLine>? truncationMessage = default) {
         var (taken, leftovers) = this.TakeLeftovers(maxLineCount);
