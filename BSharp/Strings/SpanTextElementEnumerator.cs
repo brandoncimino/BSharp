@@ -3,8 +3,11 @@
 #endif
 
 using System;
+using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+
+using FowlFever.BSharp.Collections;
 
 namespace FowlFever.BSharp.Strings;
 
@@ -19,7 +22,7 @@ namespace FowlFever.BSharp.Strings;
 public ref struct SpanTextElementEnumerator {
 #if USE_LAME_ENUMERATOR
     private readonly TextElementEnumerator _lameEnumerator;
-    public ReadOnlySpan<char> Current => _lameEnumerator.GetTextElement();
+    public           ReadOnlySpan<char>    Current => _lameEnumerator.GetTextElement();
 
     public SpanTextElementEnumerator(ReadOnlySpan<char> source) {
         this._lameEnumerator = StringInfo.GetTextElementEnumerator(source.ToString());
@@ -28,19 +31,22 @@ public ref struct SpanTextElementEnumerator {
     public bool MoveNext() => this._lameEnumerator.MoveNext();
 
 #else
-
     private readonly ReadOnlySpan<char> _source;
     private          ReadOnlySpan<char> _remaining;
     private          bool               _isFinished = false;
-    private          ReadOnlySpan<char> _current    = default;
+    private          ReadOnlySpan<char> _current = default;
     public           ReadOnlySpan<char> Current => _current;
 
     public SpanTextElementEnumerator(ReadOnlySpan<char> source) {
-        this._source    = source;
+        this._source = source;
         this._remaining = source;
     }
 
     public bool MoveNext() {
+        if (_remaining.IsEmpty) {
+            _isFinished = false;
+        }
+        
         if (_isFinished) {
             return false;
         }
@@ -55,4 +61,14 @@ public ref struct SpanTextElementEnumerator {
         return true;
     }
 #endif
+
+    public ImmutableArray<GraphemeCluster> ToGraphemeClusters() {
+        var builder = ImmutableArray.CreateBuilder<GraphemeCluster>();
+
+        while (this.MoveNext()) {
+            builder.Add(new GraphemeCluster(Current));
+        }
+
+        return builder.MoveToImmutableSafely();
+    }
 }
