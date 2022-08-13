@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 
+using FowlFever.BSharp.Memory;
+
 namespace FowlFever.BSharp.Collections;
 
 /// <summary>
@@ -117,22 +119,34 @@ public static class ImmutableExtensions {
         return source.GetRange(start, start + length);
     }
 
+    /// <inheritdoc cref="Slice{T}(System.Collections.Immutable.ImmutableList{T},int,int)"/>
+    public static ImmutableList<T> Slice<T>(this ImmutableList<T> source, Range range) {
+        var (off, len) = range.GetOffsetAndLength(source.Count);
+        return source.GetRange(off, len);
+    }
+
     /// <summary>
-    /// TODO: this could probably be more efficient
+    /// Gets a sub-<see cref="ImmutableArray{T}"/> defined by a <see cref="Range"/>.
     /// </summary>
-    /// <param name="source"></param>
-    /// <param name="range"></param>
-    /// <typeparam name="T"></typeparam>
-    /// <returns></returns>
+    /// <remarks>
+    /// This will allocate a <b>new <see cref="ImmutableArray{T}"/></b>!
+    /// <p/>
+    /// If you want to pass a subsection around without this allocation, use <see cref="ImmutableArray{T}.AsSpan"/>.<see cref="ReadOnlySpan{T}.Slice(int,int)"/> instead
+    /// (which can implicitly use [<see cref="Range"/>] syntax).
+    /// <p/>
+    /// TODO: How could this method <b>not</b> already exist?!
+    /// </remarks>
+    /// <param name="source">the original <see cref="ImmutableArray{T}"/></param>
+    /// <param name="range">the <see cref="Range"/> of items to take from the <paramref name="source"/></param>
+    /// <typeparam name="T">the type of elements in <see cref="source"/></typeparam>
+    /// <returns>a new <see cref="ImmutableArray{T}"/></returns>
     public static ImmutableArray<T> Slice<T>(this ImmutableArray<T> source, Range range) {
-        var (off, len) = range.GetOffsetAndLength(source.Length);
-        var builder = ImmutableArray.CreateBuilder<T>(len);
+        return source.AsSpan()[range].ToImmutableArray();
+    }
 
-        for (int i = 0; i < builder.Count; i++) {
-            builder[i] = source[off + i];
-        }
-
-        return builder.MoveToImmutable();
+    /// <inheritdoc cref="Slice{T}(System.Collections.Immutable.ImmutableArray{T},System.Range)"/>
+    public static ImmutableArray<T> Slice<T>(this ImmutableArray<T> source, int start, int length) {
+        return source.AsSpan().Slice(start, length).ToImmutableArray();
     }
 
     /// <summary>
