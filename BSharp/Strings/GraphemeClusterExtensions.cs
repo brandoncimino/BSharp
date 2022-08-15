@@ -50,9 +50,6 @@ public static class GraphemeClusterExtensions {
     /// <returns><inheritdoc cref="StringInfo.LengthInTextElements"/></returns>
     public static int VisibleLength(this string? str) => str == null ? 0 : new StringInfo(str).LengthInTextElements;
 
-    /// <inheritdoc cref="VisibleLength(string?)"/>
-    public static int VisibleLength(this IHas<string?>? str) => str.OrDefault().VisibleLength();
-
     /// <summary>
     /// <see cref="Bloop.WrapAround{T}"/>s <paramref name="source"/> until we reach <paramref name="desiredLength"/>.
     /// </summary>
