@@ -3,6 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 
+using FowlFever.BSharp.Attributes;
 using FowlFever.BSharp.Enums;
 using FowlFever.BSharp.Reflection;
 using FowlFever.BSharp.Strings.Json;
@@ -25,9 +26,10 @@ public static class TypeNameStyleExtensions {
     /// <returns></returns>
     [Pure]
     [SuppressMessage("ReSharper", "EntityNameCapturedOnly.Global", Justification = "Flagrantly untrue")]
+    [Experimental]
     public static string TypeName<T>(this T obj, TypeNameStyle style = TypeNameStyle.Full) {
         style.Rejecting(TypeNameStyle.None);
-        return MethodBase.GetCurrentMethod()!.GetNullability(nameof(obj)).PrettifyType();
+        return MethodBase.GetCurrentMethod()!.GetNullability(nameof(obj)).PrettifyNullable();
     }
 
     public static string GetTypeLabel(this Type? type, PrettificationSettings? settings) {

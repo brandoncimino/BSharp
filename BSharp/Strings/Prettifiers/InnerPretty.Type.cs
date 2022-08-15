@@ -1,10 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Text;
 
+using FowlFever.BSharp.Attributes;
 using FowlFever.BSharp.Collections;
 using FowlFever.BSharp.Enums;
+using FowlFever.BSharp.Memory;
 using FowlFever.BSharp.Reflection;
 using FowlFever.BSharp.Strings.Settings;
 
@@ -77,6 +81,29 @@ internal static partial class InnerPretty {
         }
 
         #endregion
+    }
+
+    [Experimental]
+    public static string PrettifyNullable(this NullabilityInfo info, PrettificationSettings? settings = default) {
+        settings = settings.Resolve();
+
+        var bookend = info.GetType().IsTupleType() ? Bookend.Parentheses : Bookend.Diamonds;
+
+        var sb       = new StringBuilder();
+        var baseName = info.Type.Name.AsSpan().BeforeLast('`');
+        sb.Append(baseName);
+        sb.AppendJoin(
+            info.GenericTypeArguments.Select(it => it.PrettifyNullable(settings)),
+            ", ",
+            bookend.Prefix().ToString(),
+            bookend.Suffix().ToString()
+        );
+
+        if (info.ReadState == NullabilityState.Nullable || info.WriteState == NullabilityState.Nullable) {
+            sb.Append('?');
+        }
+
+        return sb.ToString();
     }
 
     private static string WithTypeLabel(
