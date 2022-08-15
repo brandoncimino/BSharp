@@ -262,11 +262,7 @@ public static partial class CollectionUtils {
 
         var sb = new StringBuilder();
         sb.Append(prefix);
-        sb.Append(string.Join(separator, enumerable.OrEmpty()));
-
-        // Not available until .NET 6, _of course_! >:(
-        // sb.AppendJoin(separator, enumerable.OrEmpty());
-
+        sb.AppendJoin(separator, enumerable.OrEmpty());
         sb.Append(suffix);
         return sb.ToString();
     }
@@ -284,6 +280,7 @@ public static partial class CollectionUtils {
         string?             label  = default,
         string?             indent = default
     ) {
+        // TODO: Make this more span-y
         return enumerable.SelectMany(it => it.ToStringLines().IndentWithLabel(label))
                          .Select(it => it.Prefix(indent))
                          .JoinString("\n");
@@ -1172,6 +1169,7 @@ public static partial class CollectionUtils {
     #endregion
 
 #if !NET6_0_OR_GREATER
+
     #region TakeLast
 
     /// <summary>
@@ -1183,9 +1181,8 @@ public static partial class CollectionUtils {
     /// <returns><see cref="Enumerable.TakeWhile{TSource}(System.Collections.Generic.IEnumerable{TSource},System.Func{TSource,bool})"/>.<see cref="Enumerable.Last{TSource}(System.Collections.Generic.IEnumerable{TSource})"/></returns>
     [Pure]
     public static T TakeLast<T>(
-        [InstantHandle]
-        this IEnumerable<T> source,
-        Func<T, bool> takePredicate
+        [InstantHandle] this IEnumerable<T> source,
+        Func<T, bool>                       takePredicate
     ) {
         return source.TakeWhile(takePredicate).Last();
     }
