@@ -36,7 +36,7 @@ namespace FowlFever.BSharp.Strings;
 /// <code>area_code</code>
 /// </example>
 [Experimental()]
-public sealed record RegexGroup(string Subexpression, [CallerMemberName] string? Name = default) : RegexBuilder {
+public sealed record RegexGroup([RegexPattern] string Subexpression, [CallerMemberName] string? Name = default) : RegexBuilder {
     private string? _name = Name;
     /// <summary>
     /// The <see cref="System.Text.RegularExpressions.Group"/> name of this <a href="https://docs.microsoft.com/en-us/dotnet/standard/base-types/grouping-constructs-in-regular-expressions#named_matched_subexpression">named matched subexpression</a>.
@@ -60,7 +60,7 @@ public sealed record RegexGroup(string Subexpression, [CallerMemberName] string?
     #region Constructors
 
     /// <inheritdoc cref="RegexGroup"/>
-    public RegexGroup(ReadOnlySpan<char> subexpression, [CallerMemberName] string? name = default) : this(subexpression.ToString(), name) { }
+    public RegexGroup([RegexPattern] ReadOnlySpan<char> subexpression, [CallerMemberName] string? name = default) : this(subexpression.ToString(), name) { }
 
     #endregion
 
