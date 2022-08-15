@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -14,37 +15,56 @@ namespace FowlFever.BSharp;
 [SuppressMessage("ReSharper", "ExplicitCallerInfoArgument")]
 public static class Brandon {
     static Brandon() {
-        static void ForceAnsi() {
-            AnsiConsole.WriteLine($"Forcing the default {nameof(AnsiConsole)} to use {AnsiSupport.Yes.Prettify()}, despite its better judgement.");
-            AnsiConsole.Console = AnsiConsole.Create(new AnsiConsoleSettings { Ansi = AnsiSupport.Yes });
-        }
-
         ForceAnsi();
     }
 
-    public static void Render<T>(T renderable)
-        where T : IRenderable {
-        AnsiConsole.Write(renderable);
+    private static void ForceAnsi() {
+        AnsiConsole.WriteLine($"Forcing the default {nameof(AnsiConsole)} to use {AnsiSupport.Yes.Prettify()}, despite its better judgement.");
+        AnsiConsole.Console = AnsiConsole.Create(new AnsiConsoleSettings { Ansi = AnsiSupport.Yes });
     }
 
-    public static IRenderwerks Renderwerks { get; set; } = new Panelwerks();
+    /// <summary>
+    /// Renders an <see cref="IRenderable"/> to the default <see cref="AnsiConsole.Console"/>.
+    /// </summary>
+    /// <remarks>
+    /// On its own, this method doesn't really do much, since most of the extensibility for <see cref="Spectre"/> is accessed by constructing a custom <see cref="IAnsiConsole"/>
+    /// and setting the default <see cref="AnsiConsole.Console"/> (see <see cref="ForceAnsi"/>, for example).
+    /// </remarks>
+    /// <param name="renderable"></param>
+    /// <typeparam name="T"></typeparam>
+    public static void Render<T>(T renderable)
+        where T : IRenderable =>
+        AnsiConsole.Write(renderable);
+
+    /// <summary>
+    /// <see cref="Render{T}"/>s an <see cref="IRenderable"/> via an extension method that won't conflict with the deprecated <see cref="AnsiConsole.Render"/>.
+    /// </summary>
+    /// <param name="renderable"></param>
+    /// <typeparam name="T"></typeparam>
+    public static void Rend<T>(this T renderable)
+        where T : IRenderable => Render(renderable);
+
+    public static IRenderwerks Renderwerks             { get; set; } = new Panelwerks();
+    public static IRenderable  GetRenderable<T>(T obj) => Renderwerks.GetRenderable(obj);
 
     /// <summary>
     /// Prints an <see cref="expression"/> and a <see cref="value"/> in a <see cref="Panel"/>.
     /// </summary>
     /// <param name="value"></param>
     /// <param name="label"></param>
+    /// <param name="palette"></param>
     /// <param name="expression"></param>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
     public static T Print<T>(
         T                                           value,
         string?                                     label      = default,
+        Palette?                                    palette    = default,
         [CallerArgumentExpression("value")] string? expression = default
     ) {
         var renderable = value switch {
             IRenderable r => r,
-            _             => Renderwerks.GetRenderable(value),
+            _             => Renderwerks.GetRenderable(value, label, palette, expression),
         };
         Render(renderable);
         return value;
@@ -94,4 +114,8 @@ public static class Brandon {
         AnsiConsole.Write(spectre);
         return callerMemberName;
     }
+
+    public static Spectable<T> Table<T>(T               stuff, [CallerArgumentExpression("stuff")] string _stuff = "") => Spectable<T>.Of(stuff);
+    public static Spectable<T> Table<T>(IEnumerable<T>  rows,  [CallerArgumentExpression("rows")]  string _rows  = "") => Spectable<T>.Of(rows);
+    public static Spectable<T> Table<T>(ReadOnlySpan<T> rows,  [CallerArgumentExpression("rows")]  string _rows  = "") => Spectable<T>.Of(rows);
 }
