@@ -2,11 +2,10 @@ using System;
 
 using FowlFever.BSharp.Enums;
 using FowlFever.BSharp.Exceptions;
-using FowlFever.Implementors;
 
 namespace FowlFever.BSharp.Strings;
 
-public readonly record struct GraphemeCluster : IHas<string> {
+public readonly record struct GraphemeCluster {
     #region "Constants"
 
     public static readonly GraphemeCluster Space      = CreateRisky(@" ");
@@ -17,9 +16,10 @@ public readonly record struct GraphemeCluster : IHas<string> {
 
     #endregion
 
-    public          string Value      { get; }
-    public          bool   IsBlank    => Value.IsBlank();
-    public override string ToString() => Value;
+    private         string Value          { get; }
+    public          bool   IsBlank        => Value.IsBlank();
+    public override string ToString()     => Value;
+    public          int    CharacterCount => Value.Length;
 
     internal static ReadOnlySpan<char> Validate(ReadOnlySpan<char> value) {
         Must.Have(value.IsEmpty, false);
