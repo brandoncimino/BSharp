@@ -18,7 +18,7 @@ public readonly record struct Lines : IImmutableList<OneLine>, IHas<string>, IEq
     /// <summary>
     /// The largest <see cref="GraphemeClusterExtensions.VisibleLength(string?)"/> of any of the individual <see cref="Lines"/>.
     /// </summary>
-    public int Width => _lines.Max(it => it.VisibleLength());
+    public int Width => _lines.Max(it => it.Length);
     /// <summary>
     /// The number of <see cref="Lines"/>.
     /// </summary>
