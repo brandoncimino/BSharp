@@ -161,6 +161,32 @@ namespace FowlFever.BSharp.Enums {
             return new InvalidEnumArgumentException(rejection.Message);
         }
 
+        /// <summary>
+        /// Throws a <see cref="NotSupported{T}"/> exception if <paramref name="actual"/> equals <see cref="unwanted"/>.
+        /// </summary>
+        /// <param name="actual">this <typeparamref name="T"/> value</param>
+        /// <param name="unwanted">the bad <typeparamref name="T"/> value</param>
+        /// <param name="details">optional additional details</param>
+        /// <param name="parameterName">see <see cref="CallerArgumentExpressionAttribute"/></param>
+        /// <param name="rejectedBy">see <see cref="CallerMemberNameAttribute"/></param>
+        /// <typeparam name="T">the type of <see cref="Enum"/></typeparam>
+        /// <exception cref="InvalidEnumArgumentException">if <paramref name="actual"/> equals <see cref="unwanted"/></exception>
+        /// <returns><paramref name="actual"/></returns>
+        public static T Rejecting<T>(
+            this T                                       actual,
+            T                                            unwanted,
+            string?                                      details       = default,
+            [CallerArgumentExpression("actual")] string? parameterName = default,
+            [CallerMemberName]                   string? rejectedBy    = default
+        )
+            where T : Enum {
+            if (actual.Equals(unwanted) == false) {
+                throw NotSupported(actual, details, parameterName, rejectedBy);
+            }
+
+            return actual;
+        }
+
         #region Enum not in set
 
         private static string BuildEnumNotInSetMessage(
