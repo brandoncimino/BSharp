@@ -26,9 +26,10 @@ public static partial class CollectionUtils {
     [Pure]
     public static bool IsEmpty<TSource>([NotNullWhen(false)] [InstantHandle] this IEnumerable<TSource>? source) {
         return source switch {
-            null     => true,
-            string s => s.Length == 0,
-            _        => !source.Any()
+            null         => true,
+            string s     => s.Length  == 0,
+            TSource[] ar => ar.Length == 0,
+            _            => !source.Any()
         };
     }
 
@@ -40,7 +41,7 @@ public static partial class CollectionUtils {
     /// <typeparam name="TSource"><inheritdoc cref="Enumerable.Any{TSource}(System.Collections.Generic.IEnumerable{TSource})"/></typeparam>
     [Pure]
     public static bool IsNotEmpty<TSource>([NotNullWhen(true)] [InstantHandle] this IEnumerable<TSource>? source) {
-        return source?.Any() == true;
+        return source.IsEmpty() == false;
     }
 
     /// <summary>
@@ -49,7 +50,7 @@ public static partial class CollectionUtils {
     /// <inheritdoc cref="Enumerable.Any{TSource}(System.Collections.Generic.IEnumerable{TSource})"/>
     /// <returns>true if the <paramref name="source"/> contains 0 elements.</returns>
     public static bool None<T>(this IEnumerable<T> source) {
-        return !source.Any();
+        return source.IsEmpty();
     }
 
     /// <summary>
