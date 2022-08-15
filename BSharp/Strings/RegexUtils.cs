@@ -1,11 +1,20 @@
+#region Javadoc Helpers
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 
 using FowlFever.BSharp.Collections;
+using FowlFever.BSharp.Exceptions;
 using FowlFever.Implementors;
 
 using JetBrains.Annotations;
+
+using RxGroup = System.Text.RegularExpressions.Group;
+using RxMatch = System.Text.RegularExpressions.Match;
+
+#endregion
 
 namespace FowlFever.BSharp.Strings;
 
@@ -182,5 +191,67 @@ public static class RegexUtils {
         var opts = pattern.Options & ~RegexOptions.RightToLeft;
         pattern = new Regex(pattern.ToString(), opts);
         return pattern.Replace(input, "", count);
+    }
+
+    /// <summary>
+    /// Retrieves the corresponding <see cref="System.Text.RegularExpressions.Group"/> by a <see cref="RegexGroup"/>'s <see cref="RegexGroup.Name"/>.
+    /// </summary>
+    /// <remarks>
+    /// 📎 The built-in <see cref="System.Text.RegularExpressions.GroupCollection"/> indexers always return a non-null <see cref="System.Text.RegularExpressions.Group"/>s,
+    /// requiring that you then check for <see cref="System.Text.RegularExpressions.Group.Success"/>.
+    /// <p/>
+    ///  Instead, these methods return <c>null</c> if a group isn't found / wasn't successful, which (with the benefit of nullable reference types) should be more obvious.
+    /// </remarks>
+    /// <param name="match">this <see cref="System.Text.RegularExpressions.Match"/></param>
+    /// <param name="group">the desired <see cref="RegexGroup"/></param>
+    /// <returns>the located <see cref="System.Text.RegularExpressions.Group"/>, if found</returns>
+    [Pure]
+    public static Group? GetGroup(this Match match, RegexGroup group) {
+        return match.Groups.Group(group);
+    }
+
+    /// <inheritdoc cref="GetGroup"/>
+    [Pure]
+    public static Group? Group(this GroupCollection groups, RegexGroup group) {
+        var grp = groups[group.Name];
+        return grp.Success ? grp : default;
+    }
+
+    /// <summary>
+    /// Throws an <see cref="InvalidOperationException"/> if the <see cref="GroupCollection"/> doesn't contain a <see cref="System.Text.RegularExpressions.Group.Success"/>ful <see cref="RxGroup"/> with the given <see cref="System.Text.RegularExpressions.Group.Name"/>.
+    /// </summary>
+    /// <param name="groups">the <see cref="GroupCollection"/> to search in</param>
+    /// <param name="groupName">the desired <see cref="System.Text.RegularExpressions.Group.Name"/></param>
+    /// <returns>the <see cref="System.Text.RegularExpressions.Group.Success"/>ful <see cref="RxGroup"/></returns>
+    /// <exception cref="InvalidOperationException">if no <see cref="System.Text.RegularExpressions.Group.Success"/>ful <see cref="RxGroup"/> is found</exception>
+    [Pure]
+    public static Group RequireGroup(this GroupCollection groups, string groupName) {
+        Must.Have(groupName.IsBlank(), false);
+        var grp = groups[groupName];
+
+        if (grp.Success != true) {
+            throw new InvalidOperationException($"The {groups.GetType().Name} didn't contain the group {groupName}!");
+        }
+
+        return grp;
+    }
+
+    /// <inheritdoc cref="RequireGroup(System.Text.RegularExpressions.GroupCollection,string)"/>
+    [Pure]
+    public static Group RequireGroup(this Match match, RegexGroup group) {
+        return match.RequireGroup(group.Name);
+    }
+
+    /// <inheritdoc cref="RequireGroup(System.Text.RegularExpressions.GroupCollection,string)"/>
+    [Pure]
+    public static Group RequireGroup(this Match match, string groupName) {
+        Must.Have(groupName.IsBlank(), false);
+        var grp = match.Groups[groupName];
+
+        if (grp.Success != true) {
+            throw new InvalidOperationException($"The {match.GetType().Name} didn't contain the group {groupName}!");
+        }
+
+        return grp;
     }
 }
