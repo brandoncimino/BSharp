@@ -31,6 +31,12 @@ public static partial class SpanExtensions {
         _                            => span[..toTake]
     };
 
+    public static SpanTuple2<T> TakeLeftovers<T>(this ReadOnlySpan<T> span, int toTake) =>
+        new() {
+            A = span.Take(toTake),
+            B = span.Skip(toTake),
+        };
+
     #region {x}Last
 
     [Pure] public static ReadOnlySpan<T> SkipLast<T>(this ReadOnlySpan<T> span, int toSkip) => span.Take(span.Length - toSkip);

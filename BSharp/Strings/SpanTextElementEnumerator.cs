@@ -8,6 +8,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 
 using FowlFever.BSharp.Collections;
+using FowlFever.BSharp.Memory;
 
 namespace FowlFever.BSharp.Strings;
 
@@ -34,11 +35,11 @@ public ref struct SpanTextElementEnumerator {
     private readonly ReadOnlySpan<char> _source;
     private          ReadOnlySpan<char> _remaining;
     private          bool               _isFinished = false;
-    private          ReadOnlySpan<char> _current = default;
+    private          ReadOnlySpan<char> _current    = default;
     public           ReadOnlySpan<char> Current => _current;
 
     public SpanTextElementEnumerator(ReadOnlySpan<char> source) {
-        this._source = source;
+        this._source    = source;
         this._remaining = source;
     }
 
@@ -46,7 +47,7 @@ public ref struct SpanTextElementEnumerator {
         if (_remaining.IsEmpty) {
             _isFinished = false;
         }
-        
+
         if (_isFinished) {
             return false;
         }
@@ -57,7 +58,7 @@ public ref struct SpanTextElementEnumerator {
             return false;
         }
 
-        FowlFever.BSharp.Memory.SpanExtensions.TakeLeftovers(_source, nextLength, out _current, out _remaining);
+        (_current, _remaining) = _source.TakeLeftovers(nextLength);
         return true;
     }
 #endif
