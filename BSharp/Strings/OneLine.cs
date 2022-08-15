@@ -32,11 +32,12 @@ public readonly partial record struct OneLine : IHas<string>, IEnumerable<Graphe
 
     #endregion
 
-    public string              Value      => _stringInfo?.StringSource ?? "";
-    string IEquivalent<string>.Equivalent => _stringInfo?.StringSource ?? "";
+    public string              Value      => _stringInfo?.Source ?? "";
+    string IEquivalent<string>.Equivalent => _stringInfo?.Source ?? "";
     [MemberNotNullWhen(false, nameof(_stringInfo))]
     public bool IsEmpty => Length == 0;
     public bool IsBlank => IsEmpty || _stringInfo.All(it => it.IsBlank);
+
     /// <summary>
     /// ⚠ Default values in struct fields are completely ignored unless you explicitly call <c>new OneLine()</c> (as opposed to the <c>default</c> keyword).
     /// This means that <i>all</i> reference types in struct fields can be null.
@@ -54,7 +55,7 @@ public readonly partial record struct OneLine : IHas<string>, IEnumerable<Graphe
     /// TODO: Add these notes to a documentation file.
     /// </remarks>
     [MaybeNull]
-    private readonly TextElementString _stringInfo;
+    private readonly ITextElements _stringInfo;
 
     public override int GetHashCode() => Value.GetHashCode();
 
@@ -81,6 +82,8 @@ public readonly partial record struct OneLine : IHas<string>, IEnumerable<Graphe
 
     #region Construction
 
+    #region From string
+
     public OneLine(string? value) : this(value, ShouldValidate.Yes) { }
 
     internal OneLine(string? value, ShouldValidate shouldValidate) {
@@ -95,8 +98,12 @@ public readonly partial record struct OneLine : IHas<string>, IEnumerable<Graphe
             _                  => throw BEnum.UnhandledSwitch(shouldValidate)
         };
 
-        _stringInfo = new TextElementString(value!);
+        _stringInfo = new TextElementString(value);
     }
+
+    #endregion
+
+    #region From ReadOnlySpan<char>
 
     public OneLine(ReadOnlySpan<char> value) : this(value, ShouldValidate.Yes) { }
 
@@ -115,6 +122,12 @@ public readonly partial record struct OneLine : IHas<string>, IEnumerable<Graphe
         _stringInfo = new TextElementString(value.ToString());
     }
 
+    #endregion
+
+    #region From Clusters
+
+    public OneLine(IEnumerable<GraphemeCluster> value) : this(value, ShouldValidate.Yes) { }
+
     private OneLine(IEnumerable<GraphemeCluster> value, ShouldValidate shouldValidate) {
         if (value is OneLine line) {
             _stringInfo = line._stringInfo ?? TextElementString.Empty;
@@ -127,11 +140,13 @@ public readonly partial record struct OneLine : IHas<string>, IEnumerable<Graphe
         };
 
         var _ = shouldValidate switch {
-            ShouldValidate.Yes => Validate(_stringInfo.StringSource),
+            ShouldValidate.Yes => Validate(_stringInfo.Source),
             ShouldValidate.No  => default,
             _                  => throw BEnum.UnhandledSwitch(shouldValidate)
         };
     }
+
+    #endregion
 
     /// <summary>
     /// Constructs a new <see cref="OneLine"/> <b>without</b> performing validation. Intended to <b>only</b> to be called after <see cref="string.Split(char[])"/>ting a <see cref="string"/>.
@@ -153,9 +168,6 @@ public readonly partial record struct OneLine : IHas<string>, IEnumerable<Graphe
     [Pure]
     //TODO: rename to `Of`
     public static OneLine Create(string? value) => new(value, ShouldValidate.Yes);
-
-    [Pure] public static OneLine Create(IEnumerable<GraphemeCluster> value) => new(value, ShouldValidate.Yes);
-    [Pure] public static OneLine Create(OneLine                      value) => value;
 
     /// <inheritdoc cref="Create(string?)"/>
     [Pure]
@@ -219,7 +231,8 @@ public readonly partial record struct OneLine : IHas<string>, IEnumerable<Graphe
     /// <inheritdoc cref="GraphemeClusterExtensions.VisibleLength(string?)"/>
     /// </summary>
     [Pure]
-    public int Length => _stringInfo?.Count ?? 0;
+    public int Length => _stringInfo?.Clusters.Length ?? 0;
+    [Pure] public int StringLength => _stringInfo?.Source.Length ?? 0;
 
     #region Operators
 
@@ -263,6 +276,10 @@ public readonly partial record struct OneLine : IHas<string>, IEnumerable<Graphe
               )
             : _stringInfo[textElementIndex];
 
-    public IEnumerator<GraphemeCluster> GetEnumerator() => _stringInfo?.GetEnumerator() ?? Enumerable.Empty<GraphemeCluster>().GetEnumerator();
-    IEnumerator IEnumerable.            GetEnumerator() => GetEnumerator();
+    public ImmutableArray<GraphemeCluster>.Enumerator GetEnumerator() => _stringInfo?.GetEnumerator() ?? default;
+
+    IEnumerator<GraphemeCluster> IEnumerable<GraphemeCluster>.GetEnumerator() =>
+        (_stringInfo as IEnumerable<GraphemeCluster>)?.GetEnumerator() ?? Enumerable.Empty<GraphemeCluster>().GetEnumerator();
+
+    IEnumerator IEnumerable.GetEnumerator() => (this as IEnumerable).GetEnumerator();
 }
