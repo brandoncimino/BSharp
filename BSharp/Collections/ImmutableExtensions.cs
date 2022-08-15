@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 
-using FowlFever.BSharp.Memory;
-
 namespace FowlFever.BSharp.Collections;
 
 /// <summary>
@@ -170,4 +168,27 @@ public static class ImmutableExtensions {
 
         return builder.MoveToImmutable();
     }
+
+    #region Collecting Spans
+
+    /// <summary>
+    /// Creates a new <see cref="ImmutableArray{T}"/> containing the entries of this <see cref="ReadOnlySpan{T}"/>.
+    /// </summary>
+    /// <param name="span">this <see cref="ReadOnlySpan{T}"/></param>
+    /// <typeparam name="T">the element type of <paramref name="span"/></typeparam>
+    /// <returns>a new <see cref="ImmutableArray{T}"/></returns>
+    public static ImmutableArray<T> ToImmutableArray<T>(this ReadOnlySpan<T> span) {
+        var builder = ImmutableArray.CreateBuilder<T>(span.Length);
+        for (int i = 0; i < span.Length; i++) {
+            builder[i] = span[i];
+        }
+
+        return builder.MoveToImmutable();
+    }
+
+    public static ImmutableList<T> ToImmutableList<T>(this ReadOnlySpan<T> span) {
+        return span.ToArray().ToImmutableList();
+    }
+
+    #endregion
 }
