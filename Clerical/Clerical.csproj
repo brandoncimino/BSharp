@@ -39,10 +39,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Compile Remove="Validated\PathString_2.cs"/>
-    </ItemGroup>
-
-    <ItemGroup>
         <Folder Include="Ratification"/>
     </ItemGroup>
 
