@@ -1,11 +1,12 @@
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
 namespace FowlFever.BSharp.Strings;
 
-static internal class StringBuilderExtensions {
+internal static class StringBuilderExtensions {
     /// <summary>
-    /// <see cref="StringBuilder.Append(string)"/>s <paramref name="stringToJoin"/> if it <see cref="IsNotBlank(string?)"/>
+    /// <see cref="StringBuilder.Append(string)"/>s <paramref name="stringToJoin"/> if it isn't <see cref="string.IsNullOrWhiteSpace"/>.
     /// </summary>
     /// <param name="stringBuilder">this <see cref="StringBuilder"/></param>
     /// <param name="stringToJoin">the <see cref="string"/> being <see cref="StringBuilder.Append(string)"/>ed</param>
@@ -21,7 +22,7 @@ static internal class StringBuilderExtensions {
     }
 
     /// <returns>true if <c>null</c> or <see cref="StringBuilder.Length"/> == 0</returns>
-    public static bool IsEmpty(this StringBuilder? stringBuilder) => stringBuilder is not { Length: > 0 };
+    public static bool IsEmpty([NotNullWhen(false)] this StringBuilder? stringBuilder) => stringBuilder is not { Length: > 0 };
 
     /// <summary>
     /// Similar to the vanilla <see cref="StringBuilder.AppendJoin(char,object?[])"/>, but conditionally applies a <paramref name="prefix"/> and/or <paramref name="suffix"/>
