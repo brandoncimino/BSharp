@@ -11,6 +11,16 @@ public readonly ref struct SpanTuple2<TA, TB> {
     public ReadOnlySpan<TA> A { get; init; }
     public ReadOnlySpan<TB> B { get; init; }
 
+    public int  Length  => A.Length + B.Length;
+    public bool IsEmpty => Length == 0;
+
+    public static SpanTuple2<TA, TB> Empty => default;
+
+    public SpanTuple2(ReadOnlySpan<TA> a, ReadOnlySpan<TB> b) {
+        A = a;
+        B = b;
+    }
+
     public void Deconstruct(out ReadOnlySpan<TA> a, out ReadOnlySpan<TB> b) {
         a = A;
         b = B;
@@ -20,6 +30,15 @@ public readonly ref struct SpanTuple2<TA, TB> {
 /// <inheritdoc cref="SpanTuple2{TA,TB}"/>
 public readonly ref struct SpanTuple2<T> {
     private readonly SpanTuple2<T, T> _spans;
+
+    public int  Length  => _spans.Length;
+    public bool IsEmpty => _spans.IsEmpty;
+
+    public static SpanTuple2<T> Empty => default;
+
+    public SpanTuple2(ReadOnlySpan<T> a, ReadOnlySpan<T> b) {
+        _spans = new SpanTuple2<T, T>(a, b);
+    }
 
     public ReadOnlySpan<T> A {
         get => _spans.A;
