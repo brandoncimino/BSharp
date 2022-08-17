@@ -34,7 +34,7 @@ public static class ComparisonOperatorExtensions {
         };
     }
 
-    public static string Symbol(this ComparisonOperator comparisonOperator) {
+    public static string Ligature(this ComparisonOperator comparisonOperator) {
         return comparisonOperator switch {
             ComparisonOperator.EqualTo              => "==",
             ComparisonOperator.GreaterThan          => ">",
@@ -46,8 +46,28 @@ public static class ComparisonOperatorExtensions {
         };
     }
 
+    public static char Symbol(this ComparisonOperator comparisonOperator) => comparisonOperator switch {
+        ComparisonOperator.EqualTo              => '=',
+        ComparisonOperator.NotEqualTo           => '≠',
+        ComparisonOperator.GreaterThan          => '>',
+        ComparisonOperator.GreaterThanOrEqualTo => '≥',
+        ComparisonOperator.LessThan             => '<',
+        ComparisonOperator.LessThanOrEqualTo    => '≤',
+        _                                       => throw BEnum.UnhandledSwitch(comparisonOperator)
+    };
+
     public static Comparison<T> Comparing<T, T2>(Func<T, T2> transformation)
         where T2 : IComparable {
         return (a, b) => transformation(a).CompareTo(transformation(b));
     }
+
+    public static Clusivity Clusivity(this ComparisonOperator comparisonOperator) => comparisonOperator switch {
+        ComparisonOperator.EqualTo              => Enums.Clusivity.Inclusive,
+        ComparisonOperator.NotEqualTo           => Enums.Clusivity.Exclusive,
+        ComparisonOperator.GreaterThan          => Enums.Clusivity.Exclusive,
+        ComparisonOperator.GreaterThanOrEqualTo => Enums.Clusivity.Inclusive,
+        ComparisonOperator.LessThan             => Enums.Clusivity.Exclusive,
+        ComparisonOperator.LessThanOrEqualTo    => Enums.Clusivity.Inclusive,
+        _                                       => throw BEnum.UnhandledSwitch(comparisonOperator)
+    };
 }
