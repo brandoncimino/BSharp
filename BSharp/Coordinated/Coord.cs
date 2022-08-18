@@ -8,6 +8,8 @@ namespace FowlFever.BSharp.Coordinated;
 
 /// <summary>
 /// A simple <see cref="X"/>,<see cref="Y"/> pair used as an index for <see cref="ICoordinated{T}"/> collections.
+///
+/// TODO: Maybe convert this to a pair of <see cref="Indexes"/>?
 /// </summary>
 /// <param name="X"></param>
 /// <param name="Y"></param>
@@ -15,7 +17,8 @@ public readonly record struct Coord(int X, int Y) {
     public static readonly Coord Zero   = new(0, 0);
     public static readonly Coord Origin = Zero;
 
-    public (ComparisonResult x, ComparisonResult y) ComparedWith(Coord other) => (X, Y).ComparedWith((other.X, other.Y));
+    public (ComparisonResult x, ComparisonResult y) CompareEach(Coord other) => (X, Y).CompareEach((other.X, other.Y));
+    public ComparisonResult?                        CompareAll(Coord  other) => (X, Y).CompareAll((other.X, other.Y));
 
     public Coord UpperBound(Coord other) => new(
         X.Max(other.X),
