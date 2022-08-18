@@ -17,7 +17,7 @@ public sealed record ListApportion<T>(IList<T> Source, IEnumerable<double> Weigh
     public ListApportion(IEnumerable<T> source, params double[]     weights) : this(source, weights.AsEnumerable()) { }
 
     protected override IEnumerable<IList<T>> GetPortions() {
-        IEnumerable<Range> rangeApportion = new RangeApportion(Indexes.Of(Source), Weights);
+        IEnumerable<Range> rangeApportion = new RangeApportion(new Indexes(Source.Count), Weights);
         return rangeApportion.Select(it => Source.GetSlice(it));
     }
 }
