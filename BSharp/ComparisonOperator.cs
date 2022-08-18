@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 
 using FowlFever.BSharp.Enums;
 
@@ -18,56 +17,65 @@ public enum ComparisonOperator {
 }
 
 public static class ComparisonOperatorExtensions {
-    public static Func<object?, object?, bool> Predicate(this ComparisonOperator comparisonOperator) {
-        return (a, b) => comparisonOperator.IntPredicate().Invoke(Comparer.Default.Compare(a, b));
-    }
-
-    public static Func<int, bool> IntPredicate(this ComparisonOperator comparisonOperator) {
-        return comparisonOperator switch {
-            ComparisonOperator.EqualTo              => i => i == 0,
-            ComparisonOperator.GreaterThan          => i => i > 0,
-            ComparisonOperator.LessThan             => i => i < 0,
-            ComparisonOperator.GreaterThanOrEqualTo => i => i >= 0,
-            ComparisonOperator.LessThanOrEqualTo    => i => i <= 0,
-            ComparisonOperator.NotEqualTo           => i => i != 0,
-            _                                       => throw BEnum.UnhandledSwitch(comparisonOperator),
+    public static Func<T, T, bool> Predicate<T>(this ComparisonOperator op)
+        where T : IComparable<T> {
+        return op switch {
+            ComparisonOperator.EqualTo              => static (a, b) => a.ComparedWith(b).Satisfies(ComparisonOperator.EqualTo),
+            ComparisonOperator.NotEqualTo           => static (a, b) => a.ComparedWith(b).Satisfies(ComparisonOperator.NotEqualTo),
+            ComparisonOperator.GreaterThan          => static (a, b) => a.ComparedWith(b).Satisfies(ComparisonOperator.GreaterThan),
+            ComparisonOperator.GreaterThanOrEqualTo => static (a, b) => a.ComparedWith(b).Satisfies(ComparisonOperator.GreaterThanOrEqualTo),
+            ComparisonOperator.LessThan             => static (a, b) => a.ComparedWith(b).Satisfies(ComparisonOperator.LessThan),
+            ComparisonOperator.LessThanOrEqualTo    => static (a, b) => a.ComparedWith(b).Satisfies(ComparisonOperator.LessThanOrEqualTo),
+            _                                       => throw BEnum.UnhandledSwitch(op),
         };
     }
 
-    public static string Ligature(this ComparisonOperator comparisonOperator) {
-        return comparisonOperator switch {
-            ComparisonOperator.EqualTo              => "==",
-            ComparisonOperator.GreaterThan          => ">",
-            ComparisonOperator.LessThan             => "<",
-            ComparisonOperator.GreaterThanOrEqualTo => ">=",
-            ComparisonOperator.LessThanOrEqualTo    => "<=",
-            ComparisonOperator.NotEqualTo           => "!=",
-            _                                       => throw BEnum.UnhandledSwitch(comparisonOperator),
+    public static Func<ComparisonResult, bool> ResultPredicate(this ComparisonOperator op) =>
+        op switch {
+            ComparisonOperator.EqualTo              => static r => r.Satisfies(ComparisonOperator.EqualTo),
+            ComparisonOperator.NotEqualTo           => static r => r.Satisfies(ComparisonOperator.NotEqualTo),
+            ComparisonOperator.GreaterThan          => static r => r.Satisfies(ComparisonOperator.GreaterThan),
+            ComparisonOperator.GreaterThanOrEqualTo => static r => r.Satisfies(ComparisonOperator.GreaterThanOrEqualTo),
+            ComparisonOperator.LessThan             => static r => r.Satisfies(ComparisonOperator.LessThan),
+            ComparisonOperator.LessThanOrEqualTo    => static r => r.Satisfies(ComparisonOperator.LessThanOrEqualTo),
+            _                                       => throw BEnum.UnhandledSwitch(op)
+        };
+
+    public static Func<int, bool> IntPredicate(this ComparisonOperator op) {
+        return op switch {
+            ComparisonOperator.EqualTo              => static i => i == 0,
+            ComparisonOperator.GreaterThan          => static i => i > 0,
+            ComparisonOperator.LessThan             => static i => i < 0,
+            ComparisonOperator.GreaterThanOrEqualTo => static i => i >= 0,
+            ComparisonOperator.LessThanOrEqualTo    => static i => i <= 0,
+            ComparisonOperator.NotEqualTo           => static i => i != 0,
+            _                                       => throw BEnum.UnhandledSwitch(op),
         };
     }
 
-    public static char Symbol(this ComparisonOperator comparisonOperator) => comparisonOperator switch {
+    public static char Symbol(this ComparisonOperator op) => op switch {
         ComparisonOperator.EqualTo              => '=',
         ComparisonOperator.NotEqualTo           => '≠',
         ComparisonOperator.GreaterThan          => '>',
         ComparisonOperator.GreaterThanOrEqualTo => '≥',
         ComparisonOperator.LessThan             => '<',
         ComparisonOperator.LessThanOrEqualTo    => '≤',
-        _                                       => throw BEnum.UnhandledSwitch(comparisonOperator)
+        _                                       => throw BEnum.UnhandledSwitch(op)
     };
 
-    public static Comparison<T> Comparing<T, T2>(Func<T, T2> transformation)
-        where T2 : IComparable {
-        return (a, b) => transformation(a).CompareTo(transformation(b));
-    }
-
-    public static Clusivity Clusivity(this ComparisonOperator comparisonOperator) => comparisonOperator switch {
+    public static Clusivity Clusivity(this ComparisonOperator op) => op switch {
         ComparisonOperator.EqualTo              => Enums.Clusivity.Inclusive,
         ComparisonOperator.NotEqualTo           => Enums.Clusivity.Exclusive,
         ComparisonOperator.GreaterThan          => Enums.Clusivity.Exclusive,
         ComparisonOperator.GreaterThanOrEqualTo => Enums.Clusivity.Inclusive,
         ComparisonOperator.LessThan             => Enums.Clusivity.Exclusive,
         ComparisonOperator.LessThanOrEqualTo    => Enums.Clusivity.Inclusive,
-        _                                       => throw BEnum.UnhandledSwitch(comparisonOperator)
+        _                                       => throw BEnum.UnhandledSwitch(op)
     };
+
+    public static bool SatisfiedBy(this ComparisonOperator op, int              comparisonResult) => Comparisons.ToComparisonResult(comparisonResult).Satisfies(op);
+    public static bool SatisfiedBy(this ComparisonOperator op, ComparisonResult result)           => result.Satisfies(op);
+
+    public static bool SatisfiedBy<T>(this ComparisonOperator op, T a, T b)
+        where T : IComparable<T> => op.SatisfiedBy(a.ComparedWith(b));
 }
