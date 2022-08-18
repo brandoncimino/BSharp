@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text;
 
 using FowlFever.BSharp.Enums;
+using FowlFever.BSharp.Exceptions;
 using FowlFever.BSharp.Optional;
 using FowlFever.BSharp.Strings;
 using FowlFever.Conjugal.Affixing;
@@ -122,16 +123,30 @@ public static partial class CollectionUtils {
     }
 
     /// <summary>
-    /// <see cref="Enumerable.Take{TSource}"/>s the first <paramref name="count"/> items and <see cref="Enumerable.Skip{TSource}"/>s to the rest into
+    /// <see cref="Enumerable.Take{TSource}(System.Collections.Generic.IEnumerable{TSource},int)"/>s the first <paramref name="count"/> items and <see cref="Enumerable.Skip{TSource}"/>s to the rest into
     /// separate <see cref="IEnumerable{T}"/>s.
     /// </summary>
     /// <param name="source">the original <see cref="IEnumerable{T}"/></param>
     /// <param name="count"></param>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
-    [SuppressMessage("ReSharper", "PossibleMultipleEnumeration")]
+    [SuppressMessage("ReSharper", "PossibleMultipleEnumeration", Justification = "Tests prove that this doesn't not enumerate multiple times")]
     public static (IEnumerable<T> taken, IEnumerable<T> leftovers) TakeLeftovers<T>([NoEnumeration] this IEnumerable<T> source, [NonNegativeValue] int count) {
         return (source.Take(count), source.Skip(count));
+    }
+
+    /// <summary>
+    /// Returns the items before <paramref name="dropCount"/> and after <paramref name="dropFrom"/> + <paramref name="dropCount"/> as separate <see cref="IEnumerable{T}"/>s.
+    /// </summary>
+    /// <param name="source">the original <see cref="IEnumerable{T}"/></param>
+    /// <param name="dropFrom">the beginning of the stuff we don't want</param>
+    /// <param name="dropCount">the amount of stuff we don't want</param>
+    /// <typeparam name="T">the element type</typeparam>
+    /// <returns>(before, after)</returns>
+    [SuppressMessage("ReSharper", "PossibleMultipleEnumeration", Justification = "Tests prove that this doesn't not enumerate multiple times")]
+    public static (IEnumerable<T> before, IEnumerable<T> after) DropRange<T>([NoEnumeration] this IEnumerable<T> source, int dropFrom, int dropCount) {
+        Must.BePositive(dropCount);
+        return (source.Take(dropFrom), source.Skip(dropFrom + dropCount));
     }
 
     #region Dictionary Inversion
@@ -1169,7 +1184,6 @@ public static partial class CollectionUtils {
     #endregion
 
 #if !NET6_0_OR_GREATER
-
     #region TakeLast
 
     /// <summary>
