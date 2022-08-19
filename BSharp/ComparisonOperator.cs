@@ -7,7 +7,7 @@ namespace FowlFever.BSharp;
 /// <summary>
 /// Represents a <a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/operators/comparison-operators">comparison operator</a>.
 /// </summary>
-public enum ComparisonOperator {
+public enum ComparisonOperator : byte {
     GreaterThan,
     LessThan,
     EqualTo,
