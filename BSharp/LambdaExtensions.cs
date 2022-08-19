@@ -371,10 +371,5 @@ public static class LambdaExtensions {
         return new LambdaExpressionString(lambdaExpression);
     }
 
-    /// <inheritdoc cref="LambdaExpressionString.GetBody"/>
-    public static ReadOnlySpan<char> GetBody(ReadOnlySpan<char> lambdaExpression) {
-        return LambdaExpressionString.GetBody(lambdaExpression);
-    }
-
     #endregion
 }
