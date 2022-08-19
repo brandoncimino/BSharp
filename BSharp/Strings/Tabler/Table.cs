@@ -141,7 +141,7 @@ public record Table : IReadOnlyList<Row>, IPrettifiable {
     /// <typeparam name="TKey">the <see cref="Type"/> of the <see cref="IDictionary{TKey,TValue}.Keys"/></typeparam>
     /// <typeparam name="TVal">the <see cref="Type"/> of the <see cref="IDictionary{TKey,TValue}.Values"/></typeparam>
     /// <returns>a new <see cref="Table"/></returns>
-    public static Table Of<TKey, TVal>(object keyHeader, object valHeader, IDictionary<TKey, TVal> dictionary) {
+    public static Table Of<TKey, TVal>(object keyHeader, object valHeader, IEnumerable<KeyValuePair<TKey, TVal>> dictionary) {
         return Of(
             Row.OfHeaders(keyHeader, valHeader),
             dictionary.Select(Row.Of)
