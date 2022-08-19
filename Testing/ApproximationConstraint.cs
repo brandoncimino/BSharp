@@ -28,7 +28,7 @@ namespace FowlFever.Testing {
 
         public override string Description => new[] {
             $"≈ {FormatObject(ExpectedValue)} ± {Threshold}",
-            $"\tRange: {ClusivityUtils.FormatRange(MinValue, MinClusivity, MaxValue, MaxClusivity)}"
+            $"\tRange: {ClusivityExtensions.FormatRange(MinValue, MinClusivity, MaxValue, MaxClusivity)}"
         }.JoinLines();
 
         public ApproximationConstraint(
