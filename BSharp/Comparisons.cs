@@ -22,8 +22,7 @@ public static partial class Comparisons {
     }
 
     /// <inheritdoc cref="ComparedWith{T}(T?,T?,System.Collections.Generic.IComparer{T?}?)"/>
-    public static ComparisonResult ComparedWith<T, T2>(this T? self, T2? other)
-        where T : IComparable<T2> {
+    public static ComparisonResult ComparedWith<T>(this IComparable<T>? self, T? other) {
         return (self, other) switch {
             (null, null) => ComparisonResult.EqualTo,
             (null, _)    => ComparisonResult.LessThan,
@@ -49,7 +48,7 @@ public static partial class Comparisons {
 
     /// <inheritdoc cref="IComparer{T}.Compare"/>
     /// <returns>a <see cref="ComparisonResult"/> describing the relationship between <paramref name="x"/> and <paramref name="y"/>.</returns>
-    public static ComparisonResult GetCompared<T>(this IComparer<T> comparer, T? x, T? y) => ToComparisonResult(comparer.Compare(x, y));
+    public static ComparisonResult GetCompared<T>(this IComparer<T> comparer, T? x, T? y) => ToComparisonResult(comparer.Compare(x!, y!));
 
     /// <summary>
     /// Converts a <see cref="IComparable{T}.CompareTo"/>-style result to a <see cref="ComparisonResult"/>:
