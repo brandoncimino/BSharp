@@ -1,8 +1,9 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Runtime.CompilerServices;
+
+using FowlFever.BSharp.Strings;
 
 namespace FowlFever.BSharp.Exceptions;
 
@@ -69,15 +70,14 @@ public class RejectionException : ArgumentException {
         object? actualValue,
         string? details = default,
         [CallerArgumentExpression("actualValue")]
-        string? parameterName = default,
-        [CallerMemberName]
-        string? rejectedBy = default,
-        string?    reason         = default,
-        Exception? innerException = default
-    ) : base(null, parameterName, innerException) {
+        string? _actualValue = default,
+        [CallerMemberName] string? rejectedBy     = default,
+        string?                    reason         = default,
+        Exception?                 innerException = default
+    ) : base(null, _actualValue, innerException) {
         ActualValue       = actualValue;
         Details           = details;
-        ActualValueString = actualValue?.ToString();
+        ActualValueString = actualValue.OrNullPlaceholder();
         RejectedBy        = rejectedBy;
         Reason            = reason;
     }
