@@ -1,12 +1,24 @@
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 using Spectre.Console;
 using Spectre.Console.Rendering;
 
-namespace FowlFever.BSharp.Strings;
+namespace FowlFever.BSharp.Strings.Spectral;
 
+/// <summary>
+/// Extensions methods pertaining to <see cref="Spectre.Console"/>.
+/// </summary>
 public static class SpectreExtensions {
+    /// <summary>
+    /// Calls <see cref="StringExtensions.EscapeMarkup"/> and returns the result as <see cref="IRenderable"/> <see cref="Text"/>.
+    /// </summary>
+    /// <param name="str">the original <see cref="string"/></param>
+    /// <param name="style">an optional <see cref="Style"/>. Defaults to <see cref="Style.Plain"/></param>
+    /// <returns>a <see cref="Text"/> "widget"</returns>
+    public static Text EscapeSpectre(this string? str, Style? style = default) => new(str.EscapeMarkup(), style);
+
     /// <summary>
     /// An <see cref="IAnsiConsole"/> that directs its output to a <see cref="StringBuilder"/>.
     /// </summary>
@@ -52,5 +64,21 @@ public static class SpectreExtensions {
         using var recorder = AnsiConsole.Create(new AnsiConsoleSettings { Ansi = ansiSupport }).CreateRecorder();
         recorder.Write(renderable);
         return recorder.ExportText();
+    }
+
+    private static IRenderable AsRenderable<T>(this T? obj) {
+        return obj as IRenderable ?? obj.OrNullPlaceholder().EscapeSpectre();
+    }
+
+    public static Table AddLabelled<T, TLabel>(this Table table, T? obj, TLabel? label) {
+        var cols = new IRenderable[table.Columns.Count];
+        cols[0] = label.AsRenderable();
+        cols[1] = obj.AsRenderable();
+        table.AddRow(cols);
+        return table;
+    }
+
+    public static Table AddLabelled<T>(this Table table, T obj, [CallerArgumentExpression("obj")] string label = "") {
+        return table.AddLabelled<T, string>(obj, label);
     }
 }
