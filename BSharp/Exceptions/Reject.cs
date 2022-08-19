@@ -107,16 +107,23 @@ public static class Reject {
     /// <summary>
     /// Indicates that this line of code should have been, logically, impossible to reach.
     /// </summary>
+    /// <param name="details">optional additional details</param>
     /// <param name="rejectedBy">see <see cref="CallerMemberNameAttribute"/></param>
     /// <param name="file">see <see cref="CallerFilePathAttribute"/></param>
     /// <param name="lineNo">see <see cref="CallerLineNumberAttribute"/></param>
     /// <returns>a new <see cref="RejectionException"/></returns>
     [Pure]
     public static RejectionException Unreachable(
+        string?                    details    = default,
         [CallerMemberName] string? rejectedBy = default,
         [CallerFilePath]   string? file       = default,
         [CallerLineNumber] int?    lineNo     = default
     ) {
-        return new RejectionException($"{file}:line {lineNo}", rejectedBy: rejectedBy, reason: "this code should be unreachable!");
+        return new RejectionException(
+            $"{file}:line {lineNo}",
+            details: details,
+            rejectedBy: rejectedBy,
+            reason: "this code should be unreachable!"
+        );
     }
 }
