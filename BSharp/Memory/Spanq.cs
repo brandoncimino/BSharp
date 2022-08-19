@@ -1,4 +1,5 @@
 using System;
+using System.Text;
 
 namespace FowlFever.BSharp.Memory;
 
@@ -23,4 +24,24 @@ public static partial class Spanq {
         where T : IEquatable<T> => span.IndexOfAny(soughtAfter) >= 0;
 
     #endregion
+
+    internal static string FormatString<T>(this ReadOnlySpan<T> span) {
+        var sb = new StringBuilder();
+        sb.Append('[');
+
+        for (int i = 0; i < span.Length; i++) {
+            if (i > 0) {
+                sb.Append(", ");
+            }
+
+            sb.Append(span[i]);
+        }
+
+        sb.Append(']');
+        return sb.ToString();
+    }
+
+    public static string FormatString<T>(this Span<T> span) {
+        return FormatString((ReadOnlySpan<T>)span);
+    }
 }
