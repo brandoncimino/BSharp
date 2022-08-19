@@ -30,13 +30,18 @@ public static class HasExtensions {
         } == true;
     }
 
-    public static bool             ValueEquals<T>(this  IHas<T?>? self, IHas<T?>? other) => self.OrDefault()?.Equals(other.OrDefault()) == true;
-    public static ComparisonResult ComparedWith<T>(this IHas<T?>? self, T?        other) => self.OrDefault().ComparedWith(other);
-    public static ComparisonResult ComparedWith<T>(this IHas<T?>? self, IHas<T?>? other) => Comparator<T>.Default.Compare(self.OrDefault(), other.OrDefault());
+    public static bool ValueEquals<T>(this IHas<T?>? self, IHas<T?>? other) => self.OrDefault()?.Equals(other.OrDefault()) == true;
 
-    public static ComparisonResult ComparedWith<T>(this IHas<T?>? self, IComparable<T?>? other) => other switch {
+    public static ComparisonResult ComparedWith<T>(this IHas<T?>? self, T? other)
+        where T : IComparable<T> => self.OrDefault().ComparedWith(other);
+
+    public static ComparisonResult ComparedWith<T>(this IHas<T?>? self, IHas<T?>? other)
+        where T : IComparable<T> => self.OrDefault().ComparedWith(other.OrDefault());
+
+    public static ComparisonResult ComparedWith<T>(this IHas<T?>? self, IComparable<T?>? other)
+        where T : IComparable<T> => other switch {
         T t         => self.ComparedWith(t),
         IHas<T> has => self.ComparedWith(has),
-        _           => Comparator<T>.Default.Compare(self.OrDefault(), other)
+        _           => other.ComparedWith(self.OrDefault())
     };
 }
