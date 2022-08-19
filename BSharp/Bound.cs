@@ -10,19 +10,39 @@ namespace FowlFever.BSharp;
 /// <param name="Endpoint">the value at the <see cref="Extremum"/></param>
 /// <param name="Extremum">whether this <see cref="Bound{T}"/> is a <see cref="Enums.Extremum.Min"/> or <see cref="Enums.Extremum.Max"/></param>
 /// <param name="Clusivity">whether the <see cref="Endpoint"/> is considered inside of the <see cref="Bound{T}"/> or not</param>
-/// <typeparam name="T"></typeparam>
-public readonly record struct Bound<T>(T Endpoint, Extremum Extremum, Clusivity Clusivity)
-    where T : notnull, IComparable<T> {
-    /// <summary>
-    /// Describes how the <see cref="Endpoint"/> should compare to a <typeparamref name="T"/> value.
-    /// </summary>
+/// <typeparam name="T">the <see cref="IComparable{T}"/> type that this bound constrains</typeparam>
+public readonly record struct Bound<T>(T Endpoint, Extremum Extremum, Clusivity Clusivity) : IBound<T>
+    where T : IComparable<T> {
     public ComparisonOperator ComparisonOperator => Bound.GetComparisonOperator(Extremum, Clusivity);
+}
 
-    public Bound(T value, ComparisonOperator                       comparisonOperator) : this(value, Bound.GetAttributes(comparisonOperator)) { }
-    public Bound(T value, (Extremum extremum, Clusivity clusivity) attributes) : this(value, attributes.extremum, attributes.clusivity) { }
+/// <inheritdoc cref="Bound{T}"/>
+public readonly record struct MinBound<T>(T Endpoint, Clusivity Clusivity) : IMinBound<T>
+    where T : IComparable<T> {
+    public ComparisonOperator ComparisonOperator => Bound.GetComparisonOperator(Extremum.Min, Clusivity);
+    public Extremum           Extremum           => Extremum.Min;
+}
 
-    public bool Contains(T value) {
-        return ComparisonOperator.SatisfiedBy(Endpoint.ComparedWith(value));
+/// <inheritdoc cref="Bound{T}"/>
+public readonly record struct MaxBound<T>(T Endpoint, Clusivity Clusivity) : IMinBound<T>
+    where T : IComparable<T> {
+    public ComparisonOperator ComparisonOperator => Bound.GetComparisonOperator(Extremum.Max, Clusivity);
+    public Extremum           Extremum           => Extremum.Max;
+}
+
+public static class BoundExtensions {
+    /// <summary>
+    /// 📎 a <c>null</c> <see cref="IBound{T}"/> is satisfied by any value.
+    /// </summary>
+    /// <param name="bound"></param>
+    /// <param name="value"></param>
+    /// <typeparam name="B"></typeparam>
+    /// <typeparam name="V"></typeparam>
+    /// <returns></returns>
+    public static bool Contains<B, V>(this B? bound, V value)
+        where B : IBound<V>?
+        where V : IComparable<V> {
+        return bound?.ComparisonOperator.SatisfiedBy(bound.Endpoint.ComparedWith(value)) ?? true;
     }
 }
 
@@ -44,4 +64,10 @@ public static class Bound {
         ComparisonOperator.NotEqualTo           => throw BEnum.NotSupported(comparisonOperator),
         _                                       => throw BEnum.UnhandledSwitch(comparisonOperator),
     };
+
+    public static MinBound<T> Min<T>(T value, Clusivity clusivity = Clusivity.Inclusive)
+        where T : IComparable<T> => new(value, clusivity);
+
+    public static MaxBound<T> Max<T>(T value, Clusivity clusivity = Clusivity.Exclusive)
+        where T : IComparable<T> => new(value, clusivity);
 }
