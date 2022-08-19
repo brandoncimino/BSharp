@@ -7,7 +7,7 @@ namespace FowlFever.BSharp;
 
 [Experimental("Should really hold off on this until Generic Math is available")]
 public readonly record struct Brange<T>(MinBound<T>? Min, MaxBound<T>? Max) : IRange<T>
-    where T : notnull, IComparable<T> { }
+    where T : IComparable<T>;
 
 internal static class BrangeExtensions {
     public static bool Contains<T>(this Bound<T>? bound, T value)
@@ -70,7 +70,7 @@ internal static class BrangeExtensions {
             (ComparisonResult.GreaterThan, Extremum.Min) => true,
             (ComparisonResult.GreaterThan, Extremum.Max) => false,
             (ComparisonResult.EqualTo, _)                => null,
-            _                                            => throw BEnum.UnhandledSwitch((valueToBound, boundExtent: boundExtremum)),
+            _                                            => throw BEnum.UnhandledSwitch((valueToBound, boundExtremum)),
         };
     }
 

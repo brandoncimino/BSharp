@@ -14,7 +14,7 @@ public static class IRangeExtensions {
     public static bool Contains<R, V>(this R range, V value)
         where R : IRange<V>
         where V : IComparable<V> {
-        return range.Min.Contains(value) && range.Max.Contains(value);
+        return (range.Min?.Contains(value) ?? true) && (range.Max?.Contains(value) ?? true);
     }
 
     public static int? Diameter<R>(this R range)
