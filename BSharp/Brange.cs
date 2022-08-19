@@ -6,18 +6,8 @@ using FowlFever.BSharp.Enums;
 namespace FowlFever.BSharp;
 
 [Experimental("Should really hold off on this until Generic Math is available")]
-public readonly record struct Brange<T>(Bound<T>? Min, Bound<T>? Max)
-    where T : notnull, IComparable<T> {
-    #region Core Methods
-
-    public bool Contains(T value) => Min.Contains(value) && Max.Contains(value);
-
-    public bool Overlaps(Brange<T> other) {
-        throw new NotImplementedException();
-    }
-
-    #endregion
-}
+public readonly record struct Brange<T>(MinBound<T>? Min, MaxBound<T>? Max) : IRange<T>
+    where T : notnull, IComparable<T> { }
 
 internal static class BrangeExtensions {
     public static bool Contains<T>(this Bound<T>? bound, T value)
