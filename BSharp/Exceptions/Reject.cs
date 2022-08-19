@@ -56,12 +56,10 @@ public static class Reject {
 
     [Pure]
     public static RejectionException BadType<T>(
-        T       badObj,
-        string? details = default,
-        [CallerMemberName]
-        string? parameterName = default,
-        [CallerMemberName]
-        string? rejectedBy = default
+        T                          badObj,
+        string?                    details       = default,
+        [CallerMemberName] string? parameterName = default,
+        [CallerMemberName] string? rejectedBy    = default
     ) {
         var typeName = TypeName.From(badObj);
         return new RejectionException(
@@ -75,12 +73,11 @@ public static class Reject {
 
     [Pure]
     public static RejectionException BadType(
-        object            typeIdentifier,
-        IEnumerable<Type> legalTypes,
-        string?           details       = default,
-        string?           parameterName = default,
-        [CallerMemberName]
-        string? rejectedBy = default
+        object                     typeIdentifier,
+        IEnumerable<Type>          legalTypes,
+        string?                    details       = default,
+        string?                    parameterName = default,
+        [CallerMemberName] string? rejectedBy    = default
     ) {
         var typeName = TypeName.From(typeIdentifier);
         return new RejectionException(
@@ -97,8 +94,7 @@ public static class Reject {
         T? actualValue,
         [CallerArgumentExpression("actualValue")]
         string? parameterName = default,
-        [CallerMemberName]
-        string? rejectedBy = default
+        [CallerMemberName] string? rejectedBy = default
     ) {
         return new RejectionException(
             actualValue,
@@ -106,5 +102,21 @@ public static class Reject {
             rejectedBy,
             reason: $"Value of type {actualValue?.GetType() ?? typeof(T)} was unhandled by any switch branch!"
         );
+    }
+
+    /// <summary>
+    /// Indicates that this line of code should have been, logically, impossible to reach.
+    /// </summary>
+    /// <param name="rejectedBy">see <see cref="CallerMemberNameAttribute"/></param>
+    /// <param name="file">see <see cref="CallerFilePathAttribute"/></param>
+    /// <param name="lineNo">see <see cref="CallerLineNumberAttribute"/></param>
+    /// <returns>a new <see cref="RejectionException"/></returns>
+    [Pure]
+    public static RejectionException Unreachable(
+        [CallerMemberName] string? rejectedBy = default,
+        [CallerFilePath]   string? file       = default,
+        [CallerLineNumber] int?    lineNo     = default
+    ) {
+        return new RejectionException($"{file}:line {lineNo}", rejectedBy: rejectedBy, reason: "this code should be unreachable!");
     }
 }

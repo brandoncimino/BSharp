@@ -40,20 +40,4 @@ public static partial class Must {
             $"Value of type {actualValue?.GetType() ?? typeof(T)} was not {desiredType}!"
         );
     }
-
-    /// <summary>
-    /// Indicates that this line of code should have been, logically, impossible to reach.
-    /// </summary>
-    /// <param name="rejectedBy">see <see cref="CallerMemberNameAttribute"/></param>
-    /// <param name="file">see <see cref="CallerFilePathAttribute"/></param>
-    /// <param name="lineNo">see <see cref="CallerLineNumberAttribute"/></param>
-    /// <returns>a new <see cref="RejectionException"/></returns>
-    [Pure]
-    public static RejectionException RejectUnreachable(
-        [CallerMemberName] string? rejectedBy = default,
-        [CallerFilePath]   string? file       = default,
-        [CallerLineNumber] int?    lineNo     = default
-    ) {
-        return new RejectionException($"{file}:line {lineNo}", rejectedBy: rejectedBy, reason: "this code should be unreachable!");
-    }
 }
