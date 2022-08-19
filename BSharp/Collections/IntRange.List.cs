@@ -7,7 +7,10 @@ using FowlFever.BSharp.Exceptions;
 
 namespace FowlFever.BSharp.Collections;
 
-public readonly partial record struct IntRange : IImmutableList<int>, IList<int>, IList, ICollection, ICollection<int> {
+/// <summary>
+/// TODO: Carry over improvements from <see cref="Indexes"/> into <see cref="IntRange"/>. A lot of the <see cref="Indexes"/> implementations can probably just be moved into <see cref="IntRange"/> and then <see cref="Indexes"/> can delegate to them
+/// </summary>
+public readonly partial record struct IntRange : IImmutableList<int>, IList<int>, IList {
     bool IList.IsReadOnly => true;
     object? IList.this[int index] {
         get => AsNonGenericList[index];

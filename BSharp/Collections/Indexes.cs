@@ -1,12 +1,11 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Linq;
 using System.Runtime.CompilerServices;
 
+using FowlFever.BSharp.Enums;
 using FowlFever.BSharp.Exceptions;
-using FowlFever.Implementors;
 
 using JetBrains.Annotations;
 
@@ -19,48 +18,74 @@ namespace FowlFever.BSharp.Collections;
 /// The purpose of <see cref="Indexes"/> is to support <see cref="ICollection"/>- and <see cref="IEnumerable{T}"/>-like operations on an <see cref="int"/>,
 /// and to allow interoperability with <see cref="IEnumerable{T}"/>-based APIs when we don't want to bother with an actual collection.
 /// </remarks>
-public readonly partial record struct Indexes : IHas<int> {
-    public           int                         Count { get; }
-    private readonly Lazy<ImmutableList<int>>    _list;
-    private          ImmutableList<int>          AsList           => _list.Value;
-    private          IList                       AsNonGenericList => AsList;
-    private readonly Lazy<ImmutableHashSet<int>> _set;
-    private          ImmutableHashSet<int>       AsSet  => _set.Value;
-    private          ICollection                 AsColl => AsSet;
+public readonly partial record struct Indexes : IRange<int> {
+    /// <remarks>
+    /// I tend to prefer "Length", which is what newer collections like <see cref="Span{T}"/> use, but most of the interfaces implemented by this class use <see cref="ICollection.Count"/>
+    /// as derived from <see cref="ICollection"/>. 
+    /// </remarks>
+    [NonNegativeValue]
+    public int Count { get; }
 
-    #region Constructors & Factories
-
-    public Indexes() {
-        Count = 0;
-        _list = new Lazy<ImmutableList<int>>(() => ImmutableList<int>.Empty);
-        _set  = new Lazy<ImmutableHashSet<int>>(() => ImmutableHashSet<int>.Empty);
-    }
-
-    public Indexes(int count) {
+    public Indexes([NonNegativeValue] int count) {
         Count = Must.BePositive(count);
-        _list = new Lazy<ImmutableList<int>>(Enumerable.Range(0,    Count).ToImmutableList);
-        _set  = new Lazy<ImmutableHashSet<int>>(Enumerable.Range(0, Count).ToImmutableHashSet);
     }
 
-    public static Indexes Of<T>(ICollection<T>         source) => new(source.Count);
-    public static Indexes Of<T>(IReadOnlyCollection<T> source) => new(source.Count);
+    public static Indexes Of(int count) => new(count);
+
+    public IEnumerator<int> GetEnumerator() => Enumerable.Repeat(0, Count).GetEnumerator();
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+    #region Contains
+
+    public bool Contains(int                  item)  => item >= 0 && item < Count;
+    public bool Contains(Index                index) => Contains(index.GetOffset(Count));
+    public bool Contains(Range                range) => Contains(range.Start) && Contains(range.End);
+    public bool Contains(IntRange             range) => Contains(range.Start) && Contains(range.End);
+    public bool Contains((int start, int end) range) => Contains(range.start) && Contains(range.end);
 
     #endregion
 
-    public IEnumerator<int> GetEnumerator()    => Enumerable.Repeat(0, Count).GetEnumerator();
-    IEnumerator IEnumerable.GetEnumerator()    => GetEnumerator();
-    public bool             Contains(int item) => item >= 0 && item < Count;
-    public bool             IsReadOnly         => true;
+    #region Casts
 
-    private static Exception UnsupportedMethodException([CallerMemberName] string? methodName = default) => new NotSupportedException($"{nameof(Indexes)} does not support {methodName}");
+    [NonNegativeValue] public static implicit operator int(Indexes                    indexes) => indexes.Count;
+    public static implicit operator                    Indexes([NonNegativeValue] int count)   => new(count);
+    public static implicit operator                    IntRange(Indexes               indexes) => new(0, indexes);
 
-    int IHas<int>.Value => Count;
+    #endregion
 
-    [NonNegativeValue]
-    public static implicit operator int(Indexes indexes) => indexes.Count;
+    #region Set-like operations with other Indexes and with IntRange
 
-    public static implicit operator Indexes([NonNegativeValue] int count)   => new(count);
-    public static implicit operator Indexes(string                 str)     => str.Length;
-    public static implicit operator Indexes(Array                  array)   => array.Length;
-    public static implicit operator Range(Indexes                  indexes) => ..indexes.Count;
+    public Indexes Intersect(Indexes other) => Union(other);
+
+    public IntRange Except(Indexes other) {
+        var diff = Count - other.Count;
+        return diff switch {
+            <= 0 => default,
+            > 0  => new IntRange((Count, other.Count))
+        };
+    }
+
+    public IntRange SymmetricExcept(Indexes other) {
+        var diff = Count - other.Count;
+        return diff switch {
+            < 0 => new IntRange((Count, other.Count)),
+            0   => this,
+            > 0 => new IntRange((other.Count, Count)),
+        };
+    }
+
+    public Indexes Union(Indexes other) => Count < other.Count ? this : other;
+
+    #endregion
+
+    #region Exceptions
+
+    private static Exception UnsupportedMethodException([CallerMemberName] string? methodName = default) => new NotSupportedException($"🙅 {nameof(Indexes)} does not support {methodName}!");
+
+    private int RequireIndex(int index) => Contains(index) ? index : throw new IndexOutOfRangeException($"🙅 {nameof(Indexes)}({Count}) does not contain [{index}]!");
+
+    #endregion
+
+    public MinBound<int>? Min => new(0, Clusivity.Inclusive);
+    public MaxBound<int>? Max => new(Count, Clusivity.Exclusive);
 }
