@@ -19,16 +19,37 @@ public static partial class Spanq {
         return new SpanPartition<T>(span, splitSequence);
     }
 
+    /// <inheritdoc cref="Partition{T}(System.ReadOnlySpan{T},System.ReadOnlySpan{T})"/>
+    public static bool Partition<T>(this ReadOnlySpan<T> span, ReadOnlySpan<T> splitSequence, out ReadOnlySpan<T> before, out ReadOnlySpan<T> after)
+        where T : IEquatable<T> {
+        span.Partition(splitSequence).Deconstruct(out var successful, out before, out after);
+        return successful;
+    }
+
     /// <inheritdoc cref="SpanPartition{T}(ReadOnlySpan{T}, T)"/>
     public static SpanPartition<T> Partition<T>(this ReadOnlySpan<T> span, T splitter)
         where T : IEquatable<T> {
         return new SpanPartition<T>(span, splitter);
     }
 
+    /// <inheritdoc cref="SpanPartition{T}(ReadOnlySpan{T}, T)"/>
+    public static bool Partition<T>(this ReadOnlySpan<T> span, T splitter, out ReadOnlySpan<T> before, out ReadOnlySpan<T> after)
+        where T : IEquatable<T> {
+        span.Partition(splitter).Deconstruct(out var successful, out before, out after);
+        return successful;
+    }
+
     /// <inheritdoc cref="SpanPartition{T}(ReadOnlySpan{T}, Range)"/>
     public static SpanPartition<T> Partition<T>(this ReadOnlySpan<T> span, Range range)
         where T : IEquatable<T> {
         return new SpanPartition<T>(span, range);
+    }
+
+    /// <inheritdoc cref="SpanPartition{T}(ReadOnlySpan{T}, Range)"/>
+    public static bool Partition<T>(this ReadOnlySpan<T> span, Range range, out ReadOnlySpan<T> before, out ReadOnlySpan<T> after)
+        where T : IEquatable<T> {
+        span.Partition(range).Deconstruct(out var successful, out before, out after);
+        return successful;
     }
 
     #endregion

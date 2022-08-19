@@ -96,4 +96,15 @@ public readonly ref struct SpanPartition<T>
         Before       = source[..off];
         After        = source[(off + len)..];
     }
+
+    public void Deconstruct(out bool isSuccessful, out ReadOnlySpan<T> before, out ReadOnlySpan<T> after) {
+        before       = Before;
+        after        = After;
+        isSuccessful = IsSuccessful;
+    }
+
+    public void Deconstruct(out ReadOnlySpan<T> before, out ReadOnlySpan<T> after) {
+        before = Before;
+        after  = After;
+    }
 }
