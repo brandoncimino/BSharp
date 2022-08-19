@@ -20,7 +20,17 @@ public static class RangeExtensions {
             throw new NotSupportedException($"How would I even handle {nameof(Index.IsFromEnd)}?!");
         }
 
-        return value.IsInRange(range.Start.Value, range.End.Value, clusivity);
+        return value.IsBetween(range.Start.Value, range.End.Value, clusivity);
+    }
+
+    public static IEnumerable<int> Enumerate(this Range range) {
+        Must.Have(range.Start.IsFromEnd == false && range.End.IsFromEnd == false);
+        return Enumerable.Range(range.Start.Value, range.End.Value);
+    }
+
+    public static IEnumerable<int> Enumerate(this Range range, int length) {
+        var (off, len) = range.GetOffsetAndLength(length);
+        return Enumerable.Range(off, len);
     }
 
     [Experimental]
