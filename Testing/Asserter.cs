@@ -79,8 +79,18 @@ namespace FowlFever.Testing {
             return new Asserter<T>(actualValueDelegate, actualValueAlias);
         }
 
-        [Pure] public static Asserter<object> WithHeading(string? heading) => new Asserter<object>().WithHeading(heading);
+        /// <summary>
+        /// Creates a new <see cref="Asserter{T}"/> without an <see cref="MultipleAsserter{TSelf,TActual}.Actual"/> value.
+        /// </summary>
+        /// <param name="heading">an explicit <see cref="MultipleAsserter{TSelf,TActual}.Heading"/>. Falls back to <paramref name="_caller"/></param>
+        /// <param name="_caller">see <see cref="CallerMemberNameAttribute"/></param>
+        /// <typeparam name="T">the type of the <see cref="MultipleAsserter{TSelf,TActual}.Actual"/> value, if we were to have one</typeparam>
+        /// <returns>a new <see cref="Asserter{T}"/></returns>
+        [Pure]
+        public static Asserter<T> WithHeading<T>([CallerMemberName] string? heading = default, [CallerMemberName] string? _caller = default) => new Asserter<T>().WithHeading(heading.IfBlank(_caller));
 
-        [Pure] public static Asserter<T> WithHeading<T>(string? heading) => new Asserter<T>().WithHeading(heading);
+        /// <inheritdoc cref="WithHeading{T}"/>
+        [Pure]
+        public static Asserter<object> WithHeading(string? heading = default, [CallerMemberName] string? _caller = default) => new Asserter<object>().WithHeading(heading.IfBlank(_caller));
     }
 }
