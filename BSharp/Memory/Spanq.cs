@@ -2,7 +2,10 @@ using System;
 
 namespace FowlFever.BSharp.Memory;
 
-public static partial class SpanExtensions {
+/// <summary>
+/// Linq-style extensions for <see cref="ReadOnlySpan{T}"/> - but with a super-cute name!
+/// </summary>
+public static partial class Spanq {
     #region Containment
 
 #if !NET6_0_OR_GREATER

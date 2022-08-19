@@ -4,7 +4,7 @@ using FowlFever.BSharp.Collections;
 
 namespace FowlFever.BSharp.Memory;
 
-public static partial class SpanExtensions {
+public static partial class Spanq {
     #region Index & Range
 
     public static bool Contains<T>(this ReadOnlySpan<T> span, Index index) => Indexes.Of(span.Length).Contains(index);

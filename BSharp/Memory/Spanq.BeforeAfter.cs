@@ -2,7 +2,7 @@ using System;
 
 namespace FowlFever.BSharp.Memory;
 
-public static partial class SpanExtensions {
+public static partial class Spanq {
     #region AfterFirst
 
     [Pure]

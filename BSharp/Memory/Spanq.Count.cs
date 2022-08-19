@@ -4,7 +4,7 @@ using JetBrains.Annotations;
 
 namespace FowlFever.BSharp.Memory;
 
-public static partial class SpanExtensions {
+public static partial class Spanq {
     #region Count
 
     [Pure]

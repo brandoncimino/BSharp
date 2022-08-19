@@ -4,7 +4,7 @@ using JetBrains.Annotations;
 
 namespace FowlFever.BSharp.Memory;
 
-public static partial class SpanExtensions {
+public static partial class Spanq {
     #region Skip'n'Take
 
     /// <summary>
@@ -36,25 +36,6 @@ public static partial class SpanExtensions {
             A = span.Take(toTake),
             B = span.Skip(toTake),
         };
-
-    /// <summary>
-    /// Splits a <paramref name="span"/> by the first instance of <see cref="splitSequence"/>, returning the parts before and after.
-    /// <p/>
-    /// If <paramref name="splitSequence"/> isn't found, <see cref="SpanTuple2{T}.Empty"/> is returned instead.
-    /// </summary>
-    /// <param name="span">this <see cref="ReadOnlySpan{T}"/></param>
-    /// <param name="splitSequence">the inner <see cref="ReadOnlySpan{T}"/></param>
-    /// <typeparam name="T">the entry type</typeparam>
-    /// <returns>the <see cref="ReadOnlySpan{T}"/> before and after <paramref name="splitSequence"/>, if found; otherwise, <see cref="SpanTuple2{T}.Empty"/></returns>
-    public static SpanTuple2<T> Partition<T>(this ReadOnlySpan<T> span, ReadOnlySpan<T> splitSequence)
-        where T : IEquatable<T> {
-        var subIndex = span.IndexOf(splitSequence);
-
-        return subIndex switch {
-            < 0 => new SpanTuple2<T>(default,          span),
-            _   => new SpanTuple2<T>(span[..subIndex], span[(subIndex + splitSequence.Length)..]),
-        };
-    }
 
     #region {x}Last
 

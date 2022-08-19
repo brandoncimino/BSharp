@@ -4,7 +4,7 @@ using FowlFever.BSharp.Enums;
 
 namespace FowlFever.BSharp.Memory;
 
-public static partial class SpanExtensions {
+public static partial class Spanq {
     #region IndexNot
 
     /// <returns>the first index of the <paramref name="span"/> that <b>ISN'T</b> <paramref name="value"/></returns>

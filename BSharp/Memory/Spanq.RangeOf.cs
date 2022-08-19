@@ -2,7 +2,7 @@ using System;
 
 namespace FowlFever.BSharp.Memory;
 
-public static partial class SpanExtensions {
+public static partial class Spanq {
     #region RangeOf
 
     public static Range RangeOf<T>(this ReadOnlySpan<T> span, ReadOnlySpan<T> subSpan)
