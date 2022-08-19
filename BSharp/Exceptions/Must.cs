@@ -42,14 +42,12 @@ public static partial class Must {
     /// <exception cref="RejectionException">if <paramref name="actualValue"/> is <c>null</c></exception>
     [return: NotNullIfNotNull("predicate")]
     public static T Be<T>(
-        [NotNullIfNotNull("predicate")]
-        T actualValue,
-        Func<T, bool>? predicate,
-        string?        details = default,
+        [NotNullIfNotNull("predicate")] T actualValue,
+        Func<T, bool>?                    predicate,
+        string?                           details = default,
         [CallerArgumentExpression("actualValue")]
         string? parameterName = default,
-        [CallerMemberName]
-        string? rejectedBy = default,
+        [CallerMemberName] string? rejectedBy = default,
         [CallerArgumentExpression("predicate")]
         string? reason = default
     ) {
@@ -75,14 +73,27 @@ public static partial class Must {
     }
 
     /// <inheritdoc cref="Be{T}(T,System.Func{T,bool}?,string?,string?,string?,string?)"/>
+    public static void Be(
+        bool    actualValue,
+        bool    expectedValue = true,
+        string? details       = default,
+        [CallerArgumentExpression("actualValue")]
+        string? parameterName = default,
+        [CallerMemberName] string? rejectedBy = default,
+        [CallerArgumentExpression("expectedValue")]
+        string? reason = default
+    ) {
+        Be<bool>(actualValue, expectedValue, details, parameterName, rejectedBy, reason);
+    }
+
+    /// <inheritdoc cref="Be{T}(T,System.Func{T,bool}?,string?,string?,string?,string?)"/>
     public static T Be<T>(
         T       actualValue,
         T       expectedValue,
         string? details = default,
         [CallerArgumentExpression("actualValue")]
         string? parameterName = default,
-        [CallerMemberName]
-        string? rejectedBy = default,
+        [CallerMemberName] string? rejectedBy = default,
         [CallerArgumentExpression("expectedValue")]
         string? reason = default
     ) {
@@ -103,35 +114,32 @@ public static partial class Must {
         string? details = default,
         [CallerArgumentExpression("actualValue")]
         string? parameterName = default,
-        [CallerMemberName]
-        string? rejectedBy = default,
+        [CallerMemberName] string? rejectedBy = default,
         [CallerArgumentExpression("expectedValue")]
         string? reason = default
     ) {
         return Be(actualValue, expectedValue, details, parameterName, rejectedBy, reason);
     }
 
-    /// <inheritdoc cref="Be{T}(object,string?,string?,string?)"/>
-    public static void Be(
-        bool?   predicateResult,
-        string? details = default,
-        [CallerArgumentExpression("predicateResult")]
-        string? description = default,
-        [CallerMemberName]
-        string? rejectedBy = default
+    public static void NotBe(
+        bool    actualValue,
+        bool    expected = true,
+        string? details  = default,
+        [CallerArgumentExpression("actualValue")]
+        string? parameterName = default,
+        [CallerMemberName]                     string? rejectedBy = default,
+        [CallerArgumentExpression("expected")] string? reason     = default
     ) {
-        Be(predicateResult, true, details, description, rejectedBy);
+        NotBe<bool>(actualValue, expected, details, parameterName, rejectedBy, $"must not be == {reason}");
     }
 
     public static T NotBe<T>(
-        T actualValue,
-        [InstantHandle]
-        Func<T, bool> predicate,
-        string? details = default,
+        T                             actualValue,
+        [InstantHandle] Func<T, bool> predicate,
+        string?                       details = default,
         [CallerArgumentExpression("actualValue")]
         string? parameterName = default,
-        [CallerMemberName]
-        string? rejectedBy = default,
+        [CallerMemberName] string? rejectedBy = default,
         [CallerArgumentExpression("predicate")]
         string? reason = default
     ) {
@@ -156,8 +164,7 @@ public static partial class Must {
         string? details = default,
         [CallerArgumentExpression("actualValue")]
         string? parameterName = default,
-        [CallerMemberName]
-        string? rejectedBy = default,
+        [CallerMemberName] string? rejectedBy = default,
         [CallerArgumentExpression("expectedValue")]
         string? reason = default
     ) {
@@ -177,8 +184,7 @@ public static partial class Must {
         string? details = default,
         [CallerArgumentExpression("actualValue")]
         string? parameterName = default,
-        [CallerMemberName]
-        string? rejectedBy = default,
+        [CallerMemberName] string? rejectedBy = default,
         [CallerArgumentExpression("expectedValue")]
         string? reason = default
     ) {
@@ -198,8 +204,7 @@ public static partial class Must {
         string?       details = default,
         [CallerArgumentExpression("actualValue")]
         string? parameterName = default,
-        [CallerMemberName]
-        string? rejectedBy = default,
+        [CallerMemberName] string? rejectedBy = default,
         [CallerArgumentExpression("predicate")]
         string? reason = null
     ) {
@@ -207,14 +212,12 @@ public static partial class Must {
     }
 
     public static T MustNotBe<T>(
-        this T actualValue,
-        [InstantHandle]
-        Func<T, bool> predicate,
-        string? details = default,
+        this            T             actualValue,
+        [InstantHandle] Func<T, bool> predicate,
+        string?                       details = default,
         [CallerArgumentExpression("actualValue")]
         string? parameterName = default,
-        [CallerMemberName]
-        string? rejectedBy = default,
+        [CallerMemberName] string? rejectedBy = default,
         [CallerArgumentExpression("predicate")]
         string? reason = null
     ) {
@@ -240,8 +243,7 @@ public static partial class Must {
         string? details = default,
         [CallerArgumentExpression("actualValue")]
         string? parameterName = default,
-        [CallerMemberName]
-        string? rejectedBy = default
+        [CallerMemberName] string? rejectedBy = default
     ) {
         if (actualValue is T t) {
             return t;
@@ -256,8 +258,7 @@ public static partial class Must {
         string?     details = default,
         [CallerArgumentExpression("actualValue")]
         string? parameterName = default,
-        [CallerMemberName]
-        string? rejectedBy = default
+        [CallerMemberName] string? rejectedBy = default
     ) => Be<T>(actualValue, details, parameterName, rejectedBy);
 
     #endregion
@@ -265,22 +266,20 @@ public static partial class Must {
     #region 2-arg Comparisons
 
     public static (T first, T2 second) Compare<T, T2>(
-        T                  first,
-        ComparisonOperator comparison,
-        T2                 second,
-        string?            details = default,
-        [CallerArgumentExpression("first")]
-        string? firstName = default,
-        [CallerArgumentExpression("second")]
-        string? secondName = default,
-        [CallerMemberName]
-        string? rejectedBy = default,
+        T                                            first,
+        ComparisonOperator                           comparison,
+        T2                                           second,
+        string?                                      details    = default,
+        [CallerArgumentExpression("first")]  string? firstName  = default,
+        [CallerArgumentExpression("second")] string? secondName = default,
+        [CallerMemberName]                   string? rejectedBy = default,
         [CallerArgumentExpression("comparison")]
         string? reason = default
-    ) {
+    )
+        where T : IComparable<T2> {
         return Be(
             (first, second),
-            (tuple) => comparison.Predicate().Invoke(tuple.Item1, tuple.Item2),
+            (tuple) => tuple.first.ComparedWith(tuple.second).Satisfies(comparison),
             details,
             (firstName, secondName).ToString(),
             rejectedBy,
@@ -299,8 +298,7 @@ public static partial class Must {
         string?   details = default,
         [CallerArgumentExpression("actualValue")]
         string? parameterName = default,
-        [CallerMemberName]
-        string? rejectedBy = default,
+        [CallerMemberName] string? rejectedBy = default,
         [CallerArgumentExpression("assertion")]
         string? reason = default
     ) {
