@@ -22,12 +22,14 @@ namespace FowlFever.Clerical.Validated.Atomic;
 public readonly record struct FileNamePart : IHas<string>, IFileNamePart {
     public static readonly FileNamePart Empty = new();
 
-    public string Value { get; }
+    private readonly string? _value;
+    public           string  Value => _value ?? "";
 
-    public FileNamePart(string fileNamePart) : this(fileNamePart, MustRatify.Yes) { }
+    public FileNamePart(ReadOnlySpan<char> fileNamePart) : this(fileNamePart.ToString()) { }
+    public FileNamePart(string             fileNamePart) : this(fileNamePart, MustRatify.Yes) { }
 
     internal FileNamePart(string fileNamePart, MustRatify mustRatify) {
-        Value = mustRatify switch {
+        _value = mustRatify switch {
             MustRatify.Yes => IFileNamePart.Ratify(fileNamePart),
             MustRatify.No  => fileNamePart,
             _              => throw BEnum.UnhandledSwitch(mustRatify)
