@@ -2,29 +2,29 @@ using System;
 using System.Collections.Generic;
 
 using FowlFever.BSharp;
-using FowlFever.BSharp.Clerical;
 using FowlFever.BSharp.Collections;
 using FowlFever.Clerical.Validated;
+using FowlFever.Clerical.Validated.Atomic;
 using FowlFever.Testing;
 
 using NUnit.Framework;
 
-using Is = FowlFever.Testing.Is;
+// ReSharper disable AccessToStaticMemberViaDerivedType
 
 namespace BSharp.Tests.Clerical2;
 
 public class PathPartTests : BaseClericalTest {
-    public static IEnumerable<char> GetInvalidPathPartChars() => PathPart.InvalidChars;
+    public static IEnumerable<char> GetInvalidPathPartChars() => Clerk.InvalidPathPartChars;
 
     [Test]
     public void PathPart_InvalidChar_AtStart([ValueSource(nameof(GetInvalidPathPartChars))] char badChar) {
-        Ignore.If(BPath.SeparatorChars, Contains.Item(badChar));
+        Ignore.If(Clerk.DirectorySeparatorChars, Contains.Item(badChar));
         Assert.That(() => new PathPart($"{badChar}abc"), Throws.Exception);
     }
 
     [Test]
     public void PathPart_InvalidChar_AtEnd([ValueSource(nameof(GetInvalidPathPartChars))] char badChar) {
-        Ignore.If(BPath.SeparatorChars, Contains.Item(badChar));
+        Ignore.If(badChar, Is.In(Clerk.DirectorySeparatorChars));
         Assert.That(() => new PathPart($"abc{badChar}"), Throws.Exception);
     }
 
@@ -33,25 +33,14 @@ public class PathPartTests : BaseClericalTest {
         Assert.That(() => new PathPart($"ab{badChar}cd"), Throws.Exception);
     }
 
-    [Test]
-    [TestCase("a")]
-    [TestCase("Program Files")]
-    [TestCase(".ssh")]
-    [TestCase("/cards")]
-    [TestCase("  h")]
-    public void PathPart_Valid(string part) {
-        Asserter.Against(() => new PathPart(part))
-                .And(it => it.ToString(), Is.EqualTo(new PathPart(part).Fluff(part)))
-                .Invoke();
-    }
-
-    [Test]
-    public void PathPart_Expectations([ValueSource(nameof(PathParts))] Expectation expectation) {
+    private static void PathPart_Expectations(Expectation expectation) {
         Console.WriteLine(expectation);
         Brandon.Print($"[{expectation.Value}]");
         Brandon.Print(expectation.Value.IsEmpty());
         Brandon.Print(expectation.Value.IsNotEmpty());
-        // var pp = new PathPart(expectation.Value!);
         Assert.That(() => new PathPart(expectation.Value!), expectation.Should.Constrain(ShouldStyle.Exception));
     }
+
+    [Test] public void PathPart_Positive([ValueSource(nameof(PositivePathParts))] Expectation expectation) => PathPart_Expectations(expectation);
+    [Test] public void PathPart_Negative([ValueSource(nameof(NegativePathParts))] Expectation expectation) => PathPart_Expectations(expectation);
 }
