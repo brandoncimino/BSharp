@@ -1,13 +1,12 @@
 using System.Collections.Immutable;
+using System.Diagnostics.Contracts;
 using System.Text.RegularExpressions;
 
 using FowlFever.BSharp.Clerical;
-using FowlFever.BSharp.Collections;
+using FowlFever.BSharp.Memory;
 using FowlFever.BSharp.Strings;
 using FowlFever.Clerical.Validated.Atomic;
 using FowlFever.Clerical.Validated.Composed;
-
-using JetBrains.Annotations;
 
 namespace FowlFever.Clerical.Validated;
 
@@ -77,27 +76,30 @@ public static class Clerk {
     [Pure]
     public static FileNamePart GetBaseName(string? path) {
         var bn = GetBaseName(path.AsSpan());
-        return new FileNamePart(bn.ToString());
+        return new FileNamePart(bn);
     }
 
+    [Pure]
     public static ReadOnlySpan<char> GetBaseName(ReadOnlySpan<char> path) {
         var fileName    = Path.GetFileName(path);
         var firstPeriod = fileName.IndexOf('.');
-        return firstPeriod < 0 ? path : path[..firstPeriod];
+        return firstPeriod < 0 ? fileName : fileName[..firstPeriod];
     }
 
+    [Pure]
     public static ReadOnlySpan<char> GetFullExtension(ReadOnlySpan<char> path) {
         var fileName    = Path.GetFileName(path);
         var firstPeriod = fileName.IndexOf('.');
         return firstPeriod < 0 ? ReadOnlySpan<char>.Empty : path[firstPeriod..];
     }
 
+    [Pure]
     public static IEnumerable<PathPart> SplitPath(string? path) {
         return EnumeratePathParts(path)
-            .ToImmutableArray(span => new PathPart(span.ToString()));
+            .ToImmutableArray(static span => new PathPart(span.ToString()));
     }
 
-    private static SpanSpliterator<char> EnumeratePathParts(ReadOnlySpan<char> path) => new(path, DirectorySeparatorChars.AsSpan());
+    [Pure] private static SpanSpliterator<char> EnumeratePathParts(ReadOnlySpan<char> path) => new(path, DirectorySeparatorChars.AsSpan(), SplitterStyle.AnyEntry, StringSplitOptions.RemoveEmptyEntries | (StringSplitOptions)2);
 
     /// <summary>
     /// Extracts each <b>individual</b> <see cref="FileExtension"/> from a path.
@@ -106,16 +108,18 @@ public static class Clerk {
     /// <param name="path">a path or file name</param>
     /// <returns><b>all</b> of the extensions at the end of the <paramref name="path"/></returns>
     /// <remarks>This method is similar to <see cref="Path.GetExtension(System.ReadOnlySpan{char})"/>, except that it can retrieve multiple extensions, i.e. <c>game.sav.json</c> -> <c>[.sav, .json]</c></remarks>
+    [Pure]
     public static ImmutableArray<FileExtension> GetExtensions(string? path) {
         return EnumerateExtensions(path)
-            .ToImmutableArray(span => new FileExtension(span.ToString()));
+            .ToImmutableArray(static span => new FileExtension('.' + span.ToString()));
     }
 
-    private static SpanSpliterator<char> EnumerateExtensions(ReadOnlySpan<char> path) => new(GetFullExtension(path), '.');
+    [Pure] private static SpanSpliterator<char> EnumerateExtensions(ReadOnlySpan<char> path) => GetFullExtension(path).Spliterate(StringSplitOptions.RemoveEmptyEntries, '.');
 
-    public static FileName GetFileName(string             path) => new(path);
-    public static FileName GetFileName(ReadOnlySpan<char> path) => GetFileName(path.ToString());
+    [Pure] public static FileName GetFileName(string             path) => new(path);
+    [Pure] public static FileName GetFileName(ReadOnlySpan<char> path) => GetFileName(path.ToString());
 
+    [Pure]
     public static bool EndsInDirectorySeparator(string path) {
 #if NET6_0_OR_GREATER
         return Path.EndsInDirectorySeparator(path);
