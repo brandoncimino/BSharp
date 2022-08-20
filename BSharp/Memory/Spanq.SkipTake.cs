@@ -48,7 +48,7 @@ public static partial class Spanq {
 
     [Pure]
     public static ReadOnlySpan<T> SkipWhile<T, T2>(this ReadOnlySpan<T> span, [RequireStaticDelegate] Func<T, T2> selector, T2 expected, int skipLimit = int.MaxValue)
-        where T2 : IEquatable<T2> => span.Skip(span.CountWhile(selector, expected));
+        where T2 : IEquatable<T2> => span.Skip(span.CountWhile(selector, expected, skipLimit));
 
     [Pure] public static ReadOnlySpan<T> SkipWhile<T>(this ReadOnlySpan<T> span, [RequireStaticDelegate] Func<T, bool> predicate, int skipLimit = int.MaxValue) => span.SkipWhile(predicate, true, skipLimit);
 
