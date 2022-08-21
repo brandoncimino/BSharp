@@ -27,6 +27,31 @@ namespace FowlFever.BSharp.Collections {
         [Pure] public static T[] ToArray<T>(this (T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T)    tuple) => new[] { tuple.Item1, tuple.Item2, tuple.Item3, tuple.Item4, tuple.Item5, tuple.Item6, tuple.Item7, tuple.Item8, tuple.Item9, tuple.Item10, tuple.Item11, tuple.Item12, tuple.Item13, tuple.Item14, tuple.Item15, tuple.Item16 };
         [Pure] public static T[] ToArray<T>(this (T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T) tuple) => new[] { tuple.Item1, tuple.Item2, tuple.Item3, tuple.Item4, tuple.Item5, tuple.Item6, tuple.Item7, tuple.Item8, tuple.Item9, tuple.Item10, tuple.Item11, tuple.Item12, tuple.Item13, tuple.Item14, tuple.Item15, tuple.Item16, tuple.Item17 };
 
+        #region Enumerate
+
+        [Pure]
+        public static IEnumerable<T> Enumerate<T>(this (T, T) tuple) {
+            yield return tuple.Item1;
+            yield return tuple.Item2;
+        }
+
+        [Pure]
+        public static IEnumerable<T> Enumerate<T>(this (T, T, T) tuple) {
+            yield return tuple.Item1;
+            yield return tuple.Item2;
+            yield return tuple.Item3;
+        }
+
+        [Pure]
+        public static IEnumerable<T> Enumerate<T>(this (T, T, T, T) tuple) {
+            yield return tuple.Item1;
+            yield return tuple.Item2;
+            yield return tuple.Item3;
+            yield return tuple.Item4;
+        }
+
+        #endregion
+
         // These methods were an ugly old workaround for the lack of access to the `ITuple` interface.
 #if NETSTANDARD2_0
         [Pure] public static object?[] ToObjArray<T, T2>(this                                                                     (T, T2)                                                                     tuple) => new object?[] { tuple.Item1, tuple.Item2 };
@@ -56,7 +81,7 @@ namespace FowlFever.BSharp.Collections {
         /// <param name="tuple">an <see cref="ITuple"/></param>
         /// <typeparam name="T">an <see cref="ITuple"/> type</typeparam>
         /// <returns>an <see cref="IEnumerable{T}"/> of each <see cref="ITuple.this"/> item</returns>
-        public static IEnumerable<object?> EachItem<T>(this T tuple)
+        public static IEnumerable<object?> Enumerate<T>(this T tuple)
             where T : ITuple {
             for (int i = 0; i < tuple.Length; i++) {
                 yield return tuple[i];
@@ -108,33 +133,23 @@ namespace FowlFever.BSharp.Collections {
 
         #region Item1
 
-        [Pure]
-        [LinqTunnel]
-        public static IEnumerable<T?> Item1<T, T2>(this IEnumerable<(T, T2)> tuples) => tuples.Select(it => it.Item1);
+        [Pure] [LinqTunnel] public static IEnumerable<T?> Item1<T, T2>(this IEnumerable<(T, T2)> tuples) => tuples.Select(it => it.Item1);
 
-        [Pure]
-        [LinqTunnel]
-        public static IEnumerable<T?> Item1<T, T2, T3>(this IEnumerable<(T, T2, T3)> tuples) => tuples.Select(it => it.Item1);
+        [Pure] [LinqTunnel] public static IEnumerable<T?> Item1<T, T2, T3>(this IEnumerable<(T, T2, T3)> tuples) => tuples.Select(it => it.Item1);
 
         #endregion
 
         #region Item2
 
-        [Pure]
-        [LinqTunnel]
-        public static IEnumerable<T2?> Item2<T, T2>(this IEnumerable<(T, T2)> tuples) => tuples.Select(it => it.Item2);
+        [Pure] [LinqTunnel] public static IEnumerable<T2?> Item2<T, T2>(this IEnumerable<(T, T2)> tuples) => tuples.Select(it => it.Item2);
 
-        [Pure]
-        [LinqTunnel]
-        public static IEnumerable<T2?> Item2<T, T2, T3>(this IEnumerable<(T, T2, T3)> tuples) => tuples.Select(it => it.Item2);
+        [Pure] [LinqTunnel] public static IEnumerable<T2?> Item2<T, T2, T3>(this IEnumerable<(T, T2, T3)> tuples) => tuples.Select(it => it.Item2);
 
         #endregion
 
         #region Item3
 
-        [Pure]
-        [LinqTunnel]
-        public static IEnumerable<T3?> Item3<T, T2, T3>(this IEnumerable<(T, T2, T3)> tuples) => tuples.Select(it => it.Item3);
+        [Pure] [LinqTunnel] public static IEnumerable<T3?> Item3<T, T2, T3>(this IEnumerable<(T, T2, T3)> tuples) => tuples.Select(it => it.Item3);
 
         #endregion
 
@@ -381,7 +396,7 @@ namespace FowlFever.BSharp.Collections {
         #region Difference
 
         /// <param name="tuple">a <see cref="(T1, T2)"/></param>
-        /// <returns><see cref="ValueTuple{T1,T2}.Item2"/> - <see cref="ValueTuple{T1,T2}.Item1"/></returns>
+        /// <returns><see cref="(T1, T2).Item2"/> - <see cref="ValueTuple{T1,T2}.Item1"/></returns>
         public static int Diff(this (int from, int to) tuple) => tuple.to - tuple.from;
 
         #endregion

@@ -26,8 +26,8 @@ internal static partial class InnerPretty {
     }
 #else
     internal static string PrettifyTuple(this ITuple tuple, PrettificationSettings settings) {
-        return tuple.EachItem()
-                    .Select(it => it.Prettify(settings))
+        return tuple.Enumerate()
+                    .Select(it => it.Prettify<object>(settings))
                     .JoinString(", ")
                     .Circumfix("(", ")");
     }
