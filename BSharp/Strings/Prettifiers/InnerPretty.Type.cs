@@ -83,6 +83,10 @@ internal static partial class InnerPretty {
         #endregion
     }
 
+    [Pure] public static ReadOnlySpan<char> PrettifyType<T>(this T               obj,  PrettificationSettings? settings = default) => (obj?.GetType() ?? typeof(T)).PrettifyType(settings);
+    [Pure] public static ReadOnlySpan<char> PrettifyType<T>(this Span<T>         span, PrettificationSettings? settings = default) => span.SpanType().PrettifyType();
+    [Pure] public static ReadOnlySpan<char> PrettifyType<T>(this ReadOnlySpan<T> span, PrettificationSettings? settings = default) => span.SpanType().PrettifyType();
+
     [Experimental]
     public static string PrettifyNullable(this NullabilityInfo info, PrettificationSettings? settings = default) {
         settings = settings.Resolve();
