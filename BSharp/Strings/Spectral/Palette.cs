@@ -29,11 +29,20 @@ public readonly record struct Palette {
             Good = Color.Green,
             Bad  = Color.Red
         },
+        Titles = new Style(decoration: Decoration.Bold)
     };
 
-    public static Palette Default { get; set; } = HardCoded;
+    /// <summary>
+    /// A settable <see cref="Palette"/> to use as a fallback instead of <c>default</c> or <see cref="HardCoded"/>.
+    /// </summary>
+    /// <remarks>
+    /// Specifically used as the fallback value for <c>null</c> <see cref="Palette"/>s in <see cref="PaletteExtensions"/> methods.
+    /// <p/>
+    /// Initially set to <see cref="HardCoded"/>, but you can modify it however you see fit.
+    /// </remarks>
+    public static Palette Fallback { get; set; } = HardCoded;
 }
 
 public static class PaletteExtensions {
-    public static Palette OrDefault(this Palette? palette) => palette ?? Palette.Default;
+    public static Palette OrFallback(this Palette? palette) => palette ?? Palette.Fallback;
 }
