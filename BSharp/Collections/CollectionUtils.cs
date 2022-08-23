@@ -136,6 +136,30 @@ public static partial class CollectionUtils {
     }
 
     /// <summary>
+    /// Separates the <see cref="Enumerable.First{TSource}(System.Collections.Generic.IEnumerable{TSource})"/> entry from the rest of the <see cref="IEnumerable{T}"/>.
+    /// </summary>
+    /// <param name="source">the original <see cref="IEnumerable{T}"/></param>
+    /// <typeparam name="T">the element type</typeparam>
+    /// <returns>(first, everything else)</returns>
+    /// <seealso cref="TakeLeftovers{T}"/>
+    /// <seealso cref="TakeLast{T}"/>
+    [SuppressMessage("ReSharper", "PossibleMultipleEnumeration", Justification = $"See {nameof(TakeLeftovers)}")]
+    public static (T first, IEnumerable<T> rest) TakeFirst<T>([NoEnumeration] this IEnumerable<T> source) {
+        return (source.First(), source.Skip(1));
+    }
+
+    /// <summary>
+    /// Separates the <see cref="Enumerable.Last{TSource}(System.Collections.Generic.IEnumerable{TSource})"/> entry from the rest of the <see cref="IEnumerable{T}"/>.
+    /// </summary>
+    /// <param name="source">the original <see cref="IEnumerable{T}"/></param>
+    /// <typeparam name="T">the element type</typeparam>
+    /// <returns>(last, everything else)</returns>
+    [SuppressMessage("ReSharper", "PossibleMultipleEnumeration", Justification = $"See {nameof(TakeLeftovers)}")]
+    public static (T last, IEnumerable<T> rest) TakeLast<T>([NoEnumeration] this IEnumerable<T> source) {
+        return (source.Last(), source.SkipLast(1));
+    }
+
+    /// <summary>
     /// Returns the items before <paramref name="dropCount"/> and after <paramref name="dropFrom"/> + <paramref name="dropCount"/> as separate <see cref="IEnumerable{T}"/>s.
     /// </summary>
     /// <param name="source">the original <see cref="IEnumerable{T}"/></param>
