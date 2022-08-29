@@ -1,3 +1,5 @@
+using System.Linq;
+
 using Spectre.Console;
 
 namespace FowlFever.BSharp.Strings.Spectral;
@@ -6,13 +8,16 @@ namespace FowlFever.BSharp.Strings.Spectral;
 /// A set of <see cref="Style"/>s.
 /// </summary>
 public readonly record struct Palette {
-    public Style? Numbers    { get; init; }
-    public Style? Strings    { get; init; }
-    public Style? Methods    { get; init; }
-    public Style? Comments   { get; init; }
-    public Style? Hyperlinks { get; init; }
-    public Style? Titles     { get; init; }
-    public Style? Borders    { get; init; }
+    public Stylist Numbers    { get; init; }
+    public Stylist Strings    { get; init; }
+    public Stylist Methods    { get; init; }
+    public Stylist Comments   { get; init; }
+    public Stylist Hyperlinks { get; init; }
+    public Stylist Titles     { get; init; }
+    public Stylist Borders    { get; init; }
+    public Stylist Delimiters { get; init; }
+
+    public PathPalette PathPalette { get; init; }
 
     public record SeverityColors(Color? Good = default, Color? Bad = default);
 
@@ -22,14 +27,16 @@ public readonly record struct Palette {
     /// This <see cref="Palette"/> has been compiled and can <b>never</b> change.
     /// </summary>
     public static readonly Palette HardCoded = new() {
-        Numbers    = new Style(Color.Purple),
-        Strings    = new Style(Color.DodgerBlue1, decoration: Decoration.Italic),
-        Hyperlinks = new Style(Color.Blue,        decoration: Decoration.Underline),
+        Numbers    = Color.Purple,
+        Strings    = new Stylist(Color.DodgerBlue1, Decoration.Italic),
+        Hyperlinks = new Stylist(Color.Blue,        Decoration.Underline),
         Severity = new SeverityColors {
             Good = Color.Green,
-            Bad  = Color.Red
+            Bad  = Color.Red,
         },
-        Titles = new Style(decoration: Decoration.Bold)
+        Titles     = new Style(decoration: Decoration.Bold),
+        Delimiters = Color.DarkBlue,
+        Borders    = Color.Orange1,
     };
 
     /// <summary>
@@ -41,8 +48,15 @@ public readonly record struct Palette {
     /// Initially set to <see cref="HardCoded"/>, but you can modify it however you see fit.
     /// </remarks>
     public static Palette Fallback { get; set; } = HardCoded;
+
+    #region Conversions
+
+    public static implicit operator PathPalette(Palette palette) => palette.PathPalette;
+
+    #endregion
 }
 
 public static class PaletteExtensions {
-    public static Palette OrFallback(this Palette? palette) => palette ?? Palette.Fallback;
+    public static Palette OrFallback(this Palette? palette)                              => palette ?? Palette.Fallback;
+    public static Palette OrFallback(this Palette? palette, params Palette?[] fallbacks) => palette ?? (fallbacks.FirstOrDefault(it => it.HasValue) ?? Palette.Fallback);
 }
