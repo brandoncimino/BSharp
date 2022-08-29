@@ -23,7 +23,7 @@ namespace FowlFever.BSharp.Strings.Prettifiers {
         }
 
         public static string PrettifyMemberInfo(MemberInfo memberInfo, PrettificationSettings settings) {
-            var typeName   = memberInfo.DeclaringType?.PrettifyType(settings).Suffix(".");
+            var typeName   = (memberInfo.DeclaringType?.PrettifyType(settings)).Suffix(".");
             var memberName = memberInfo.Name;
             return $"{typeName}{memberName}".WithTypeLabel(memberInfo.GetType(), settings);
         }
