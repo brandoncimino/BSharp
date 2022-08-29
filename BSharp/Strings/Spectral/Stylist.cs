@@ -17,7 +17,12 @@ namespace FowlFever.BSharp.Strings.Spectral;
 /// <param name="Background">the background <see cref="Color"/></param>
 /// <param name="Decoration">a combination of <see cref="Spectre.Console.Decoration"/>s, like as <see cref="Spectre.Console.Decoration.Bold"/> or <see cref="Spectre.Console.Decoration.Underline"/></param>
 public readonly record struct Stylist(Color? Foreground = default, Color? Background = default, Decoration? Decoration = default) {
+    private readonly object? _isDefault = new();
+    public           bool    IsDefault => _isDefault == null;
+
     public Stylist(Decoration decoration) : this(Decoration: decoration) { }
+
+    public Stylist(Color? foreground, Decoration? decoration) : this(foreground, default, decoration) { }
 
     public Stylist(Style? style) : this(
         DefaultToNull(style?.Foreground),
@@ -104,6 +109,33 @@ public readonly record struct Stylist(Color? Foreground = default, Color? Backgr
     /// <returns>a new <see cref="Stylist"/></returns>
     /// <seealso cref="WithFallback"/>
     public Stylist UpdateWith(Stylist other) => Merge(other, CombinePreference.Other);
+
+    public Stylist IfDefault(Stylist other) => IsDefault ? other : this;
+
+    public Stylist IfDefault(Stylist other, params Stylist[] more) {
+        var res = IfDefault(other);
+        if (res.IsDefault == false) {
+            return res;
+        }
+
+        foreach (var it in more) {
+            res.IfDefault(it);
+            if (res.IsDefault == false) {
+                return res;
+            }
+        }
+
+        return res;
+    }
+
+    /// <summary>
+    /// <b>Adds</b> the provided <see cref="Spectre.Console.Decoration"/> to this <see cref="Stylist"/>'s <see cref="Decoration"/>.
+    /// </summary>
+    /// <param name="decoration">an <b>additional</b> <see cref="Spectre.Console.Decoration"/> to be combined with the current <see cref="Decoration"/></param>
+    /// <returns>a new <see cref="Stylist"/></returns>
+    public Stylist Decorate(Decoration decoration) => this with {
+        Decoration = Decoration | decoration
+    };
 
     #endregion
 }
