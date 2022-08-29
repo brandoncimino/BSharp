@@ -2,40 +2,15 @@ using FowlFever.Conjugal.Affixing;
 
 namespace FowlFever.BSharp.Enums;
 
-public enum Bookend {
-    Parentheses,
-    SquareBrackets,
-    SquigglyBrackets,
-    Quotes,
-    SingleQuotes,
-    Graves,
-    Diamonds,
-}
-
-public static class BookendsExtensions {
-    public static char Prefix(this Bookend bookend) => bookend switch {
-        Bookend.Parentheses      => '(',
-        Bookend.SquareBrackets   => '[',
-        Bookend.SquigglyBrackets => '{',
-        Bookend.Quotes           => '"',
-        Bookend.SingleQuotes     => '\'',
-        Bookend.Graves           => '`',
-        Bookend.Diamonds         => '<',
-        _                        => throw BEnum.UnhandledSwitch(bookend),
-    };
-
-    public static char Suffix(this Bookend bookend) => bookend switch {
-        Bookend.Parentheses      => ')',
-        Bookend.SquareBrackets   => ']',
-        Bookend.SquigglyBrackets => '}',
-        Bookend.Quotes           => '"',
-        Bookend.SingleQuotes     => '\'',
-        Bookend.Graves           => '`',
-        Bookend.Diamonds         => '>',
-        _                        => throw BEnum.UnhandledSwitch(bookend),
-    };
-
-    public static string Circumfix(this Bookend bookend, string around) {
-        return around.Circumfix(bookend.Prefix().ToString(), bookend.Suffix().ToString());
-    }
+public static class Bookends {
+    public static readonly Circumfix Parentheses      = new("(", ")");
+    public static readonly Circumfix SquareBrackets   = new("[", "]");
+    public static readonly Circumfix SquigglyBrackets = new("{", "}");
+    public static readonly Circumfix Diamond          = new("<", ">");
+    public static readonly Ambifix   Quotes           = new("\"");
+    public static readonly Ambifix   SingleQuotes     = new("'");
+    public static readonly Ambifix   GraveAccents     = new("`");
+    public static readonly Ambifix   Asterisks        = new("*");
+    public static readonly Circumfix AngleBrackets    = new("⟨", "⟩");
+    public static readonly Ambifix   Underscores      = new("_");
 }
