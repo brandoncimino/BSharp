@@ -1,4 +1,7 @@
 using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Runtime.CompilerServices;
 
 using Spectre.Console;
@@ -7,69 +10,101 @@ using Spectre.Console.Rendering;
 namespace FowlFever.BSharp.Strings.Spectral;
 
 /// <summary>
-/// Converts things to <see cref="IRenderable"/>s.
+/// Static methods to produce <see cref="IRenderable"/>s.
 /// </summary>
-public interface IRenderwerks {
-    public Func<object?, string> ToStringFunction { get; }
+public static class Renderwerks {
+    public static          Palette? Palette              { get; set; }
+    private static         string   GetString<T>(T? obj) => obj.Prettify();
+    public static readonly Text     NullPlaceholder = new(Prettification.DefaultNullPlaceholder.EscapeMarkup());
 
-    /// <inheritdoc cref="GetRenderable{T,TLabel}"/>
-    public sealed IRenderable GetRenderable<T>(
-        T                                           value,
-        string?                                     label      = default,
-        Palette?                                    palette    = default,
-        [CallerArgumentExpression("value")] string? expression = default
-    ) {
-        return GetRenderable<T, string>(value, label, palette, expression);
+    public static IRenderable GetRenderable<T>(T value, Palette? palette = default) {
+        var pal = palette.OrFallback(Palette);
+        var renderable = value switch {
+            IRenderable r         => r,
+            Exception e           => e.GetRenderable(),
+            Uri uri               => uri.GetRenderable(pal.PathPalette),
+            FileSystemInfo f      => f.GetRenderable(pal.PathPalette),
+            IEnumerable<object> e => GetRenderable(e),
+            _                     => null
+        };
+
+        if (renderable != null) {
+            return renderable;
+        }
+
+        var valueStr = GetString(value);
+        var style    = FindStyle<T>(pal);
+
+        return valueStr.EscapeSpectre(style);
+    }
+
+    private static Stylist FindStyle<T>(Palette? palette) {
+        var pal  = palette.OrFallback(Palette);
+        var type = typeof(T);
+
+        if (type == typeof(string)) {
+            return pal.Strings;
+        }
+
+        if (type.IsNumber()) {
+            return pal.Numbers;
+        }
+
+        return default;
     }
 
     /// <summary>
-    /// Creates an <see cref="IRenderable"/> for a <typeparamref name="T"/> <paramref name="value"/>.
+    /// Similar to <see cref="GetRenderable{T}(T,System.Nullable{FowlFever.BSharp.Strings.Spectral.Palette})"/>, but accepts a <see cref="ReadOnlySpan{T}"/>.
     /// </summary>
-    /// <param name="value">the <typeparamref name="T"/> that will be rendered</param>
-    /// <param name="label">used for things like <see cref="Panel.Header"/>s</param>
-    /// <param name="palette">a collection of <see cref="Style"/>s</param>
-    /// <param name="expression">a fallback for <paramref name="label"/>. <i>(Should <b>not</b> be set manually - see <see cref="CallerArgumentExpressionAttribute"/>)</i></param>
-    /// <typeparam name="T">the type of the <paramref name="value"/></typeparam>
-    /// <typeparam name="TLabel">the type of the <paramref name="label"/></typeparam>
+    /// <param name="span">a <see cref="ReadOnlySpan{T}"/></param>
+    /// <param name="palette">an optional <see cref="Strings.Spectral.Palette"/> to use over the default <see cref="Palette"/></param>
+    /// <typeparam name="T">the type of entries in the span</typeparam>
     /// <returns>a new <see cref="IRenderable"/></returns>
-    /// <remarks>
-    /// Implementation should be done in <see cref="GetRenderable_Hook{T,TLabel}"/>.
-    /// </remarks>
-    public sealed IRenderable GetRenderable<T, TLabel>(
-        T                                           value,
+    public static IRenderable GetRenderable<T>(ReadOnlySpan<T> span, Palette? palette = default) {
+        return GetRenderable(span.ToArray(), palette);
+    }
+
+    public static IRenderable GetRenderable<T>(IEnumerable<T> stuff, Palette? palette = default) {
+        var pal = palette.OrFallback(Palette);
+        return new OneLineList(stuff.Select(it => GetRenderable(it, pal)), pal);
+    }
+
+    #region Labelled
+
+    public static (IRenderable label, IRenderable value) GetLabelled<T, TLabel>(
+        T?                                          value,
         TLabel?                                     label,
-        Palette?                                    palette    = default,
-        [CallerArgumentExpression("value")] string? expression = default
+        Palette?                                    palette     = default,
+        [CallerArgumentExpression("value")] string? _expression = default
     ) {
-        return value switch {
-            IRenderable r => r,
-            _             => GetRenderable_Hook(value, label, palette, expression)
-        };
+        var rLabel = label == null ? GetRenderable(_expression, palette) : GetRenderable(label);
+        return (rLabel, GetRenderable(value));
     }
 
-    protected IRenderable GetRenderable_Hook<T, TLabel>(
-        T        value,
-        TLabel?  label,
-        Palette? palette,
-        string?  expression
-    );
-}
-
-public class Panelwerks : IRenderwerks {
-    public Func<object?, string> ToStringFunction { get; } = Prettification.Prettify<object>;
-
-    IRenderable IRenderwerks.GetRenderable_Hook<T, TLabel>(T value, TLabel? label, Palette? palette, string? expression)
-        where TLabel : default {
-        var labelStr = ToStringFunction(label);
-        var header   = labelStr.IfBlank(expression);
-        var content  = ToStringFunction(value).PadRight(header?.Length ?? 0);
-        var spectre = new Panel(content.EscapeMarkup()) {
-            Header      = new PanelHeader(header.EscapeMarkup()),
-            Expand      = false,
-            Border      = BoxBorder.Rounded,
-            BorderStyle = palette.OrDefault().Borders,
-        };
-
-        return spectre;
+    public static (IRenderable label, IRenderable value) GetLabelled<T>(
+        T?                                          value,
+        Palette?                                    palette     = default,
+        [CallerArgumentExpression("value")] string? _expression = default
+    ) {
+        return GetLabelled(value, default(object), palette, _expression);
     }
+
+    public static (IRenderable label, IRenderable value) GetLabelled<T, TLabel>(
+        ReadOnlySpan<T>                            span,
+        TLabel?                                    label       = default,
+        Palette?                                   palette     = default,
+        [CallerArgumentExpression("span")] string? _expression = default
+    ) {
+        return GetLabelled(span.ToArray(), label, palette, _expression);
+    }
+
+    public static (IRenderable label, IRenderable value) GetLabelled<T>(
+        ReadOnlySpan<T>                            span,
+        Palette?                                   palette     = default,
+        [CallerArgumentExpression("span")] string? _expression = default
+    ) {
+        return GetLabelled(span, default(object), palette, _expression);
+    }
+
+    #endregion
 }
