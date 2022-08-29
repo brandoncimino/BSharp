@@ -34,7 +34,7 @@ namespace FowlFever.Testing {
             return header
                    .Render()
                    .SplitLines()
-                   .Concat(excuse.Prefix(excusePrefix))
+                   .Concat(excuse.Indent(indentString: excusePrefix))
                    .Indent(indent);
         }
 

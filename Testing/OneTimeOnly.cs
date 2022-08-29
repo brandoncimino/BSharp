@@ -44,7 +44,7 @@ internal class OneTimeOnly<T> {
 
     public T? Get(string? message = default) {
         if (SetAs == null) {
-            throw new InvalidOperationException(message?.Suffix(": ") + $"{GetType().Prettify()} was never set!");
+            throw new InvalidOperationException(message.Suffix(": ") + $"{GetType().Prettify()} was never set!");
         }
 
         return SetAs switch {
