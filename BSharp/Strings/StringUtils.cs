@@ -107,7 +107,7 @@ public static partial class StringUtils {
     public static IEnumerable<string> IndentRelative(IEnumerable<string?> toIndent, int indentCount = 1, string indentString = DefaultIndentString) {
         return indentCount switch {
             0   => toIndent.SplitLines(),
-            > 0 => toIndent.SplitLines().Select(it => it.Prefix(indentString.Repeat(indentCount))),
+            > 0 => toIndent.SplitLines().Select(it => it.Prefix(indentString.Repeat(indentCount)).Render()),
             < 0 => toIndent.SplitLines().Select(it => TrimStart(it, indentString, indentCount * -1)),
         };
     }
@@ -463,7 +463,7 @@ public static partial class StringUtils {
             return lines.Select(it => $"{it}");
         }
 
-        var firstLinePrefix = label.Suffix(joiner);
+        var firstLinePrefix = label.Suffix(joiner).Render();
         var otherLinePrefix = $" ".Repeat(firstLinePrefix.Length);
         return lines.Select(
             (line, i) => i == 0 ? $"{firstLinePrefix}{line}" : $"{otherLinePrefix}{line}"
