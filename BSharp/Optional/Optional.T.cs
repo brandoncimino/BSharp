@@ -39,6 +39,11 @@ namespace FowlFever.BSharp.Optional {
         /// </remarks>
         public bool HasValue { get; }
 
+        /// <summary>
+        /// Inverse of <see cref="HasValue"/>.
+        /// </summary>
+        public bool IsEmpty => !HasValue;
+
         public T Value => HasValue ? _value : throw OptionalException.IsEmptyException(this);
 
         public Optional(T value) {
@@ -50,8 +55,7 @@ namespace FowlFever.BSharp.Optional {
 
         public Optional<T> OrElse(Optional<T> fallback) => HasValue ? this : fallback;
 
-        [return: NotNullIfNotNull("fallback")]
-        public T? OrElse(T? fallback) => HasValue ? Value : fallback;
+        [return: NotNullIfNotNull("fallback")] public T? OrElse(T? fallback) => HasValue ? Value : fallback;
 
         #endregion
 
