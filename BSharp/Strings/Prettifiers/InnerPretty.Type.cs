@@ -91,7 +91,7 @@ internal static partial class InnerPretty {
     public static string PrettifyNullable(this NullabilityInfo info, PrettificationSettings? settings = default) {
         settings = settings.Resolve();
 
-        var bookend = info.GetType().IsTupleType() ? Bookend.Parentheses : Bookend.Diamonds;
+        var bookend = info.GetType().IsTupleType() ? Bookends.Parentheses : Bookends.Diamond;
 
         var sb       = new StringBuilder();
         var baseName = info.Type.Name.AsSpan().BeforeLast('`');
@@ -99,8 +99,8 @@ internal static partial class InnerPretty {
         sb.AppendJoin(
             info.GenericTypeArguments.Select(it => it.PrettifyNullable(settings)),
             ", ",
-            bookend.Prefix().ToString(),
-            bookend.Suffix().ToString()
+            bookend.Prefix,
+            bookend.Suffix
         );
 
         if (info.ReadState == NullabilityState.Nullable || info.WriteState == NullabilityState.Nullable) {
