@@ -10,7 +10,7 @@
 
     <ItemGroup>
         <PackageReference Include="BenchmarkDotNet" Version="0.13.1"/>
-        <PackageReference Include="FowlFever.Conjugal" Version="1.0.0"/>
+        <PackageReference Include="FowlFever.Conjugal" Version="3.1.1"/>
         <PackageReference Include="IndexRange" Version="1.0.2"/>
         <PackageReference Include="IsExternalInit" Version="1.0.3">
             <PrivateAssets>all</PrivateAssets>
@@ -25,6 +25,8 @@
         </PackageReference>
         <PackageReference Include="Spectre.Console" Version="0.44.0"/>
         <PackageReference Include="System.Collections.Concurrent" Version="4.3.0"/>
+        <PackageReference Include="System.Collections.Immutable" Version="6.0.0"/>
+        <PackageReference Include="System.Memory" Version="4.5.5"/>
         <PackageReference Include="System.Text.Json" Version="6.0.5"/>
         <PackageReference Include="TA.System.Runtime.CompilerServices.RuntimeHelpers.GetSubArray" Version="1.0.1">
             <PrivateAssets>all</PrivateAssets>
@@ -42,6 +44,10 @@
 
     <ItemGroup>
         <Folder Include="Collections\Implementors"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Compile Remove="Collections\Bookended.cs"/>
     </ItemGroup>
 
 </Project>
