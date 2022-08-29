@@ -178,12 +178,24 @@ public static class ImmutableExtensions {
     /// <typeparam name="T">the element type of <paramref name="span"/></typeparam>
     /// <returns>a new <see cref="ImmutableArray{T}"/></returns>
     public static ImmutableArray<T> ToImmutableArray<T>(this ReadOnlySpan<T> span) {
-        var builder = ImmutableArray.CreateBuilder<T>(span.Length);
-        for (int i = 0; i < span.Length; i++) {
-            builder[i] = span[i];
+        return ImmutableArray.CreateBuilder<T>(span.Length)
+                             .AddRange(span)
+                             .MoveToImmutable();
+    }
+
+    /// <summary>
+    /// <see cref="ImmutableArray{T}.Builder.Add"/>s each element of a <see cref="ReadOnlySpan{T}"/> to this <see cref="ImmutableArray{T}.Builder"/>.
+    /// </summary>
+    /// <param name="builder">this <see cref="ImmutableArray{T}.Builder"/></param>
+    /// <param name="span">the <typeparamref name="T"/> entries to be added</param>
+    /// <typeparam name="T">the <see cref="ImmutableArray{T}"/> type</typeparam>
+    /// <returns>this <see cref="ImmutableArray{T}.Builder"/></returns>
+    public static ImmutableArray<T>.Builder AddRange<T>(this ImmutableArray<T>.Builder builder, ReadOnlySpan<T> span) {
+        foreach (var it in span) {
+            builder.Add(it);
         }
 
-        return builder.MoveToImmutable();
+        return builder;
     }
 
     public static ImmutableList<T> ToImmutableList<T>(this ReadOnlySpan<T> span) {
