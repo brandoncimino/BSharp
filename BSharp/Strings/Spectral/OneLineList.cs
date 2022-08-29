@@ -12,15 +12,21 @@ namespace FowlFever.BSharp.Strings.Spectral;
 /// Renders a bunch of <see cref="IRenderable"/>s into a list on one line, e.g. <c>[1, 2, 3]</c>
 /// </summary>
 public class OneLineList : IRenderable {
-    private readonly        IImmutableList<IRenderable> _stuff;
-    public                  ICircumfix                  Bookends      { get; init; } = BSharp.Enums.Bookends.SquareBrackets;
-    public                  Stylist                     BookendStyle  { get; init; }
-    private                 Segment                     PrefixSegment => Bookends.GetPrefix().EscapeSegment(BookendStyle);
-    private                 Segment                     SuffixSegment => Bookends.GetSuffix().EscapeSegment(BookendStyle);
-    private static readonly Segment                     JoinerSegment = new(", ");
+    private readonly IImmutableList<IRenderable> _stuff;
+    public           ICircumfix                  Bookends       { get; init; } = BSharp.Enums.Bookends.SquareBrackets;
+    public           Stylist                     BookendStyle   { get; init; }
+    public           Stylist                     DelimiterStyle { get; init; }
+    private          Segment                     PrefixSegment  => Bookends.GetPrefix().EscapeSegment(BookendStyle);
+    private          Segment                     SuffixSegment  => Bookends.GetSuffix().EscapeSegment(BookendStyle);
+    private          Segment                     JoinerSegment  => new(", ", DelimiterStyle);
 
     public OneLineList(IEnumerable<IRenderable> stuff) {
         _stuff = stuff.ToImmutableList();
+    }
+
+    public OneLineList(IEnumerable<IRenderable> stuff, Palette palette) : this(stuff) {
+        BookendStyle   = palette.Borders;
+        DelimiterStyle = palette.Delimiters;
     }
 
     private SegmentLine GetSegmentLine(RenderContext context, int maxWidth) {
