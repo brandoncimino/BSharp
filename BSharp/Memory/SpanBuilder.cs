@@ -98,9 +98,10 @@ public ref struct SpanBuilder<T> {
 
 #if DEBUG && NET6_0_OR_GREATER
     internal IRenderable Describe() {
-        var table = new Table() {
-            Title  = new TableTitle(nameof(SpanBuilder<T>)),
-            Border = TableBorder.Simple,
+        var table = new Table {
+            Title       = new TableTitle(nameof(SpanBuilder<T>)),
+            Border      = TableBorder.Simple,
+            ShowHeaders = false
         };
 
         table.AddColumns("", "");
@@ -114,7 +115,7 @@ public ref struct SpanBuilder<T> {
                            .Append(i.ToString(), new Style(Color.Orange1))
                            .Append("]")
                            .Alignment(Justify.Right);
-            table.AddLabelled(RenderCell(i), numLabel);
+            table.AddRow(numLabel, RenderCell(i));
         }
 
         return table;
