@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 
+using FowlFever.BSharp.Attributes;
 using FowlFever.BSharp.Exceptions;
 using FowlFever.BSharp.Optional;
 
@@ -12,6 +13,7 @@ namespace FowlFever.BSharp.Collections;
 /// A <see cref="Queue{T}"/> with a fixed <see cref="Capacity"/> that automatically <see cref="Dequeue"/>s when that capacity is exceeded.
 /// </summary>
 /// <inheritdoc cref="Queue{T}"/>
+[Experimental("It seems like this should already exist")]
 internal class Window<T> : IReadOnlyCollection<T> {
     private readonly Queue<T> _queue;
 
