@@ -56,13 +56,8 @@ public static partial class Spanq {
         }
 
         countLimit = Math.Min(span.Length, countLimit);
-        Brandon.Print(countLimit);
-        Brandon.Print(selector.Method.Name);
 
         for (int i = 0; i < countLimit; i++) {
-            Brandon.Print(i);
-            Brandon.Print(span[i]);
-            Brandon.Print(selector(span[i]));
             if (selector(span[i]).Equals(expected) == false) {
                 return i;
             }
@@ -94,7 +89,7 @@ public static partial class Spanq {
 
         countLimit = Math.Min(span.Length, countLimit);
 
-        for (int i = 0; i < span.Length; i++) {
+        for (int i = 0; i < countLimit; i++) {
             if (selector(span[^(i + 1)]).Equals(expected) == false) {
                 return i;
             }
