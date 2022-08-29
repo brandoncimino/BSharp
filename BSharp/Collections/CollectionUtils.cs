@@ -123,43 +123,6 @@ public static partial class CollectionUtils {
     }
 
     /// <summary>
-    /// <see cref="Enumerable.Take{TSource}(System.Collections.Generic.IEnumerable{TSource},int)"/>s the first <paramref name="count"/> items and <see cref="Enumerable.Skip{TSource}"/>s to the rest into
-    /// separate <see cref="IEnumerable{T}"/>s.
-    /// </summary>
-    /// <param name="source">the original <see cref="IEnumerable{T}"/></param>
-    /// <param name="count"></param>
-    /// <typeparam name="T"></typeparam>
-    /// <returns></returns>
-    [SuppressMessage("ReSharper", "PossibleMultipleEnumeration", Justification = "Tests prove that this doesn't not enumerate multiple times")]
-    public static (IEnumerable<T> taken, IEnumerable<T> leftovers) TakeLeftovers<T>([NoEnumeration] this IEnumerable<T> source, [NonNegativeValue] int count) {
-        return (source.Take(count), source.Skip(count));
-    }
-
-    /// <summary>
-    /// Separates the <see cref="Enumerable.First{TSource}(System.Collections.Generic.IEnumerable{TSource})"/> entry from the rest of the <see cref="IEnumerable{T}"/>.
-    /// </summary>
-    /// <param name="source">the original <see cref="IEnumerable{T}"/></param>
-    /// <typeparam name="T">the element type</typeparam>
-    /// <returns>(first, everything else)</returns>
-    /// <seealso cref="TakeLeftovers{T}"/>
-    /// <seealso cref="TakeLast{T}"/>
-    [SuppressMessage("ReSharper", "PossibleMultipleEnumeration", Justification = $"See {nameof(TakeLeftovers)}")]
-    public static (T first, IEnumerable<T> rest) TakeFirst<T>([NoEnumeration] this IEnumerable<T> source) {
-        return (source.First(), source.Skip(1));
-    }
-
-    /// <summary>
-    /// Separates the <see cref="Enumerable.Last{TSource}(System.Collections.Generic.IEnumerable{TSource})"/> entry from the rest of the <see cref="IEnumerable{T}"/>.
-    /// </summary>
-    /// <param name="source">the original <see cref="IEnumerable{T}"/></param>
-    /// <typeparam name="T">the element type</typeparam>
-    /// <returns>(last, everything else)</returns>
-    [SuppressMessage("ReSharper", "PossibleMultipleEnumeration", Justification = $"See {nameof(TakeLeftovers)}")]
-    public static (T last, IEnumerable<T> rest) TakeLast<T>([NoEnumeration] this IEnumerable<T> source) {
-        return (source.Last(), source.SkipLast(1));
-    }
-
-    /// <summary>
     /// Returns the items before <paramref name="dropCount"/> and after <paramref name="dropFrom"/> + <paramref name="dropCount"/> as separate <see cref="IEnumerable{T}"/>s.
     /// </summary>
     /// <param name="source">the original <see cref="IEnumerable{T}"/></param>
@@ -321,7 +284,7 @@ public static partial class CollectionUtils {
     ) {
         // TODO: Make this more span-y
         return enumerable.SelectMany(it => it.ToStringLines().IndentWithLabel(label))
-                         .Select(it => it.Prefix(indent))
+                         .Select(it => it.Prefix(indent).Render())
                          .JoinString("\n");
     }
 
@@ -340,7 +303,7 @@ public static partial class CollectionUtils {
         string?              indent = default
     ) {
         return enumerable.SelectMany((it, i) => it.ToStringLines().IndentWithLabel(labelFunction(it, i)))
-                         .Select(it => it.Prefix(indent))
+                         .Select(it => it.Prefix(indent).Render())
                          .JoinString("\n");
     }
 
@@ -1208,6 +1171,7 @@ public static partial class CollectionUtils {
     #endregion
 
 #if !NET6_0_OR_GREATER
+
     #region TakeLast
 
     /// <summary>
