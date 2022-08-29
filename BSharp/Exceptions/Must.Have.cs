@@ -1,4 +1,3 @@
-using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
@@ -16,8 +15,7 @@ public partial class Must {
         [CallerArgumentExpression("actual")]   string? _actual   = default,
         [CallerArgumentExpression("expected")] string? _expected = default,
         [CallerMemberName]                     string? _caller   = default
-    )
-        where T : IEquatable<T?> {
+    ) {
         if (ReferenceEquals(actual, expected)) {
             return actual;
         }
