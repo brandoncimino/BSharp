@@ -1,4 +1,3 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -129,8 +128,6 @@ public readonly partial record struct Indexes : IImmutableSet<int>, ISet<int> {
     #endregion
 
     #region Implementation of ICollection
-
-    void ICollection.CopyTo(Array array, int index) => throw UnsupportedMethodException();
 
     /// <inheritdoc cref="P:System.Collections.Immutable.ImmutableList`1.System#Collections#ICollection#IsSynchronized"/>
     bool ICollection.IsSynchronized => true;
