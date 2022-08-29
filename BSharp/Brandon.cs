@@ -1,8 +1,5 @@
-using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
-using System.Text;
 
 using FowlFever.BSharp.Strings;
 using FowlFever.BSharp.Strings.Spectral;
@@ -44,64 +41,33 @@ public static class Brandon {
     public static void Rend<T>(this T renderable)
         where T : IRenderable => Render(renderable);
 
-    public static IRenderwerks Renderwerks             { get; set; } = new Panelwerks();
-    public static IRenderable  GetRenderable<T>(T obj) => Renderwerks.GetRenderable(obj);
-
     /// <summary>
-    /// Prints an <see cref="expression"/> and a <see cref="value"/> in a <see cref="Panel"/>.
+    /// Prints a <paramref name="label"/>led <paramref name="value"/> to the <see cref="AnsiConsole.Console"/>.
     /// </summary>
-    /// <param name="value"></param>
-    /// <param name="label"></param>
-    /// <param name="palette"></param>
-    /// <param name="expression"></param>
-    /// <typeparam name="T"></typeparam>
-    /// <returns></returns>
-    public static T Print<T>(
+    /// <param name="value">the main thing being printed</param>
+    /// <param name="label">a description of the <paramref name="value"/>. Defaults to <paramref name="_expression"/></param>
+    /// <param name="_expression">see <see cref="CallerArgumentExpressionAttribute"/>. Used as the <paramref name="label"/> if the <paramref name="label"/> is <c>null</c></param>
+    /// <typeparam name="T">the type of <paramref name="value"/></typeparam>
+    /// <typeparam name="TLabel">the type of <paramref name="label"/></typeparam>
+    /// <returns>the input <paramref name="value"/></returns>
+    public static T Print<T, TLabel>(
         T                                           value,
-        string?                                     label      = default,
-        Palette?                                    palette    = default,
-        [CallerArgumentExpression("value")] string? expression = default
+        TLabel?                                     label       = default,
+        [CallerArgumentExpression("value")] string? _expression = default
     ) {
-        var renderable = value switch {
-            IRenderable r => r,
-            _             => Renderwerks.GetRenderable(value, label, palette, expression),
-        };
-        Render(renderable);
+        var rLabel = label == null ? Renderwerks.GetRenderable(_expression) : Renderwerks.GetRenderable(label);
+        var rValue = Renderwerks.GetRenderable(value);
+        var row    = new Columns(rLabel, rValue);
+        Render(row);
         return value;
     }
 
-    /// <summary>
-    /// Similar to <see cref="Print{T}(T,string?,string?)"/>, but accepts a <see cref="ReadOnlySpan{T}"/>.
-    /// </summary>
-    /// <param name="span">this <see cref="ReadOnlySpan{T}"/></param>
-    /// <param name="expression">see <see cref="CallerArgumentExpressionAttribute"/></param>
-    /// <typeparam name="T">the type of entries in the span</typeparam>
-    /// <returns>this <paramref name="span"/></returns>
-    public static ReadOnlySpan<T> Print<T>(ReadOnlySpan<T> span, [CallerArgumentExpression("span")] string? expression = default) {
-        static string Prettify(ReadOnlySpan<T> span) {
-            var sb = new StringBuilder();
-            sb.Append($"ReadOnlySpan<{typeof(T).Name}>[{span.Length}]");
-            sb.Append('{');
-            foreach (var it in span) {
-                sb.Append(it.OrNullPlaceholder());
-                sb.Append(", ");
-            }
-
-            sb.Append('}');
-            return sb.ToString();
-        }
-
-        var pretty = Prettify(span);
-
-        var spectre = new Panel(pretty.EscapeMarkup()) {
-            Header      = new PanelHeader(expression.EscapeMarkup()),
-            Expand      = false,
-            Border      = BoxBorder.Rounded,
-            BorderStyle = new Style(Color.DarkOrange)
-        };
-
-        Render(spectre);
-        return span;
+    /// <inheritdoc cref="Print{T,TLabel}"/>
+    public static T Print<T>(
+        T                                           value,
+        [CallerArgumentExpression("value")] string? _expression = default
+    ) {
+        return Print(value, default(object), _expression);
     }
 
     /// <summary>
@@ -114,8 +80,4 @@ public static class Brandon {
         AnsiConsole.Write(spectre);
         return callerMemberName;
     }
-
-    public static Spectable<T> Table<T>(T               stuff, [CallerArgumentExpression("stuff")] string _stuff = "") => Spectable<T>.Of(stuff);
-    public static Spectable<T> Table<T>(IEnumerable<T>  rows,  [CallerArgumentExpression("rows")]  string _rows  = "") => Spectable<T>.Of(rows);
-    public static Spectable<T> Table<T>(ReadOnlySpan<T> rows,  [CallerArgumentExpression("rows")]  string _rows  = "") => Spectable<T>.Of(rows);
 }
