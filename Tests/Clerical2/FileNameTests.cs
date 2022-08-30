@@ -77,9 +77,7 @@ public class FileNameTests : BaseClericalTest {
     [TestCase("a.b ",  Description = "Extension contains whitespace")]
     [TestCase("a..")]
     [TestCase("a..b")]
-    [TestCase(".")]
     [TestCase("a.",  Description = "Ends in period")]
-    [TestCase("..",  Description = "Just periods")]
     [TestCase(" ",   Description = "Whitespace")]
     [TestCase(" . ", Description = "Empty after trimming whitespaces and periods")]
     public void FileName_Fail(string fileName) {
