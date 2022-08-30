@@ -1,4 +1,6 @@
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Runtime.CompilerServices;
 
 using FowlFever.BSharp.Strings;
@@ -57,8 +59,7 @@ public static class Brandon {
     ) {
         var rLabel = label == null ? Renderwerks.GetRenderable(_expression) : Renderwerks.GetRenderable(label);
         var rValue = Renderwerks.GetRenderable(value);
-        var row    = new Columns(rLabel, rValue);
-        Render(row);
+        PrintRow(rLabel, rValue);
         return value;
     }
 
@@ -69,6 +70,33 @@ public static class Brandon {
     ) {
         return Print(value, default(object), _expression);
     }
+
+    #region PrintRow
+
+    public static void PrintRow(params IRenderable[]     cells)            => Render(new AutoColumns(cells));
+    public static void PrintRow(IEnumerable<IRenderable> cells)            => Render(new AutoColumns(cells));
+    public static void PrintRow<A>(A                     a)                => PrintRow(Renderwerks.GetRenderable(a));
+    public static void PrintRow<A, B>(A                  a, B b)           => PrintRow(Renderwerks.GetRenderable(a), Renderwerks.GetRenderable(b));
+    public static void PrintRow<A, B, C>(A               a, B b, C c)      => PrintRow(Renderwerks.GetRenderable(a), Renderwerks.GetRenderable(b), Renderwerks.GetRenderable(c));
+    public static void PrintRow<A, B, C, D>(A            a, B b, C c, D d) => PrintRow(Renderwerks.GetRenderable(a), Renderwerks.GetRenderable(b), Renderwerks.GetRenderable(c), Renderwerks.GetRenderable(d));
+
+    public static void PrintRow<A, B, C, D, TRest>(
+        A              a,
+        B              b,
+        C              c,
+        D              d,
+        params TRest[] rest
+    ) {
+        var row = rest.Select(it => Renderwerks.GetRenderable(it))
+                      .Prepend(Renderwerks.GetRenderable(d))
+                      .Prepend(Renderwerks.GetRenderable(c))
+                      .Prepend(Renderwerks.GetRenderable(b))
+                      .Prepend(Renderwerks.GetRenderable(a));
+
+        PrintRow(row);
+    }
+
+    #endregion
 
     /// <summary>
     /// Prints a horizontal <see cref="Rule"/> with the current <see cref="CallerMemberNameAttribute"/>.
