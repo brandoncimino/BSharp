@@ -24,7 +24,14 @@ public static class Clerk {
     /// <summary>
     /// Combines <see cref="Path.GetInvalidPathChars"/> and <see cref="Path.GetInvalidFileNameChars"/>.
     /// </summary>
-    public static readonly ImmutableArray<char> InvalidPathChars = Enumerable.Union(Path.GetInvalidPathChars(), Path.GetInvalidFileNameChars()).ToImmutableArray();
+    /// <remarks>
+    /// Semicolon <c>:</c> is explicitly excluded from this list because it has a special rule where it is allowed <i>inside the <see cref="Path.GetPathRoot(System.ReadOnlySpan{char})"/></i>,
+    /// and we don't want to bother distinguishing the root for methods like <see cref="SplitPath(string?)"/>.
+    /// </remarks>
+    public static readonly ImmutableArray<char> InvalidPathChars = Path.GetInvalidPathChars()
+                                                                       .Union(Path.GetInvalidFileNameChars())
+                                                                       .ToImmutableArray()
+                                                                       .Remove(':');
 
     /// <summary>
     /// Combines <see cref="InvalidPathChars"/> and <see cref="DirectorySeparatorChars"/>.
@@ -90,7 +97,7 @@ public static class Clerk {
     public static ReadOnlySpan<char> GetFullExtension(ReadOnlySpan<char> path) {
         var fileName    = Path.GetFileName(path);
         var firstPeriod = fileName.IndexOf('.');
-        return firstPeriod < 0 ? ReadOnlySpan<char>.Empty : path[firstPeriod..];
+        return firstPeriod < 0 ? ReadOnlySpan<char>.Empty : fileName[firstPeriod..];
     }
 
     [Pure]
@@ -98,6 +105,8 @@ public static class Clerk {
         return EnumeratePathParts(path)
             .ToImmutableArray(static span => new PathPart(span.ToString()));
     }
+
+    public static SpanSpliterator<char> SplitPath(ReadOnlySpan<char> path) => EnumeratePathParts(path);
 
     [Pure] private static SpanSpliterator<char> EnumeratePathParts(ReadOnlySpan<char> path) => new(path, DirectorySeparatorChars.AsSpan(), SplitterStyle.AnyEntry, StringSplitOptions.RemoveEmptyEntries | (StringSplitOptions)2);
 
@@ -114,7 +123,7 @@ public static class Clerk {
             .ToImmutableArray(static span => new FileExtension('.' + span.ToString()));
     }
 
-    [Pure] private static SpanSpliterator<char> EnumerateExtensions(ReadOnlySpan<char> path) => GetFullExtension(path).Spliterate(StringSplitOptions.RemoveEmptyEntries, '.');
+    [Pure] internal static SpanSpliterator<char> EnumerateExtensions(ReadOnlySpan<char> path) => GetFullExtension(path).Spliterate(StringSplitOptions.RemoveEmptyEntries, '.');
 
     [Pure] public static FileName GetFileName(string             path) => new(path);
     [Pure] public static FileName GetFileName(ReadOnlySpan<char> path) => GetFileName(path.ToString());
