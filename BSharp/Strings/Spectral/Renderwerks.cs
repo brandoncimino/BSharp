@@ -58,11 +58,18 @@ public static class Renderwerks {
     /// </summary>
     /// <param name="span">a <see cref="ReadOnlySpan{T}"/></param>
     /// <param name="palette">an optional <see cref="Strings.Spectral.Palette"/> to use over the default <see cref="Palette"/></param>
-    /// <typeparam name="T">the type of entries in the span</typeparam>
+    /// <typeparam name="T">the type of entries in the <paramref name="span"/></typeparam>
     /// <returns>a new <see cref="IRenderable"/></returns>
-    public static IRenderable GetRenderable<T>(ReadOnlySpan<T> span, Palette? palette = default) {
-        return GetRenderable(span.ToArray(), palette);
-    }
+    public static IRenderable GetRenderable<T>(ReadOnlySpan<T> span, Palette? palette = default) => GetRenderable(span.ToArray(), palette);
+
+    /// <summary>
+    /// Similar to <see cref="GetRenderable{T}(T,System.Nullable{FowlFever.BSharp.Strings.Spectral.Palette})"/>, but accepts a <see cref="Span{T}"/>.
+    /// </summary>
+    /// <param name="span">a <see cref="Span{T}"/></param>
+    /// <param name="palette">an optional <see cref="FowlFever.BSharp.Strings.Spectral.Palette"/> to use over the default <see cref="Palette"/></param>
+    /// <typeparam name="T">the type of entries in the <paramref name="span"/></typeparam>
+    /// <returns>a new <see cref="IRenderable"/></returns>
+    public static IRenderable GetRenderable<T>(Span<T> span, Palette? palette = default) => GetRenderable((ReadOnlySpan<T>)span, palette);
 
     public static IRenderable GetRenderable<T>(IEnumerable<T> stuff, Palette? palette = default) {
         var pal = palette.OrFallback(Palette);
