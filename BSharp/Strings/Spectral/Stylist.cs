@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+
 using FowlFever.BSharp.Enums;
 
 using Spectre.Console;
@@ -44,8 +46,16 @@ public readonly record struct Stylist(Color? Foreground = default, Color? Backgr
 
     #endregion
 
+    #region Markup strings
+
     /// <inheritdoc cref="Style.ToMarkup"/>
     public string ToMarkup() => ToStyle().ToMarkup();
+
+    /// <inheritdoc cref="Spectral.ApplyMarkup(Spectre.Console.Style?,string?)"/>
+    [return: NotNullIfNotNull("text")]
+    public string? ApplyMarkup(string? text) => ToStyle().ApplyMarkup(text);
+
+    #endregion
 
     #region Merging
 
