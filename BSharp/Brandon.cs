@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -64,11 +65,18 @@ public static class Brandon {
     }
 
     /// <inheritdoc cref="Print{T,TLabel}"/>
-    public static T Print<T>(
-        T                                           value,
-        [CallerArgumentExpression("value")] string? _expression = default
-    ) {
-        return Print(value, default(object), _expression);
+    public static T Print<T>(T value, [CallerArgumentExpression("value")] string? _expression = default) => Print(value, default(object), _expression);
+
+    /// <inheritdoc cref="Print{T,TLabel}"/>
+    public static ReadOnlySpan<T> Print<T>(ReadOnlySpan<T> span, [CallerArgumentExpression("span")] string? _expression = default) {
+        Print(Renderwerks.GetRenderable(span), _expression);
+        return span;
+    }
+
+    /// <inheritdoc cref="Print{T,TLabel}"/>
+    public static Span<T> Print<T>(Span<T> span, [CallerArgumentExpression("span")] string? _expression = default) {
+        Print(Renderwerks.GetRenderable(span), _expression);
+        return span;
     }
 
     #region PrintRow
