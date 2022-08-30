@@ -44,6 +44,9 @@ public readonly record struct Stylist(Color? Foreground = default, Color? Backgr
 
     #endregion
 
+    /// <inheritdoc cref="Style.ToMarkup"/>
+    public string ToMarkup() => ToStyle().ToMarkup();
+
     #region Merging
 
     public enum CombinePreference { Self, Other }
@@ -134,7 +137,7 @@ public readonly record struct Stylist(Color? Foreground = default, Color? Backgr
     /// <param name="decoration">an <b>additional</b> <see cref="Spectre.Console.Decoration"/> to be combined with the current <see cref="Decoration"/></param>
     /// <returns>a new <see cref="Stylist"/></returns>
     public Stylist Decorate(Decoration decoration) => this with {
-        Decoration = Decoration | decoration
+        Decoration = Decoration.GetValueOrDefault() | decoration
     };
 
     #endregion
