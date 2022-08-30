@@ -1,13 +1,67 @@
+using System;
 using System.IO;
 using System.Linq;
 
 using FowlFever.BSharp.Clerical;
 using FowlFever.BSharp.Enums;
+using FowlFever.Clerical.Validated.Atomic;
 using FowlFever.Testing;
 
 namespace BSharp.Tests.Clerical2;
 
 public abstract partial class BaseClericalTest {
+    public record PathInfo(
+        string   FullPath,
+        string[] Parts,
+        string   FileName,
+        string   BaseName,
+        string[] Extensions,
+        string   Directory
+    );
+
+    public static PathInfo[] PathInfos => new PathInfo[] {
+        new(
+            @"C:\Users\bcimino\dev\payments",
+            new[] { "C:", "Users", "bcimino", "dev", "payments" },
+            "payments",
+            "payments",
+            Array.Empty<string>(),
+            @"C:\Users\bcimino\dev\"
+        ),
+        new(
+            "~/.ssh/",
+            new[] { "~", ".ssh" },
+            ".ssh",
+            "",
+            Array.Empty<string>(),
+            "~/.ssh/"
+        ),
+        new(
+            "~/.ssh/config",
+            new[] { "~", ".ssh", "config" },
+            "config",
+            "config",
+            Array.Empty<string>(),
+            "~/.ssh/"
+        ),
+        new(
+            "/c/Users/bcimino/dev/payments.yo.lo",
+            new[] { "c", "Users", "bcimino", "dev", "payments.yo.lo" },
+            "payments.yo.lo",
+            "payments",
+            new[] { ".yo", ".lo" },
+            "/c/Users/bcimino/dev/"
+        ),
+        new(
+            "../../../yo.lo",
+            new[] { "..", "..", "..", "yo.lo" },
+            "yo.lo",
+            "yo",
+            new[] { ".lo" },
+            "../../../"
+        )
+    };
+
     public record Expectation(string? Value, Should Should, string? Description = default);
 
     public static Expectation[] FileSystemPaths = {
@@ -42,8 +96,9 @@ public abstract partial class BaseClericalTest {
                        new(" ", Should.Fail, "whitespace"),
                        new(null, Should.Fail, "null"),
                        new("", Should.Fail, "empty"),
-                       new(".", Should.Fail, "ends in period"),
-                       new("..", Should.Fail, "ends in period"),
+                       new(".", Should.Pass, $"{nameof(SpecialPathPart)}.{SpecialPathPart.CurrentDirectory}"),
+                       new("..", Should.Pass, $"{nameof(SpecialPathPart)}.{SpecialPathPart.ParentDirectory}"),
+                       new("~", Should.Pass, $"{nameof(SpecialPathPart)}.{SpecialPathPart.HomeDirectory}"),
                        new("a..b", Should.Fail, "contains double period"),
                        new(" a", Should.Fail, "starts with whitespace"),
                        new("a ", Should.Fail, "ends in whitespace"),
@@ -52,6 +107,8 @@ public abstract partial class BaseClericalTest {
                        new(".a.b", Should.Pass),
                        new("Program Files", Should.Pass),
                        new("doc (1).txt", Should.Pass),
+                       new("C:", Should.Pass, "drive identifier"),
+                       new(@"C:\", Should.Pass),
                        new(@"/a", Should.Pass, "starts with dir. separator"),
                        new(@"a/", Should.Pass, "starts with dir. separator"),
                        new(@"/a/", Should.Pass, "bookends with dir. separator"),
