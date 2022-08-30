@@ -59,7 +59,7 @@ public static class Brandon {
     ) {
         var rLabel = label == null ? Renderwerks.GetRenderable(_expression) : Renderwerks.GetRenderable(label);
         var rValue = Renderwerks.GetRenderable(value);
-        PrintRow(rLabel, rValue);
+        AutoRow(rLabel, rValue);
         return value;
     }
 
@@ -73,14 +73,14 @@ public static class Brandon {
 
     #region PrintRow
 
-    public static void PrintRow(params IRenderable[]     cells)            => Render(new AutoColumns(cells));
-    public static void PrintRow(IEnumerable<IRenderable> cells)            => Render(new AutoColumns(cells));
-    public static void PrintRow<A>(A                     a)                => PrintRow(Renderwerks.GetRenderable(a));
-    public static void PrintRow<A, B>(A                  a, B b)           => PrintRow(Renderwerks.GetRenderable(a), Renderwerks.GetRenderable(b));
-    public static void PrintRow<A, B, C>(A               a, B b, C c)      => PrintRow(Renderwerks.GetRenderable(a), Renderwerks.GetRenderable(b), Renderwerks.GetRenderable(c));
-    public static void PrintRow<A, B, C, D>(A            a, B b, C c, D d) => PrintRow(Renderwerks.GetRenderable(a), Renderwerks.GetRenderable(b), Renderwerks.GetRenderable(c), Renderwerks.GetRenderable(d));
+    public static void AutoRow(params IRenderable[]     cells)            => Render(new AutoColumns(cells));
+    public static void AutoRow(IEnumerable<IRenderable> cells)            => Render(new AutoColumns(cells));
+    public static void AutoRow<A>(A                     a)                => AutoRow(Renderwerks.GetRenderable(a));
+    public static void AutoRow<A, B>(A                  a, B b)           => AutoRow(Renderwerks.GetRenderable(a), Renderwerks.GetRenderable(b));
+    public static void AutoRow<A, B, C>(A               a, B b, C c)      => AutoRow(Renderwerks.GetRenderable(a), Renderwerks.GetRenderable(b), Renderwerks.GetRenderable(c));
+    public static void AutoRow<A, B, C, D>(A            a, B b, C c, D d) => AutoRow(Renderwerks.GetRenderable(a), Renderwerks.GetRenderable(b), Renderwerks.GetRenderable(c), Renderwerks.GetRenderable(d));
 
-    public static void PrintRow<A, B, C, D, TRest>(
+    public static void AutoRow<A, B, C, D, TRest>(
         A              a,
         B              b,
         C              c,
@@ -93,7 +93,7 @@ public static class Brandon {
                       .Prepend(Renderwerks.GetRenderable(b))
                       .Prepend(Renderwerks.GetRenderable(a));
 
-        PrintRow(row);
+        AutoRow(row);
     }
 
     #endregion
