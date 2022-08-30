@@ -104,11 +104,13 @@ public static class Spectral {
     /// otherwise, the original <paramref name="text"/></returns>
     [return: NotNullIfNotNull("text")]
     public static string? ApplyMarkup(this Style? style, string? text) {
-        if (style == null || string.IsNullOrEmpty(text)) {
+        string markup;
+
+        if (style == null || string.IsNullOrEmpty(text) || (markup = style.ToMarkup()).IsEmpty()) {
             return text;
         }
 
-        return $"[{style.ToMarkup()}]{text}[/]";
+        return $"[{markup}]{text}[/]";
     }
 
     /// <inheritdoc cref="ApplyMarkup(Spectre.Console.Style?,string?)"/>
