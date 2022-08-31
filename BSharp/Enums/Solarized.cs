@@ -1,6 +1,7 @@
 using System;
-
-using Spectre.Console;
+using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Drawing;
 
 namespace FowlFever.BSharp.Enums;
 
@@ -49,6 +50,9 @@ public enum Solarized {
 }
 
 public static class SolarizedExtensions {
+    /// <param name="solarized">this <see cref="Solarized"/> color</param>
+    /// <returns>the corresponding <a href="https://en.wikipedia.org/wiki/Web_colors#Hex_triplet">hex triplet</a> representation</returns>
+    /// <exception cref="ArgumentOutOfRangeException">if an unknown <see cref="Solarized"/> color is provided</exception>
     public static string Hex(this Solarized solarized) {
         return solarized switch {
             Solarized.Base0   => "#002b36",
@@ -71,30 +75,41 @@ public static class SolarizedExtensions {
         };
     }
 
-    public static (byte r, byte g, byte b) RGB(this Solarized solarized) {
-        return solarized switch {
-            Solarized.Base0   => (0, 43, 54),
-            Solarized.Base1   => (7, 54, 66),
-            Solarized.Base2   => (88, 110, 117),
-            Solarized.Base3   => (101, 123, 131),
-            Solarized.Base00  => (131, 148, 150),
-            Solarized.Base01  => (147, 161, 161),
-            Solarized.Base02  => (238, 232, 213),
-            Solarized.Base03  => (253, 246, 227),
-            Solarized.Yellow  => (181, 137, 0),
-            Solarized.Orange  => (203, 75, 22),
-            Solarized.Red     => (220, 50, 47),
-            Solarized.Magenta => (211, 54, 130),
-            Solarized.Violet  => (108, 113, 196),
-            Solarized.Blue    => (38, 139, 210),
-            Solarized.Cyan    => (42, 161, 152),
-            Solarized.Green   => (133, 153, 0),
-            _                 => throw new ArgumentOutOfRangeException(nameof(solarized), solarized, $"{solarized} is not a valid {nameof(Solarized)} color!")
-        };
+    public static byte Alpha(this Solarized solarized) => solarized.Color().A;
+    public static byte Red(this   Solarized solarized) => solarized.Color().R;
+    public static byte Green(this Solarized solarized) => solarized.Color().G;
+    public static byte Blue(this  Solarized solarized) => solarized.Color().B;
+
+    /// <param name="solarized">this <see cref="Solarized"/> color</param>
+    /// <returns>the equivalent <see cref="Spectre"/>.<see cref="Spectre.Console"/>.<see cref="Spectre.Console.Color"/></returns>
+    public static Spectre.Console.Color SpectreColor(this Solarized solarized) {
+        var (r, g, b) = solarized.Color();
+        return new Spectre.Console.Color(r, g, b);
     }
 
-    public static Color SpectreColor(this Solarized solarized) {
-        var (r, g, b) = solarized.RGB();
-        return new Color(r, g, b);
-    }
+    /// <summary>
+    /// Maps <see cref="Solarized"/> colors to <see cref="System.Drawing"/>.<see cref="System.Drawing.Color"/>s.
+    /// </summary>
+    public static readonly ImmutableDictionary<Solarized, Color> ColorLookup = new Dictionary<Solarized, Color> {
+        [Solarized.Base0]   = System.Drawing.Color.FromArgb(255, 0,   43,  54),
+        [Solarized.Base1]   = System.Drawing.Color.FromArgb(255, 7,   54,  66),
+        [Solarized.Base2]   = System.Drawing.Color.FromArgb(255, 88,  110, 117),
+        [Solarized.Base3]   = System.Drawing.Color.FromArgb(255, 101, 123, 131),
+        [Solarized.Base00]  = System.Drawing.Color.FromArgb(255, 131, 148, 150),
+        [Solarized.Base01]  = System.Drawing.Color.FromArgb(255, 147, 161, 161),
+        [Solarized.Base02]  = System.Drawing.Color.FromArgb(255, 238, 232, 213),
+        [Solarized.Base03]  = System.Drawing.Color.FromArgb(255, 253, 246, 227),
+        [Solarized.Yellow]  = System.Drawing.Color.FromArgb(255, 181, 137, 0),
+        [Solarized.Orange]  = System.Drawing.Color.FromArgb(255, 203, 75,  22),
+        [Solarized.Red]     = System.Drawing.Color.FromArgb(255, 220, 50,  47),
+        [Solarized.Magenta] = System.Drawing.Color.FromArgb(255, 211, 54,  130),
+        [Solarized.Violet]  = System.Drawing.Color.FromArgb(255, 108, 113, 196),
+        [Solarized.Blue]    = System.Drawing.Color.FromArgb(255, 38,  139, 210),
+        [Solarized.Cyan]    = System.Drawing.Color.FromArgb(255, 42,  161, 152),
+        [Solarized.Green]   = System.Drawing.Color.FromArgb(255, 133, 153, 0),
+    }.ToImmutableDictionary();
+
+    /// <param name="solarized">this <see cref="Solarized"/> color</param>
+    /// <returns>the corresponding <see cref="System"/>.<see cref="System.Drawing"/>.<see cref="System.Drawing.Color"/></returns>
+    public static Color Color(this Solarized solarized) => ColorLookup[solarized];
 }
