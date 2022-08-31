@@ -23,12 +23,12 @@ public static class Spectral {
     public static Text EscapeSpectre(this string? str, Stylist style = default) => new(str.EscapeMarkup(), style);
 
     /// <summary>
-    /// Calls <see cref="StringExtensions.EscapeMarkup"/> and returns the result as a <see cref="Segment"/>.
+    /// Creates a <see cref="Segment"/> from a <see cref="string"/>.
     /// </summary>
     /// <param name="str">the original <see cref="string"/></param>
     /// <param name="stylist">an optional <see cref="Stylist"/></param>
     /// <returns>a new <see cref="Segment"/></returns>
-    public static Segment EscapeSegment(this string? str, Stylist stylist = default) => new(str.EscapeMarkup(), stylist);
+    public static Segment ToSegment(this string? str, Stylist stylist = default) => str.IsEmpty() ? Segment.Empty : new Segment(str, stylist);
 
     #endregion
 
