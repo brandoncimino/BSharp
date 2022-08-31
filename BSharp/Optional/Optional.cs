@@ -525,18 +525,6 @@ namespace FowlFever.BSharp.Optional {
             return new ArgumentNullException($"The {typeof(T).Name} was empty!");
         }
 
-        #region IsEmpty
-
-        /// <returns>negation of <see cref="Nullable{T}.HasValue"/></returns>
-        [ContractAnnotation("null => true")]
-        [ContractAnnotation("notnull => false")]
-        public static bool IsEmpty<T>(this T? nullable)
-            where T : struct {
-            return !nullable.HasValue;
-        }
-
-        #endregion IsEmpty
-
         #region FirstWithValue
 
         /// <summary>
@@ -555,8 +543,7 @@ namespace FowlFever.BSharp.Optional {
         #region 0 args (Func<TOut>)
 
         public static Optional<TOut> FirstWithValue<TOut>(
-            [InstantHandle]
-            IEnumerable<Func<Optional<TOut>>> functions
+            [InstantHandle] IEnumerable<Func<Optional<TOut>>> functions
         ) {
             if (functions == null) {
                 throw new ArgumentNullException(nameof(functions));
@@ -581,9 +568,8 @@ namespace FowlFever.BSharp.Optional {
         #region 1 arg (Func<TIn, TOut>)
 
         public static Optional<TOut> FirstWithValue<TIn, TOut>(
-            TIn input,
-            [InstantHandle]
-            IEnumerable<Func<TIn, Optional<TOut>>> functions
+            TIn                                                    input,
+            [InstantHandle] IEnumerable<Func<TIn, Optional<TOut>>> functions
         ) {
             if (functions == null) {
                 throw new ArgumentNullException(nameof(functions));
@@ -609,9 +595,8 @@ namespace FowlFever.BSharp.Optional {
         #region 2 args (Func<T1, T2, TOut>)
 
         public static Optional<TOut> FirstWithValue<T1, T2, TOut>(
-            (T1 arg1, T2 arg2) args,
-            [InstantHandle]
-            IEnumerable<Func<T1, T2, Optional<TOut>>> functions
+            (T1 arg1, T2 arg2)                                        args,
+            [InstantHandle] IEnumerable<Func<T1, T2, Optional<TOut>>> functions
         ) {
             if (functions == null) {
                 throw new ArgumentNullException(nameof(functions));
@@ -637,9 +622,8 @@ namespace FowlFever.BSharp.Optional {
         #region 3 args (Func<T1, T2, T3, TOut>)
 
         public static Optional<TOut> FirstWithValue<T1, T2, T3, TOut>(
-            (T1 arg1, T2 arg2, T3 arg3) args,
-            [InstantHandle]
-            IEnumerable<Func<T1, T2, T3, Optional<TOut>>> functions
+            (T1 arg1, T2 arg2, T3 arg3)                                   args,
+            [InstantHandle] IEnumerable<Func<T1, T2, T3, Optional<TOut>>> functions
         ) {
             if (functions == null) {
                 throw new ArgumentNullException(nameof(functions));
