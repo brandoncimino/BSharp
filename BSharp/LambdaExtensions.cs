@@ -16,7 +16,7 @@ namespace FowlFever.BSharp;
 /// TODO: Rename to "Lambdas" and move to <see cref="Functionally"/> package.
 /// </summary>
 [PublicAPI]
-public static class LambdaExtensions {
+public static partial class LambdaExtensions {
     #region Action with Tuple args => fn(a, b).Invoke(ab)
 
     public static void Invoke<A, B>(this                Action<A, B>                action, (A a, B b)                          args) => action.Invoke(args.a, args.b);
