@@ -8,8 +8,9 @@ namespace FowlFever.BSharp.Strings {
         /// <value>the <see cref="Type"/> that this <see cref="IPrettifier{T}"/> can <see cref="Prettify"/>.</value>
 
         Type PrettifierType { get; }
+        Type IPrimaryKeyed<Type>.PrimaryKey => PrettifierType;
 
-        bool CanPrettify(Type type);
+        bool CanPrettify(Type type) => PrettifierType.IsAssignableFrom(type);
 
         /// <summary>
         /// Returns a pretty <see cref="string"/> representation of <paramref name="cinderella"/> <b>IF</b> <paramref name="cinderella"/> is of the <see cref="PrettifierType"/>.
@@ -31,5 +32,7 @@ namespace FowlFever.BSharp.Strings {
          * <inheritdoc cref="IPrettifier.Prettify"/>
          */
         string Prettify(T? cinderella, PrettificationSettings? settings = default);
+
+        Type IPrettifier.PrettifierType => typeof(T);
     }
 }
