@@ -1,5 +1,7 @@
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Text;
 
 namespace FowlFever.BSharp.Strings;
@@ -24,37 +26,75 @@ internal static class StringBuilderExtensions {
     /// <returns>true if <c>null</c> or <see cref="StringBuilder.Length"/> == 0</returns>
     public static bool IsEmpty([NotNullWhen(false)] this StringBuilder? stringBuilder) => stringBuilder is not { Length: > 0 };
 
+    public static StringBuilder AppendNonBlank<T>(
+        this StringBuilder    stringBuilder,
+        IEnumerable<string?>? values,
+        ReadOnlySpan<char>    separator = default,
+        ReadOnlySpan<char>    prefix    = default,
+        ReadOnlySpan<char>    suffix    = default
+    ) {
+        return stringBuilder.AppendJoin(values.NonBlank(), separator, prefix, suffix);
+    }
+
+    public static StringBuilder AppendJoin<T>(
+        this StringBuilder stringBuilder,
+        IEnumerable<T>?    values,
+        ReadOnlySpan<char> separator = default,
+        ReadOnlySpan<char> prefix    = default,
+        ReadOnlySpan<char> suffix    = default
+    ) {
+        return stringBuilder.AppendJoin(values, static it => Convert.ToString(it), separator, prefix, suffix);
+    }
+
+    public static StringBuilder AppendJoin<T>(
+        this StringBuilder stringBuilder,
+        IEnumerable<T>?    values,
+        Func<T, string>    toStringFunction,
+        ReadOnlySpan<char> separator = default,
+        ReadOnlySpan<char> prefix    = default,
+        ReadOnlySpan<char> suffix    = default
+    ) {
+        return stringBuilder.AppendJoin(values.Select(toStringFunction), separator, prefix, suffix);
+    }
+
     /// <summary>
     /// Similar to the vanilla <see cref="StringBuilder.AppendJoin(char,object?[])"/>, but conditionally applies a <paramref name="prefix"/> and/or <paramref name="suffix"/>
     /// if any joining actually happens.
     /// </summary>
     /// <param name="stringBuilder"></param>
-    /// <param name="values"></param>
+    /// <param name="strings"></param>
     /// <param name="separator"></param>
     /// <param name="prefix"></param>
     /// <param name="suffix"></param>
-    /// <typeparam name="T"></typeparam>
     /// <returns></returns>
-    public static StringBuilder AppendJoin<T>(
-        this StringBuilder stringBuilder,
-        IEnumerable<T>     values,
-        string?            separator = default,
-        string?            prefix    = default,
-        string?            suffix    = default
+    public static StringBuilder AppendJoin(
+        this StringBuilder    stringBuilder,
+        IEnumerable<string?>? strings,
+        ReadOnlySpan<char>    separator = default,
+        ReadOnlySpan<char>    prefix    = default,
+        ReadOnlySpan<char>    suffix    = default
     ) {
-        if (prefix.IsEmpty() && suffix.IsEmpty()) {
-            return stringBuilder.AppendJoin(separator, values);
-        }
-
-        var sbJoin = new StringBuilder();
-        sbJoin.AppendJoin(separator, values);
-
-        if (sbJoin.IsEmpty()) {
+        if (strings == null) {
             return stringBuilder;
         }
 
-        return stringBuilder.Append(prefix)
-                            .Append(sbJoin)
-                            .Append(suffix);
+        using var erator = strings.GetEnumerator();
+
+        bool isFirst = true;
+
+        while (erator.MoveNext()) {
+            if (isFirst) {
+                isFirst = false;
+                stringBuilder.Append(prefix);
+                stringBuilder.Append(erator.Current);
+                continue;
+            }
+
+            stringBuilder.Append(separator);
+            stringBuilder.Append(erator.Current);
+        }
+
+        stringBuilder.Append(suffix);
+        return stringBuilder;
     }
 }
