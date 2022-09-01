@@ -1014,36 +1014,6 @@ public static partial class CollectionUtils {
     public static IEnumerable<T?> Nullable<T>(this IEnumerable<T> source)
         where T : struct => source.Cast<T?>();
 
-    #region NonBlank
-
-    /// <summary>
-    ///
-    /// </summary>
-    /// <remarks>
-    /// <a href="https://stackoverflow.com/a/60205019">stackoverflow</a>
-    /// </remarks>
-    /// <param name="lines"></param>
-    /// <returns></returns>
-    /// <seealso cref="NonEmpty"/>
-    public static IEnumerable<string> NonBlank(this IEnumerable<string?>? lines) {
-        return (lines == null ? Enumerable.Empty<string>() : lines.Where(it => it.IsNotBlank()))!;
-    }
-
-    /// <summary>
-    ///
-    /// </summary>
-    /// <remarks>
-    /// <a href="https://stackoverflow.com/a/60205019">stackoverflow</a>
-    /// </remarks>
-    /// <param name="lines"></param>
-    /// <returns></returns>
-    /// <seealso cref="NonBlank"/>
-    public static IEnumerable<string> NonEmpty(this IEnumerable<string?>? lines) {
-        return (lines == null ? Enumerable.Empty<string>() : lines.Where(it => it.IsNotEmpty()))!;
-    }
-
-    #endregion
-
     #endregion
 
     #region Finding
@@ -1171,7 +1141,6 @@ public static partial class CollectionUtils {
     #endregion
 
 #if !NET6_0_OR_GREATER
-
     #region TakeLast
 
     /// <summary>
