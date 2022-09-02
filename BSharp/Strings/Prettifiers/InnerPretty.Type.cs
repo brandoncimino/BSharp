@@ -66,16 +66,45 @@ internal static partial class InnerPretty {
             return $"{type.PrettifyType(settings)}?";
         }
 
-        static string PrettifyGenericTypeArguments(IEnumerable<Type> genericTypeArguments, PrettificationSettings settings) {
+        static string PrettifyGenericTypeArguments(IReadOnlyCollection<Type> genericTypeArguments, PrettificationSettings settings) {
             var stylizedArgs = StylizeGenericTypeArguments(genericTypeArguments, settings);
             return $"<{stylizedArgs}>";
         }
 
-        static string StylizeGenericTypeArguments(IEnumerable<Type?> genericTypeArguments, PrettificationSettings settings) {
+        static string StylizeGenericTypeArguments(IReadOnlyCollection<Type> genericTypeArguments, PrettificationSettings settings) {
+            string ShortGenericArgs(IReadOnlyCollection<Type> genericArgs) {
+                return genericArgs.Count switch {
+                    1 => "<>",
+                    2 => "<,>",
+                    3 => "<,,>",
+                    4 => "<,,,>",
+                    5 => "<,,,,>",
+                    _ => string.Create(
+                        genericArgs.Count + 1,
+                        default(object),
+                        (span, _) => {
+                            for (int i = 0; i < genericArgs.Count; i++) {
+                                if (i == 0) {
+                                    span[i] = '<';
+                                    continue;
+                                }
+
+                                if (i == genericArgs.Count - 1) {
+                                    span[i] = '>';
+                                    continue;
+                                }
+
+                                span[i] = ',';
+                            }
+                        }
+                    )
+                };
+            }
+
             return settings.TypeLabelStyle switch {
                 TypeNameStyle.None  => "",
                 TypeNameStyle.Full  => genericTypeArguments.Select(it => it.PrettifyType(settings)).JoinString(", "),
-                TypeNameStyle.Short => genericTypeArguments.Select(_ => "").JoinString(","),
+                TypeNameStyle.Short => ShortGenericArgs(genericTypeArguments),
                 _                   => throw BEnum.InvalidEnumArgumentException(nameof(settings.TypeLabelStyle), settings.TypeLabelStyle)
             };
         }
