@@ -1,10 +1,10 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Reflection;
 
 using FowlFever.BSharp.Attributes;
 using FowlFever.BSharp.Enums;
+using FowlFever.BSharp.Memory;
 using FowlFever.BSharp.Reflection;
 using FowlFever.BSharp.Strings.Json;
 using FowlFever.BSharp.Strings.Prettifiers;
@@ -27,9 +27,27 @@ public static class TypeNameStyleExtensions {
     [Pure]
     [SuppressMessage("ReSharper", "EntityNameCapturedOnly.Global", Justification = "Flagrantly untrue")]
     [Experimental]
-    public static string TypeName<T>(this T obj, TypeNameStyle style = TypeNameStyle.Full) {
+    public static string GetTypeName<T>(this T obj, TypeNameStyle style = TypeNameStyle.Full) {
         style.Rejecting(TypeNameStyle.None);
-        return MethodBase.GetCurrentMethod()!.GetNullability(nameof(obj)).PrettifyNullable();
+        return (obj?.GetType() ?? typeof(T)).PrettifyType();
+    }
+
+    [Pure]
+    [Experimental]
+    public static string GetTypeName<T>(this ReadOnlySpan<T> span, TypeNameStyle style = TypeNameStyle.Full) {
+        style.Rejecting(TypeNameStyle.None);
+        return span.SpanType().GetTypeName(style);
+    }
+
+    [Pure]
+    public static string GetTypeName(this Type type, TypeNameStyle style = TypeNameStyle.Full) {
+        style.Rejecting(TypeNameStyle.None);
+        return type.PrettifyType(style);
+    }
+
+    [Pure]
+    public static string GetTypeName<T>(TypeNameStyle style = TypeNameStyle.Full) {
+        return typeof(T).GetTypeName(style);
     }
 
     public static string GetTypeLabel(this Type? type, PrettificationSettings? settings) {
