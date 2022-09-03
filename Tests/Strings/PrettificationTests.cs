@@ -430,16 +430,12 @@ int (int, string)
             PrettifierType = type;
         }
 
-        public string Prettify(object cinderella, PrettificationSettings? settings = default) {
+        public string Prettify<T>(T? cinderella, PrettificationSettings? settings = default) {
             return PrettifyString();
         }
 
         public string PrettifyString() {
             return $"{PrettifierType.Prettify()}::{nameof(DebugPrettifier)}";
-        }
-
-        public string PrettifySafely(object cinderella, PrettificationSettings? settings = default) {
-            return PrettifyString();
         }
     }
 
