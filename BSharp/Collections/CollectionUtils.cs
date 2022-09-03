@@ -138,12 +138,15 @@ public static partial class CollectionUtils {
 
     #region Dictionary Inversion
 
-    public static IDictionary<TValue_Original, TKey_Original> Inverse_Internal<TKey_Original, TValue_Original>(IDictionary<TKey_Original, TValue_Original> dictionary) {
+    public static IDictionary<TValue_Original, TKey_Original> Inverse_Internal<TKey_Original, TValue_Original>(IDictionary<TKey_Original, TValue_Original> dictionary)
+        where TValue_Original : notnull
+        where TKey_Original : notnull {
         //to make for specific and explicit error messages, we check for known failures conditions ahead of time - specifically, duplicate keys results in an "ArgumentException" which is the parent class of lots of other things, making it not very clear when we catch it...
         if (!dictionary.Values.IsSingleton()) {
             throw new ArgumentException($"The provided {dictionary.GetType().Name}'s {nameof(dictionary.Values)} contained one or more duplicates, so they couldn't be used as keys!");
         }
 
+        // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
         if (dictionary.Any(pair => pair.Value == null)) {
             throw new ArgumentNullException($"The provided {dictionary.GetType().Name} contained a null {nameof(KeyValuePair<object, object>.Value)}, which can't be used as a {nameof(KeyValuePair<object, object>.Key)}!");
         }
@@ -158,12 +161,16 @@ public static partial class CollectionUtils {
     }
 
     /// <inheritdoc cref="Inverse_Internal{TKey_Original,TValue_Original}"/>
-    public static Dictionary<TValue_Original, TKey_Original> Inverse<TKey_Original, TValue_Original>(this Dictionary<TKey_Original, TValue_Original> dictionary) {
+    public static Dictionary<TValue_Original, TKey_Original> Inverse<TKey_Original, TValue_Original>(this Dictionary<TKey_Original, TValue_Original> dictionary)
+        where TKey_Original : notnull
+        where TValue_Original : notnull {
         return (Dictionary<TValue_Original, TKey_Original>)Inverse_Internal(dictionary);
     }
 
     /// <inheritdoc cref="Inverse_Internal{TKey_Original,TValue_Original}"/>
-    public static ReadOnlyDictionary<TValue_Original, TKey_Original> Inverse<TKey_Original, TValue_Original>(this ReadOnlyDictionary<TKey_Original, TValue_Original> readOnlyDictionary) {
+    public static ReadOnlyDictionary<TValue_Original, TKey_Original> Inverse<TKey_Original, TValue_Original>(this ReadOnlyDictionary<TKey_Original, TValue_Original> readOnlyDictionary)
+        where TKey_Original : notnull
+        where TValue_Original : notnull {
         return (ReadOnlyDictionary<TValue_Original, TKey_Original>)Inverse_Internal(readOnlyDictionary);
     }
 
@@ -257,14 +264,15 @@ public static partial class CollectionUtils {
     /// <param name="suffix">an optional <see cref="string"/> after any of the <paramref name="enumerable"/> entries</param>
     /// <typeparam name="T">the type of the entries in the <paramref name="enumerable"/></typeparam>
     /// <returns>the fully joined <see cref="string"/></returns>
-    public static string JoinString<T>(this IEnumerable<T?>? enumerable, string? separator = "", string? prefix = default, string? suffix = default) {
+    public static string JoinString<T>(this IEnumerable<T?>? enumerable, ReadOnlySpan<char> separator = default, ReadOnlySpan<char> prefix = default, ReadOnlySpan<char> suffix = default) {
         if (enumerable.IsEmpty()) {
             return "";
         }
 
         var sb = new StringBuilder();
         sb.Append(prefix);
-        sb.AppendJoin(separator, enumerable.OrEmpty());
+        //TODO: make this more spanny
+        sb.AppendJoin(separator.ToString(), enumerable.OrEmpty());
         sb.Append(suffix);
         return sb.ToString();
     }
@@ -703,7 +711,7 @@ public static partial class CollectionUtils {
     /// <param name="superset">the <b>larger</b> set</param>
     /// <typeparam name="T">the <see cref="Type"/> of each individual item</typeparam>
     /// <returns>true if the first <see cref="IEnumerable{T}"/> is a <a href="https://en.wikipedia.org/wiki/Subset">subset</a> of the second <see cref="IEnumerable{T}"/></returns>
-    /// <remarks>This method delegates to <see cref="ISet{T}.IsSubsetOf"/>, if possible; otherwise, it delegates to <see cref=""/></remarks>
+    /// <remarks><inheritdoc cref="IsSupersetOf{T}"/></remarks>
     [Pure]
     public static bool IsSubsetOf<T>(this IEnumerable<T> subset, IEnumerable<T> superset) => superset.IsSupersetOf(subset);
 
@@ -1044,7 +1052,8 @@ public static partial class CollectionUtils {
     public static Optional<TValue> Find<TKey, TValue>(
         this IDictionary<TKey, TValue>? source,
         TKey                            key
-    ) {
+    )
+        where TKey : notnull {
         source = source.OrEmpty();
         return source.ContainsKey(key) ? Optional.Optional.Of(source[key]) : default(Optional<TValue>);
     }
@@ -1054,7 +1063,8 @@ public static partial class CollectionUtils {
     public static Optional<TValue> Find<TKey, TValue>(
         [ItemCanBeNull] this KeyedCollection<TKey, TValue>? source,
         TKey                                                key
-    ) {
+    )
+        where TKey : notnull {
         if (source == null) {
             return default;
         }
@@ -1226,7 +1236,8 @@ public static partial class CollectionUtils {
 
     /// <inheritdoc cref="OrEmpty{T}(System.Collections.Generic.IEnumerable{T}?)"/>
     [Pure]
-    public static IDictionary<TKey, TValue> OrEmpty<TKey, TValue>(this IDictionary<TKey, TValue>? source) => source ?? new Dictionary<TKey, TValue>();
+    public static IDictionary<TKey, TValue> OrEmpty<TKey, TValue>(this IDictionary<TKey, TValue>? source)
+        where TKey : notnull => source ?? new Dictionary<TKey, TValue>();
 
     /// <inheritdoc cref="OrEmpty{T}(System.Collections.Generic.IEnumerable{T}?)"/>
     [Pure]
@@ -1298,17 +1309,6 @@ public static partial class CollectionUtils {
     /// <returns>a <see cref="ReadOnlyCollection{T}"/> wrapper around this <see cref="IList{T}"/></returns>
     public static ReadOnlyCollection<T> AsReadOnly<T>(this IList<T> source) {
         return new ReadOnlyCollection<T>(source);
-    }
-
-    /// <summary>
-    /// Returns a <see cref="ReadOnlyDictionary{TKey,TValue}"/> wrapper around this <see cref="IDictionary{TKey,TValue}"/>.
-    /// </summary>
-    /// <param name="source">the original <see cref="IDictionary{TKey,TValue}"/></param>
-    /// <typeparam name="TKey">the type of <paramref name="source"/>'s <see cref="IDictionary{TKey,TValue}.Keys"/></typeparam>
-    /// <typeparam name="TValue">the type of <paramref name="source"/>'s <see cref="IDictionary{TKey,TValue}.Values"/></typeparam>
-    /// <returns>a <see cref="ReadOnlyDictionary{TKey,TValue}"/> wrapper around this <see cref="IDictionary{TKey,TValue}"/></returns>
-    public static ReadOnlyDictionary<TKey, TValue> AsReadOnly<TKey, TValue>(this IDictionary<TKey, TValue> source) {
-        return new ReadOnlyDictionary<TKey, TValue>(source);
     }
 
     #endregion
