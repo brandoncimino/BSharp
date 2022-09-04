@@ -16,6 +16,8 @@ internal class OneTimeOnly<T> {
     private Optional<T?>       _explicitValue;
     private Optional<Lazy<T?>> _lazy;
 
+    public bool HasValue => SetAs != null;
+
     private enum SetStyle { Explicit, Lazy }
 
     private SetStyle? SetAs;
