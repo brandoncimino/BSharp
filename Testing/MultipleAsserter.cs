@@ -202,8 +202,11 @@ public abstract class MultipleAsserter<TSelf, TActual> : IMultipleAsserter
     }
 
     protected virtual string FormatResults(IEnumerable<IFailable> results) {
-        var rapSheet = new RapSheet(results);
-        return rapSheet.Prettify();
+        var sb = new StringBuilder();
+        FormatHeading().ForEach(it => sb.AppendLine(it));
+        var rapSheet = new RapSheet(Actual.HasValue ? Actual.Value : Optional.Empty<object?>(), results);
+        sb.AppendLine(rapSheet.Prettify());
+        return sb.ToString();
     }
 
     protected void Fail(IEnumerable<IFailable> results) {
