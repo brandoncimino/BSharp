@@ -1,8 +1,10 @@
+using System;
+
 using FowlFever.BSharp;
 using FowlFever.BSharp.Strings.Settings;
 
 namespace FowlFever.Testing {
-    public interface IMultipleAsserter {
+    public interface IMultipleAsserter : IDisposable {
         void Invoke();
 
         Supplied<string?>? Heading { get; }

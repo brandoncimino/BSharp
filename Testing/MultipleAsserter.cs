@@ -561,4 +561,8 @@ public abstract class MultipleAsserter<TSelf, TActual> : IMultipleAsserter
             Succeed(results);
         }
     }
+
+    public void Dispose() {
+        Invoke();
+    }
 }
