@@ -67,6 +67,15 @@ public class RejectionException : ArgumentException {
     }
 
     public RejectionException(
+        string?                    details        = default,
+        Exception?                 innerException = default,
+        [CallerMemberName] string? _caller        = default
+    ) : base(null, innerException) {
+        Details    = details;
+        RejectedBy = _caller;
+    }
+
+    public RejectionException(
         object? actualValue,
         string? details = default,
         [CallerArgumentExpression("actualValue")]
