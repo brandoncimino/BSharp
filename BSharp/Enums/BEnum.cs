@@ -153,6 +153,7 @@ namespace FowlFever.BSharp.Enums {
             where T : Enum? {
             var rejection = new RejectionException(
                 actualValue,
+                details,
                 parameterName,
                 rejectedBy,
                 $"{typeof(T)}.{actualValue.OrNullPlaceholder()} isn't supported for {rejectedBy}{details.IfNotBlank(it => $": {it}")}!"
@@ -180,7 +181,7 @@ namespace FowlFever.BSharp.Enums {
             [CallerMemberName]                   string? rejectedBy    = default
         )
             where T : Enum {
-            if (actual.Equals(unwanted) == false) {
+            if (actual.Equals(unwanted)) {
                 throw NotSupported(actual, details, parameterName, rejectedBy);
             }
 
