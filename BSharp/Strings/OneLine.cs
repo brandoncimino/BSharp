@@ -236,9 +236,10 @@ public readonly partial record struct OneLine : IHas<string>, IEnumerable<Graphe
 
     #region Operators
 
-    [Pure] public static implicit operator string(OneLine  line) => line.Value;
-    [Pure] public static implicit operator Lines(OneLine   line) => new(line);
-    [Pure] public static implicit operator Indexes(OneLine line) => line.Length;
+    [Pure] public static implicit operator string(OneLine             line) => line.Value;
+    [Pure] public static implicit operator Lines(OneLine              line) => new(line);
+    [Pure] public static implicit operator Indexes(OneLine            line) => line.Length;
+    [Pure] public static implicit operator ReadOnlySpan<char>(OneLine line) => line.Value;
 
     /// <summary>
     /// <ul>
