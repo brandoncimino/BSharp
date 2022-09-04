@@ -86,7 +86,7 @@ public static partial class StringUtils {
         string      indentString = DefaultIndentString,
         IndentMode  indentMode   = IndentMode.Relative
     ) {
-        Must.Have(indentString).NotEmpty();
+        Muster.Have(indentString).NotEmpty();
         return Enumerable.Repeat(toIndent, 1).Indent(indentCount, indentString, indentMode);
     }
 
@@ -96,7 +96,7 @@ public static partial class StringUtils {
         string                    indentString = DefaultIndentString,
         IndentMode                indentMode   = IndentMode.Relative
     ) {
-        Must.Have(indentString).NotEmpty();
+        Muster.Have(indentString).NotEmpty();
         return indentMode switch {
             IndentMode.Absolute => IndentAbsolute(toIndent, indentCount, indentString),
             IndentMode.Relative => IndentRelative(toIndent, indentCount, indentString),
@@ -176,13 +176,20 @@ public static partial class StringUtils {
     /// <param name="stringToJoin">another <see cref="string"/></param>
     /// <param name="separator">an optional separator to interpose betwixt <paramref name="baseString"/> and <paramref name="stringToJoin"/></param>
     /// <returns>the combined <see cref="string"/></returns>
-    public static string JoinNonBlank(this string? baseString, string? stringToJoin, string? separator = "") {
-        return (baseString, stringToJoin).Select(IsBlank) switch {
-            (true, true)   => "",
-            (true, false)  => stringToJoin!,
-            (false, true)  => baseString!,
-            (false, false) => string.Join(separator, baseString, stringToJoin),
-        };
+    public static string JoinNonBlank(this string? baseString, ReadOnlySpan<char> stringToJoin, ReadOnlySpan<char> separator = default) {
+        if (stringToJoin.IsBlank()) {
+            return baseString ?? "";
+        }
+
+        if (baseString.IsBlank()) {
+            return stringToJoin.ToString();
+        }
+
+        return Stringy.Concat(baseString, separator, stringToJoin);
+    }
+
+    public static string JoinNonEmpty(this string? baseString, ReadOnlySpan<char> stringToJoin, ReadOnlySpan<char> separator = default) {
+        throw new NotImplementedException();
     }
 
     /// <summary>
@@ -633,6 +640,16 @@ public static partial class StringUtils {
     #endregion
 
     #region Lapelle deux Vid
+
+    /// <summary>
+    /// Returns <see cref="string.Empty">""</see> if <paramref name="str"/> is <c>null</c>.
+    /// </summary>
+    /// <remarks>
+    /// Method-chainable equivalent to <c>str ?? ""</c>.
+    /// </remarks>
+    /// <param name="str">this <see cref="string"/></param>
+    /// <returns><paramref name="str"/>, if it was non-<c>null</c>; otherwise, <see cref="string.Empty">""</see></returns>
+    public static string OrEmpty(this string? str) => str ?? "";
 
     /// <summary>
     /// An extension method for <see cref="string.IsNullOrEmpty"/>

@@ -1,6 +1,7 @@
 using System;
 using System.Runtime.CompilerServices;
 
+using FowlFever.BSharp.Attributes;
 using FowlFever.BSharp.Optional;
 using FowlFever.BSharp.Strings.Prettifiers;
 using FowlFever.Implementors;
@@ -42,10 +43,9 @@ public readonly ref struct Muster<SELF, VALIDATED> {
     private          string?   RejectedBy       { get; }
 
     internal RejectionException Reject(
-        string?    details,
-        Exception? causedBy = default,
-        [CallerMemberName]
-        string? caller = default
+        string?                    details,
+        Exception?                 causedBy = default,
+        [CallerMemberName] string? caller   = default
     ) {
         throw Must.Reject(ValidationTarget, details, ParameterName, RejectedBy, null, causedBy, caller);
     }
@@ -59,13 +59,13 @@ public readonly ref struct Muster<SELF, VALIDATED> {
     }
 }
 
-public static partial class Must {
+public static class Muster {
+    [Experimental($"really I should simplify all of this junk and just rely on {nameof(CallerArgumentExpressionAttribute)}")]
     public static Muster<T, T> Have<T>(
         T? actualValue,
         [CallerArgumentExpression("actualValue")]
         string? parameterName = default,
-        [CallerMemberName]
-        string? requiredBy = default
+        [CallerMemberName] string? requiredBy = default
     ) => new(
         actualValue,
         actualValue,
@@ -73,13 +73,12 @@ public static partial class Must {
         requiredBy
     );
 
-    public static Muster<SELF, VALIDATED> Have<SELF, VALIDATED>(
+    public static Muster<SELF, VALIDATED> CreateMuster<SELF, VALIDATED>(
         SELF?                 hasActual,
         Func<SELF, VALIDATED> transformation,
         [CallerArgumentExpression("hasActual")]
         string? parameterName = default,
-        [CallerMemberName]
-        string? requiredBy = default
+        [CallerMemberName] string? requiredBy = default
     ) => new(
         hasActual,
         transformation,
@@ -98,11 +97,9 @@ public static class MusterExtensions {
     /// <typeparam name="T">the type of <paramref name="self"/></typeparam>
     /// <returns>a new <see cref="Muster{SELF,VALIDATED}"/></returns>
     public static Muster<T, T> Must<T>(
-        [NotNull] this T? self,
-        [CallerArgumentExpression("self")]
-        string? parameterName = default,
-        [CallerMemberName]
-        string? rejectedBy = default
+        [NotNull] this                     T?      self,
+        [CallerArgumentExpression("self")] string? parameterName = default,
+        [CallerMemberName]                 string? rejectedBy    = default
     ) => new(
         self,
         self,
@@ -121,12 +118,10 @@ public static class MusterExtensions {
     /// <typeparam name="VALIDATED">the type that validations will be performed on</typeparam>
     /// <returns>a new <see cref="Muster{SELF,VALIDATED}"/></returns>
     public static Muster<SELF, VALIDATED> MustHave<SELF, VALIDATED>(
-        [NotNull] this SELF?  self,
-        Func<SELF, VALIDATED> transformation,
-        [CallerArgumentExpression("self")]
-        string? parameterName = default,
-        [CallerMemberName]
-        string? rejectedBy = default
+        [NotNull] this SELF?                       self,
+        Func<SELF, VALIDATED>                      transformation,
+        [CallerArgumentExpression("self")] string? parameterName = default,
+        [CallerMemberName]                 string? rejectedBy    = default
     ) => new(
         self,
         transformation,

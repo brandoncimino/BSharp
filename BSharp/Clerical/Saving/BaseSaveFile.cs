@@ -32,7 +32,7 @@ namespace FowlFever.BSharp.Clerical.Saving {
         )
             : this(
                 folder ?? throw new ArgumentNullException(nameof(folder)),
-                new FileInfo(Must.Have(folder.Directory.GetChildPath(relativePathToFile)).NotBlank()),
+                new FileInfo(Muster.Have(folder.Directory.GetChildPath(relativePathToFile)).NotBlank()),
                 data
             ) { }
 
