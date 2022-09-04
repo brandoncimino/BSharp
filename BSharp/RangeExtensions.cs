@@ -6,6 +6,8 @@ using FowlFever.BSharp.Attributes;
 using FowlFever.BSharp.Enums;
 using FowlFever.BSharp.Exceptions;
 
+using JetBrains.Annotations;
+
 namespace FowlFever.BSharp;
 
 public static class RangeExtensions {
@@ -72,4 +74,17 @@ public static class RangeExtensions {
             _                         => Enumerable(source, range),
         };
     }
+
+    /// <summary>
+    /// Tests if a collection of size <paramref name="collectionLength"/> contains the given <see cref="Index"/>.
+    /// </summary>
+    /// <param name="collectionLength">the size of the theoretical collection. Corresponds to the <c>length</c> parameter of <see cref="Index.GetOffset"/>.</param>
+    /// <param name="index">the <see cref="Index"/> being tested</param>
+    /// <returns><c>true</c> if the <see cref="Index"/> would fall within the collection</returns>
+    [Pure]
+    public static bool ContainsIndex(this int collectionLength, Index index) => collectionLength.ContainsIndex(index.GetOffset(collectionLength));
+
+    /// <inheritdoc cref="ContainsIndex(int,System.Index)"/>
+    [Pure]
+    public static bool ContainsIndex([NonNegativeValue] this int collectionLength, int index) => index >= 0 && index < collectionLength;
 }
