@@ -275,5 +275,14 @@ public static class Giff {
             GiffResult<T> result => Prettify(result),
             _                    => throw Reject.UnhandledSwitchType(cinderella),
         };
+
+        public string Prettify<T1>(T1? cinderella, PrettificationSettings? settings = default) {
+            return cinderella switch {
+                GiffPane<T> pane     => Prettify(pane,   settings),
+                GiffPiece<T> piece   => Prettify(piece,  settings),
+                GiffResult<T> result => Prettify(result, settings),
+                _                    => throw Reject.UnhandledSwitchType(cinderella),
+            };
+        }
     }
 }
