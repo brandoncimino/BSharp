@@ -215,8 +215,8 @@ public abstract class MultipleAsserter<TSelf, TActual> : IMultipleAsserter
         }
     }
 
-    protected void Succeed(string results) {
-        OnSuccess(results);
+    protected void Succeed(IEnumerable<IFailable> results) {
+        OnSuccess(FormatResults(results));
     }
 
     #endregion
@@ -279,10 +279,9 @@ public abstract class MultipleAsserter<TSelf, TActual> : IMultipleAsserter
 
     [MustUseReturnValue]
     public TSelf And(
-        Action             action,
-        Supplied<string?>? description = default,
-        [CallerArgumentExpression("action")]
-        string? expression = default
+        Action                                       action,
+        Supplied<string?>?                           description = default,
+        [CallerArgumentExpression("action")] string? expression  = default
     ) =>
         _Add(new Action_AgainstAnything(action, default, description, default));
 
@@ -303,21 +302,19 @@ public abstract class MultipleAsserter<TSelf, TActual> : IMultipleAsserter
 
     [MustUseReturnValue]
     public TSelf And(
-        Action<TActual?>   action,
-        IResolveConstraint constraint,
-        Supplied<string?>? description = default,
-        [CallerArgumentExpression("action")]
-        string? expression = default
+        Action<TActual?>                             action,
+        IResolveConstraint                           constraint,
+        Supplied<string?>?                           description = default,
+        [CallerArgumentExpression("action")] string? expression  = default
     ) {
         return _Add(new Action_AgainstActual(action, constraint, description, expression));
     }
 
     [MustUseReturnValue]
     public TSelf And(
-        Action<TActual?>   action,
-        Supplied<string?>? description = default,
-        [CallerArgumentExpression("action")]
-        string? expression = default
+        Action<TActual?>                             action,
+        Supplied<string?>?                           description = default,
+        [CallerArgumentExpression("action")] string? expression  = default
     ) {
         return _Add(new Action_AgainstActual(action, default, description, expression));
     }
@@ -357,11 +354,10 @@ public abstract class MultipleAsserter<TSelf, TActual> : IMultipleAsserter
 
     [MustUseReturnValue]
     public TSelf And(
-        object?            target,
-        IResolveConstraint constraint,
-        Supplied<string?>? description = default,
-        [CallerArgumentExpression("target")]
-        string? expression = default
+        object?                                      target,
+        IResolveConstraint                           constraint,
+        Supplied<string?>?                           description = default,
+        [CallerArgumentExpression("target")] string? expression  = default
     ) {
         return _Add(new Constraint_AgainstAnything(target, constraint, description, expression));
     }
@@ -377,11 +373,10 @@ public abstract class MultipleAsserter<TSelf, TActual> : IMultipleAsserter
 
     [MustUseReturnValue]
     public TSelf And(
-        Func<object>       supplier,
-        IResolveConstraint constraint,
-        Supplied<string>?  description = default,
-        [CallerArgumentExpression("supplier")]
-        string? expression = default
+        Func<object>                                   supplier,
+        IResolveConstraint                             constraint,
+        Supplied<string>?                              description = default,
+        [CallerArgumentExpression("supplier")] string? expression  = default
     ) =>
         _Add(
             new Constraint_AgainstDelegate(
@@ -398,11 +393,10 @@ public abstract class MultipleAsserter<TSelf, TActual> : IMultipleAsserter
 
     [MustUseReturnValue]
     public TSelf And<TNew>(
-        Func<TActual, TNew> tf,
-        IResolveConstraint  constraint,
-        Supplied<string?>?  description = default,
-        [CallerArgumentExpression("tf")]
-        string? expression = default
+        Func<TActual, TNew>                      tf,
+        IResolveConstraint                       constraint,
+        Supplied<string?>?                       description = default,
+        [CallerArgumentExpression("tf")] string? expression  = default
     ) {
         return _Add(
             new Constraint_AgainstTransformation(
@@ -423,8 +417,7 @@ public abstract class MultipleAsserter<TSelf, TActual> : IMultipleAsserter
         return Self;
     }
 
-    [MustUseReturnValue]
-    public TSelf And(IMultipleAsserter asserter) => _Add_Asserter(asserter);
+    [MustUseReturnValue] public TSelf And(IMultipleAsserter asserter) => _Add_Asserter(asserter);
 
     [MustUseReturnValue]
     public TSelf AndAgainst<TNew>(
@@ -562,7 +555,7 @@ public abstract class MultipleAsserter<TSelf, TActual> : IMultipleAsserter
             Fail(results);
         }
         else {
-            Succeed(FormatMultipleAssertionMessage(results));
+            Succeed(results);
         }
     }
 }
