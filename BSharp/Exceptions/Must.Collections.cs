@@ -22,8 +22,7 @@ public static partial class Must {
         string?     details = default,
         [CallerArgumentExpression("actualIndex")]
         string? parameterName = default,
-        [CallerMemberName]
-        string? rejectedBy = default
+        [CallerMemberName] string? rejectedBy = default
     ) {
         return Be(
             actualIndex,
@@ -41,8 +40,7 @@ public static partial class Must {
         string?     details = default,
         [CallerArgumentExpression("actualIndex")]
         string? parameterName = default,
-        [CallerMemberName]
-        string? rejectedBy = default
+        [CallerMemberName] string? rejectedBy = default
     ) {
         return Be(
             actualIndex,
@@ -59,14 +57,12 @@ public static partial class Must {
     #region Contain (Index)
 
     public static T ContainIndex<T>(
-        [System.Diagnostics.CodeAnalysis.NotNull]
-        T actualValue,
-        Index   requiredIndex,
-        string? details = default,
+        [NotNull] T actualValue,
+        Index       requiredIndex,
+        string?     details = default,
         [CallerArgumentExpression("actualValue")]
         string? parameterName = default,
-        [CallerMemberName]
-        string? rejectedBy = default
+        [CallerMemberName] string? rejectedBy = default
     )
         where T : ICollection {
         return Be(
@@ -80,14 +76,12 @@ public static partial class Must {
     }
 
     public static TCollection ContainIndex<TElements, TCollection>(
-        [System.Diagnostics.CodeAnalysis.NotNull]
-        TCollection actualValue,
-        Index   requiredIndex,
-        string? details = default,
+        [NotNull] TCollection actualValue,
+        Index                 requiredIndex,
+        string?               details = default,
         [CallerArgumentExpression("actualValue")]
         string? parameterName = default,
-        [CallerMemberName]
-        string? rejectedBy = default
+        [CallerMemberName] string? rejectedBy = default
     )
         where TCollection : IReadOnlyCollection<TElements> {
         return Be(
@@ -98,6 +92,37 @@ public static partial class Must {
             rejectedBy,
             $"must contain the index [{requiredIndex}] (actual size: {actualValue.Count})"
         );
+    }
+
+    /// <summary>
+    /// Requires <paramref name="requiredIndex"/> to fall inside of a collection of size <paramref name="collectionLength"/>.
+    /// </summary>
+    /// <param name="collectionLength">the number of elements in the theoretical collection</param>
+    /// <param name="requiredIndex">the <see cref="Index"/> that must fall inside the collection</param>
+    /// <param name="details">optional additional details</param>
+    /// <param name="parameterName">see <see cref="CallerArgumentExpressionAttribute"/></param>
+    /// <param name="rejectedBy">see <see cref="CallerMemberNameAttribute"/></param>
+    /// <returns>the <see cref="Index.GetOffset"/> calculated using <paramref name="requiredIndex"/> and <paramref name="collectionLength"/></returns>
+    /// <exception cref="RejectionException">if <see cref="Index.GetOffset"/> results in a value outside of <paramref name="collectionLength"/></exception>
+    public static int ContainIndex(
+        int     collectionLength,
+        Index   requiredIndex,
+        string? details = default,
+        [CallerArgumentExpression("collectionLength")]
+        string? parameterName = default,
+        [CallerMemberName] string? rejectedBy = default
+    ) {
+        var offset = requiredIndex.GetOffset(collectionLength);
+        if (offset < 0 || offset >= collectionLength) {
+            throw new RejectionException(
+                requiredIndex,
+                details,
+                rejectedBy: rejectedBy,
+                reason: $"the index [{requiredIndex}] is out-of-bounds for a collection of size {collectionLength}!"
+            );
+        }
+
+        return offset;
     }
 
     #endregion
@@ -111,8 +136,7 @@ public static partial class Must {
         string? details = default,
         [CallerArgumentExpression("actualValue")]
         string? parameterName = default,
-        [CallerMemberName]
-        string? rejectedBy = default
+        [CallerMemberName] string? rejectedBy = default
     )
         where T : ICollection {
         return Be(
@@ -138,8 +162,7 @@ public static partial class Must {
         string?         details = default,
         [CallerArgumentExpression("actualValue")]
         string? parameterName = default,
-        [CallerMemberName]
-        string? rejectedBy = default
+        [CallerMemberName] string? rejectedBy = default
     )
         where T : IEnumerable<T2> {
         return Be(
@@ -152,15 +175,12 @@ public static partial class Must {
     }
 
     public static T NotContainAny<T, T2>(
-        [InstantHandle]
-        T actualValues,
-        [InstantHandle]
-        IEnumerable<T2> badValues,
-        string? details = default,
+        [InstantHandle] T               actualValues,
+        [InstantHandle] IEnumerable<T2> badValues,
+        string?                         details = default,
         [CallerArgumentExpression("actualValues")]
         string? parameterName = default,
-        [CallerMemberName]
-        string? rejectedBy = default
+        [CallerMemberName] string? rejectedBy = default
     )
         where T : IEnumerable<T2> {
         if (actualValues.IsEmpty()) {
@@ -183,15 +203,12 @@ public static partial class Must {
     }
 
     public static T ContainAll<T, T2>(
-        [InstantHandle]
-        T actualValues,
-        [InstantHandle]
-        IEnumerable<T2> requiredValues,
-        string? details = default,
+        [InstantHandle] T               actualValues,
+        [InstantHandle] IEnumerable<T2> requiredValues,
+        string?                         details = default,
         [CallerArgumentExpression("actualValues")]
         string? parameterName = default,
-        [CallerMemberName]
-        string? rejectedBy = default
+        [CallerMemberName] string? rejectedBy = default
     )
         where T : IEnumerable<T2> {
         requiredValues = requiredValues.AsList();
@@ -216,8 +233,7 @@ public static partial class Must {
         string?               details = default,
         [CallerArgumentExpression("actualValue")]
         string? parameterName = default,
-        [CallerMemberName]
-        string? rejectedBy = default
+        [CallerMemberName] string? rejectedBy = default
     )
         where COLLECTION : IEnumerable<ENTRY?>? {
         if (actualValue == null) {
@@ -234,26 +250,22 @@ public static partial class Must {
     #region NotBeEmpty
 
     public static SOURCE NotBeEmpty<SOURCE>(
-        [InstantHandle]
-        SOURCE? actualValues,
-        string? details = default,
+        [InstantHandle] SOURCE? actualValues,
+        string?                 details = default,
         [CallerArgumentExpression("actualValues")]
         string? parameterName = default,
-        [CallerMemberName]
-        string? rejectedBy = default
+        [CallerMemberName] string? rejectedBy = default
     )
         where SOURCE : ICollection {
         return Be(actualValues, it => it?.Count > 0, details, parameterName, rejectedBy);
     }
 
     public static IEnumerable<T> NotBeEmpty<T>(
-        [InstantHandle]
-        IEnumerable<T>? actualValues,
-        string? details = default,
+        [InstantHandle] IEnumerable<T>? actualValues,
+        string?                         details = default,
         [CallerArgumentExpression("actualValues")]
         string? parameterName = default,
-        [CallerMemberName]
-        string? rejectedBy = default
+        [CallerMemberName] string? rejectedBy = default
     ) {
         return Be(actualValues, it => it.IsNotEmpty(), details, parameterName, rejectedBy);
     }
@@ -265,15 +277,12 @@ public static partial class Must {
     #region Tuplizing
 
     public static T HaveSize<T, T2>(
-        [InstantHandle]
-        T? actualValues,
-        [NonNegativeValue]
-        int requiredSize,
-        string? details = default,
+        [InstantHandle]    T?  actualValues,
+        [NonNegativeValue] int requiredSize,
+        string?                details = default,
         [CallerArgumentExpression("actualValues")]
         string? parameterName = default,
-        [CallerMemberName]
-        string? rejectedBy = default
+        [CallerMemberName] string? rejectedBy = default
     )
         where T : ICollection<T2> {
         if (actualValues?.Count != requiredSize) {
@@ -299,14 +308,12 @@ public static partial class Must {
     /// <exception cref="RejectionException">if, <b>when enumerated</b>, the sequence doesn't contain <b>exactly</b> <paramref name="requiredCount"/> elements</exception>
     [Experimental("This doesn't quite work as I'd like to yet - if you TakeExactly(3) and then Take(2), a collection with 2 will pass or something like that")]
     public static IEnumerable<T> TakeExactly<T>(
-        this IEnumerable<T> actualValues,
-        [NonNegativeValue]
-        int requiredCount,
-        string? details = default,
+        this               IEnumerable<T> actualValues,
+        [NonNegativeValue] int            requiredCount,
+        string?                           details = default,
         [CallerArgumentExpression("actualValues")]
         string? parameterName = default,
-        [CallerMemberName]
-        string? rejectedBy = default
+        [CallerMemberName] string? rejectedBy = default
     ) {
         using var iter = actualValues.GetEnumerator();
         for (int i = 0; i < requiredCount; i++) {
@@ -353,13 +360,11 @@ public static partial class Must {
     }
 
     public static (T, T) Have2<T>(
-        [InstantHandle]
-        IEnumerable<T>? actualValues,
-        string? details = default,
+        [InstantHandle] IEnumerable<T>? actualValues,
+        string?                         details = default,
         [CallerArgumentExpression("actualValues")]
         string? parameterName = default,
-        [CallerMemberName]
-        string? rejectedBy = default
+        [CallerMemberName] string? rejectedBy = default
     ) {
         (T, T) result;
         var    has2 = HaveSize<IList<T>, T>(actualValues?.AsList(), 2, details, parameterName, rejectedBy);
@@ -367,13 +372,11 @@ public static partial class Must {
     }
 
     public static (T, T, T) Have3<T>(
-        [InstantHandle]
-        IEnumerable<T>? actualValues,
-        string? details = default,
+        [InstantHandle] IEnumerable<T>? actualValues,
+        string?                         details = default,
         [CallerArgumentExpression("actualValues")]
         string? parameterName = default,
-        [CallerMemberName]
-        string? rejectedBy = default
+        [CallerMemberName] string? rejectedBy = default
     ) {
         var has3 = HaveSize<IList<T>, T>(actualValues?.AsList(), 3, details, parameterName, rejectedBy);
 
