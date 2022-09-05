@@ -1,7 +1,8 @@
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
+
+using FowlFever.BSharp.Strings;
 
 namespace FowlFever.BSharp.Exceptions;
 
@@ -35,7 +36,9 @@ public partial class Must {
             return actual;
         }
 
-        throw new RejectionException(actual, details, _actual, _caller, $"({_actual}: [{actual}]) must equal ({_expected}: [{expected}])");
+        static string EqString(T? expected, string? _expected) => expected?.ToString() == _expected ? _expected.OrNullPlaceholder() : $"({_expected}: [{expected}])";
+
+        throw new RejectionException(actual, details, _actual, _caller, $"({_actual}: [{actual}]) must equal {EqString(expected, _expected)}");
     }
 
     /// <summary>
@@ -53,11 +56,14 @@ public partial class Must {
         string? _condition = default,
         [CallerMemberName] string? _caller = default
     ) {
-        Debug.Assert(true);
         if (condition) {
             return;
         }
 
-        throw new RejectionException(details: $"{_condition} was {condition}!", _caller: _caller);
+        throw new RejectionException(
+            details: details,
+            _caller: _caller,
+            reason: $"{_condition} must be true"
+        );
     }
 }
