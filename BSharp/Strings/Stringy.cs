@@ -41,7 +41,7 @@ public static class Stringy {
     }
 
     /// <summary>
-    /// Concatenates one or more <see cref="ReadOnlySpan{T}"/>s of <see cref="char"/>s into a single <see cref="string"/>.
+    /// Concatenates a bunch of <see cref="ReadOnlySpan{T}"/>s of <see cref="char"/>s into a single <see cref="string"/>.
     /// </summary>
     /// <param name="a"><see cref="char"/>s</param>
     /// <param name="b"><see cref="char"/>s</param>
@@ -49,6 +49,8 @@ public static class Stringy {
     /// <param name="d"><see cref="char"/>s</param>
     /// <param name="e"><see cref="char"/>s</param>
     /// <param name="f"><see cref="char"/>s</param>
+    /// <param name="g"><see cref="char"/>s</param>
+    /// <param name="h"><see cref="char"/>s</param>
     /// <returns>a new <see cref="string"/></returns>
     public static string Concat(
         ReadOnlySpan<char> a,
@@ -56,18 +58,29 @@ public static class Stringy {
         ReadOnlySpan<char> c = default,
         ReadOnlySpan<char> d = default,
         ReadOnlySpan<char> e = default,
-        ReadOnlySpan<char> f = default
+        ReadOnlySpan<char> f = default,
+        ReadOnlySpan<char> g = default,
+        ReadOnlySpan<char> h = default
     ) {
-        var        length = MultiSpan.Length(a, b, c, d, e, f);
-        Span<char> span   = stackalloc char[length];
-        var        pos    = 0;
-        span.Write(a, ref pos)
-            .Write(b, ref pos)
-            .Write(c, ref pos)
-            .Write(d, ref pos)
-            .Write(e, ref pos)
-            .Write(f, ref pos);
-        return new string(span);
+        return stackalloc char[
+                   a.Length +
+                   b.Length +
+                   c.Length +
+                   d.Length +
+                   e.Length +
+                   f.Length +
+                   g.Length +
+                   h.Length
+               ]
+               .Start(a, out var pos)
+               .Write(b, ref pos)
+               .Write(c, ref pos)
+               .Write(d, ref pos)
+               .Write(e, ref pos)
+               .Write(f, ref pos)
+               .Write(g, ref pos)
+               .Write(h, ref pos)
+               .ToString();
     }
 
     /// <summary>
@@ -76,8 +89,8 @@ public static class Stringy {
     /// <param name="joiner">the string interposed betwixt <paramref name="a"/> and <paramref name="b"/></param>
     /// <param name="a">the first string</param>
     /// <param name="b">the second string</param>
-    /// <returns></returns>
-    public static string JoinNonBlank(ReadOnlySpan<char> joiner, ReadOnlySpan<char> a, ReadOnlySpan<char> b) {
+    /// <returns>a new <see cref="string"/></returns>
+    public static string JoinNonBlank(ReadOnlySpan<char> a, ReadOnlySpan<char> b, ReadOnlySpan<char> joiner = default) {
         if (a.IsBlank()) {
             return b.ToString();
         }
@@ -87,18 +100,5 @@ public static class Stringy {
         }
 
         return Concat(a, joiner, b);
-    }
-
-    /// <inheritdoc cref="JoinNonBlank(System.ReadOnlySpan{char},System.ReadOnlySpan{char},System.ReadOnlySpan{char})"/>
-    public static string JoinNonBlank(
-        ReadOnlySpan<char> joiner,
-        ReadOnlySpan<char> a,
-        ReadOnlySpan<char> b,
-        ReadOnlySpan<char> c,
-        ReadOnlySpan<char> d = default,
-        ReadOnlySpan<char> e = default,
-        ReadOnlySpan<char> f = default
-    ) {
-        throw new NotImplementedException();
     }
 }
