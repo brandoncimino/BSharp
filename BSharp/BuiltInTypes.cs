@@ -155,8 +155,8 @@ public static class BuiltInTypes {
     /// <remarks>
     /// <ul>
     /// <li>✔ <see cref="Void"/> evaluates to <c>"void"</c>.</li>
-    /// <li>❌ <see cref="Nullable{T}"/> types do <b>NOT</b> return a <paramref name="keyword"/>.</li>
-    /// <li>❌ <see cref="Enum"/> and <see cref="Type.IsEnum"/> types do <b>NOT</b> return a <paramref name="keyword"/>.</li>
+    /// <li>❌ <see cref="Nullable{T}"/> types do <b>NOT</b> return a keyword.</li>
+    /// <li>❌ <see cref="Enum"/> and <see cref="Type.IsEnum"/> types do <b>NOT</b> return a keyword.</li>
     /// </ul>
     /// </remarks>
     /// <example>
@@ -169,10 +169,10 @@ public static class BuiltInTypes {
     /// <param name="type">the <see cref="Type"/> that might have a keyword</param>
     /// <returns>the <a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/built-in-types">built-in type</a> keyword, if found; otherwise, <c>null</c></returns>
     [Pure]
-    public static string? GetKeyword(Type type) => AsBuiltInType(type)?.GetKeyword();
+    public static string? GetKeyword(this Type type) => AsBuiltInType(type)?.GetKeyword();
 
     /// <summary>
-    /// Retrieves the <a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/built-in-types">built-in type</a> that corresponds to the given keyword <i>(<c>int</c>)</i>, <see cref="MemberInfo.Name"/> <i>(<c>Int32</c>)</i>, or <see cref="GetRuntimeType.FullName"/> <i>(<c>System.Int32</c>)</i>.
+    /// Retrieves the <a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/built-in-types">built-in type</a> that corresponds to the given keyword <i>(<c>int</c>)</i>, <see cref="MemberInfo.Name"/> <i>(<c>Int32</c>)</i>, or <see cref="Type.FullName"/> <i>(<c>System.Int32</c>)</i>.
     /// </summary>
     /// <remarks>
     /// <ul>
@@ -194,7 +194,7 @@ public static class BuiltInTypes {
     /// <item><term><c>"int?"</c></term><description><c>null</c></description></item>
     /// </list>
     /// </example>
-    /// <param name="nameOrKeyword">a <a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/built-in-types">built-in type</a> keyword, <see cref="MemberInfo.Name"/>, or <see cref="GetRuntimeType.FullName"/>.
+    /// <param name="nameOrKeyword">a <a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/built-in-types">built-in type</a> keyword, <see cref="MemberInfo.Name"/>, or <see cref="Type.FullName"/>.
     /// </param>
     /// <returns>the corresponding <a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/built-in-types">built-in type</a>, if found; otherwise, <c>null</c></returns>
     [Pure]
