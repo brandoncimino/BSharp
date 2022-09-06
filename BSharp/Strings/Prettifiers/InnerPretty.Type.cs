@@ -36,7 +36,7 @@ internal static partial class InnerPretty {
         }
 
         // if the type is generic, we need to trim the `n and replace it with the generic type arguments
-        return type.IsGenericType ? PrettifyGenericType(type, settings) : type.NameOrKeyword();
+        return type.IsGenericType ? PrettifyGenericType(type, settings) : type.GetKeyword() ?? type.Name;
 
         #region Local methods
 
@@ -112,9 +112,7 @@ internal static partial class InnerPretty {
         #endregion
     }
 
-    [Pure] public static ReadOnlySpan<char> PrettifyType<T>(this T               obj,  PrettificationSettings? settings = default) => (obj?.GetType() ?? typeof(T)).PrettifyType(settings);
-    [Pure] public static ReadOnlySpan<char> PrettifyType<T>(this Span<T>         span, PrettificationSettings? settings = default) => span.SpanType().PrettifyType();
-    [Pure] public static ReadOnlySpan<char> PrettifyType<T>(this ReadOnlySpan<T> span, PrettificationSettings? settings = default) => span.SpanType().PrettifyType();
+    [Pure] public static string PrettifyType<T>(this T obj, PrettificationSettings? settings = default) => (obj?.GetType() ?? typeof(T)).PrettifyType(settings);
 
     [Experimental]
     public static string PrettifyNullable(this NullabilityInfo info, PrettificationSettings? settings = default) {
