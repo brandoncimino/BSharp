@@ -69,10 +69,12 @@ public class RejectionException : ArgumentException {
     public RejectionException(
         string?                    details        = default,
         Exception?                 innerException = default,
+        string?                    reason         = default,
         [CallerMemberName] string? _caller        = default
     ) : base(null, innerException) {
         Details    = details;
         RejectedBy = _caller;
+        Reason     = reason;
     }
 
     public RejectionException(
