@@ -107,7 +107,7 @@ public partial class PrettificationTests {
                 $"Short:    {actualType.PrettifyType(settings_short)}",
                 $"None:     {actualType.PrettifyType(settings_none)}",
                 $"DeclaringType:    {actualType.DeclaringType}",
-                $"NameOrKeyword:    {actualType.NameOrKeyword()}"
+                $"GetKeyword():     {actualType.GetKeyword()}"
             }.JoinLines()
         );
         Asserter.Against(actualType)

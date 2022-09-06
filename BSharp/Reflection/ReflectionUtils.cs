@@ -451,38 +451,6 @@ namespace FowlFever.BSharp.Reflection {
 
         #endregion
 
-        #region Type Keywords
-
-        private static readonly Dictionary<Type, string> TypeKeywords = new Dictionary<Type, string>() {
-            [typeof(int)]     = "int",
-            [typeof(uint)]    = "uint",
-            [typeof(short)]   = "short",
-            [typeof(ushort)]  = "ushort",
-            [typeof(long)]    = "long",
-            [typeof(ulong)]   = "ulong",
-            [typeof(double)]  = "double",
-            [typeof(float)]   = "float",
-            [typeof(bool)]    = "bool",
-            [typeof(byte)]    = "byte",
-            [typeof(decimal)] = "decimal",
-            [typeof(sbyte)]   = "sbyte",
-            [typeof(char)]    = "char",
-            [typeof(object)]  = "object",
-            [typeof(string)]  = "string"
-        };
-
-        [Pure]
-        [ContractAnnotation("null => stop")]
-        public static string NameOrKeyword(this Type type) {
-            if (type == null) {
-                throw new ArgumentNullException(nameof(type));
-            }
-
-            return TypeKeywords.GetOrDefault(type, () => type.Name) ?? throw new InvalidOperationException();
-        }
-
-        #endregion
-
         #region Compiler Generation
 
         public static bool IsCompilerGenerated(this MethodInfo methodInfo) {
