@@ -4,6 +4,8 @@ using System.Collections.Generic;
 namespace FowlFever.BSharp;
 
 public static partial class Comparisons {
+    #region ComparedWith
+
     /// <summary>
     /// Performs an <see cref="IComparer{T}.Compare"/>-ison against 2 objects, returning the result as a nice <see cref="ComparisonResult"/>. 
     /// </summary>
@@ -32,8 +34,12 @@ public static partial class Comparisons {
     }
 
     /// <inheritdoc cref="ComparedWith{T}(T?,T?,System.Collections.Generic.IComparer{T?}?)"/>
-    public static ComparisonResult ComparedWith<T>(this T? self, T? other, Comparison<T> comparison)
-        => comparison.GetCompared(self, other);
+    public static ComparisonResult ComparedWith<T>(this T? self, T? other, Comparison<T> comparison) => comparison.GetCompared(self, other);
+
+    /// <inheritdoc cref="ComparedWith{T}(T?,T?,System.Collections.Generic.IComparer{T?}?)"/>
+    public static ComparisonResult ComparedWith(this ReadOnlySpan<char> self, ReadOnlySpan<char> other, StringComparison comparisonType = StringComparison.Ordinal) => ToComparisonResult(self.CompareTo(other, comparisonType));
+
+    #endregion
 
     /// <inheritdoc cref="Comparison{T}"/>
     /// <returns>a <see cref="ComparisonResult"/> describing the relationship between <paramref name="x"/> and <paramref name="y"/>.</returns>
