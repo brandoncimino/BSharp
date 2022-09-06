@@ -3,6 +3,8 @@ using System.Linq;
 
 using FowlFever.BSharp.Collections;
 
+using JetBrains.Annotations;
+
 namespace FowlFever.BSharp.Strings;
 
 /// <summary>
@@ -52,6 +54,16 @@ public static class StringEnumerableExtensions {
     /// </summary>
     /// <param name="strings">a sequence of <see cref="string"/>s</param>
     /// <param name="str">the <see cref="string"/> to be added</param>
+    /// <param name="moreStrings">more <see cref="string"/>s to be added</param>
     /// <returns>the <see cref="Enumerable.Append{TSource}"/>ed sequence, if we went through with it; otherwise, the original <paramref name="strings"/></returns>
-    public static IEnumerable<string> AppendNonBlank(this IEnumerable<string> strings, string? str) => str.IsNotBlank() ? strings.Append(str) : strings;
+    [LinqTunnel]
+    public static IEnumerable<string> AppendNonBlank(this IEnumerable<string> strings, string? str, params string?[] moreStrings) => strings.AppendNonBlank(moreStrings.Prepend(str));
+
+    /// <summary>
+    /// <see cref="Enumerable.Concat{TSource}"/>s all of the <see cref="NonBlank{T}"/> entries from <paramref name="moreStrings"/>.
+    /// </summary>
+    /// <param name="strings"></param>
+    /// <param name="moreStrings"></param>
+    /// <returns></returns>
+    public static IEnumerable<string> AppendNonBlank(this IEnumerable<string> strings, IEnumerable<string?>? moreStrings) => moreStrings == null ? strings : strings.Concat(moreStrings.NonBlank());
 }
