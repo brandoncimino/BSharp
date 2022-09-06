@@ -5,20 +5,11 @@ namespace FowlFever.BSharp.Memory;
 public static partial class Spanq {
     #region Writing
 
-    private static Span<T> RequireIndex<T>(this Span<T> span, int index) {
-        Console.WriteLine($"validating index {index} against span {span.FormatString()}");
-        if ((index >= 0 && index < span.Length) == false) {
-            throw new IndexOutOfRangeException($"Index {index} is out-of-bounds for a {nameof(Span<T>)}.{nameof(Span<T>.Length)} of {span.Length}!");
-        }
-
-        return span;
-    }
-
     /// <summary>
     /// Helps you "fill" a <see cref="Span{T}"/> with stuff.
     /// </summary>
     /// <example>
-    /// Chaining <see cref="Write{T}"/> calls together lets you add entries to a <see cref="Span{T}"/> in a nice, clean way:
+    /// Chaining <see cref="Write{T}(System.Span{T},System.ReadOnlySpan{T},ref int)"/> calls together lets you add entries to a <see cref="Span{T}"/> in a nice, clean way:
     /// <code><![CDATA[
     /// // Some strings we want to combine into a single Span<char>
     /// var one =   "one";
@@ -54,9 +45,9 @@ public static partial class Spanq {
     /// <see cref="ReadOnlySpan{T}.CopyTo">Copies</see> <paramref name="toWrite"/> to <paramref name="span"/>, updating <paramref name="cursor"/> to the index in <paramref name="span"/> where we finished writing.
     /// </summary>
     /// <remarks>
-    /// This method can be used as the first in a chain of <see cref="Write{T}"/> calls to avoid having to separately declare the <paramref name="cursor"/> variable.
+    /// This method can be used as the first in a chain of <see cref="Write{T}(System.Span{T},System.ReadOnlySpan{T},ref int)"/> calls to avoid having to separately declare the <paramref name="cursor"/> variable.
     /// </remarks>
-    /// <inheritdoc cref="Write{T}"/>
+    /// <inheritdoc cref="Write{T}(System.Span{T},System.ReadOnlySpan{T},ref int)"/>
     public static Span<T> Start<T>(this Span<T> span, ReadOnlySpan<T> toWrite, out int cursor) {
         toWrite.CopyTo(span);
         cursor = toWrite.Length;
@@ -83,7 +74,21 @@ public static partial class Spanq {
     }
 
     /// <summary>
-    /// Equivalent to <see cref="Write{T}"/> but with an optional <paramref name="joiner"/> applied if <paramref name="position"/> &gt; 0 and <see cref="source"/> is not <see cref="ReadOnlySpan{T}.Empty"/>.
+    /// Sets <c>this[cursor]</c> to <paramref name="toAdd"/>, then advances the <paramref name="cursor"/> by 1.
+    /// </summary>
+    /// <param name="span">this <see cref="Span{T}"/></param>
+    /// <param name="toAdd">the <typeparamref name="T"/></param>
+    /// <param name="cursor">the index where <paramref name="toAdd"/> will be placed</param>
+    /// <typeparam name="T">the <see cref="Span{T}"/> element type</typeparam>
+    /// <returns>this <see cref="Span{T}"/>, for method chaining</returns>
+    public static Span<T> Write<T>(this Span<T> span, T toAdd, ref int cursor) {
+        span[cursor] =  toAdd;
+        cursor       += 1;
+        return span;
+    }
+
+    /// <summary>
+    /// Equivalent to <see cref="Write{T}(System.Span{T},System.ReadOnlySpan{T},ref int)"/> but with an optional <paramref name="joiner"/> applied if <paramref name="position"/> &gt; 0 and <see cref="source"/> is not <see cref="ReadOnlySpan{T}.Empty"/>.
     /// </summary>
     /// <param name="destination"></param>
     /// <param name="source"></param>
