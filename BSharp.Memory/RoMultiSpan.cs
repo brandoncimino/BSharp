@@ -230,7 +230,9 @@ public readonly ref partial struct RoMultiSpan<T> {
 
     #region Object methods
 
-    [Pure] public new Type GetType() => typeof(RoMultiSpan<T>);
+    /// <inheritdoc cref="object.GetType"/>
+    [Pure]
+    public new Type GetType() => typeof(RoMultiSpan<T>);
 
     /// <inheritdoc cref="ReadOnlySpan{T}.Equals(object?)"/>
     [Obsolete($"{nameof(RoMultiSpan<T>)}.{nameof(Equals)}() will always throw an exception. Use the equality operator instead. (See {nameof(ReadOnlySpan<T>)}.{nameof(ReadOnlySpan<T>.Equals)}())")]
