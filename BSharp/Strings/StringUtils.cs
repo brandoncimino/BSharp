@@ -7,6 +7,7 @@ using System.Text.RegularExpressions;
 using FowlFever.BSharp.Collections;
 using FowlFever.BSharp.Enums;
 using FowlFever.BSharp.Exceptions;
+using FowlFever.BSharp.Memory;
 using FowlFever.BSharp.Strings.Settings;
 using FowlFever.Conjugal.Affixing;
 
@@ -16,7 +17,6 @@ using NotNull = System.Diagnostics.CodeAnalysis.NotNullAttribute;
 
 namespace FowlFever.BSharp.Strings;
 
-[PublicAPI]
 public static partial class StringUtils {
     public const int    DefaultIndentSize   = 2;
     public const string DefaultIndentString = "  ";
@@ -138,58 +138,19 @@ public static partial class StringUtils {
     }
 
     /// <inheritdoc cref="Repeat(string,int,string)" />
-    public static string Repeat(this char toRepeat, [NonNegativeValue] int repetitions, string? separator = "") {
-        Must.BePositive(repetitions, nameof(repetitions), nameof(Repeat));
-        return separator is null ? new string(toRepeat, repetitions) : string.Join(separator, Enumerable.Repeat(toRepeat, repetitions));
-    }
-
-    /// <summary>
-    ///     Joins together <paramref name="baseString" /> and <paramref name="stringToJoin" /> via <paramref name="separator" />,
-    ///     <b>
-    ///         <i>UNLESS</i>
-    ///     </b>
-    ///     <paramref name="baseString" /> is <c>null</c>, in which case (<paramref name="stringToJoin" /> <c>?? ""</c>) is returned.
-    /// </summary>
-    /// <remarks>
-    ///     The idea of this is that it can be used to build out a single string and "list out" items, rather than building a <see cref="List{T}" /> and calling <see cref="string.Join(string,System.Collections.Generic.IEnumerable{string})" /> against it.
-    /// </remarks>
-    /// <example>
-    ///     <code><![CDATA[
-    /// "yolo".Join("swag")      ⇒ yoloswag
-    /// "yolo".Join("swag","; ") ⇒ yolo; swag
-    /// "".Join("swag", ":")     ⇒ :swag
-    /// null.Join(":")           ⇒ swag
-    /// ]]></code>
-    /// </example>
-    /// <param name="baseString">the first <see cref="string"/></param>
-    /// <param name="stringToJoin">the second <see cref="string"/></param>
-    /// <param name="separator">the <see cref="string"/> interposed betwixt <paramref name="baseString"/> and <paramref name="stringToJoin"/></param>
-    /// <returns><paramref name="baseString"/>, <paramref name="separator"/>, and <paramref name="stringToJoin"/> combined together</returns>
-    public static string Join(this string? baseString, string? stringToJoin, string? separator = "") {
-        return baseString == null ? stringToJoin ?? "" : string.Join(separator, baseString, stringToJoin);
-    }
-
-    /// <summary>
-    /// Joins two <see cref="string"/>s together <b>IF</b> they both <see cref="IsNotBlank(string?)"/>.
-    /// </summary>
-    /// <param name="baseString">this <see cref="string"/></param>
-    /// <param name="stringToJoin">another <see cref="string"/></param>
-    /// <param name="separator">an optional separator to interpose betwixt <paramref name="baseString"/> and <paramref name="stringToJoin"/></param>
-    /// <returns>the combined <see cref="string"/></returns>
-    public static string JoinNonBlank(this string? baseString, ReadOnlySpan<char> stringToJoin, ReadOnlySpan<char> separator = default) {
-        if (stringToJoin.IsBlank()) {
-            return baseString ?? "";
+    public static string Repeat(this char toRepeat, [NonNegativeValue] int repetitions, ReadOnlySpan<char> separator = default) {
+        if (repetitions <= 1 || separator.IsEmpty) {
+            return new string(toRepeat, repetitions);
         }
 
-        if (baseString.IsBlank()) {
-            return stringToJoin.ToString();
+        Span<char> chars = stackalloc char[repetitions + (repetitions - 1) * separator.Length];
+        var        pos   = 0;
+
+        for (int i = 0; i < repetitions; i++) {
+            chars.WriteJoin(toRepeat, separator, ref pos);
         }
 
-        return Stringy.Concat(baseString, separator, stringToJoin);
-    }
-
-    public static string JoinNonEmpty(this string? baseString, ReadOnlySpan<char> stringToJoin, ReadOnlySpan<char> separator = default) {
-        throw new NotImplementedException();
+        return chars.ToString();
     }
 
     /// <summary>
@@ -672,18 +633,12 @@ public static partial class StringUtils {
     /// <returns><see cref="string.IsNullOrWhiteSpace"/></returns>
     public static bool IsBlank([NotNullWhen(false)] this string? str) => string.IsNullOrWhiteSpace(str);
 
-    /// <returns>true if the <paramref name="span"/> <see cref="MemoryExtensions.Trim(System.ReadOnlySpan{char})"/>s to be <see cref="ReadOnlySpan{T}.IsEmpty"/></returns>
-    public static bool IsBlank(this ReadOnlySpan<char> span) => span.Trim().IsEmpty;
-
     /// <summary>
     /// The inverse of <see cref="IsBlank(string?)"/>
     /// </summary>
     /// <param name="str">this <see cref="string"/></param>
     /// <returns><b>NOT</b> <see cref="string.IsNullOrWhiteSpace"/></returns>
     public static bool IsNotBlank([NotNullWhen(true)] this string? str) => !str.IsBlank();
-
-    /// <returns>true if the <paramref name="span"/> <see cref="MemoryExtensions.Trim(System.Memory{char})"/>s to be not-<see cref="ReadOnlySpan{T}.IsEmpty"/></returns>
-    public static bool IsNotBlank(this ReadOnlySpan<char> span) => !span.IsBlank();
 
     #endregion
 
