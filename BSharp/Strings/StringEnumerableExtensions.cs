@@ -46,4 +46,12 @@ public static class StringEnumerableExtensions {
         where T : IEnumerable<string?>? {
         return strings.OrEmpty().Where(static str => string.IsNullOrWhiteSpace(str) == false)!;
     }
+
+    /// <summary>
+    /// <see cref="Enumerable.Append{TSource}"/>s <paramref name="str"/> if it <see cref="StringUtils.IsNotBlank(string?)"/>.
+    /// </summary>
+    /// <param name="strings">a sequence of <see cref="string"/>s</param>
+    /// <param name="str">the <see cref="string"/> to be added</param>
+    /// <returns>the <see cref="Enumerable.Append{TSource}"/>ed sequence, if we went through with it; otherwise, the original <paramref name="strings"/></returns>
+    public static IEnumerable<string> AppendNonBlank(this IEnumerable<string> strings, string? str) => str.IsNotBlank() ? strings.Append(str) : strings;
 }
