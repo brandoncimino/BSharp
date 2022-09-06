@@ -17,7 +17,8 @@ public readonly record struct Palette {
     public Stylist Borders    { get; init; }
     public Stylist Delimiters { get; init; }
 
-    public PathPalette PathPalette { get; init; }
+    public PathPalette      PathPalette      { get; init; }
+    public ExceptionPalette ExceptionPalette { get; init; }
 
     public record SeverityColors(Color? Good = default, Color? Bad = default);
 
@@ -28,15 +29,16 @@ public readonly record struct Palette {
     /// </summary>
     public static readonly Palette HardCoded = new() {
         Numbers    = Color.Purple,
-        Strings    = new Stylist(Color.DodgerBlue1, Decoration.Italic),
-        Hyperlinks = new Stylist(Color.Blue,        Decoration.Underline),
+        Strings    = new Stylist(Color.SkyBlue1, Decoration.Italic),
+        Hyperlinks = new Stylist(Color.Blue,     Decoration.Underline),
         Severity = new SeverityColors {
             Good = Color.Green,
             Bad  = Color.Red,
         },
-        Titles     = new Style(decoration: Decoration.Bold),
-        Delimiters = Color.DarkBlue,
-        Borders    = Color.Orange1,
+        Titles           = new Style(decoration: Decoration.Bold),
+        Delimiters       = Color.DarkBlue,
+        Borders          = Color.Orange1,
+        ExceptionPalette = new ExceptionPalette(),
     };
 
     /// <summary>
@@ -51,7 +53,9 @@ public readonly record struct Palette {
 
     #region Conversions
 
-    public static implicit operator PathPalette(Palette palette) => palette.PathPalette;
+    public static implicit operator PathPalette(Palette      palette) => palette.PathPalette;
+    public static implicit operator ExceptionPalette(Palette palette) => palette.ExceptionPalette;
+    public static implicit operator ExceptionStyle(Palette   palette) => palette.ExceptionPalette;
 
     #endregion
 }
