@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 
@@ -16,9 +15,11 @@ public class OneLineList : IRenderable {
     public           ICircumfix                  Bookends       { get; init; } = BSharp.Enums.Bookends.SquareBrackets;
     public           Stylist                     BookendStyle   { get; init; }
     public           Stylist                     DelimiterStyle { get; init; }
-    private          Segment                     PrefixSegment  => Bookends.GetPrefix().EscapeSegment(BookendStyle);
-    private          Segment                     SuffixSegment  => Bookends.GetSuffix().EscapeSegment(BookendStyle);
-    private          Segment                     JoinerSegment  => new(", ", DelimiterStyle);
+    private          Segment?                    _prefixSegment;
+    private          Segment                     PrefixSegment => _prefixSegment ??= Bookends.GetPrefix().ToSegment(BookendStyle);
+    private          Segment?                    _suffixSegment;
+    private          Segment                     SuffixSegment => _suffixSegment ??= Bookends.GetSuffix().ToSegment(BookendStyle);
+    private          Segment                     JoinerSegment => new(", ", DelimiterStyle);
 
     public OneLineList(IEnumerable<IRenderable> stuff) {
         _stuff = stuff.ToImmutableList();
@@ -31,27 +32,22 @@ public class OneLineList : IRenderable {
 
     private SegmentLine GetSegmentLine(RenderContext context, int maxWidth) {
         var line = new SegmentLine { PrefixSegment };
-        FlatJoin(line, _stuff, it => it.Render(context, maxWidth), JoinerSegment);
+
+        var first = true;
+
+        foreach (var renderable in _stuff) {
+            if (first) {
+                first = false;
+            }
+            else {
+                line.Add(JoinerSegment);
+            }
+
+            line.AddRange(renderable.Render(context, maxWidth));
+        }
+
         line.Add(SuffixSegment);
         return line;
-    }
-
-    private static TList FlatJoin<TList, T, T2>(TList list, IEnumerable<T2> stuff, Func<T2, IEnumerable<T>> selector, T joiner)
-        where TList : List<T> {
-        using var erator = stuff.GetEnumerator();
-
-        if (erator.MoveNext() == false) {
-            return list;
-        }
-
-        list.AddRange(selector(erator.Current));
-
-        while (erator.MoveNext()) {
-            list.Add(joiner);
-            list.AddRange(selector(erator.Current));
-        }
-
-        return list;
     }
 
     public Measurement Measure(RenderContext context, int maxWidth) {
