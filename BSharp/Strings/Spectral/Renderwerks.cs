@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -20,11 +21,13 @@ public static class Renderwerks {
     public static IRenderable GetRenderable<T>(T value, Palette? palette = default) {
         var pal = palette.OrFallback(Palette);
         var renderable = value switch {
+            string s              => default,
             IRenderable r         => r,
             Exception e           => e.GetRenderable(),
-            Uri uri               => uri.GetRenderable(pal.PathPalette),
-            FileSystemInfo f      => f.GetRenderable(pal.PathPalette),
-            IEnumerable<object> e => GetRenderable(e),
+            Uri uri               => uri.GetRenderable(pal),
+            FileSystemInfo f      => f.GetRenderable(pal),
+            IEnumerable<object> e => GetRenderable(e, pal),
+            IEnumerable e         => GetRenderable(e.Cast<object>()),
             _                     => null
         };
 
@@ -60,7 +63,7 @@ public static class Renderwerks {
     /// <param name="palette">an optional <see cref="Strings.Spectral.Palette"/> to use over the default <see cref="Palette"/></param>
     /// <typeparam name="T">the type of entries in the <paramref name="span"/></typeparam>
     /// <returns>a new <see cref="IRenderable"/></returns>
-    public static IRenderable GetRenderable<T>(ReadOnlySpan<T> span, Palette? palette = default) => GetRenderable(span.ToArray(), palette);
+    public static IRenderable GetRenderable<T>(ReadOnlySpan<T> span, Palette? palette = default) => GetRenderable(span.ToArray().AsEnumerable(), palette);
 
     /// <summary>
     /// Similar to <see cref="GetRenderable{T}(T,System.Nullable{FowlFever.BSharp.Strings.Spectral.Palette})"/>, but accepts a <see cref="Span{T}"/>.
