@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
 
@@ -14,12 +16,13 @@ public class RejectionException : ArgumentException {
     private const           string Shrug      = "🤷";
     private const           string ReasonIcon = "🙅";
     private const           string RejectIcon = "🚮";
-    private static readonly string Indent     = new(' ', RejectIcon.Length);
+    private static readonly string Indent     = new(' ', StringInfo.ParseCombiningCharacters(RejectIcon).Length);
     private const           string NullIcon   = "⛔";
     private const           string NoReason   = $"<reason not specified {Shrug}>";
     private const           string NoRejector = $"<somebody {Shrug}>";
 
     private const int DefaultValueStringLengthLimit = 30;
+    private       int ValueStringLengthLimit { get; init; } = DefaultValueStringLengthLimit;
 
     public object? ActualValue { get; }
 
@@ -43,25 +46,34 @@ public class RejectionException : ArgumentException {
         init => Data[nameof(Details)] = value;
     }
 
-    private int ValueStringLengthLimit { get; init; } = DefaultValueStringLengthLimit;
-
     private string Preamble => $"`{RejectedBy ?? NoRejector}` rejected `{ParamName}`";
 
     public override string Message {
         get {
-            var lines = new[] {
-                            Preamble,
-                            Details,
-                            $"Reason: {Reason ?? NoReason}",
-                            $"Actual: {ActualValueString}",
-                        }
-                        .Where(it => string.IsNullOrEmpty(it) == false)
-                        .Select(
-                            (ln, i) => {
-                                var indent = i == 0 ? RejectIcon : Indent;
-                                return $"{indent} {ln}";
-                            }
-                        );
+            static IEnumerable<string> _AddLine(IEnumerable<string> lines, string? value, string? label = default) {
+                if (string.IsNullOrWhiteSpace(value)) {
+                    return lines;
+                }
+
+                lines = lines.Append(label != null ? $"{label}: {value}" : value);
+
+                return lines;
+            }
+
+            var lines = Enumerable.Empty<string>();
+
+            lines = _AddLine(lines, Preamble);
+            lines = _AddLine(lines, Details);
+            lines = _AddLine(lines, Reason,            "Reason");
+            lines = _AddLine(lines, ActualValueString, "Actual");
+
+            lines = lines.Select(
+                (ln, i) => {
+                    var indent = i == 0 ? RejectIcon : Indent;
+                    return $"{indent} {ln}";
+                }
+            );
+
             return string.Join("\n", lines);
         }
     }
