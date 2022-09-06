@@ -11,6 +11,16 @@ public readonly ref partial struct RoMultiSpan<T> {
 
     public RoMultiSpan<T> Where(ReadOnlySpanFunc<T, bool> predicate) => new SpanEnumerator(this, predicate).ToMultiSpan();
 
+    public TOut[] Select<TOut>(ReadOnlySpanFunc<T, TOut> selector) {
+        var results = new TOut[SpanCount];
+
+        for (int i = 0; i < SpanCount; i++) {
+            results[i] = selector(this[i]);
+        }
+
+        return results;
+    }
+
     /// <summary>
     /// Enumerates the individual <see cref="ReadOnlySpan{T}"/>s in a <see cref="RoMultiSpan{T}"/>.
     /// </summary>
