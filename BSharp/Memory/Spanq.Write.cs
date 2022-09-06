@@ -6,6 +6,7 @@ public static partial class Spanq {
     #region Writing
 
     private static Span<T> RequireIndex<T>(this Span<T> span, int index) {
+        Console.WriteLine($"validating index {index} against span {span.FormatString()}");
         if ((index >= 0 && index < span.Length) == false) {
             throw new IndexOutOfRangeException($"Index {index} is out-of-bounds for a {nameof(Span<T>)}.{nameof(Span<T>.Length)} of {span.Length}!");
         }
@@ -56,8 +57,9 @@ public static partial class Spanq {
         }
 
         if (shouldValidatePosition) {
-            span.RequireIndex(position)
-                .RequireIndex(position + toWrite.Length);
+            if (position < 0 || position >= span.Length || (position + toWrite.Length) > span.Length) {
+                throw new ArgumentOutOfRangeException($"Can't write {toWrite.Length} entires to a span of size {span.Length} starting at position {position}!");
+            }
         }
 
         foreach (var c in toWrite) {
