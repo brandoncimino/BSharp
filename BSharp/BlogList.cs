@@ -10,16 +10,26 @@ using Spectre.Console.Rendering;
 namespace FowlFever.BSharp;
 
 public sealed record BlogList : IDisposable, IRenderable {
+    /// <summary>
+    /// The <see cref="Strings.Spectral.Palette"/> used when the <see cref="BlogList"/>.<see cref="Palette"/> isn't specified.
+    /// </summary>
+    public static Func<Palette> DefaultPalette { get; set; } = () => Palette.Fallback;
+
     private readonly List<(IRenderable, IRenderable)> _rows = new();
     private readonly string?                          _title;
-    public           Palette                          Palette { get; init; }
+    private readonly Palette?                         _palette;
+
+    public Palette Palette {
+        get => _palette.OrFallback(DefaultPalette.Invoke(), Palette.Fallback);
+        init => _palette = value;
+    }
 
     public BlogList([CallerMemberName] string title = "") {
         _title = title;
     }
 
-    public IRenderable? GetTitle() {
-        return _title?.EscapeSpectre(Palette.Titles.Decorate(Decoration.Underline));
+    private IRenderable? GetTitle() {
+        return _title?.EscapeSpectre(Palette.Titles);
     }
 
     private IRenderable ToRenderable() {
@@ -37,7 +47,19 @@ public sealed record BlogList : IDisposable, IRenderable {
             return grid;
         }
 
-        return new Rows(title, grid) { Expand = false };
+        var grid2 = new Grid().AddColumn()
+                              .AddRow(title)
+                              .AddRow(
+                                  new HRule {
+                                      Style = Palette.Borders
+                                  }
+                              )
+                              .AddRow(grid);
+
+        return new Panel(grid2) {
+            Border      = BoxBorder.Rounded,
+            BorderStyle = Palette.Borders
+        };
     }
 
     public BlogList Post<T, TLabel>(T? value, TLabel? label, Palette? palette = default, [CallerArgumentExpression("value")] string? _expression = default) {
