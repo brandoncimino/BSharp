@@ -14,7 +14,7 @@ internal static class StringBuilderExtensions {
     /// <param name="stringToJoin">the <see cref="string"/> being <see cref="StringBuilder.Append(string)"/>ed</param>
     /// <param name="separator">an optional <see cref="string"/> interposed betwixt the <paramref name="stringBuilder"/> and the <paramref name="stringToJoin"/></param>
     /// <returns>this <see cref="StringBuilder"/></returns>
-    public static StringBuilder AppendNonBlank(this StringBuilder stringBuilder, string? stringToJoin, string? separator = "") {
+    public static StringBuilder AppendNonBlank(this StringBuilder stringBuilder, string? stringToJoin, string? separator = default) {
         if (stringToJoin.IsNotBlank()) {
             stringBuilder.Append(separator)
                          .Append(stringToJoin);
