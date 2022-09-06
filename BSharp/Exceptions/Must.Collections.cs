@@ -58,68 +58,63 @@ public static partial class Must {
 
     public static T ContainIndex<T>(
         [NotNull] T actualValue,
-        Index       requiredIndex,
+        Index       index,
         string?     details = default,
         [CallerArgumentExpression("actualValue")]
-        string? parameterName = default,
-        [CallerMemberName] string? rejectedBy = default
+        string? _index = default,
+        [CallerMemberName] string? _caller = default
     )
         where T : ICollection {
         return Be(
             actualValue,
-            it => it.ContainsIndex(requiredIndex),
+            it => it.ContainsIndex(index),
             details,
-            parameterName,
-            rejectedBy,
-            $"must contain the index [{requiredIndex}] (actual size: {actualValue.Count})"
+            _index,
+            _caller,
+            $"must contain the index [{index}] (actual size: {actualValue.Count})"
         );
     }
 
     public static TCollection ContainIndex<TElements, TCollection>(
         [NotNull] TCollection actualValue,
-        Index                 requiredIndex,
+        Index                 index,
         string?               details = default,
         [CallerArgumentExpression("actualValue")]
-        string? parameterName = default,
-        [CallerMemberName] string? rejectedBy = default
+        string? _index = default,
+        [CallerMemberName] string? _caller = default
     )
         where TCollection : IReadOnlyCollection<TElements> {
         return Be(
             actualValue,
-            it => it.ContainsIndex(requiredIndex),
+            it => it.ContainsIndex(index),
             details,
-            parameterName,
-            rejectedBy,
-            $"must contain the index [{requiredIndex}] (actual size: {actualValue.Count})"
+            _index,
+            _caller,
+            $"must contain the index [{index}] (actual size: {actualValue.Count})"
         );
     }
 
     /// <summary>
-    /// Requires <paramref name="requiredIndex"/> to fall inside of a collection of size <paramref name="collectionLength"/>.
+    /// Requires <paramref name="index"/> to fall inside of a collection of size <paramref name="collectionLength"/>.
     /// </summary>
     /// <param name="collectionLength">the number of elements in the theoretical collection</param>
-    /// <param name="requiredIndex">the <see cref="Index"/> that must fall inside the collection</param>
+    /// <param name="index">the <see cref="Index"/> that must fall inside the collection</param>
     /// <param name="details">optional additional details</param>
-    /// <param name="parameterName">see <see cref="CallerArgumentExpressionAttribute"/></param>
-    /// <param name="rejectedBy">see <see cref="CallerMemberNameAttribute"/></param>
-    /// <returns>the <see cref="Index.GetOffset"/> calculated using <paramref name="requiredIndex"/> and <paramref name="collectionLength"/></returns>
+    /// <param name="_index">see <see cref="CallerArgumentExpressionAttribute"/></param>
+    /// <param name="_caller">see <see cref="CallerMemberNameAttribute"/></param>
+    /// <returns>the <see cref="Index.GetOffset"/> calculated using <paramref name="index"/> and <paramref name="collectionLength"/></returns>
     /// <exception cref="RejectionException">if <see cref="Index.GetOffset"/> results in a value outside of <paramref name="collectionLength"/></exception>
     public static int ContainIndex(
         int     collectionLength,
-        Index   requiredIndex,
+        Index   index,
         string? details = default,
         [CallerArgumentExpression("collectionLength")]
-        string? parameterName = default,
-        [CallerMemberName] string? rejectedBy = default
+        string? _index = default,
+        [CallerMemberName] string? _caller = default
     ) {
-        var offset = requiredIndex.GetOffset(collectionLength);
+        var offset = index.GetOffset(collectionLength);
         if (offset < 0 || offset >= collectionLength) {
-            throw new RejectionException(
-                requiredIndex,
-                details,
-                rejectedBy: rejectedBy,
-                reason: $"the index [{requiredIndex}] is out-of-bounds for a collection of size {collectionLength}!"
-            );
+            throw Exceptions.Reject.IndexOutOfRange(index, collectionLength, details, _index, _caller);
         }
 
         return offset;
@@ -130,10 +125,9 @@ public static partial class Must {
     #region Contain (Range)
 
     public static T ContainRange<T>(
-        [System.Diagnostics.CodeAnalysis.NotNull]
-        T actualValue,
-        Range   range,
-        string? details = default,
+        [NotNull] T actualValue,
+        Range       range,
+        string?     details = default,
         [CallerArgumentExpression("actualValue")]
         string? parameterName = default,
         [CallerMemberName] string? rejectedBy = default

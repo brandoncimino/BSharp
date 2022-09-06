@@ -123,4 +123,30 @@ public static class Reject {
     ) {
         return new UnreachableException(details, _caller, _filePath, _lineNo);
     }
+
+    public static RejectionException IndexOutOfRange(
+        Index                                       index,
+        int                                         collectionSize,
+        string?                                     details = default,
+        [CallerArgumentExpression("index")] string? _index  = default,
+        [CallerMemberName]                  string? _caller = default
+    ) {
+        return new RejectionException(
+            index,
+            details,
+            _index,
+            _caller,
+            $"index {LabelWithExpression(index, _index)} is out-of-bounds for a collection of size {collectionSize}!"
+        );
+    }
+
+    private static string LabelWithExpression<T>(T value, string? expression) {
+        var valueString = value?.ToString()?.Trim() ?? "null";
+
+        if (expression == null || expression.Trim() == valueString) {
+            return valueString;
+        }
+
+        return $"[{expression}: {valueString}]";
+    }
 }
