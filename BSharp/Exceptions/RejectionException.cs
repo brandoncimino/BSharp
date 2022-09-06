@@ -24,8 +24,6 @@ public class RejectionException : ArgumentException {
     private const int DefaultValueStringLengthLimit = 30;
     private       int ValueStringLengthLimit { get; init; } = DefaultValueStringLengthLimit;
 
-    public object? ActualValue { get; }
-
     public string? ActualValueString {
         get => TruncateString(Data[nameof(ActualValueString)]?.ToString(), ValueStringLengthLimit) ?? NullIcon;
         init => Data[nameof(ActualValueString)] = value;
@@ -98,7 +96,6 @@ public class RejectionException : ArgumentException {
         string?                    reason         = default,
         Exception?                 innerException = default
     ) : base(null, _actualValue, innerException) {
-        ActualValue       = actualValue;
         Details           = details;
         ActualValueString = actualValue.OrNullPlaceholder();
         RejectedBy        = rejectedBy;
