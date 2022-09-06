@@ -91,14 +91,13 @@ public static class Stringy {
     /// <param name="b">the second string</param>
     /// <returns>a new <see cref="string"/></returns>
     public static string JoinNonBlank(ReadOnlySpan<char> a, ReadOnlySpan<char> b, ReadOnlySpan<char> joiner = default) {
-        if (a.IsBlank()) {
-            return b.ToString();
-        }
-
-        if (b.IsBlank()) {
-            return a.ToString();
-        }
-
-        return Concat(a, joiner, b);
+        var aBlank = a.IsBlank();
+        var bBlank = b.IsBlank();
+        return (aBlank, bBlank) switch {
+            (true, true) => "",
+            (true, _)    => b.ToString(),
+            (_, true)    => a.ToString(),
+            _            => Concat(a, joiner, b)
+        };
     }
 }
