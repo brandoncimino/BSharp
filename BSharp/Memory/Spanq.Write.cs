@@ -31,11 +31,10 @@ public static partial class Spanq {
     ///
     /// 
     /// Span<char> span = stackalloc[totalLength];  // Allocate a new Span<char>
-    /// var pos = 0;                                // Create a variable to hold the current position that we're writing to
     /// 
     ///                                             //    Span              pos
-    /// span                                        // => [...........]     0
-    ///     .Write(one,   ref pos)                  // => [one........]     3
+    /// span                                        // => [...........]     not yet declared
+    ///     .Start(one,   out var pos)              // => [one........]     3
     ///     .Write(two,   ref pos)                  // => [onetwo.....]     6
     ///     .Write(three, ref pos);                 // => [onetwothree]     11
     ///
@@ -44,27 +43,40 @@ public static partial class Spanq {
     /// </example>
     /// <param name="span">the <see cref="Span{T}"/> being filled</param>
     /// <param name="toWrite">the stuff being added to the <paramref name="span"/></param>
-    /// <param name="position">where we should start adding <paramref name="toWrite"/>. The referenced variable will be updated with the the position where we <b>finished</b> adding <paramref name="toWrite"/></param>
+    /// <param name="cursor">where we should start adding <paramref name="toWrite"/>. The referenced variable will be updated with the the position where we <b>finished</b> adding <paramref name="toWrite"/></param>
     /// <typeparam name="T">the <see cref="Span{T}"/> type</typeparam>
     /// <returns>this <see cref="Span{T}"/>, for method chaining</returns>
-    public static Span<T> Write<T>(this Span<T> span, ReadOnlySpan<T> toWrite, ref int position) {
-        return span.Write(toWrite, ref position, true);
+    public static Span<T> Write<T>(this Span<T> span, ReadOnlySpan<T> toWrite, ref int cursor) {
+        return span.Write(toWrite, ref cursor, true);
     }
 
-    private static Span<T> Write<T>(this Span<T> span, ReadOnlySpan<T> toWrite, ref int position, bool shouldValidatePosition) {
+    /// <summary>
+    /// <see cref="ReadOnlySpan{T}.CopyTo">Copies</see> <paramref name="toWrite"/> to <paramref name="span"/>, updating <paramref name="cursor"/> to the index in <paramref name="span"/> where we finished writing.
+    /// </summary>
+    /// <remarks>
+    /// This method can be used as the first in a chain of <see cref="Write{T}"/> calls to avoid having to separately declare the <paramref name="cursor"/> variable.
+    /// </remarks>
+    /// <inheritdoc cref="Write{T}"/>
+    public static Span<T> Start<T>(this Span<T> span, ReadOnlySpan<T> toWrite, out int cursor) {
+        toWrite.CopyTo(span);
+        cursor = toWrite.Length;
+        return span;
+    }
+
+    private static Span<T> Write<T>(this Span<T> span, ReadOnlySpan<T> toWrite, ref int cursor, bool shouldValidatePosition) {
         if (toWrite.IsEmpty) {
             return span;
         }
 
         if (shouldValidatePosition) {
-            if (position < 0 || position >= span.Length || (position + toWrite.Length) > span.Length) {
-                throw new ArgumentOutOfRangeException($"Can't write {toWrite.Length} entires to a span of size {span.Length} starting at position {position}!");
+            if (cursor < 0 || cursor >= span.Length || (cursor + toWrite.Length) > span.Length) {
+                throw new ArgumentOutOfRangeException($"Can't write {toWrite.Length} entires to a span of size {span.Length} starting at position {cursor}!");
             }
         }
 
         foreach (var c in toWrite) {
-            span[position] =  c;
-            position       += 1;
+            span[cursor] =  c;
+            cursor       += 1;
         }
 
         return span;
