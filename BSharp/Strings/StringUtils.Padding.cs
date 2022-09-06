@@ -4,8 +4,6 @@ using System.Text.RegularExpressions;
 using FowlFever.BSharp.Enums;
 using FowlFever.BSharp.Exceptions;
 using FowlFever.BSharp.Optional;
-using FowlFever.BSharp.Strings.Settings;
-using FowlFever.BSharp.Strings.Tabler;
 
 using JetBrains.Annotations;
 
@@ -29,11 +27,10 @@ public static partial class StringUtils {
     /// <exception cref="ArgumentOutOfRangeException">if <paramref name="maxLength"/> is negative</exception>
     /// <exception cref="ArgumentOutOfRangeException">if <paramref name="trail"/> is longer than <paramref name="maxLength"/></exception>
     public static string Truncate(
-        this string self,
-        [NonNegativeValue]
-        int maxLength,
-        string?         trail     = Ellipsis,
-        StringAlignment alignment = StringAlignment.Left
+        this               string self,
+        [NonNegativeValue] int    maxLength,
+        string?                   trail     = Ellipsis,
+        StringAlignment           alignment = StringAlignment.Left
     ) {
         string Lathe() {
             var shortLimit = maxLength   + trail.Length * 2;
@@ -66,31 +63,6 @@ public static partial class StringUtils {
     #region Filling
 
     #endregion
-
-    [Pure]
-    public static string FormatHeading(string heading, PrettificationSettings? settings = default) {
-        return Table.Of(Row.OfHeaders(heading)).Prettify(settings);
-    }
-
-    [Pure]
-    public static string FormatHeading(
-        string                  heading,
-        OneLine?                border   = default,
-        OneLine?                padding  = default,
-        PrettificationSettings? settings = default
-    ) {
-        return FormatHeading(
-            heading,
-            settings.Resolve() with {
-                TableSettings = settings.Resolve().TableSettings with {
-                    HeaderSeparator = border ?? OneLine.Hyphen,
-                },
-                FillerSettings = settings.Resolve().FillerSettings with {
-                    PadString = padding ?? OneLine.Space,
-                },
-            }
-        );
-    }
 
     #region Trimming
 
@@ -236,14 +208,12 @@ public static partial class StringUtils {
     internal enum TrimFrom { End, Start }
 
     private static string _ForcePattern(
-        this string input,
-        Regex       trimPattern,
-        string      padString,
-        [NonNegativeValue]
-        int? minKept,
-        [NonNegativeValue]
-        int? maxKept,
-        TrimFrom trimFrom
+        this string             input,
+        Regex                   trimPattern,
+        string                  padString,
+        [NonNegativeValue] int? minKept,
+        [NonNegativeValue] int? maxKept,
+        TrimFrom                trimFrom
     ) {
         if (minKept < 0 || minKept > maxKept) {
             throw new ArgumentOutOfRangeException(nameof(minKept), minKept, $"Must be >= 0 and <= {nameof(maxKept)} ({maxKept})");
@@ -295,70 +265,61 @@ public static partial class StringUtils {
     /// <exception cref="ArgumentOutOfRangeException">if <see cref="maxKept"/> ≥ <see cref="minKept"/> ≥ 0 isn't <c>true</c></exception>
     [Pure]
     public static string ForceEndingPattern(
-        this string input,
-        Regex       trimPattern,
-        string      padString,
-        [NonNegativeValue]
-        int? minKept,
-        [NonNegativeValue]
-        int? maxKept
+        this string             input,
+        Regex                   trimPattern,
+        string                  padString,
+        [NonNegativeValue] int? minKept,
+        [NonNegativeValue] int? maxKept
     ) {
         return _ForcePattern(input, trimPattern, padString, minKept, maxKept, TrimFrom.End);
     }
 
     [Pure]
     public static string EnsureEndingPattern(
-        this string input,
-        Regex       trimPattern,
-        string      padString,
-        [NonNegativeValue]
-        int minimumRequired
+        this string            input,
+        Regex                  trimPattern,
+        string                 padString,
+        [NonNegativeValue] int minimumRequired
     ) {
         return _ForcePattern(input, trimPattern, padString, minimumRequired, null, TrimFrom.End);
     }
 
     [Pure]
     public static string ForceStartingPattern(
-        this string input,
-        Regex       trimPattern,
-        string      padString,
-        [NonNegativeValue]
-        int? minKept,
-        [NonNegativeValue]
-        int? maxKept
+        this string             input,
+        Regex                   trimPattern,
+        string                  padString,
+        [NonNegativeValue] int? minKept,
+        [NonNegativeValue] int? maxKept
     ) {
         return _ForcePattern(input, trimPattern, padString, minKept, maxKept, TrimFrom.Start);
     }
 
     [Pure]
     public static string EnsureStartingPattern(
-        this string input,
-        Regex       trimPattern,
-        string      padString,
-        [NonNegativeValue]
-        int minimumRequired
+        this string            input,
+        Regex                  trimPattern,
+        string                 padString,
+        [NonNegativeValue] int minimumRequired
     ) {
         return _ForcePattern(input, trimPattern, padString, minimumRequired, null, TrimFrom.Start);
     }
 
     [Pure]
     public static string ForceStartingString(
-        this string input,
-        string      startingString,
-        [NonNegativeValue]
-        int startingStringRepetitions
+        this string            input,
+        string                 startingString,
+        [NonNegativeValue] int startingStringRepetitions
     ) {
         return ForceStartingString(input, startingString, startingStringRepetitions, startingStringRepetitions);
     }
 
     [Pure]
     public static string ForceStartingString(
-        this string input,
-        string      startingString,
-        [NonNegativeValue]
-        int minKept,
-        [NonNegativeValue]
-        int maxKept
+        this string            input,
+        string                 startingString,
+        [NonNegativeValue] int minKept,
+        [NonNegativeValue] int maxKept
     ) {
         return input.ForceStartingPattern(RegexPatterns.Escaped(startingString), startingString, minKept, maxKept);
     }

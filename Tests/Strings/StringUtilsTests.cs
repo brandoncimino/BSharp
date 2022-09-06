@@ -15,7 +15,7 @@ using NUnit.Framework.Constraints;
 namespace BSharp.Tests.Strings;
 
 [SuppressMessage("ReSharper", "AccessToStaticMemberViaDerivedType")]
-public class StringUtilsTests {
+public partial class StringUtilsTests {
     [Test]
     [TestCase(
         "",
@@ -55,8 +55,7 @@ public class StringUtilsTests {
 
     [Test]
     public void Fill_EmptyFiller(
-        [Values(0, 1, 2, 3)]
-        int desiredLength
+        [Values(0, 1, 2, 3)] int desiredLength
     ) {
         const string str = "yolo";
         Assert.Throws<ArgumentException>(() => str.Fill(desiredLength, OneLine.Empty));
@@ -66,40 +65,6 @@ public class StringUtilsTests {
     [Test]
     public void Fill_NegativeLength() {
         Assert.Throws<ArgumentOutOfRangeException>(() => "a".Fill(-1));
-    }
-
-    [Test]
-    [TestCase(
-        "yolo",
-        "[0]",
-        "--",
-        "[0][0][0][0][0\n" +
-        "[0]--yolo--[0]\n" +
-        "[0][0][0][0][0"
-    )]
-    [TestCase(
-        "",
-        "/",
-        "0-",
-        "//////\n" +
-        "/0-0-/\n" +
-        "//////"
-    )]
-    [TestCase(
-        "Reasonable Heading",
-        "=",
-        " ",
-        "======================\n" +
-        "= Reasonable Heading =\n" +
-        "======================"
-    )]
-    public void FormatHeader(
-        string heading,
-        string border,
-        string padding,
-        string expectedResult
-    ) {
-        Assert.That(StringUtils.FormatHeading(heading, border.OneLine(), padding.OneLine()), Is.EqualTo(expectedResult));
     }
 
     [Test]
@@ -158,12 +123,9 @@ a
 
     [Test]
     public void TruncateLines(
-        [Values(1, 5, 10, 50, 100)]
-        int lineCount,
-        [Values(1, 2, 10, 50, 100)]
-        int truncateTo,
-        [Values(true, false)]
-        bool includeMessage
+        [Values(1,    5, 10, 50, 100)] int  lineCount,
+        [Values(1,    2, 10, 50, 100)] int  truncateTo,
+        [Values(true, false)]          bool includeMessage
     ) {
         var ln            = Enumerable.Repeat("LINE", lineCount);
         var truncated     = ln.TruncateLines(truncateTo, includeMessage);
