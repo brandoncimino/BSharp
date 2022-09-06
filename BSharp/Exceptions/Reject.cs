@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
 using FowlFever.BSharp.Collections;
@@ -108,22 +109,18 @@ public static class Reject {
     /// Indicates that this line of code should have been, logically, impossible to reach.
     /// </summary>
     /// <param name="details">optional additional details</param>
-    /// <param name="rejectedBy">see <see cref="CallerMemberNameAttribute"/></param>
-    /// <param name="file">see <see cref="CallerFilePathAttribute"/></param>
-    /// <param name="lineNo">see <see cref="CallerLineNumberAttribute"/></param>
+    /// <param name="_caller">see <see cref="CallerMemberNameAttribute"/></param>
+    /// <param name="_filePath">see <see cref="CallerFilePathAttribute"/></param>
+    /// <param name="_lineNo">see <see cref="CallerLineNumberAttribute"/></param>
     /// <returns>a new <see cref="RejectionException"/></returns>
     [Pure]
-    public static RejectionException Unreachable(
-        string?                    details    = default,
-        [CallerMemberName] string? rejectedBy = default,
-        [CallerFilePath]   string? file       = default,
-        [CallerLineNumber] int?    lineNo     = default
+    [SuppressMessage("ReSharper", "ExplicitCallerInfoArgument", Justification = "Values are being passed-through to matching caller info parameters.")]
+    public static UnreachableException Unreachable(
+        string?                    details   = default,
+        [CallerMemberName] string? _caller   = default,
+        [CallerFilePath]   string? _filePath = default,
+        [CallerLineNumber] int?    _lineNo   = default
     ) {
-        return new RejectionException(
-            $"{file}:line {lineNo}",
-            details: details,
-            rejectedBy: rejectedBy,
-            reason: "this code should be unreachable!"
-        );
+        return new UnreachableException(details, _caller, _filePath, _lineNo);
     }
 }
