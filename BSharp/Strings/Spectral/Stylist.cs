@@ -151,4 +151,6 @@ public readonly record struct Stylist(Color? Foreground = default, Color? Backgr
     };
 
     #endregion
+
+    public override string ToString() => ToMarkup();
 }
