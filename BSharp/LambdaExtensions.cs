@@ -372,4 +372,7 @@ public static partial class LambdaExtensions {
     }
 
     #endregion
+
+    public static bool OrFalse<T>(this Func<T, bool>? predicate, T arg) => predicate?.Invoke(arg) ?? false;
+    public static bool OrTrue<T>(this  Func<T, bool>? predicate, T arg) => predicate?.Invoke(arg) ?? true;
 }
