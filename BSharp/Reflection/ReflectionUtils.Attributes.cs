@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 
@@ -174,12 +175,10 @@ public static partial class ReflectionUtils {
         where TMember : MemberInfo => new(member, CustomAttributeExtensions.GetCustomAttributes(member, attributeType, inherit), inherit);
 
     /// <inheritdoc cref="GetAnnotated{TMember,TAttribute}"/>
-    public static Annotated<PropertyInfo, T> GetAnnotated<T>(this PropertyInfo property, bool inherit = true)
-        where T : Attribute => new(property);
+    public static Annotated<PropertyInfo, T> GetAnnotated<T>(this PropertyInfo property, bool inherit = true) where T : Attribute => new(property);
 
     /// <inheritdoc cref="GetAnnotated{TMember,TAttribute}"/>
-    public static Annotated<FieldInfo, T> GetAnnotated<T>(this FieldInfo field, bool inherit = true)
-        where T : Attribute => new(field);
+    public static Annotated<FieldInfo, T> GetAnnotated<T>(this FieldInfo field, bool inherit = true) where T : Attribute => new(field);
 
     /// <inheritdoc cref="GetAnnotated{TMember,TAttribute}"/>
     public static Annotated<MethodInfo, T> GetAnnotated<T>(this MethodInfo method, bool inherit = true) where T : Attribute => new(method);
@@ -197,4 +196,18 @@ public static partial class ReflectionUtils {
     public static Annotated<EventInfo, T> GetAnnotated<T>(this EventInfo eventInfo, bool inherit = true) where T : Attribute => new(eventInfo);
 
     #endregion
+
+    /// <param name="member">a <see cref="MemberInfo"/></param>
+    /// <returns><c>true</c> if the <see cref="StackTraceHiddenAttribute"/> <see cref="MemberInfo.IsDefined"/> either on this <see cref="MemberInfo"/> or its <see cref="MemberInfo.DeclaringType"/></returns>
+    public static bool IsStackTraceHidden(this MemberInfo member) {
+        if (member.IsDefined(typeof(StackTraceHiddenAttribute), false)) {
+            return true;
+        }
+
+        if (member.DeclaringType?.IsDefined(typeof(StackTraceHiddenAttribute), false) == true) {
+            return true;
+        }
+
+        return false;
+    }
 }
