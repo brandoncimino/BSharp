@@ -182,20 +182,19 @@ public static partial class ReflectionUtils {
         where T : Attribute => new(field);
 
     /// <inheritdoc cref="GetAnnotated{TMember,TAttribute}"/>
-    public static Annotated<MethodInfo, T> GetAnnotated<T>(this MethodInfo method, bool inherit = true)
-        where T : Attribute => new(method);
+    public static Annotated<MethodInfo, T> GetAnnotated<T>(this MethodInfo method, bool inherit = true) where T : Attribute => new(method);
 
     /// <inheritdoc cref="GetAnnotated{TMember,TAttribute}"/>
-    public static Annotated<VariableInfo, T> GetAnnotated<T>(this VariableInfo variable, bool inherit = true)
-        where T : Attribute => new(variable);
+    public static Annotated<MethodBase, T> GetAnnotated<T>(this MethodBase method, bool inherit = true) where T : Attribute => new(method);
 
     /// <inheritdoc cref="GetAnnotated{TMember,TAttribute}"/>
-    public static Annotated<ConstructorInfo, T> GetAnnotated<T>(this ConstructorInfo constructor, bool inherit = true)
-        where T : Attribute => new(constructor);
+    public static Annotated<VariableInfo, T> GetAnnotated<T>(this VariableInfo variable, bool inherit = true) where T : Attribute => new(variable);
 
     /// <inheritdoc cref="GetAnnotated{TMember,TAttribute}"/>
-    public static Annotated<EventInfo, T> GetAnnotated<T>(this EventInfo eventInfo, bool inherit = true)
-        where T : Attribute => new(eventInfo);
+    public static Annotated<ConstructorInfo, T> GetAnnotated<T>(this ConstructorInfo constructor, bool inherit = true) where T : Attribute => new(constructor);
+
+    /// <inheritdoc cref="GetAnnotated{TMember,TAttribute}"/>
+    public static Annotated<EventInfo, T> GetAnnotated<T>(this EventInfo eventInfo, bool inherit = true) where T : Attribute => new(eventInfo);
 
     #endregion
 }
