@@ -1,4 +1,6 @@
 using FowlFever.BSharp.Clerical;
+using FowlFever.BSharp.Exceptions;
+using FowlFever.BSharp.Strings;
 
 namespace FowlFever.Clerical.Validated.Composed;
 
@@ -13,4 +15,9 @@ public interface IFilePath : IFileSystemPath, IFileName {
     /// </remarks>
     public FileName FileName { get; }
     public DirectorySeparator Separator { get; }
+
+    public new static ReadOnlySpan<char> Ratify(ReadOnlySpan<char> filePath) {
+        Must.Have(filePath[^1].IsDirectorySeparator(), false, $"cannot end in a directory separator (that would imply a {nameof(DirectoryPath)})");
+        return filePath;
+    }
 }

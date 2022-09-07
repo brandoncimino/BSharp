@@ -15,7 +15,7 @@ namespace FowlFever.Clerical.Validated.Composed;
 /// Represents a group of <see cref="PathPart"/>s.
 /// </summary>
 [SuppressMessage("ReSharper", "InvertIf")]
-public readonly record struct DirectoryPath() : IDirectoryPath, IHasDirectoryInfo, IHas<string> {
+public readonly record struct DirectoryPath() : IDirectoryPath, IHasDirectoryInfo {
     public static readonly DirectoryPath Empty = new();
 
     [MaybeNull] private readonly StrongBox<string> _value = new();
@@ -73,8 +73,14 @@ public readonly record struct DirectoryPath() : IDirectoryPath, IHasDirectoryInf
 
     #endregion
 
-    public          bool          Equals(string? other) => Value.Equals(other);
-    public override string        ToString()            => Value;
-    public          PathString    ToPathString()        => new(Value, MustRatify.No);
-    public          DirectoryPath ToDirectoryPath()     => this;
+    public bool Equals(string?        other)                          => Value.Equals(other);
+    public bool Equals(IHas<string?>? other)                          => Equals(other?.Value);
+    public bool Equals<T>(T?          other) where T : IHas<string?>? => Equals(other?.Value);
+
+    public int CompareTo(string? other, StringComparison comparisonType = StringComparison.Ordinal)                          => string.Compare(Value, other, comparisonType);
+    public int CompareTo<T>(T?   other, StringComparison comparisonType = StringComparison.Ordinal) where T : IHas<string?>? => CompareTo(other?.Value, comparisonType);
+
+    public override string        ToString()        => Value;
+    public          PathString    ToPathString()    => new(Value, MustRatify.No);
+    public          DirectoryPath ToDirectoryPath() => this;
 }

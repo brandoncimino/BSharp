@@ -9,8 +9,12 @@ public interface IFileName : IPathPart {
     public FileNamePart                  BaseName   { get; }
     public ImmutableArray<FileExtension> Extensions { get; }
 
+    private const           string               DoublePeriod         = "..";
+    private static readonly ImmutableArray<char> InvalidFileNameChars = Path.GetInvalidFileNameChars().ToImmutableArray();
+
     public new static ReadOnlySpan<char> Ratify(ReadOnlySpan<char> fileName) {
-        BadCharException.Assert(fileName, Clerk.InvalidFileNameChars);
+        IPathPart.Ratify(fileName);
+        BadCharException.Assert(fileName, InvalidFileNameChars);
         return fileName;
     }
 

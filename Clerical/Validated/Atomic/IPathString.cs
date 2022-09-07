@@ -1,6 +1,8 @@
+using FowlFever.Implementors;
+
 namespace FowlFever.Clerical.Validated.Atomic;
 
-public interface IPathString : IEquatable<string?> {
+public interface IPathString : IHasString {
     public bool       IsEmpty { get; }
     public PathString ToPathString();
 

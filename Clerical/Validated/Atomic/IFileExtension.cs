@@ -6,13 +6,18 @@ public interface IFileExtension : IFileNamePart {
     public FileExtension ToFileExtension();
 
     public new static ReadOnlySpan<char> Ratify(ReadOnlySpan<char> fileExtension) {
+        if (fileExtension.IsEmpty) {
+            return fileExtension;
+        }
+
         if (fileExtension[0] == '.') {
             fileExtension = fileExtension[1..];
         }
 
+        BadCharException.Assert(fileExtension, Clerk.InvalidFileNameChars);
         foreach (var c in fileExtension) {
             if (c.IsWhitespace() || Clerk.InvalidFileNamePartChars.Contains(c)) {
-                throw new ArgumentException($"{nameof(IFileExtension)}s must not contain whitespace or any {nameof(Clerk.InvalidFileNamePartChars)}!", nameof(fileExtension));
+                throw new ArgumentException($"{nameof(IFileExtension)}s must not contain whitespace or any {nameof(Clerk.InvalidFileNamePartChars)}! Actual string: {fileExtension.ToString()}", nameof(fileExtension));
             }
         }
 

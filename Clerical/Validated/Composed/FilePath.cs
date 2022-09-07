@@ -4,6 +4,7 @@ using System.Runtime.CompilerServices;
 
 using FowlFever.BSharp.Clerical;
 using FowlFever.BSharp.Collections;
+using FowlFever.BSharp.Memory;
 using FowlFever.Clerical.Validated.Atomic;
 using FowlFever.Implementors;
 
@@ -23,6 +24,7 @@ public readonly record struct FilePath() : IFilePath, IHas<string> {
         null     => "",
         not null => _value.Value ??= Parts.JoinPathString(Separator) + FileName,
     };
+
     public bool                     IsEmpty => Value.IsEmpty();
     public ImmutableArray<PathPart> Parts   { get; } = new();
 
@@ -93,8 +95,10 @@ public readonly record struct FilePath() : IFilePath, IHas<string> {
 
     #region Construction
 
-    public FilePath(IEnumerable<PathPart> parts, DirectorySeparator separator = DirectorySeparator.Universal) : this() {
-        Parts      = parts.ToImmutableArray();
+    public FilePath(IEnumerable<PathPart> parts, DirectorySeparator separator = DirectorySeparator.Universal) : this(parts.ToImmutableArray(), separator) { }
+
+    public FilePath(ImmutableArray<PathPart> parts, DirectorySeparator separator = DirectorySeparator.Universal) : this() {
+        Parts      = parts;
         FileName   = new FileName(Parts.Last().Value);
         _directory = new DirectoryPath(Parts.Slice(..^1));
         Separator  = separator;
@@ -106,10 +110,24 @@ public readonly record struct FilePath() : IFilePath, IHas<string> {
         Parts     = directoryPath.Parts.Add(fileName.ToPathPart());
     }
 
+    public FilePath(
+        ReadOnlySpan<char> filePath,
+        DirectorySeparator separator = DirectorySeparator.Universal
+    ) : this(
+        Clerk.SplitPath(IFilePath.Ratify(filePath))
+             .ToImmutableArray(static span => new PathPart(span))
+    ) { }
+
     #endregion
 
-    public PathString  ToPathString()        => new(Value, MustRatify.No);
-    public FileName    ToFileName()          => FileName;
-    PathPart IPathPart.ToPathPart()          => FileName.ToPathPart();
-    public bool        Equals(string? other) => Value.Equals(other);
+    public PathString  ToPathString() => new(Value, MustRatify.No);
+    public FileName    ToFileName()   => FileName;
+    PathPart IPathPart.ToPathPart()   => FileName.ToPathPart();
+
+    public bool Equals(string?        other)                          => Value.Equals(other);
+    public bool Equals(IHas<string?>? other)                          => Equals(other?.Value);
+    public bool Equals<T>(T?          other) where T : IHas<string?>? => Equals(other?.Value);
+
+    public int CompareTo(string? other, StringComparison comparisonType = StringComparison.Ordinal)                          => string.Compare(Value, other, comparisonType);
+    public int CompareTo<T>(T?   other, StringComparison comparisonType = StringComparison.Ordinal) where T : IHas<string?>? => CompareTo(other?.Value, comparisonType);
 }
