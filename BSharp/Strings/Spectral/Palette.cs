@@ -20,9 +20,8 @@ public readonly record struct Palette {
     public PathPalette      PathPalette      { get; init; }
     public ExceptionPalette ExceptionPalette { get; init; }
 
-    public record SeverityColors(Color? Good = default, Color? Bad = default);
-
-    public SeverityColors Severity { get; init; }
+    public readonly record struct SeverityPalette(Stylist Good = default, Stylist Bad = default);
+    public SeverityPalette Severity { get; init; }
 
     /// <summary>
     /// This <see cref="Palette"/> has been compiled and can <b>never</b> change.
@@ -31,7 +30,7 @@ public readonly record struct Palette {
         Numbers    = Color.Purple,
         Strings    = new Stylist(Color.SkyBlue1, Decoration.Italic),
         Hyperlinks = new Stylist(Color.Blue,     Decoration.Underline),
-        Severity = new SeverityColors {
+        Severity = new SeverityPalette {
             Good = Color.Green,
             Bad  = Color.Red,
         },
