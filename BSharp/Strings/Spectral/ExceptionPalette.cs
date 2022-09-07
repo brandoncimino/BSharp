@@ -3,7 +3,7 @@ using Spectre.Console;
 namespace FowlFever.BSharp.Strings.Spectral;
 
 /// <summary>
-/// A <see cref="Palette"/>-style equivalent to <see cref="Spectre.Console.ExceptionStyle"/>.
+/// A <see cref="Palette"/>-style equivalent to <see cref="Spectre.Console.ExceptionStyle"/> / <see cref="ExceptionSettings"/> / <see cref="ExceptionFormats"/>.
 /// </summary>
 public readonly record struct ExceptionPalette {
     private static readonly ExceptionStyle DefaultStyle = new();
@@ -38,9 +38,12 @@ public readonly record struct ExceptionPalette {
     /// <inheritdoc cref="ExceptionStyle.ParameterType"/>
     public Stylist ParameterType { get; init; } = DefaultStyle.ParameterType;
 
+    /// <inheritdoc cref="ExceptionSettings.Format"/>
+    public ExceptionFormats Format { get; init; } = ExceptionFormats.ShortenEverything | ExceptionFormats.ShowLinks;
+
     public ExceptionPalette() { }
 
-    public ExceptionPalette(ExceptionStyle style) {
+    public ExceptionPalette(ExceptionStyle style, ExceptionFormats format = ExceptionFormats.Default) {
         Dimmed        = style.Dimmed;
         Exception     = style.Exception;
         Message       = style.Message;
@@ -51,7 +54,10 @@ public readonly record struct ExceptionPalette {
         NonEmphasized = style.NonEmphasized;
         ParameterName = style.ParameterName;
         ParameterType = style.ParameterType;
+        Format        = format;
     }
+
+    public ExceptionPalette(ExceptionSettings settings) : this(settings.Style, settings.Format) { }
 
     [Pure]
     public ExceptionStyle ToExceptionStyle() {
@@ -69,6 +75,22 @@ public readonly record struct ExceptionPalette {
         };
     }
 
-    public static implicit operator ExceptionPalette(ExceptionStyle style)   => new(style);
-    public static implicit operator ExceptionStyle(ExceptionPalette palette) => palette.ToExceptionStyle();
+    [Pure]
+    public ExceptionSettings ToExceptionSettings() {
+        return new ExceptionSettings {
+            Format = Format,
+            Style  = ToExceptionStyle(),
+        };
+    }
+
+    #region Conversions
+
+    public static implicit operator ExceptionPalette(ExceptionStyle    style)    => new(style);
+    public static implicit operator ExceptionPalette(ExceptionSettings settings) => new(settings);
+
+    public static implicit operator ExceptionStyle(ExceptionPalette    palette) => palette.ToExceptionStyle();
+    public static implicit operator ExceptionFormats(ExceptionPalette  palette) => palette.Format;
+    public static implicit operator ExceptionSettings(ExceptionPalette palette) => palette.ToExceptionSettings();
+
+    #endregion
 }
