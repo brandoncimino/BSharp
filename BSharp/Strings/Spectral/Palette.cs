@@ -52,9 +52,11 @@ public readonly record struct Palette {
 
     #region Conversions
 
-    public static implicit operator PathPalette(Palette      palette) => palette.PathPalette;
-    public static implicit operator ExceptionPalette(Palette palette) => palette.ExceptionPalette;
-    public static implicit operator ExceptionStyle(Palette   palette) => palette.ExceptionPalette;
+    public static implicit operator PathPalette(Palette       palette) => palette.PathPalette;
+    public static implicit operator ExceptionPalette(Palette  palette) => palette.ExceptionPalette;
+    public static implicit operator ExceptionStyle(Palette    palette) => palette.ExceptionPalette;
+    public static implicit operator ExceptionSettings(Palette palette) => palette.ExceptionPalette;
+    public static implicit operator ExceptionFormats(Palette  palette) => palette.ExceptionPalette;
 
     #endregion
 }
