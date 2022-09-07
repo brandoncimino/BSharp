@@ -4,7 +4,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 
-using FowlFever.BSharp.Strings;
 using FowlFever.BSharp.Strings.Spectral;
 
 using Spectre.Console;
@@ -15,12 +14,7 @@ namespace FowlFever.BSharp;
 [SuppressMessage("ReSharper", "ExplicitCallerInfoArgument")]
 public static class Brandon {
     static Brandon() {
-        ForceAnsi();
-    }
-
-    private static void ForceAnsi() {
-        AnsiConsole.WriteLine($"Forcing the default {nameof(AnsiConsole)} to use {AnsiSupport.Yes.Prettify()}, despite its better judgement.");
-        AnsiConsole.Console = AnsiConsole.Create(new AnsiConsoleSettings { Ansi = AnsiSupport.Yes });
+        Spectral.ForceAnsi();
     }
 
     /// <summary>

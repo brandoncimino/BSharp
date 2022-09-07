@@ -12,6 +12,11 @@ namespace FowlFever.BSharp.Strings.Spectral;
 /// Extensions methods pertaining to <see cref="Spectre.Console"/>.
 /// </summary>
 public static class Spectral {
+    internal static void ForceAnsi() {
+        AnsiConsole.WriteLine($"Forcing the default {nameof(AnsiConsole)} to use {AnsiSupport.Yes.Prettify()}, despite its better judgement.");
+        AnsiConsole.Console = AnsiConsole.Create(new AnsiConsoleSettings { Ansi = AnsiSupport.Yes });
+    }
+
     #region Escaping the dreaded Markup
 
     /// <summary>
