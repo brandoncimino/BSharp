@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Collections.Immutable;
 using System.Reflection;
 
 using FowlFever.BSharp.Attributes;
@@ -21,12 +21,14 @@ public sealed record Annotated<TMember, TAttribute> :
     IEquatable<MemberInfo?>
     where TMember : MemberInfo
     where TAttribute : Attribute {
-    public TMember                 Member     { get; }
-    public IEnumerable<TAttribute> Attributes { get; }
+    public TMember                    Member     { get; }
+    public ImmutableArray<TAttribute> Attributes { get; }
+    public bool                       IsEmpty    => Attributes.IsEmpty;
+    public bool                       IsNotEmpty => !IsEmpty;
 
     public Annotated(TMember member, IEnumerable<TAttribute> attributes, bool validateTarget = true) {
         Member     = member;
-        Attributes = attributes;
+        Attributes = attributes.ToImmutableArray();
         if (validateTarget) {
             Attributes.OfType<ITargetValidatedAttribute>()
                       .ForEach(it => it.ValidateTarget(Member));
