@@ -68,6 +68,17 @@ public static partial class Spanq {
     }
 
     [MustUseReturnValue]
+    public static RoMultiSpan<T> ToMultiSpan<T>(this SpanSpliterator<T> spliterator) where T : IEquatable<T> {
+        var multiSpan = default(RoMultiSpan<T>);
+
+        foreach (var span in spliterator) {
+            multiSpan = multiSpan.Add(span);
+        }
+
+        return multiSpan;
+    }
+
+    [MustUseReturnValue]
     public static TOut Aggregate<TSpan, TOut>(this SpanSpliterator<TSpan> spliterator, [RequireStaticDelegate] Func<TOut> initialFactory, [RequireStaticDelegate] ReadOnlySpanFunc<TSpan, TOut, TOut> aggregator)
         where TSpan : IEquatable<TSpan> {
         var soFar = initialFactory();
