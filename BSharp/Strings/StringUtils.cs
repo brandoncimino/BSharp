@@ -603,16 +603,6 @@ public static partial class StringUtils {
     #region Lapelle deux Vid
 
     /// <summary>
-    /// Returns <see cref="string.Empty">""</see> if <paramref name="str"/> is <c>null</c>.
-    /// </summary>
-    /// <remarks>
-    /// Method-chainable equivalent to <c>str ?? ""</c>.
-    /// </remarks>
-    /// <param name="str">this <see cref="string"/></param>
-    /// <returns><paramref name="str"/>, if it was non-<c>null</c>; otherwise, <see cref="string.Empty">""</see></returns>
-    public static string OrEmpty(this string? str) => str ?? "";
-
-    /// <summary>
     /// An extension method for <see cref="string.IsNullOrEmpty"/>
     /// </summary>
     /// <param name="str">this <see cref="string"/></param>
