@@ -1214,6 +1214,15 @@ public static partial class CollectionUtils {
         };
     }
 
+    /// <summary>
+    /// An explicit overload for <see cref="OrEmpty{T}(System.Collections.Generic.IEnumerable{T}?)"/> of <see cref="string"/> to make sure that we don't accidentally cast
+    /// <see cref="string"/>s to <see cref="IEnumerable{T}"/>s.
+    /// </summary>
+    /// <param name="s">this <see cref="string"/></param>
+    /// <returns>this <see cref="string"/> or <see cref="string.Empty"/></returns>
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public static string OrEmpty(this string? s) => StringUtils.OrEmpty(s);
+
     /// <inheritdoc cref="OrEmpty{T}(System.Collections.Generic.IEnumerable{T}?)"/>
     [Pure]
     public static ImmutableArray<T> OrEmpty<T>(this ImmutableArray<T> source) => source.IsDefault ? ImmutableArray<T>.Empty : source;
