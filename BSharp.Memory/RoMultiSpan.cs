@@ -16,7 +16,7 @@ public readonly ref partial struct RoMultiSpan<T> {
     /// <summary>
     /// The max number of <see cref="ReadOnlySpan{T}"/>s that a <see cref="RoMultiSpan{T}"/> can support.
     /// </summary>
-    private const int MaxSpans = 8;
+    internal const int MaxSpans = 8;
 
     /// <inheritdoc cref="SpanCount"/>
     [UsedImplicitly]
