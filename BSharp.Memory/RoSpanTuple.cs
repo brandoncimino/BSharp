@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.Contracts;
 using System.Runtime.CompilerServices;
 
 namespace FowlFever.BSharp.Memory;
@@ -9,17 +10,20 @@ namespace FowlFever.BSharp.Memory;
 /// </summary>
 /// <remarks>
 /// This is a <see cref="ValueType"/> instead of a <c>static</c> class to match the built-in <see cref="ValueTuple"/>.
+/// <p/>
+/// Equivalent methods also exist in <see cref="Spanq"/>, e.g. <see cref="RoSpanTuple"/>.<see cref="Of"/> -> <see cref="Spanq"/>.<see cref="Spanq.Tuple"/>.
 /// </remarks>
 public readonly ref struct RoSpanTuple {
-    public static RoSpanTuple                Of()                                                                                           => default;
-    public static RoSpanTuple<A>             Of<A>(ReadOnlySpan<A>          a)                                                              => new(a);
-    public static RoSpanTuple<A, B>          Of<A, B>(ReadOnlySpan<A>       a,     ReadOnlySpan<B> b)                                       => new(a, b);
-    public static RoSpanTuple<A, B, C>       Of<A, B, C>(ReadOnlySpan<A>    a,     ReadOnlySpan<B> b, ReadOnlySpan<C> c)                    => new(a, b, c);
-    public static RoSpanTuple<A, B, C, D>    Of<A, B, C, D>(ReadOnlySpan<A> a,     ReadOnlySpan<B> b, ReadOnlySpan<C> c, ReadOnlySpan<D> d) => new(a, b, c, d);
-    public static ValueSpanTuple<T, A>       Of<T, A>(T                     value, ReadOnlySpan<A> a)                                       => new(value, a);
-    public static ValueSpanTuple<T, A, B>    Of<T, A, B>(T                  value, ReadOnlySpan<A> a, ReadOnlySpan<B> b)                    => new(value, a, b);
-    public static ValueSpanTuple<T, A, B, C> Of<T, A, B, C>(T               value, ReadOnlySpan<A> a, ReadOnlySpan<B> b, ReadOnlySpan<C> c) => new(value, a, b, c);
+    [Pure] public static RoSpanTuple                Of()                                                                                           => default;
+    [Pure] public static RoSpanTuple<A>             Of<A>(ReadOnlySpan<A>          a)                                                              => new(a);
+    [Pure] public static RoSpanTuple<A, B>          Of<A, B>(ReadOnlySpan<A>       a,     ReadOnlySpan<B> b)                                       => new(a, b);
+    [Pure] public static RoSpanTuple<A, B, C>       Of<A, B, C>(ReadOnlySpan<A>    a,     ReadOnlySpan<B> b, ReadOnlySpan<C> c)                    => new(a, b, c);
+    [Pure] public static RoSpanTuple<A, B, C, D>    Of<A, B, C, D>(ReadOnlySpan<A> a,     ReadOnlySpan<B> b, ReadOnlySpan<C> c, ReadOnlySpan<D> d) => new(a, b, c, d);
+    [Pure] public static ValueSpanTuple<T, A>       Of<T, A>(T                     value, ReadOnlySpan<A> a)                                       => new(value, a);
+    [Pure] public static ValueSpanTuple<T, A, B>    Of<T, A, B>(T                  value, ReadOnlySpan<A> a, ReadOnlySpan<B> b)                    => new(value, a, b);
+    [Pure] public static ValueSpanTuple<T, A, B, C> Of<T, A, B, C>(T               value, ReadOnlySpan<A> a, ReadOnlySpan<B> b, ReadOnlySpan<C> c) => new(value, a, b, c);
 
+    [Pure]
     public static ValueSpanTuple<T, A, B, C, D> Of<T, A, B, C, D>(
         T               value,
         ReadOnlySpan<A> a,
@@ -27,12 +31,6 @@ public readonly ref struct RoSpanTuple {
         ReadOnlySpan<C> c,
         ReadOnlySpan<D> d
     ) => new(value, a, b, c, d);
-
-    public static void Usage() {
-        var cs = "abc".AsSpan();
-        var x  = Of(5,  cs);
-        var y  = Of(cs, cs);
-    }
 
     internal static NotSupportedException BecauseSpanDoesnt([CallerMemberName] string? _caller = default) => new NotSupportedException($"{_caller}() isn't supported because {nameof(ReadOnlySpan<byte>)} doesn't support it!");
 }
