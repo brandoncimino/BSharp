@@ -7,6 +7,8 @@ namespace FowlFever.BSharp.Memory;
 
 public delegate TOut ReadOnlySpanFunc<TIn, in TArg, out TOut>(ReadOnlySpan<TIn> span, TArg arg);
 public delegate TOut ReadOnlySpanFunc<TIn, out TOut>(ReadOnlySpan<TIn>          span);
+public delegate TOut BiRoSpanFunc<A, B, in TArg, out TOut>(ReadOnlySpan<A>      a, ReadOnlySpan<B> b, TArg arg);
+public delegate TOut BiRoSpanFunc<A, B, out TOut>(ReadOnlySpan<A>               a, ReadOnlySpan<B> b);
 
 /// <summary>
 /// An <see cref="Action{T}"/> that acts on a <see cref="ReadOnlySpan{T}"/>.
@@ -21,8 +23,10 @@ public delegate void ReadOnlySpanAction<T>(ReadOnlySpan<T> span);
 
 #region Span
 
-public delegate TOut SpanFunc<TIn, in TArg, out TOut>(Span<TIn> span, TArg arg);
-public delegate TOut SpanFunc<TIn, out TOut>(Span<TIn>          span);
+public delegate TOut SpanFunc<TIn, in TArg, out TOut>(Span<TIn>          span, TArg arg);
+public delegate TOut SpanFunc<TIn, out TOut>(Span<TIn>                   span);
+public delegate TOut BiSpanFunc<A, B, in TArg, out TOut>(ReadOnlySpan<A> a, ReadOnlySpan<B> b, TArg arg);
+public delegate TOut BiSpanFunc<A, B, out TOut>(ReadOnlySpan<A>          a, ReadOnlySpan<B> b);
 
 /// <summary>
 /// An <see cref="Action{T}"/> that acts on a <see cref="Span{T}"/>.
