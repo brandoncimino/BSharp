@@ -76,7 +76,7 @@ public static class RangeExtensions {
     }
 
     /// <summary>
-    /// Tests if a collection of size <paramref name="collectionLength"/> contains the given <see cref="Index"/>.
+    /// Tests if a collection of size <paramref name="collectionLength"/> would contain the given <see cref="Index"/>.
     /// </summary>
     /// <param name="collectionLength">the size of the theoretical collection. Corresponds to the <c>length</c> parameter of <see cref="Index.GetOffset"/>.</param>
     /// <param name="index">the <see cref="Index"/> being tested</param>
@@ -87,4 +87,13 @@ public static class RangeExtensions {
     /// <inheritdoc cref="ContainsIndex(int,System.Index)"/>
     [Pure]
     public static bool ContainsIndex([NonNegativeValue] this int collectionLength, int index) => index >= 0 && index < collectionLength;
+
+    /// <summary>
+    /// Tests if a collection of size <paramref name="collectionLength"/> would contain the given <see cref="Range"/>.
+    /// </summary>
+    /// <param name="collectionLength">the size of a theoretical collection. Corresponds to the <c>length</c> parameter of <see cref="Range.GetOffsetAndLength"/>.</param>
+    /// <param name="range">the <see cref="Range"/> being tested</param>
+    /// <returns><c>true</c> if the <see cref="Range"/>'s <see cref="Range.Start"/> and <see cref="Range.End"/> would both fall within the collection</returns>
+    [Pure]
+    public static bool ContainsRange(this int collectionLength, Range range) => collectionLength.ContainsIndex(range.Start) && collectionLength.ContainsIndex(range.End);
 }
