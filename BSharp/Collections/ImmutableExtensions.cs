@@ -17,7 +17,7 @@ namespace FowlFever.BSharp.Collections;
 /// | AggregateListBuilder_ForEach | 2.122 ms | 0.1447 ms | 0.4220 ms | 121.0938 | 60.5469 |    749 KB |
 /// ]]></code>
 /// </remarks>
-public static class ImmutableExtensions {
+public static partial class ImmutableExtensions {
     #region Plus
 
     /// <inheritdoc cref="ImmutableList{T}.Builder.AddRange"/>
