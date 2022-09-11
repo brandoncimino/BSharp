@@ -15,7 +15,11 @@ public static partial class Spanq {
     /// <typeparam name="T">the type of entries in the <paramref name="span"/></typeparam>
     /// <returns>as much of the <paramref name="span"/> as the <see cref="Range"/> overlaps</returns>
     [Pure]
-    public static ReadOnlySpan<T> SafeSlice<T>(this ReadOnlySpan<T> span, Range range) => span[range.Clamp(span.Length)];
+    public static ReadOnlySpan<T> SafeSlice<T>(this ReadOnlySpan<T> span, Range range) {
+        var start = Math.Clamp(range.Start.GetOffset(span.Length), 0, span.Length);
+        var end   = Math.Clamp(range.End.GetOffset(span.Length),   0, span.Length);
+        return span[start..end];
+    }
 
     [Pure]
     public static ReadOnlySpan<T> Skip<T>(this ReadOnlySpan<T> span, int toSkip) => toSkip switch {
@@ -31,7 +35,7 @@ public static partial class Spanq {
         _                            => span[..toTake]
     };
 
-    public static SpanTuple2<T> TakeLeftovers<T>(this ReadOnlySpan<T> span, int toTake) =>
+    public static RoSpanTuple<T, T> TakeLeftovers<T>(this ReadOnlySpan<T> span, int toTake) =>
         new() {
             A = span.Take(toTake),
             B = span.Skip(toTake),
@@ -75,13 +79,13 @@ public static partial class Spanq {
 
     [Pure]
     public static ReadOnlySpan<T> TakeWhile<T, T2>(this ReadOnlySpan<T> span, Func<T, T2> selector, T2 expected, int takeLimit = int.MaxValue)
-        where T2 : IEquatable<T2> => span.Take(span.CountWhile(selector, expected).Min(takeLimit));
+        where T2 : IEquatable<T2> => span.Take(Math.Min(span.CountWhile(selector, expected), takeLimit));
 
     [Pure] public static ReadOnlySpan<T> TakeWhile<T>(this ReadOnlySpan<T> span, Func<T, bool> predicate, int takeLimit = int.MaxValue) => span.TakeWhile(predicate, true, takeLimit);
 
     [Pure]
     public static ReadOnlySpan<T> TakeLastWhile<T, T2>(this ReadOnlySpan<T> span, Func<T, T2> selector, T2 expected, int takeLimit = int.MaxValue)
-        where T2 : IEquatable<T2> => span.Take(span.CountLastWhile(selector, expected).Min(takeLimit));
+        where T2 : IEquatable<T2> => span.Take(Math.Min(span.CountLastWhile(selector, expected), takeLimit));
 
     [Pure] public static ReadOnlySpan<T> TakeLastWhile<T>(this ReadOnlySpan<T> span, Func<T, bool> predicate, int takeLimit = int.MaxValue) => span.TakeLastWhile(predicate, true);
 

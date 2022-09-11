@@ -1,8 +1,6 @@
 using System;
 using System.Text;
 
-using FowlFever.BSharp.Strings;
-
 namespace FowlFever.BSharp.Memory;
 
 /// <summary>
@@ -29,7 +27,7 @@ public static partial class Spanq {
 
     internal static string FormatString<T>(this ReadOnlySpan<T> span) {
         var sb = new StringBuilder();
-        sb.Append(span.GetTypeName());
+        sb.Append(span.SpanName());
         sb.Append('[');
 
         for (int i = 0; i < span.Length; i++) {

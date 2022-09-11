@@ -6,6 +6,10 @@ namespace FowlFever.BSharp.Memory;
 public static partial class Spanq {
     #region GetOrDefault
 
+    private static bool ContainsIndex(this int length, int   index) => index >= 0 && index < length;
+    private static bool ContainsIndex(this int length, Index index) => length.ContainsIndex(index.GetOffset(length));
+    private static bool ContainsRange(this int length, Range range) => length.ContainsIndex(range.Start) && length.ContainsIndex(range.End);
+
     public static bool TryGet<T>(this ReadOnlySpan<T> span, int index, [MaybeNullWhen(false)] out T got) {
         if (span.Length.ContainsIndex(index)) {
             got = span[index];
