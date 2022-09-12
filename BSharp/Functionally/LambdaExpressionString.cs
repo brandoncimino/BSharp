@@ -3,6 +3,10 @@ using System.Linq.Expressions;
 using System.Text;
 
 using FowlFever.BSharp.Memory;
+using FowlFever.BSharp.Strings;
+using FowlFever.BSharp.Strings.Spectral;
+
+using Spectre.Console;
 
 namespace FowlFever.BSharp.Functionally;
 
@@ -15,49 +19,79 @@ namespace FowlFever.BSharp.Functionally;
 /// For in-depth analysis of a lambda expression, use <see cref="LambdaExpression"/> instead.
 /// </remarks>
 public readonly ref struct LambdaExpressionString {
-    private const string             Arrow          = "=>";
-    private const string             StaticModifier = "static";
-    public        ReadOnlySpan<char> Modifier   { get; init; }
-    public        ReadOnlySpan<char> Parameters { get; init; }
-    public        ReadOnlySpan<char> Body       { get; init; }
+    private const  string             Arrow          = "=>";
+    internal const string             StaticModifier = "static";
+    public         ReadOnlySpan<char> Modifier        { get; init; }
+    public         ReadOnlySpan<char> Parameters      { get; init; }
+    public         ReadOnlySpan<char> ReturnType      { get; init; }
+    public         RoMultiSpan<char>  SplitParameters => Parameters.Spliterate(',').ToMultiSpan();
+    public         ReadOnlySpan<char> Body            { get; init; }
 
-    public LambdaExpressionString(ReadOnlySpan<char> modifier, ReadOnlySpan<char> parameters, ReadOnlySpan<char> body) {
-        Modifier   = modifier;
-        Parameters = parameters;
-        Body       = body;
+    private LambdaExpressionString(RoSpanTuple<char, char, char, char> parts) {
+        (Modifier, ReturnType, Parameters, Body) = parts;
+        Modifier                                 = Modifier.Trim().UnIndent();
+        Parameters                               = Parameters.Trim().TrimParentheses('(', ')').UnIndent();
+        Body                                     = Body.Trim().TrimParentheses('{', '}').UnIndent();
     }
 
-    public LambdaExpressionString(ReadOnlySpan<char> source) {
-        if (source.Partition(Arrow, out var before, out var after)) {
-            before = before.Trim();
-            after  = after.Trim();
+    public LambdaExpressionString(ReadOnlySpan<char> source) : this(_Parse_Parts(source)) { }
+
+    //region Parse
+
+    public static LambdaExpressionString Parse(ReadOnlySpan<char> source) {
+        _Parse(source, out var mod, out var ret, out var par, out var bod);
+        return new LambdaExpressionString(new RoSpanTuple<char, char, char, char>(mod, ret, par, bod));
+    }
+
+    private static RoSpanTuple<char, char, char> _Parse_BeforeArrow(ReadOnlySpan<char> beforeArrow) {
+        throw new NotImplementedException();
+    }
+
+    private static void _Parse(
+        ReadOnlySpan<char>     source,
+        out ReadOnlySpan<char> modifier,
+        out ReadOnlySpan<char> returnType,
+        out ReadOnlySpan<char> parameters,
+        out ReadOnlySpan<char> body
+    ) {
+        //todo
+        returnType = default;
+
+        if (source.IsEmpty) {
+            modifier   = default;
+            parameters = default;
+            body       = default;
+        }
+
+        source = source.UnIndent();
+
+        if (source.TryPartition(Arrow, out var before, out var after)) {
+            before = before.TrimStart();
 
             if (before.StartsWith(StaticModifier)) {
-                Modifier   = before[..StaticModifier.Length];
-                Parameters = before[StaticModifier.Length..];
+                modifier   = before[..StaticModifier.Length];
+                parameters = before[StaticModifier.Length..];
             }
             else {
-                Modifier   = default;
-                Parameters = before;
+                modifier   = default;
+                parameters = before;
             }
 
-            Parameters = TrimParentheses(Parameters);
-            Body       = after;
+            body = after;
             return;
         }
 
-        Modifier   = default;
-        Parameters = default;
-        Body       = source.Trim();
+        modifier   = default;
+        parameters = default;
+        body       = source;
     }
 
-    private static ReadOnlySpan<char> TrimParentheses(ReadOnlySpan<char> span) {
-        if (span[^1] == '(' && span[0] == ')') {
-            return span[1..^1];
-        }
-
-        return span;
+    private static RoSpanTuple<char, char, char, char> _Parse_Parts(ReadOnlySpan<char> source) {
+        _Parse(source, out var mod, out var ret, out var par, out var bod);
+        return new RoSpanTuple<char, char, char, char>(mod, ret, par, bod);
     }
+
+    //endregion
 
     public void Deconstruct(out ReadOnlySpan<char> modifier, out ReadOnlySpan<char> parameters, out ReadOnlySpan<char> body) {
         modifier   = Modifier;
@@ -87,5 +121,91 @@ public readonly ref struct LambdaExpressionString {
           .Append(Body);
 
         return sb.ToString();
+    }
+
+    public Paragraph GetRenderable(Palette? palette = default) {
+        var pal = palette.OrFallback();
+        var pg  = new Paragraph();
+
+        if (Modifier.IsEmpty == false) {
+            pg.Append(Modifier.ToString(), pal.Comments)
+              .Append(" ");
+        }
+
+        pg.Append("(", pal.ExceptionPalette.Parenthesis)
+          .Append(Parameters.ToString(), pal.ExceptionPalette.ParameterName)
+          .Append(")",                   pal.ExceptionPalette.Parenthesis)
+          .Append(" ")
+          .Append(Arrow, pal.Borders)
+          .Append(" ")
+          .Append(Body.ToString(), pal.Methods);
+
+        return pg;
+    }
+}
+
+internal static class LambdaExpressingStringHelpers {
+    public static ReadOnlySpan<char> TrimParentheses(this ReadOnlySpan<char> span, char first, char last) {
+        span = span.Trim();
+
+        if (span.Length < 2) {
+            return span;
+        }
+
+        if (span[0] == first && span[^1] == last) {
+            return span[1..^1];
+        }
+
+        return span;
+    }
+
+    internal static ReadOnlySpan<char> UnIndent(this ReadOnlySpan<char> text) {
+        var lastLineBreak = text.LastIndexWhere(static c => c.IsLineBreak());
+        if (lastLineBreak < 0) {
+            return text;
+        }
+
+        var  textStartsAt = -1;
+        bool firstLine    = true;
+
+        foreach (var line in text.EnumerateLines()) {
+            if (firstLine) {
+                firstLine = false;
+                continue;
+            }
+
+            var lineStartsAt = line.IndexWhere(static c => char.IsWhiteSpace(c), false);
+
+            // line doesn't have any indent - can't get smaller than 0, so we don't need to keep looping
+            if (lineStartsAt == 0) {
+                return text;
+            }
+
+            // line was entirely whitespace - we can skip it
+            if (lineStartsAt < 0) {
+                continue;
+            }
+
+            // at this point, we've found whitespace; we need to update our `textStartsAt` position
+
+            // if this is the first non-whitespace line, set `textStartsAt` and then continue
+            if (textStartsAt < 0) {
+                textStartsAt = lineStartsAt;
+                continue;
+            }
+
+            textStartsAt = Math.Min(textStartsAt, lineStartsAt);
+        }
+
+
+        // loop through again, this time trimming up to `textStartsAt` chars from each line
+        Span<char> trimmed = stackalloc char[text.Length];
+        var        pos     = 0;
+        foreach (var line in text.EnumerateLines()) {
+            var trimLine = line.SkipWhile(static c => c.IsWhitespace(), textStartsAt);
+            trimmed.WriteJoin(trimLine, "\n", ref pos);
+        }
+
+        return new string(trimmed[..pos]);
     }
 }
