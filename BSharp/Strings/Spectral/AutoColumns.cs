@@ -20,14 +20,14 @@ namespace FowlFever.BSharp.Strings.Spectral;
 /// If there are more <see cref="_cells"/> than <see cref="AutoColumnCount"/>, they will still be evenly spaced, but fit to the <see cref="ConsoleWidth"/>.
 /// </remarks>
 public class AutoColumns : IHasList<IRenderable>, IHasRenderable {
-    public static int       AutoColumnCount { get; set; } = 4;
-    public static Func<int> ConsoleWidth    { get; set; } = () => AnsiConsole.Console.Profile.Width;
-    public static int       AutoColumnWidth => ConsoleWidth.Invoke() / AutoColumnCount;
+    public static  int       AutoColumnCount { get; set; } = 4;
+    public static  Func<int> ConsoleWidth    { get; set; } = () => AnsiConsole.Console.Profile.Width;
+    private static int       AutoColumnWidth => ConsoleWidth() / AutoColumnCount;
 
     private readonly IRenderable[]           _cells;
     IList IHasNonGenericList.                AsNonGenericList => _cells;
     IList<IRenderable> IHasList<IRenderable>.AsList           => _cells;
-    public int                               ColumnCount      => Math.Max(AutoColumnCount, _cells.Length);
+    public int                               ColumnCount      => _cells.Length;
 
     public AutoColumns(IEnumerable<IRenderable> cells) : this(cells.AsArray()) { }
 
@@ -35,10 +35,23 @@ public class AutoColumns : IHasList<IRenderable>, IHasRenderable {
         _cells = cells;
     }
 
+    internal static int GetWidth(int colIndex, int totalCols) {
+        if (totalCols > AutoColumnCount) {
+            return ConsoleWidth() / totalCols;
+        }
+
+        if (totalCols == AutoColumnCount || colIndex < totalCols - 1) {
+            return AutoColumnWidth;
+        }
+
+        var usedWidth = (totalCols - 1) * AutoColumnWidth;
+        return ConsoleWidth() - usedWidth;
+    }
+
     public IRenderable GetRenderable() {
         var grid = new Grid();
         for (int i = 0; i < ColumnCount; i++) {
-            grid.AddColumn(new GridColumn { Width = AutoColumnWidth });
+            grid.AddColumn(new GridColumn() { Width = GetWidth(i, ColumnCount) });
         }
 
         grid.AddRow(_cells.ToArray());
