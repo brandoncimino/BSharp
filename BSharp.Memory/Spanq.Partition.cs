@@ -76,6 +76,16 @@ public static partial class Spanq {
         return span.TryPartition(splitterIndex.GetOffset(span.Length), out before, out after);
     }
 
+    /// <summary>
+    /// <i>Attempts</i> to separate everything before and after a <see cref="Range"/> determined by <paramref name="index"/> + <paramref name="length"/>, <i><b>dropping the range</b></i>. 
+    /// </summary>
+    /// <param name="span">this <see cref="ReadOnlySpan{T}"/></param>
+    /// <param name="index">the first element of the separator <see cref="Range"/></param>
+    /// <param name="length">the number of elements in the separator <see cref="Range"/></param>
+    /// <param name="before">set to the contents of the <paramref name="span"/> located <b>before</b> the separator range</param>
+    /// <param name="after">set to the contents of the <paramref name="span"/> located <b>after</b> the separator range</param>
+    /// <typeparam name="T">the <paramref name="span"/> element type</typeparam>
+    /// <returns><c>true</c> if <c>[index..(index + length)]</c> falls within this <paramref name="span"/></returns>
     public static bool TryPartition<T>(
         this ReadOnlySpan<T> span,
         int                  index,
@@ -83,7 +93,7 @@ public static partial class Spanq {
         out ReadOnlySpan<T>  before,
         out ReadOnlySpan<T>  after
     ) where T : IEquatable<T> {
-        if (span.Length.ContainsIndex(index) && span.Length.ContainsIndex(index + length)) {
+        if (span.ContainsIndex(index) && span.ContainsIndex(index + length)) {
             before = span[..index];
             after  = span[(index + length)..];
             return true;
@@ -94,9 +104,17 @@ public static partial class Spanq {
         return false;
     }
 
-    /// <inheritdoc cref="SpanPartition{T}(ReadOnlySpan{T}, Range)"/>
+    /// <summary>
+    /// <inheritdoc cref="TryPartition{T}(System.ReadOnlySpan{T},Range,out System.ReadOnlySpan{T},out System.ReadOnlySpan{T})"/>
+    /// </summary>
+    /// <param name="span">this <see cref="ReadOnlySpan{T}"/></param>
+    /// <param name="range">the <see cref="Range"/> used to separate <paramref name="before"/> and <paramref name="after"/></param>
+    /// <param name="before">set to the contents of the <paramref name="span"/> located <b>before</b> the splitter <paramref name="range"/></param>
+    /// <param name="after">set to the contents of the <paramref name="span"/> located <b>after</b> the splitter <paramref name="range"/></param>
+    /// <typeparam name="T">the <paramref name="span"/> element type</typeparam>
+    /// <returns><inheritdoc cref="TryPartition{T}(System.ReadOnlySpan{T},Range,out System.ReadOnlySpan{T},out System.ReadOnlySpan{T})"/></returns>
     public static bool TryPartition<T>(this ReadOnlySpan<T> span, Range range, out ReadOnlySpan<T> before, out ReadOnlySpan<T> after) where T : IEquatable<T> {
-        if (span.Length.ContainsRange(range)) {
+        if (span.ContainsRange(range)) {
             before = span[..range.Start];
             after  = span[range.End..];
             return true;
