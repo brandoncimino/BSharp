@@ -7,7 +7,7 @@ using FowlFever.BSharp.Memory;
 
 using NUnit.Framework;
 
-namespace BSharp.Tests.Collections;
+namespace BSharp.Tests.Memory.SpanExtensions;
 
 public partial class SpanExtensionTests {
     public record SafeSliceExpectation(string Source, Range UnsafeRange, string ExpectedSlice, Range ExpectedRange);
@@ -55,7 +55,7 @@ public partial class SpanExtensionTests {
             entry = default;
         }
 
-        Assert.That(SpanSpliterator<T>.IsTrimmable(entry), Is.EqualTo(isTrimmable));
+        Assert.That(SpanSplitHelpers.IsTrimmable(entry), Is.EqualTo(isTrimmable));
     }
 
     [TestCase(new[] { 'a', ' ', 'b' },                  new[] { 'a', ' ', 'b' })]
@@ -64,14 +64,14 @@ public partial class SpanExtensionTests {
     public void GenericTrim<T>(T[] source, T[] expected)
         where T : IEquatable<T> {
         var actSpan = source.AsSpan();
-        Assert.That(SpanSpliterator<T>.GenericTrim(actSpan).ToArray(), Is.EquivalentTo(expected));
+        Assert.That(SpanSplitHelpers.GenericTrim<T>(actSpan).ToArray(), Is.EquivalentTo(expected));
     }
 
     [TestCase("a b",     "a b")]
     [TestCase(" a b ",   "a b")]
     [TestCase("  a b  ", "a b")]
     public void GenericTrim_Chars(string source, string expected) {
-        var trimSpan = SpanSpliterator<char>.GenericTrim(source);
+        var trimSpan = SpanSplitHelpers.GenericTrim<char>(source);
         var trimStr  = trimSpan.ToString();
         Assert.That(trimStr, Is.EqualTo(expected));
     }
@@ -86,8 +86,8 @@ public partial class SpanExtensionTests {
     [TestCase(" x- - y --z ", '-', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries, "x",  "y",  "z")]
     public void SpliterateString_Simple(string source, char splitter, StringSplitOptions options, params string[] expectedParts) {
         var span        = source.AsSpan();
-        var spliterator = span.Spliterate(options, splitter);
-        var parts       = spliterator.ToStringArray();
+        var spliterator = span.Spliterate(stackalloc[] { splitter }) with { Options = options };
+        var parts       = spliterator.ToStringList().ToArray();
         Assert.That(parts, Is.EquivalentTo(expectedParts));
     }
 
@@ -95,8 +95,8 @@ public partial class SpanExtensionTests {
     [TestCase("a-b!c-d*e", "-!", "a", "b", "c", "d*e")]
     public void SpliterateString_Any(string source, string splitters, params string[] expectedParts) {
         var span        = source.AsSpan();
-        var spliterator = span.Spliterate(splitters.AsSpan(), SplitterStyle.AnyEntry);
-        var parts       = spliterator.ToStringArray();
+        var spliterator = span.Spliterate(splitters.AsSpan()) with { MatchStyle = SplitterMatchStyle.AnyEntry };
+        var parts       = spliterator.ToStringList().ToArray();
         Assert.That(parts, Is.EquivalentTo(expectedParts));
     }
 
@@ -104,8 +104,8 @@ public partial class SpanExtensionTests {
     [TestCase("a1b12c21d12e", "12", "a1b", "c21d", "e")]
     public void SpliterateString_SubSeq(string source, string splitSeq, params string[] expectedParts) {
         var span        = source.AsSpan();
-        var spliterator = span.Spliterate(splitSeq.AsSpan(), SplitterStyle.SubSequence);
-        var parts       = spliterator.ToStringArray();
+        var spliterator = span.Spliterate(splitSeq) with { MatchStyle = SplitterMatchStyle.SubSequence };
+        var parts       = spliterator.ToStringList().ToArray();
         Assert.That(parts, Is.EquivalentTo(expectedParts));
     }
 
