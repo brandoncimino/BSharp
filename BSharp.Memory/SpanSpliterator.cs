@@ -41,6 +41,16 @@ public enum SearchDirection : byte {
     Backward
 }
 
+/// <summary>
+/// Splits a <see cref="ReadOnlySpan{T}"/>, enumerating the resulting parts.
+/// </summary>
+/// <remarks>
+/// Additional options, like <see cref="MatchStyle"/> and <see cref="PartitionLimit"/>, can be specified via object initializers
+/// <i>(if you are constructing a <see cref="SpanSpliterator{T}"/> directly)</i>
+/// or via <c>with</c> expressions <i>(if you are constructing a <see cref="SpanSpliterator{T}"/> via a method call,
+/// like <see cref="Spanq.Spliterate{T}(System.ReadOnlySpan{T},T[])"/>)</i>.
+/// </remarks>
+/// <typeparam name="T">the span element type. 📎 Must implement <see cref="IEquatable{T}"/> for efficient use of <see cref="MemoryExtensions.IndexOf{T}(ReadOnlySpan{T}, T)"/> and friends</typeparam>
 public ref struct SpanSpliterator<T> where T : IEquatable<T> {
     internal const StringSplitOptions TrimEntriesOption = (StringSplitOptions)2;
 
@@ -68,9 +78,11 @@ public ref struct SpanSpliterator<T> where T : IEquatable<T> {
     public readonly StringSplitOptions Options { get; init; }
 
     /// <summary>
-    /// The maximum number of times that <see cref="_remaining"/> will be split
+    /// The maximum number of <see cref="ReadOnlySpan{T}"/>s that this <see cref="SpanSpliterator{T}"/> will produce.
+    /// <br/>
+    /// If the <see cref="PartitionLimit"/> is reached, the final <see cref="ReadOnlySpan{T}"/> will contain the remainder of the entries.
     /// </summary>
-    public readonly int SplitLimit { get; init; }
+    public readonly int PartitionLimit { get; init; }
 
     #endregion
 
@@ -85,23 +97,23 @@ public ref struct SpanSpliterator<T> where T : IEquatable<T> {
     };
 
     /// <summary>
-    /// The current number of times that <see cref="_remaining"/> has been split
+    /// The current number of times that <see cref="_remaining"/> has been split.
     /// </summary>
     private int _splitCount = 0;
 
     public SpanSpliterator(
         ReadOnlySpan<T>    source,
         ReadOnlySpan<T>    splitters,
-        SplitterMatchStyle matchStyle,
-        StringSplitOptions options    = StringSplitOptions.None,
-        int                splitLimit = int.MaxValue
+        SplitterMatchStyle matchStyle     = SplitterMatchStyle.SubSequence,
+        StringSplitOptions options        = StringSplitOptions.None,
+        int                partitionLimit = int.MaxValue
     ) {
         _remaining          = source;
         _isEnumeratorActive = source.IsEmpty == false;
         Splitters           = splitters;
         MatchStyle          = matchStyle;
         Options             = options;
-        SplitLimit          = splitLimit;
+        PartitionLimit      = partitionLimit;
     }
 
     /// <summary>
@@ -122,7 +134,7 @@ public ref struct SpanSpliterator<T> where T : IEquatable<T> {
     /// </summary>
     /// <returns>
     /// True if the enumerator successfully advanced to the next <see cref="Splitters"/>; false if
-    /// the enumerator has advanced past the end of the span <b><i>OR</i></b> we've reached <see cref="SplitLimit"/>.
+    /// the enumerator has advanced past the end of the span <b><i>OR</i></b> we've reached <see cref="PartitionLimit"/>.
     /// </returns>
     public bool MoveNext() {
         if (!_isEnumeratorActive) {
@@ -130,7 +142,7 @@ public ref struct SpanSpliterator<T> where T : IEquatable<T> {
         }
 
         _splitCount += 1;
-        if (_splitCount >= SplitLimit) {
+        if (_splitCount >= PartitionLimit) {
             Finish();
         }
 
