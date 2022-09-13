@@ -6,6 +6,11 @@ namespace FowlFever.BSharp.Memory;
 /// Static factory methods for constructing <see cref="RoMultiSpan{T}"/>s.
 /// </summary>
 public static class RoMultiSpan {
+    /// <summary>
+    /// The max number of <see cref="ReadOnlySpan{T}"/>s that a <see cref="RoMultiSpan{T}"/> can support.
+    /// </summary>
+    internal const int MaxSpans = 8;
+
     public static RoMultiSpan<T> Of<T>()                                                                           => new();
     public static RoMultiSpan<T> Of<T>(ReadOnlySpan<T> a)                                                          => new(a);
     public static RoMultiSpan<T> Of<T>(ReadOnlySpan<T> a, ReadOnlySpan<T> b)                                       => new(a, b);
@@ -49,4 +54,7 @@ public static class RoMultiSpan {
         ReadOnlySpan<T> g,
         ReadOnlySpan<T> h
     ) => new(a, b, c, d, e, f, g, h);
+
+    /// <inheritdoc cref="RoMultiSpan{T}.Builder"/>
+    public static RoMultiSpan<T>.Builder CreateBuilder<T>() => new();
 }
