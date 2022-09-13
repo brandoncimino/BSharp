@@ -7,10 +7,12 @@ using System.Text;
 
 using FowlFever.BSharp;
 using FowlFever.BSharp.Collections;
+using FowlFever.BSharp.Functionally;
 using FowlFever.BSharp.Optional;
 using FowlFever.BSharp.Strings;
 using FowlFever.BSharp.Strings.Settings;
 using FowlFever.BSharp.Sugar;
+using FowlFever.Implementors;
 
 using JetBrains.Annotations;
 
@@ -18,17 +20,17 @@ using NUnit.Framework;
 using NUnit.Framework.Constraints;
 using NUnit.Framework.Internal;
 
+using Spectre.Console;
+using Spectre.Console.Rendering;
+
 namespace FowlFever.Testing;
 
-[PublicAPI]
 [SuppressMessage("ReSharper", "AccessToStaticMemberViaDerivedType")]
-public abstract class MultipleAsserter<TSelf, TActual> : IMultipleAsserter
+public abstract class MultipleAsserter<TSelf, TActual> : IMultipleAsserter<TSelf>
     where TSelf : MultipleAsserter<TSelf, TActual>, new() {
     private const string HeadingIcon = "🧪";
 
     public PrettificationSettings? PrettificationSettings { get; protected set; }
-
-    private Lazy<TActual>? _actual;
 
     /// <summary>
     /// The actual value being asserted against (if there is one)
@@ -52,15 +54,38 @@ public abstract class MultipleAsserter<TSelf, TActual> : IMultipleAsserter
         Supplied<string?>? Message = default
     ) {
         protected                   Supplied<string?> Description => GetNicknameSupplier(ActualValueDescription, Expression, Constraint);
+        protected                   IRenderable       Renderable  => GetRenderableNickname(ActualValueDescription, Expression, Constraint);
         protected internal abstract IFailable         Test(MultipleAsserter<TSelf, TActual> asserter);
 
-        private static Supplied<string?> GetNicknameSupplier(
-            Supplied<string?>?      actualDescription,
+        private static IRenderable GetRenderableNickname(
+            IHas<string?>?          actualDescription,
             string?                 expression,
             IResolveConstraint?     constraint,
             PrettificationSettings? settings = default
         ) {
-            static string GetNickname(Supplied<string?>? actualDescription, string? expression, IResolveConstraint? constraint, PrettificationSettings? settings) {
+            // if (actualDescription.IsNotBlank()) {
+            //     pg.Append($"[{actualDescription}]".EscapeMarkup());
+            //     sb.Append($"[{actualDescription}]".EscapeMarkup());
+            // }
+
+            var lbx = new LambdaExpressionString(expression);
+            var lbr = lbx.GetRenderable();
+
+            var constrStr = constraint?.Prettify(settings);
+            if (constrStr.IsNotBlank()) {
+                lbr.Append($" 🗜 {constrStr}");
+            }
+
+            return lbr;
+        }
+
+        private static Supplied<string?> GetNicknameSupplier(
+            IHas<string?>?          actualDescription,
+            string?                 expression,
+            IResolveConstraint?     constraint,
+            PrettificationSettings? settings = default
+        ) {
+            static string GetNickname(IHas<string?>? actualDescription, string? expression, IResolveConstraint? constraint, PrettificationSettings? settings) {
                 var sb = new StringBuilder();
                 if (actualDescription?.Value.IsNotBlank() == true) {
                     sb.Append($"[{actualDescription}]");
@@ -183,9 +208,9 @@ public abstract class MultipleAsserter<TSelf, TActual> : IMultipleAsserter
 
     #endregion
 
-    internal IList<IMultipleAsserter> Asserters { get; } = new List<IMultipleAsserter>();
+    private IList<IMultipleAsserter> Asserters { get; } = new List<IMultipleAsserter>();
 
-    internal IList<Subtest> Subtests { get; } = new List<Subtest>();
+    private IList<Subtest> Subtests { get; } = new List<Subtest>();
 
     #region Failing & Succeeding
 
@@ -209,6 +234,9 @@ public abstract class MultipleAsserter<TSelf, TActual> : IMultipleAsserter
         return sb.ToString();
     }
 
+    protected virtual IRenderable GetRenderableResults(IEnumerable<IFailable> results) => RapSheet.Book(results);
+    protected virtual void        RenderResults(IRenderable                   results) => Brandon.Render(results);
+
     protected void Fail(IEnumerable<IFailable> results) {
         if (CustomActionOnFailure != null) {
             CustomActionOnFailure.Invoke(results);
@@ -219,7 +247,9 @@ public abstract class MultipleAsserter<TSelf, TActual> : IMultipleAsserter
     }
 
     protected void Succeed(IEnumerable<IFailable> results) {
-        OnSuccess(FormatResults(results));
+        var rapSheet = new RapSheet(results);
+        AnsiConsole.Write(rapSheet.GetRenderable());
+        OnSuccess(FormatResults(rapSheet));
     }
 
     #endregion
@@ -242,8 +272,6 @@ public abstract class MultipleAsserter<TSelf, TActual> : IMultipleAsserter
         Func<string?>?     message
     );
 
-    private Optional<Exception> ShortCircuitException;
-
     #region Constructors
 
     protected MultipleAsserter() { }
@@ -260,7 +288,8 @@ public abstract class MultipleAsserter<TSelf, TActual> : IMultipleAsserter
 
     #endregion
 
-    private TSelf Self => (this as TSelf)!;
+    TSelf IMultipleAsserter<TSelf>.Self => (this as TSelf)!;
+    private TSelf                  Self => (this as IMultipleAsserter<TSelf>).Self;
 
     #region Builder
 
@@ -278,6 +307,15 @@ public abstract class MultipleAsserter<TSelf, TActual> : IMultipleAsserter
 
     #region "And" Constraints
 
+    [MustUseReturnValue]
+    public TSelf And(
+        bool               condition,
+        Supplied<string?>? description = default,
+        [CallerArgumentExpression("condition")]
+        string? _condition = default
+    ) =>
+        _Add(new Constraint_AgainstAnything(condition, Is.True, description, _condition));
+
     #region Actions_AgainstAnything
 
     [MustUseReturnValue]
@@ -286,7 +324,7 @@ public abstract class MultipleAsserter<TSelf, TActual> : IMultipleAsserter
         Supplied<string?>?                           description = default,
         [CallerArgumentExpression("action")] string? expression  = default
     ) =>
-        _Add(new Action_AgainstAnything(action, default, description, default));
+        _Add(new Action_AgainstAnything(action, default, description, expression));
 
     [MustUseReturnValue]
     public TSelf And(Action action, IResolveConstraint constraint, Supplied<string?>? description = default, [CallerArgumentExpression("action")] string? expression = default)
@@ -356,8 +394,8 @@ public abstract class MultipleAsserter<TSelf, TActual> : IMultipleAsserter
     #region Constraints_AgainstAnything
 
     [MustUseReturnValue]
-    public TSelf And(
-        object?                                      target,
+    public TSelf And<T>(
+        T?                                           target,
         IResolveConstraint                           constraint,
         Supplied<string?>?                           description = default,
         [CallerArgumentExpression("target")] string? expression  = default
@@ -496,14 +534,6 @@ public abstract class MultipleAsserter<TSelf, TActual> : IMultipleAsserter
 
     #endregion
 
-    #region Validations / Exceptions
-
-    private Func<InvalidOperationException> ActualIsEmptyException(string message) {
-        return () => new InvalidOperationException($"{message}: this {GetType().Prettify(PrettificationSettings)} doesn't have {nameof(Actual)} value!");
-    }
-
-    #endregion
-
     private IEnumerable<IFailable> TestEverything() {
         return Subtests.Select(
                            it => {
@@ -517,26 +547,10 @@ public abstract class MultipleAsserter<TSelf, TActual> : IMultipleAsserter
 
     [ContractAnnotation("=> stop")]
     public void ShortCircuit(Exception shortCircuitException) {
-        ShortCircuitException = shortCircuitException;
         Invoke();
     }
 
     #region formatting
-
-    private IEnumerable<string> FormatFailures([InstantHandle] IEnumerable<IFailable> testResults) {
-        testResults = testResults.ToList();
-        return new RapSheet(Actual.ToOptional().Cast<object?>(), testResults).Prettify().SplitLines();
-    }
-
-    private string FormatMultipleAssertionMessage(IEnumerable<IFailable> failures) {
-        return new List<string>()
-               .Concat(FormatHeading())
-               .Concat(FormatShortCircuitException())
-               .Concat(FormatFailures(failures))
-               .ToStringLines()
-               .Indent(Indent)
-               .JoinLines();
-    }
 
     /// <returns>either the result of <see cref="Heading"/> or an empty <see cref="IEnumerable{T}"/> of strings</returns>
     private IEnumerable<string> FormatHeading() {
@@ -546,14 +560,11 @@ public abstract class MultipleAsserter<TSelf, TActual> : IMultipleAsserter
                .WrapInEnumerable();
     }
 
-    private Optional<string> FormatShortCircuitException() {
-        return ShortCircuitException.Select(it => $"Something caused this {GetType().Name} to be unable to execute all of the assertions that it wanted to:\n{it.Message}\n{it.StackTrace}");
-    }
-
     #endregion
 
     public void Invoke() {
         var results = TestEverything().ToList();
+        RenderResults(GetRenderableResults(results));
         if (results.Any(it => it.Failed)) {
             Fail(results);
         }
