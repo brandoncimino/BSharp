@@ -24,16 +24,27 @@ public readonly ref partial struct RoMultiSpan<T> {
         private ReadOnlySpan<T> _g;
         private ReadOnlySpan<T> _h;
 
-        [ValueRange(0, RoMultiSpan.MaxSpans)] private int _count;
+        [ValueRange(0, RoMultiSpan.MaxSpans)] private int _count = default;
 
         /// <summary>
         /// The number of <see cref="ReadOnlySpan{T}"/>s that have been <see cref="Add"/>-ed to the <see cref="Builder"/>.
         /// </summary>
         [ValueRange(0, RoMultiSpan.MaxSpans)]
-        public readonly int Count => _count;
+        public int Count {
+            readonly get => _count;
+            private set {
+                if (value is < 0 or > RoMultiSpan.MaxSpans) {
+                    throw new ArgumentOutOfRangeException(nameof(Count), value, $"must be within 0..{RoMultiSpan.MaxSpans}");
+                }
+
+                _count = value;
+            }
+        }
+
+        public readonly int RemainingSpans => RoMultiSpan.MaxSpans - Count;
 
         public ReadOnlySpan<T> this[[ValueRange(0, RoMultiSpan.MaxSpans)] int spanIndex] {
-            get => GetSpan(spanIndex);
+            readonly get => GetSpan(spanIndex);
             set => SetSpan(spanIndex, value);
         }
 
@@ -41,27 +52,27 @@ public readonly ref partial struct RoMultiSpan<T> {
         /// Creates a new <see cref="Builder"/> with a <see cref="Count"/> of 0.
         /// </summary>
         public Builder() {
-            _count = default;
-            _a     = default;
-            _b     = default;
-            _c     = default;
-            _d     = default;
-            _e     = default;
-            _f     = default;
-            _g     = default;
-            _h     = default;
+            _a    = default;
+            _b    = default;
+            _c    = default;
+            _d    = default;
+            _e    = default;
+            _f    = default;
+            _g    = default;
+            _h    = default;
+            Count = default;
         }
 
         public Builder(RoMultiSpan<T> sourceSpans) {
-            _count = sourceSpans.SpanCount;
-            _a     = sourceSpans._a;
-            _b     = sourceSpans._b;
-            _c     = sourceSpans._c;
-            _d     = sourceSpans._d;
-            _e     = sourceSpans._e;
-            _f     = sourceSpans._f;
-            _g     = sourceSpans._g;
-            _h     = sourceSpans._h;
+            _a    = sourceSpans._a;
+            _b    = sourceSpans._b;
+            _c    = sourceSpans._c;
+            _d    = sourceSpans._d;
+            _e    = sourceSpans._e;
+            _f    = sourceSpans._f;
+            _g    = sourceSpans._g;
+            _h    = sourceSpans._h;
+            Count = sourceSpans.SpanCount;
         }
 
         private readonly ReadOnlySpan<T> GetSpan([ValueRange(0, RoMultiSpan.MaxSpans)] int spanIndex) {
@@ -126,6 +137,12 @@ public readonly ref partial struct RoMultiSpan<T> {
 
         #region Add
 
+        private Builder _Add(ReadOnlySpan<T> span) {
+            Count           += 1;
+            this[Count - 1] =  span;
+            return this;
+        }
+
         /// <summary>
         /// Adds a new <see cref="ReadOnlySpan{T}"/> to this <see cref="Builder"/>.
         /// </summary>
@@ -133,13 +150,8 @@ public readonly ref partial struct RoMultiSpan<T> {
         /// <returns>this <see cref="Builder"/></returns>
         /// <exception cref="InvalidOperationException">if the builder already has a <see cref="Count"/> of <see cref="RoMultiSpan.MaxSpans"/></exception>
         public Builder Add(ReadOnlySpan<T> span) {
-            if (Count >= RoMultiSpan.MaxSpans) {
-                throw new InvalidOperationException($"Cannot add a new {nameof(ReadOnlySpan<T>)} to this {TypeName}: it already contains {RoMultiSpan.MaxSpans} spans!");
-            }
-
-            _count          += 1;
-            this[Count - 1] =  span;
-            return this;
+            Count.RequireSpace();
+            return _Add(span);
         }
 
         /// <summary>
@@ -149,14 +161,10 @@ public readonly ref partial struct RoMultiSpan<T> {
         /// <returns>this <see cref="Builder"/></returns>
         /// <exception cref="InvalidOperationException">if <see cref="Count"/> + <see cref="RoMultiSpan{T}.SpanCount"/> would exceed <see cref="RoMultiSpan.MaxSpans"/></exception>
         public Builder AddRange(RoMultiSpan<T> spans) {
-            if (Count + spans.SpanCount > RoMultiSpan.MaxSpans) {
-                throw new InvalidOperationException($"Cannot add {spans.SpanCount} {nameof(ReadOnlySpan<T>)}s to this {TypeName}: {nameof(Count)} {Count} + {spans.SpanCount} > {nameof(RoMultiSpan.MaxSpans)} {RoMultiSpan.MaxSpans}!");
-            }
+            Count.RequireSpace(spans.Count);
 
-            var previousCount = Count;
-            _count += spans.SpanCount;
-            for (int i = 0; i < spans.SpanCount; i++) {
-                this[previousCount + i] = spans[i];
+            foreach (var span in spans) {
+                _Add(span);
             }
 
             return this;
@@ -180,7 +188,7 @@ public readonly ref partial struct RoMultiSpan<T> {
                 this[i] = setSpan;
             }
 
-            _count -= 1;
+            Count -= 1;
             return this;
         }
 
@@ -229,6 +237,9 @@ public readonly ref partial struct RoMultiSpan<T> {
         };
 
         private const string TypeName = $"{nameof(RoMultiSpan<T>)}.{nameof(Builder)}";
+
+        public static implicit operator RoMultiSpan<T>(Builder builder) => builder.Build();
+        public static implicit operator Builder(RoMultiSpan<T> spans)   => spans.ToBuilder();
     }
 
     #endregion

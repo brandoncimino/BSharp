@@ -1,6 +1,8 @@
 using System;
 using System.Runtime.CompilerServices;
 
+using JetBrains.Annotations;
+
 namespace FowlFever.BSharp.Memory;
 
 internal static class SpanSplitHelpers {
@@ -71,5 +73,24 @@ internal static class SpanSplitHelpers {
         var start = length.RequireIndex(range.Start, _length: _length, _caller: _caller);
         var end   = length.RequireIndex(range.End,   _length: _length, _caller: _caller);
         return (start, end - start);
+    }
+
+    internal static void RequireSpace(
+        [NonNegativeValue] this             int     count,
+        [NonNegativeValue]                  int     amountToAdd = 1,
+        [NonNegativeValue]                  int     maximum     = RoMultiSpan.MaxSpans,
+        [CallerArgumentExpression("count")] string? _count      = default,
+        [CallerArgumentExpression("amountToAdd")]
+        string? _amountToAdd = default,
+        [CallerArgumentExpression("maximum")] string? _maximum = default,
+        [CallerMemberName]                    string? _caller  = default
+    ) {
+        if (amountToAdd == 1 && count >= maximum) {
+            throw new ArgumentOutOfRangeException($"🙅‍♀️ {_caller}: {_count} {count} has already hit the {_maximum} limit of {maximum}!");
+        }
+
+        if (count + amountToAdd > maximum) {
+            throw new ArgumentOutOfRangeException($"🙅‍♀️ {_caller}: {_count} {count} + {_amountToAdd} {amountToAdd} would exceed the {_maximum} limit of {maximum}!");
+        }
     }
 }
