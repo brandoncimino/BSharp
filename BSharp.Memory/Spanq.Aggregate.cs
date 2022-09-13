@@ -45,6 +45,8 @@ public static partial class Spanq {
 
     #endregion
 
+    [Pure] public static T[][] ToJaggedArray<T>(this RoMultiSpan<T> spans) => spans.ToArray(static span => span.ToArray());
+
     #endregion
 
     #region Aggregate
