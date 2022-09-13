@@ -13,7 +13,7 @@ public readonly ref partial struct RoMultiSpan<T> {
     /// <param name="spanIndex">the index of one of the <see cref="ReadOnlySpan{T}"/>s in this <see cref="RoMultiSpan{T}"/></param>
     /// <returns>the corresponding <see cref="ReadOnlySpan{T}"/></returns>
     /// <exception cref="IndexOutOfRangeException">if <see cref="spanIndex"/> is &lt; 0 or &gt;= <see cref="SpanCount"/></exception>
-    public ReadOnlySpan<T> GetSpan([ValueRange(0, MaxSpans)] int spanIndex) {
+    public ReadOnlySpan<T> GetSpan([ValueRange(0, RoMultiSpan.MaxSpans)] int spanIndex) {
         // ReSharper disable once ConditionIsAlwaysTrueOrFalse
         if (spanIndex < 0 || spanIndex > SpanCount) {
             throw new ArgumentOutOfRangeException(nameof(spanIndex), $"{nameof(spanIndex)} {spanIndex} is out-of-bounds: this {nameof(RoMultiSpan<T>)} contains {SpanCount} spans!");
@@ -38,7 +38,7 @@ public readonly ref partial struct RoMultiSpan<T> {
     /// <param name="spanIndex">the index of one of the <see cref="ReadOnlySpan{T}"/>s in this <see cref="RoMultiSpan{T}"/></param>
     /// <param name="span">the retrieved <see cref="ReadOnlySpan{T}"/></param>
     /// <returns><c>true</c> if <paramref name="spanIndex"/> was within the <see cref="SpanCount"/>; otherwise, <c>false</c></returns>
-    public bool TryGetSpan([ValueRange(0, MaxSpans)] int spanIndex, out ReadOnlySpan<T> span) {
+    public bool TryGetSpan([ValueRange(0, RoMultiSpan.MaxSpans)] int spanIndex, out ReadOnlySpan<T> span) {
         // ReSharper disable once ConditionIsAlwaysTrueOrFalse
         if (spanIndex >= 0 && spanIndex < SpanCount) {
             span = this[spanIndex];
@@ -50,7 +50,38 @@ public readonly ref partial struct RoMultiSpan<T> {
     }
 
     /// <inheritdoc cref="GetSpan"/>
-    public ReadOnlySpan<T> this[[ValueRange(0, MaxSpans)] int spanIndex] => GetSpan(spanIndex);
+    public ReadOnlySpan<T> this[[ValueRange(0, RoMultiSpan.MaxSpans)] int spanIndex] {
+        get => GetSpan(spanIndex);
+        private init {
+            switch (spanIndex) {
+                case 0:
+                    _a = value;
+                    break;
+                case 1:
+                    _b = value;
+                    break;
+                case 2:
+                    _c = value;
+                    break;
+                case 3:
+                    _d = value;
+                    break;
+                case 4:
+                    _e = value;
+                    break;
+                case 5:
+                    _f = value;
+                    break;
+                case 6:
+                    _g = value;
+                    break;
+                case 7:
+                    _h = value;
+                    break;
+                default: throw new ArgumentOutOfRangeException(nameof(spanIndex));
+            }
+        }
+    }
 
     #endregion
 
