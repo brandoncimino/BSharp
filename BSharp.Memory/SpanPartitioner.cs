@@ -76,7 +76,7 @@ public ref struct SpanPartitioner<T, TArg> {
         }
 
         //check _options
-        if (Options.HasFlag(SpanSplitHelpers.TrimEntriesOption)) {
+        if (Options.HasFlag(SpanHelpers.TrimEntriesOption)) {
             _current = _current.GenericTrim();
         }
 

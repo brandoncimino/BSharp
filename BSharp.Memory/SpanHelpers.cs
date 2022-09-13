@@ -5,7 +5,7 @@ using JetBrains.Annotations;
 
 namespace FowlFever.BSharp.Memory;
 
-internal static class SpanSplitHelpers {
+internal static class SpanHelpers {
     public const StringSplitOptions TrimEntriesOption = (StringSplitOptions)2;
 
     /// <summary>
