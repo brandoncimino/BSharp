@@ -6,21 +6,16 @@ using JetBrains.Annotations;
 namespace FowlFever.BSharp.Memory;
 
 /// <summary>
-/// A "collection" of up to <see cref="MaxSpans"/> <see cref="ReadOnlySpan{T}"/>s.
+/// A "collection" of up to <see cref="RoMultiSpan.MaxSpans"/> <see cref="ReadOnlySpan{T}"/>s.
 /// </summary>
 /// <remarks>
 /// This "collection" has semantics similar to <a href="https://docs.microsoft.com/en-us/dotnet/api/system.collections.immutable">System.Collections.Immutable</a>, and so methods like <see cref="Add"/> will return a <b>new</b> <see cref="RoMultiSpan{T}"/>.
 /// </remarks>
 /// <typeparam name="T">the type of the elements in the individual <see cref="ReadOnlySpan{T}"/>s</typeparam>
 public readonly ref partial struct RoMultiSpan<T> {
-    /// <summary>
-    /// The max number of <see cref="ReadOnlySpan{T}"/>s that a <see cref="RoMultiSpan{T}"/> can support.
-    /// </summary>
-    internal const int MaxSpans = 8;
-
     /// <inheritdoc cref="SpanCount"/>
     [UsedImplicitly]
-    [ValueRange(0, MaxSpans)]
+    [ValueRange(0, RoMultiSpan.MaxSpans)]
     public int Count => SpanCount;
 
     /// <summary>
@@ -48,7 +43,7 @@ public readonly ref partial struct RoMultiSpan<T> {
     /// The <see cref="Count"/> property is supported for consistency with standard collections and for <a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/proposals/csharp-8.0/ranges#implicit-range-support">implicit Range and Index support</a>,
     /// but it is generally better to use the explicit <see cref="SpanCount"/> to prevent confusion with <see cref="ElementCount"/>. 
     /// </remarks>
-    [ValueRange(0, MaxSpans)]
+    [ValueRange(0, RoMultiSpan.MaxSpans)]
     public int SpanCount { get; private init; }
 
     /// <summary>
@@ -77,76 +72,6 @@ public readonly ref partial struct RoMultiSpan<T> {
 
     #endregion
 
-    #region Constructors
-
-    private RoMultiSpan(
-        int             spanCount,
-        ReadOnlySpan<T> a = default,
-        ReadOnlySpan<T> b = default,
-        ReadOnlySpan<T> c = default,
-        ReadOnlySpan<T> d = default,
-        ReadOnlySpan<T> e = default,
-        ReadOnlySpan<T> f = default,
-        ReadOnlySpan<T> g = default,
-        ReadOnlySpan<T> h = default
-    ) {
-        SpanCount = spanCount;
-        _a        = a;
-        _b        = b;
-        _c        = c;
-        _d        = d;
-        _e        = e;
-        _f        = f;
-        _g        = g;
-        _h        = h;
-    }
-
-    public RoMultiSpan() : this(0) { }
-    public RoMultiSpan(ReadOnlySpan<T> a) : this(1, a) { }
-    public RoMultiSpan(ReadOnlySpan<T> a, ReadOnlySpan<T> b) : this(2, a, b) { }
-    public RoMultiSpan(ReadOnlySpan<T> a, ReadOnlySpan<T> b, ReadOnlySpan<T> c) : this(3, a, b, c) { }
-    public RoMultiSpan(ReadOnlySpan<T> a, ReadOnlySpan<T> b, ReadOnlySpan<T> c, ReadOnlySpan<T> d) : this(4, a, b, c, d) { }
-
-    public RoMultiSpan(
-        ReadOnlySpan<T> a,
-        ReadOnlySpan<T> b,
-        ReadOnlySpan<T> c,
-        ReadOnlySpan<T> d,
-        ReadOnlySpan<T> e
-    ) : this(5, a, b, c, d, e) { }
-
-    public RoMultiSpan(
-        ReadOnlySpan<T> a,
-        ReadOnlySpan<T> b,
-        ReadOnlySpan<T> c,
-        ReadOnlySpan<T> d,
-        ReadOnlySpan<T> e,
-        ReadOnlySpan<T> f
-    ) : this(6, a, b, c, d, e, f) { }
-
-    public RoMultiSpan(
-        ReadOnlySpan<T> a,
-        ReadOnlySpan<T> b,
-        ReadOnlySpan<T> c,
-        ReadOnlySpan<T> d,
-        ReadOnlySpan<T> e,
-        ReadOnlySpan<T> f,
-        ReadOnlySpan<T> g
-    ) : this(7, a, b, c, d, e, f, g) { }
-
-    public RoMultiSpan(
-        ReadOnlySpan<T> a,
-        ReadOnlySpan<T> b,
-        ReadOnlySpan<T> c,
-        ReadOnlySpan<T> d,
-        ReadOnlySpan<T> e,
-        ReadOnlySpan<T> f,
-        ReadOnlySpan<T> g,
-        ReadOnlySpan<T> h
-    ) : this(8, a, b, c, d, e, f, g, h) { }
-
-    #endregion
-
     /// <summary>
     /// Retrieves a subset of this <see cref="RoMultiSpan{T}"/>'s <see cref="ReadOnlySpan{T}"/>s.
     /// </summary>
@@ -157,7 +82,7 @@ public readonly ref partial struct RoMultiSpan<T> {
     /// The <see cref="Slice"/> method, in combination with the <see cref="Count"/> property, enables <a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/proposals/csharp-8.0/ranges#implicit-range-support">implicit Range support</a>.
     /// </remarks>
     [Pure]
-    public RoMultiSpan<T> Slice([ValueRange(0, MaxSpans)] int start, [ValueRange(0, MaxSpans)] int length) {
+    public RoMultiSpan<T> Slice([ValueRange(0, RoMultiSpan.MaxSpans)] int start, [ValueRange(0, RoMultiSpan.MaxSpans)] int length) {
         RoMultiSpan<T> result = default;
 
         for (int i = start; i < start + length; i++) {
@@ -174,8 +99,8 @@ public readonly ref partial struct RoMultiSpan<T> {
 
     [Pure]
     public RoMultiSpan<T> Add(ReadOnlySpan<T> newSpan) {
-        if (SpanCount >= MaxSpans) {
-            throw new InvalidOperationException($"Cannot add a new {nameof(ReadOnlySpan<T>)} to this {nameof(RoMultiSpan<T>)}: it already contains {MaxSpans} spans!");
+        if (SpanCount >= RoMultiSpan.MaxSpans) {
+            throw new InvalidOperationException($"Cannot add a new {nameof(ReadOnlySpan<T>)} to this {nameof(RoMultiSpan<T>)}: it already contains {RoMultiSpan.MaxSpans} spans!");
         }
 
         return SpanCount switch {
@@ -193,16 +118,23 @@ public readonly ref partial struct RoMultiSpan<T> {
 
     [Pure]
     public RoMultiSpan<T> AddRange(RoMultiSpan<T> newSpans) {
-        if (SpanCount + newSpans.SpanCount > MaxSpans) {
-            throw new ArgumentOutOfRangeException(nameof(newSpans), $"Cannot add {newSpans.SpanCount} spans to this {nameof(RoMultiSpan<T>)}: it already contains {nameof(SpanCount)} spans, and {SpanCount + newSpans.SpanCount} would exceed the {nameof(MaxSpans)} limit of {MaxSpans}!");
+        if (SpanCount + newSpans.SpanCount > RoMultiSpan.MaxSpans) {
+            throw new ArgumentOutOfRangeException(nameof(newSpans), $"Cannot add {newSpans.SpanCount} spans to this {nameof(RoMultiSpan<T>)}: it already contains {nameof(SpanCount)} spans, and {SpanCount + newSpans.SpanCount} would exceed the {nameof(RoMultiSpan.MaxSpans)} limit of {RoMultiSpan.MaxSpans}!");
         }
 
-        var result = this;
-        foreach (var span in newSpans) {
-            result = result.Add(span);
-        }
+        var builder = ToBuilder();
+        builder.AddRange(newSpans);
 
-        return this;
+        return builder.Build();
+    }
+
+    #endregion
+
+    #region Removing spans
+
+    public ReadOnlySpan<T> RemoveAt(int spanIndex, out ReadOnlySpan<T> removed) {
+        var result = this[..spanIndex];
+        throw new NotImplementedException();
     }
 
     #endregion
