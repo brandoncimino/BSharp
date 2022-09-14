@@ -54,7 +54,7 @@ namespace FowlFever.Testing {
             static string GetNickname(IPrettifiable? actualString, IResolveConstraint? constraint, PrettificationSettings? settings) {
                 var dName = actualString?.Prettify(settings);
                 var cName = constraint?.Prettify(settings);
-                return StringUtils.JoinNonBlank(dName, cName, " 🗜 ");
+                return Stringy.JoinNonBlank(dName, cName, " 🗜 ");
             }
 
             return Lazily.Get(() => GetNickname(actualDescription, constraint, settings))!;
