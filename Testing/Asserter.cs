@@ -87,10 +87,19 @@ namespace FowlFever.Testing {
         /// <typeparam name="T">the type of the <see cref="MultipleAsserter{TSelf,TActual}.Actual"/> value, if we were to have one</typeparam>
         /// <returns>a new <see cref="Asserter{T}"/></returns>
         [Pure]
-        public static Asserter<T> WithHeading<T>([CallerMemberName] string? heading = default, [CallerMemberName] string? _caller = default) => new Asserter<T>().WithHeading(heading.IfBlank(_caller));
+        public static Asserter<T> WithHeading<T>(string? heading = default, [CallerMemberName] string? _caller = default) {
+            return new Asserter<T>().WithHeading(heading.IfBlank(_caller));
+        }
 
         /// <inheritdoc cref="WithHeading{T}"/>
         [Pure]
-        public static Asserter<object> WithHeading(string? heading = default, [CallerMemberName] string? _caller = default) => new Asserter<object>().WithHeading(heading.IfBlank(_caller));
+        public static Asserter<object> WithHeading(
+            string?                    heading   = default,
+            [CallerMemberName] string? _caller   = default,
+            [CallerFilePath]   string? _filePath = default,
+            [CallerLineNumber] int?    _lineNo   = default
+        ) {
+            return WithHeading<object>(heading, _caller);
+        }
     }
 }
