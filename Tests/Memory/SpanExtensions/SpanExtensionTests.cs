@@ -55,7 +55,7 @@ public partial class SpanExtensionTests {
             entry = default;
         }
 
-        Assert.That(SpanSplitHelpers.IsTrimmable(entry), Is.EqualTo(isTrimmable));
+        Assert.That(SpanHelpers.IsTrimmable(entry), Is.EqualTo(isTrimmable));
     }
 
     [TestCase(new[] { 'a', ' ', 'b' },                  new[] { 'a', ' ', 'b' })]
@@ -64,14 +64,14 @@ public partial class SpanExtensionTests {
     public void GenericTrim<T>(T[] source, T[] expected)
         where T : IEquatable<T> {
         var actSpan = source.AsSpan();
-        Assert.That(SpanSplitHelpers.GenericTrim<T>(actSpan).ToArray(), Is.EquivalentTo(expected));
+        Assert.That(SpanHelpers.GenericTrim<T>(actSpan).ToArray(), Is.EquivalentTo(expected));
     }
 
     [TestCase("a b",     "a b")]
     [TestCase(" a b ",   "a b")]
     [TestCase("  a b  ", "a b")]
     public void GenericTrim_Chars(string source, string expected) {
-        var trimSpan = SpanSplitHelpers.GenericTrim<char>(source);
+        var trimSpan = SpanHelpers.GenericTrim<char>(source);
         var trimStr  = trimSpan.ToString();
         Assert.That(trimStr, Is.EqualTo(expected));
     }
