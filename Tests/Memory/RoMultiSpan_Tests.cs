@@ -103,4 +103,16 @@ public class RoMultiSpanTests {
 
         Assert.That(results.ToArray(), Is.EqualTo(expected));
     }
+
+    [TestCase("abc", null, "def")]
+    public void RoMultiSpan_ElementEnumerator(string a, string b, string c) {
+        var spans            = RoMultiSpan.Of(a.AsSpan(), b, c);
+        var expectedElements = (a + b + c).ToCharArray();
+        var results          = new List<char>();
+        foreach (var ch in spans.EnumerateElements()) {
+            results.Add(ch);
+        }
+
+        Assert.That(results.ToArray(), Is.EqualTo(expectedElements));
+    }
 }
