@@ -8,8 +8,8 @@ public readonly ref partial struct RoMultiSpan<T> {
     public T this[ElementCoord coord] => this[coord.Span][coord.Element];
 
     /// <summary>
-    /// Represents the "coordinate" of a <see cref="RoMultiSpan{T}.GetElement(int)"/> in a <see cref="RoMultiSpan{T}"/>, consisting of a <see cref="RoMultiSpan{T}.GetSpan"/> index
-    /// and an index <i>within</i> that span.
+    /// Represents the "coordinate" of an element in a <see cref="RoMultiSpan{T}"/>, consisting of a <see cref="RoMultiSpan{T}.GetSpan"/> index
+    /// and a <see cref="P:System.ReadOnlySpan`1.Item(System.Int32)"/> index <i>within</i> that span.
     /// </summary>
     public readonly ref struct ElementCoord {
         /// <summary>
