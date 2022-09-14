@@ -91,37 +91,21 @@ public readonly ref partial struct RoMultiSpan<T> {
     /// Retrieves a <typeparamref name="T"/> element by treating this <see cref="RoMultiSpan{T}"/> as if it was a single, flat collection of size <see cref="ElementCount"/>.
     /// </summary>
     /// <remarks>
-    /// <b>⚠ Warning:</b> When looping through each element, it is considerably more efficient to use <see cref="EnumerateElements"/> than repeated calls to <see cref="GetElement(int)"/>.
+    /// ⚠ When looping through each element, it is considerably more efficient to use <see cref="EnumerateElements"/> than repeated calls to <see cref="ElementAt(int)"/>,
+    /// because <see cref="ElementAt(int)"/> has to traverse each <see cref="EnumerateSpans"/> to find the <see cref="GetContainingSpanIndex"/> of <paramref name="elementIndex"/>.
     /// </remarks>
     /// <param name="elementIndex">the <see cref="Index"/> of the <typeparamref name="T"/> element</param>
     /// <returns>the retrieved <typeparamref name="T"/> element</returns>
     /// <exception cref="ArgumentOutOfRangeException">if <paramref name="elementIndex"/> is out-of-bounds for <see cref="ElementCount"/></exception>
     [Pure]
-    public T GetElement(int elementIndex) {
-        var ec = ElementCount;
-        if (elementIndex < 0 || elementIndex >= ec) {
-            throw new ArgumentOutOfRangeException(nameof(elementIndex), elementIndex, $"{elementIndex} is out-of-bounds: this {nameof(RoMultiSpan<T>)} contains {ec} elements!");
-        }
-
-        var currentStart = 0;
-
-        foreach (var span in this) {
-            var currentEnd = currentStart + span.Length;
-
-            if (currentEnd > elementIndex) {
-                return span[elementIndex - currentStart];
-            }
-
-            currentStart = currentEnd;
-        }
-
-        throw new InvalidOperationException("This code should have been unreachable!");
+    public T ElementAt([NonNegativeValue] int elementIndex) {
+        return this[GetCoord(elementIndex)];
     }
 
-    /// <inheritdoc cref="GetElement(int)"/>
+    /// <inheritdoc cref="ElementAt(int)"/>
     [Pure]
-    public T GetElement(Index elementIndex) {
-        return GetElement(elementIndex.GetOffset(Count));
+    public T ElementAt(Index elementIndex) {
+        return ElementAt(elementIndex.GetOffset(Count));
     }
 
     #endregion
