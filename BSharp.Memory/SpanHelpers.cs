@@ -33,6 +33,7 @@ internal static class SpanHelpers {
                    .SkipLastWhile(static it => IsTrimmable(it));
     }
 
+    /// <exception cref="ArgumentOutOfRangeException">if <paramref name="index"/> &lt; 0 or ≥ <see cref="length"/></exception>
     internal static int RequireIndex(
         this int                                     length,
         int                                          index,
