@@ -74,7 +74,7 @@ public static class RoMultiSpan {
     }
 
     [Pure]
-    public static RoMultiSpan<char> Of(params string[] strings) {
+    public static RoMultiSpan<char> Of(params string?[] strings) {
         if (strings.Length > MaxSpans) {
             throw new ArgumentOutOfRangeException($"🙅‍♀️ Cannot create a {nameof(RoMultiSpan<char>)} out of {strings.Length} strings: it would exceed the {nameof(MaxSpans)} limit of {MaxSpans}!");
         }
