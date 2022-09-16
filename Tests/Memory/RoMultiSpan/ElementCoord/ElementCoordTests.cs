@@ -7,7 +7,7 @@ using FowlFever.Testing;
 using NUnit.Framework;
 using NUnit.Framework.Constraints;
 
-namespace BSharp.Tests.Memory;
+namespace BSharp.Tests.Memory.RoMultiSpan;
 
 public static partial class Assertions {
     public static TSelf And<TSelf, T>(
@@ -43,7 +43,7 @@ public class RoMultiSpan_ElementCoord {
     [TestCase(new[] { "abc", "", "yolo" },   -5, 0, 2)]
     public void GetCoord(string[] strings, int elementIndex, int coordSpan, int coordElement) {
         var index = elementIndex.AsIndex();
-        var spans = RoMultiSpan.Of(strings);
+        var spans = FowlFever.BSharp.Memory.RoMultiSpan.Of(strings);
         var coord = spans.GetCoord(index);
         Asserter.WithHeading(coord.ToString())
                 .And(coord.Tuple(), Is.EqualTo((coordSpan, coordElement)))

@@ -8,7 +8,7 @@ using JetBrains.Annotations;
 
 using NUnit.Framework;
 
-namespace BSharp.Tests.Memory;
+namespace BSharp.Tests.Memory.RoMultiSpan;
 
 public static class AssertionExtensions {
     private static string[] NullToEmpty(this string?[]? strings) {
@@ -32,7 +32,7 @@ public static class AssertionExtensions {
     [MustUseReturnValue]
     public static T IsEmpty<T>(this IMultipleAsserter<T> asserter, RoMultiSpan<char>.Builder builder) where T : IMultipleAsserter<T> {
         return asserter.And(builder.Count, Is.EqualTo(0))
-                       .And(builder.RemainingSpans, Is.EqualTo(RoMultiSpan.MaxSpans))
+                       .And(builder.RemainingSpans, Is.EqualTo(FowlFever.BSharp.Memory.RoMultiSpan.MaxSpans))
                        .AndBuild(builder)
                        .Self;
     }
@@ -49,8 +49,8 @@ public class RoMultiSpan_Builder_Tests {
 
     [Test]
     public void CannotAddBeyondMaxSpans() {
-        var builder = RoMultiSpan.CreateBuilder<char>();
-        for (int i = 0; i < RoMultiSpan.MaxSpans; i++) {
+        var builder = FowlFever.BSharp.Memory.RoMultiSpan.CreateBuilder<char>();
+        for (int i = 0; i < FowlFever.BSharp.Memory.RoMultiSpan.MaxSpans; i++) {
             builder.Add($"[{i}]");
         }
 
@@ -65,7 +65,7 @@ public class RoMultiSpan_Builder_Tests {
 
     [Test]
     public void AddTest([Values("abc", null, "", " ")] string? addedString) {
-        var builder = RoMultiSpan.CreateBuilder<char>();
+        var builder = FowlFever.BSharp.Memory.RoMultiSpan.CreateBuilder<char>();
         using var ass = Asserter.WithHeading()
                                 .And(builder.Count,                  Is.EqualTo(0))
                                 .And(builder.Add(addedString).Count, Is.EqualTo(1))
@@ -76,7 +76,7 @@ public class RoMultiSpan_Builder_Tests {
     [Test]
     [TestCase("abc", "a", " ", "", null, "yolo")]
     public void AddRepeatedTest(params string?[] strings) {
-        var builder = RoMultiSpan.CreateBuilder<char>();
+        var builder = FowlFever.BSharp.Memory.RoMultiSpan.CreateBuilder<char>();
         using var ass = Asserter.WithHeading()
                                 .And(builder.Count, Is.EqualTo(0))
                                 .AndBuild(builder);
@@ -97,8 +97,8 @@ public class RoMultiSpan_Builder_Tests {
         string e,
         string f
     ) {
-        var builder = RoMultiSpan.CreateBuilder<char>();
-        var strings = RoMultiSpan.Of(a, b, c, d, e, f);
+        var builder = FowlFever.BSharp.Memory.RoMultiSpan.CreateBuilder<char>();
+        var strings = FowlFever.BSharp.Memory.RoMultiSpan.Of(a, b, c, d, e, f);
 
         using var ass = Asserter.WithHeading()
                                 .And(builder.AddRange(strings).Count, Is.EqualTo(strings.SpanCount))
@@ -119,10 +119,10 @@ public class RoMultiSpan_Builder_Tests {
 
     [Test]
     public void RemoveTest() {
-        var builder = RoMultiSpan.CreateBuilder<char>()
-                                 .Add("one")
-                                 .Add("two")
-                                 .Add("three");
+        var builder = FowlFever.BSharp.Memory.RoMultiSpan.CreateBuilder<char>()
+                               .Add("one")
+                               .Add("two")
+                               .Add("three");
 
         Asserter.WithHeading()
                 .And(builder.Count,          Is.EqualTo(3))

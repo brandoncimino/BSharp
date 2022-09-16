@@ -6,7 +6,7 @@ using FowlFever.Testing;
 
 using NUnit.Framework;
 
-namespace BSharp.Tests.Memory;
+namespace BSharp.Tests.Memory.RoMultiSpan;
 
 public class RoMultiSpanTests {
     private static RoMultiSpan<char> ToSpans(IEnumerable<string> strings) {
@@ -106,7 +106,7 @@ public class RoMultiSpanTests {
 
     [TestCase("abc", null, "def")]
     public void RoMultiSpan_ElementEnumerator(string a, string b, string c) {
-        var spans            = RoMultiSpan.Of(a.AsSpan(), b, c);
+        var spans            = FowlFever.BSharp.Memory.RoMultiSpan.Of(a.AsSpan(), b, c);
         var expectedElements = (a + b + c).ToCharArray();
         var results          = new List<char>();
         foreach (var ch in spans.EnumerateElements()) {

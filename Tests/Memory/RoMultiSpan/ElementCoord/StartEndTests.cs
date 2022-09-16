@@ -5,11 +5,11 @@ using FowlFever.Testing;
 
 using NUnit.Framework;
 
-namespace BSharp.Tests.Memory;
+namespace BSharp.Tests.Memory.RoMultiSpan;
 
 public class RoMultiSpan_ElementCoord_StartEnd {
     public record Expectation(string?[] Strings, (int, int)? StartIndices, (int, int)? EndIndices) {
-        public RoMultiSpan<char>              Spans => RoMultiSpan.Of(Strings);
+        public RoMultiSpan<char>              Spans => FowlFever.BSharp.Memory.RoMultiSpan.Of(Strings);
         public RoMultiSpan<char>.ElementCoord Start => StartIndices;
         public RoMultiSpan<char>.ElementCoord End   => EndIndices;
     }
