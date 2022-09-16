@@ -7,7 +7,7 @@ using FowlFever.Testing;
 using NUnit.Framework;
 using NUnit.Framework.Constraints;
 
-namespace BSharp.Tests.Memory.RoMultiSpan;
+namespace BSharp.Tests.Memory.RoMultiSpan.ElementCoord;
 
 public static partial class Assertions {
     public static TSelf And<TSelf, T>(
@@ -36,7 +36,7 @@ public static partial class Assertions {
     public static Index AsIndex(this int value) => value < 0 ? Index.FromEnd(-value) : value;
 }
 
-public class RoMultiSpan_ElementCoord {
+public class RoMultiSpanTests {
     [Test]
     [TestCase(new[] { "abc", "yolo", "dd" }, 0,  0, 0)]
     [TestCase(new[] { "", "", "a" },         0,  2, 0)]

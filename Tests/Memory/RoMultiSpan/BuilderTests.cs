@@ -38,7 +38,7 @@ public static class AssertionExtensions {
     }
 }
 
-public class RoMultiSpan_Builder_Tests {
+public class BuilderTests {
     [Test]
     public void DefaultStateTest() {
         Asserter.WithHeading()
