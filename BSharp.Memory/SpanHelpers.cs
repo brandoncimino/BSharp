@@ -37,15 +37,25 @@ internal static class SpanHelpers {
     internal static int RequireIndex(
         this int                                     length,
         int                                          index,
-        [CallerArgumentExpression("length")] string? _length = default,
-        [CallerArgumentExpression("index")]  string? _index  = default,
+        [CallerArgumentExpression("length")] string  _length = "length",
+        [CallerArgumentExpression("index")]  string  _index  = "index",
         [CallerMemberName]                   string? _caller = default
     ) {
         if (index < 0 || index >= length) {
-            throw new ArgumentOutOfRangeException($"🙅 {_caller}: {_index} {index} is out-of-bounds for a collection of size {_length} {length}!");
+            throw OutOfBounds(length, index, _length, _index, _caller);
         }
 
         return index;
+    }
+
+    internal static ArgumentOutOfRangeException OutOfBounds(
+        int                                          length,
+        Index                                        index,
+        [CallerArgumentExpression("length")] string  _length = "length",
+        [CallerArgumentExpression("index")]  string  _index  = "index",
+        [CallerMemberName]                   string? _caller = default
+    ) {
+        return new ArgumentOutOfRangeException(_index, index, $"🙅 {_caller}: {_index} {index} is out-of-bounds for a collection of {_length} {length}!");
     }
 
     internal static int RequireIndex(
