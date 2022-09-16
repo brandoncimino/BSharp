@@ -93,13 +93,13 @@ namespace FowlFever.Testing {
 
         /// <inheritdoc cref="WithHeading{T}"/>
         [Pure]
-        public static Asserter<object> WithHeading(
+        public static Asserter<ValueTuple> WithHeading(
             string?                    heading   = default,
             [CallerMemberName] string? _caller   = default,
             [CallerFilePath]   string? _filePath = default,
             [CallerLineNumber] int?    _lineNo   = default
         ) {
-            return WithHeading<object>(heading, _caller);
+            return WithHeading<ValueTuple>(heading, _caller);
         }
     }
 }

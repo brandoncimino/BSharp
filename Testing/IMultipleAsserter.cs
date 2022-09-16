@@ -42,4 +42,9 @@ public interface IMultipleAsserter<out TSelf> : IMultipleAsserter where TSelf : 
         Supplied<string?>?                           description = default,
         [CallerArgumentExpression("target")] string? _target     = default
     );
+
+    [MustUseReturnValue]
+    public TSelf And(
+        IMultipleAsserter subAsserter
+    );
 }
