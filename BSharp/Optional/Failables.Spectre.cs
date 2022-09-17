@@ -2,8 +2,7 @@ using System;
 using System.Linq;
 
 using FowlFever.BSharp.Strings;
-
-using JetBrains.Annotations;
+using FowlFever.BSharp.Strings.Spectral;
 
 using Spectre.Console;
 using Spectre.Console.Rendering;
@@ -29,12 +28,9 @@ public static partial class Failables {
         };
     }
 
-    [UsedImplicitly]
-    public static ExceptionSettings DefaultExceptionSettings = ImmutableExceptionSettings().Invoke();
-
-    public static IRenderable? GetRenderableExcuse(this IFailable failable, ExceptionSettings? settings = default) {
-        settings ??= DefaultExceptionSettings;
-        return failable.Excuse?.GetRenderable(settings);
+    public static IRenderable? GetRenderableExcuse(this IFailable failable, Palette? palette = default) {
+        palette = palette.OrFallback();
+        return failable.Excuse?.GetRenderable(palette);
     }
 
     public static IRenderable GetRenderable(this RapSheet rapSheet) {
