@@ -28,20 +28,35 @@ public readonly ref partial struct RoMultiSpan<T> {
 
         /// <summary>
         /// The number of <see cref="ReadOnlySpan{T}"/>s that have been <see cref="Add"/>-ed to the <see cref="Builder"/>.
+        /// <ul>
+        /// <li>If <see cref="Count"/> is <i>increased</i>, then it will be as though <see cref="ReadOnlySpan{T}.Empty"/> spans had been <see cref="Add"/>ed.</li>
+        /// <li>If <see cref="Count"/> is <i>decreased</i>, then spans will be <see cref="Remove()"/>d.</li>
+        /// </ul>
         /// </summary>
+        /// <exception cref="ArgumentOutOfRangeException">if <see cref="Count"/> is &lt; 0 or >= <see cref="RoMultiSpan.MaxSpans"/></exception>
         [ValueRange(0, RoMultiSpan.MaxSpans)]
         public int Count {
             readonly get => _count;
-            private set {
+            set {
+                if (value == _count) {
+                    return;
+                }
+
                 if (value is < 0 or > RoMultiSpan.MaxSpans) {
                     throw new ArgumentOutOfRangeException(nameof(Count), value, $"must be within 0..{RoMultiSpan.MaxSpans}");
+                }
+
+                if (value < _count) {
+                    for (int i = value; i < _count; i++) {
+                        this[i] = default;
+                    }
                 }
 
                 _count = value;
             }
         }
 
-        public readonly int RemainingSpans => RoMultiSpan.MaxSpans - Count;
+        [ValueRange(0, RoMultiSpan.MaxSpans)] public readonly int RemainingSpans => RoMultiSpan.MaxSpans - Count;
 
         public ReadOnlySpan<T> this[[ValueRange(0, RoMultiSpan.MaxSpans)] int spanIndex] {
             readonly get => GetSpan(spanIndex);
@@ -168,6 +183,20 @@ public readonly ref partial struct RoMultiSpan<T> {
             }
 
             return this;
+        }
+
+        /// <summary>
+        /// Similar to <see cref="SetSpan"/>, but potentially increases <see cref="Count"/> to make room for <paramref name="spanIndex"/>.
+        /// </summary>
+        /// <param name="spanIndex">the index of <see cref="ReadOnlySpan{T}"/> being modified</param>
+        /// <param name="value">the new <see cref="ReadOnlySpan{T}"/></param>
+        /// <returns>this <see cref="Builder"/></returns>
+        public Builder SafeSet([ValueRange(0, RoMultiSpan.MaxSpans)] int spanIndex, ReadOnlySpan<T> value) {
+            if (Count < spanIndex + 1) {
+                Count = spanIndex + 1;
+            }
+
+            return SetSpan(spanIndex, value);
         }
 
         #endregion

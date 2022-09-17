@@ -45,4 +45,47 @@ public readonly ref partial struct RoMultiSpan<T> {
         get => this[^1];
         init => this[^1] = value;
     }
+
+    public RoMultiSpan<T> Skip_naive(int amountToSkip) {
+        var builder = ToBuilder();
+
+        for (int i = 0; i < SpanCount; i++) {
+            builder[i]   =  this[i].Skip(amountToSkip);
+            amountToSkip -= this[i].Length;
+            if (amountToSkip <= 0) {
+                break;
+            }
+        }
+
+        return builder.Build();
+    }
+
+    public RoMultiSpan<T> Skip(int amountToSkip) {
+        var builder = CreateBuilder();
+
+        foreach (var span in this) {
+            if (span.Length > amountToSkip) {
+                builder.Add(span.Skip(amountToSkip));
+            }
+
+            amountToSkip -= span.Length;
+        }
+
+        return builder.Build();
+    }
+
+    public RoMultiSpan<T> SkipLast(int amountToSkip) {
+        var builder = CreateBuilder();
+
+        for (int i = SpanCount - 1; i >= 0; i--) {
+            var span = this[i];
+            if (span.Length > amountToSkip) {
+                builder.SafeSet(i, span.SkipLast(amountToSkip));
+            }
+
+            amountToSkip -= span.Length;
+        }
+
+        return builder.Build();
+    }
 }
