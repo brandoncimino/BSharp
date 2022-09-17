@@ -46,21 +46,7 @@ public readonly ref partial struct RoMultiSpan<T> {
         init => this[^1] = value;
     }
 
-    public RoMultiSpan<T> Skip_naive(int amountToSkip) {
-        var builder = ToBuilder();
-
-        for (int i = 0; i < SpanCount; i++) {
-            builder[i]   =  this[i].Skip(amountToSkip);
-            amountToSkip -= this[i].Length;
-            if (amountToSkip <= 0) {
-                break;
-            }
-        }
-
-        return builder.Build();
-    }
-
-    public RoMultiSpan<T> Skip(int amountToSkip) {
+    public RoMultiSpan<T> SkipElements(int amountToSkip) {
         var builder = CreateBuilder();
 
         foreach (var span in this) {
@@ -74,7 +60,7 @@ public readonly ref partial struct RoMultiSpan<T> {
         return builder.Build();
     }
 
-    public RoMultiSpan<T> SkipLast(int amountToSkip) {
+    public RoMultiSpan<T> SkipLastElements(int amountToSkip) {
         var builder = CreateBuilder();
 
         for (int i = SpanCount - 1; i >= 0; i--) {
@@ -87,5 +73,10 @@ public readonly ref partial struct RoMultiSpan<T> {
         }
 
         return builder.Build();
+    }
+
+    public RoMultiSpan<T> SliceElements(Range elementRange) {
+        return SkipElements(elementRange.Start.GetOffset(ElementCount))
+            .SkipLastElements(ElementCount - elementRange.End.GetOffset(ElementCount));
     }
 }

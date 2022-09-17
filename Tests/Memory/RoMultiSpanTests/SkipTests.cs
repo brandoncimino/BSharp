@@ -15,7 +15,7 @@ public class SkipTests {
     [TestCase(new[] { "yolo", "swag" },                 8, new string[] { })]
     [TestCase(new[] { "", "", "yolo", "", "swag", "" }, 2, new[] { "lo", "", "swag", "" })]
     public void Skip(string[] strings, int amountToSkip, string[] expected) {
-        var skipped = RoMultiSpan.Of(strings).Skip(amountToSkip);
+        var skipped = RoMultiSpan.Of(strings).SkipElements(amountToSkip);
         Console.WriteLine($"skipped: {skipped.ToStringArray().JoinString(", ")}");
         Asserter.WithHeading()
                 .And(skipped.ToStringArray(), Is.EqualTo(expected))
@@ -28,7 +28,7 @@ public class SkipTests {
     [TestCase(new[] { "yolo", "swag" },                 8, new string[] { })]
     [TestCase(new[] { "", "", "yolo", "", "swag", "" }, 2, new[] { "", "", "yolo", "", "sw" })]
     public void SkipLast(string[] strings, int amountToSkip, string[] expected) {
-        var skipped = RoMultiSpan.Of(strings).SkipLast(amountToSkip);
+        var skipped = RoMultiSpan.Of(strings).SkipLastElements(amountToSkip);
         Asserter.WithHeading()
                 .And(skipped.ToStringArray(), Is.EqualTo(expected))
                 .Invoke();
