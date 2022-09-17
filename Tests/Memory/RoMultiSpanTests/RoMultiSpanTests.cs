@@ -6,7 +6,7 @@ using FowlFever.Testing;
 
 using NUnit.Framework;
 
-namespace BSharp.Tests.Memory.RoMultiSpan;
+namespace BSharp.Tests.Memory.RoMultiSpanTests;
 
 public class RoMultiSpanTests {
     private static RoMultiSpan<char> ToSpans(IEnumerable<string> strings) {

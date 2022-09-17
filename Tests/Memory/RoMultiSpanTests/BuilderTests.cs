@@ -8,7 +8,7 @@ using JetBrains.Annotations;
 
 using NUnit.Framework;
 
-namespace BSharp.Tests.Memory.RoMultiSpan;
+namespace BSharp.Tests.Memory.RoMultiSpanTests;
 
 public static class AssertionExtensions {
     private static string[] NullToEmpty(this string?[]? strings) {
