@@ -5,13 +5,11 @@ using FowlFever.Testing;
 
 using NUnit.Framework;
 
-namespace BSharp.Tests.Memory.RoMultiSpan.ElementCoord;
+namespace BSharp.Tests.Memory.RoMultiSpanTests.ElementCoord;
 
 public class StartEndTests {
-    public record Expectation(string?[] Strings, (int, int)? StartIndices, (int, int)? EndIndices) {
-        public RoMultiSpan<char>              Spans => FowlFever.BSharp.Memory.RoMultiSpan.Of(Strings);
-        public RoMultiSpan<char>.ElementCoord Start => StartIndices;
-        public RoMultiSpan<char>.ElementCoord End   => EndIndices;
+    public record Expectation(string?[] Strings, (int, int) Start, (int, int) End) {
+        public RoMultiSpan<char> Spans => FowlFever.BSharp.Memory.RoMultiSpan.Of(Strings);
     }
 
     public static Expectation[] Expectations = {
@@ -27,11 +25,11 @@ public class StartEndTests {
 
     [Test]
     public void StartCoord([ValueSource(nameof(Expectations))] Expectation expectation) {
-        Asserter.WithHeading().And(expectation.Spans.StartCoord, expectation.Start);
+        Asserter.WithHeading().And(expectation.Spans.StartCoord, Is.EqualTo(expectation.Start)).Invoke();
     }
 
     [Test]
     public void EndCoord([ValueSource(nameof(Expectations))] Expectation expectation) {
-        Asserter.WithHeading().And(expectation.Spans.EndCoord, expectation.End);
+        Asserter.WithHeading().And(expectation.Spans.EndCoord, Is.EqualTo(expectation.End)).Invoke();
     }
 }

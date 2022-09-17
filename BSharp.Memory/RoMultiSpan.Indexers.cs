@@ -87,16 +87,13 @@ public readonly ref partial struct RoMultiSpan<T> {
     /// <summary>
     /// Retrieves a <typeparamref name="T"/> element by treating this <see cref="RoMultiSpan{T}"/> as if it was a single, flat collection of size <see cref="ElementCount"/>.
     /// </summary>
-    /// <remarks>
-    /// ⚠ When looping through each element, it is considerably more efficient to use <see cref="EnumerateElements"/> than repeated calls to <see cref="ElementAt(int)"/>,
-    /// because <see cref="ElementAt(int)"/> has to traverse each <see cref="EnumerateSpans"/> to find the <see cref="GetContainingSpanIndex"/> of <paramref name="elementIndex"/>.
-    /// </remarks>
     /// <param name="elementIndex">the <see cref="Index"/> of the <typeparamref name="T"/> element</param>
     /// <returns>the retrieved <typeparamref name="T"/> element</returns>
     /// <exception cref="ArgumentOutOfRangeException">if <paramref name="elementIndex"/> is out-of-bounds for <see cref="ElementCount"/></exception>
     [Pure]
     public T ElementAt([NonNegativeValue] int elementIndex) {
-        return this[GetCoord(elementIndex)];
+        var (span, elem) = GetCoord(elementIndex);
+        return this[span][elem];
     }
 
     /// <inheritdoc cref="ElementAt(int)"/>
