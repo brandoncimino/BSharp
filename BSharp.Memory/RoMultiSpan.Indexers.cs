@@ -14,10 +14,7 @@ public readonly ref partial struct RoMultiSpan<T> {
     /// <returns>the corresponding <see cref="ReadOnlySpan{T}"/></returns>
     /// <exception cref="IndexOutOfRangeException">if <see cref="spanIndex"/> is &lt; 0 or &gt;= <see cref="SpanCount"/></exception>
     public ReadOnlySpan<T> GetSpan([ValueRange(0, RoMultiSpan.MaxSpans)] int spanIndex) {
-        // ReSharper disable once ConditionIsAlwaysTrueOrFalse
-        if (spanIndex < 0 || spanIndex > SpanCount) {
-            throw new ArgumentOutOfRangeException(nameof(spanIndex), $"{nameof(spanIndex)} {spanIndex} is out-of-bounds: this {nameof(RoMultiSpan<T>)} contains {SpanCount} spans!");
-        }
+        SpanCount.RequireIndex(spanIndex);
 
         return spanIndex switch {
             0 => _a,
