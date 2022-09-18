@@ -36,10 +36,22 @@
         <Compile Update="RoSpanTupleExtensions.cs">
             <DependentUpon>RoSpanTuple.cs</DependentUpon>
         </Compile>
-        <Compile Update="RoMultiSpan.Factory.cs">
+        <Compile Update="RoMultiSpan.Static.cs">
             <DependentUpon>RoMultiSpan.cs</DependentUpon>
         </Compile>
         <Compile Remove="Spanq.IndexNot.cs"/>
+        <Compile Update="RoMultiSpan.ElementCoord.cs">
+            <DependentUpon>RoMultiSpan.cs</DependentUpon>
+        </Compile>
+        <Compile Update="RoMultiSpan.SkipTake.cs">
+            <DependentUpon>RoMultiSpan.cs</DependentUpon>
+        </Compile>
+        <Compile Update="RoMultiSpan.Builder.cs">
+            <DependentUpon>RoMultiSpan.cs</DependentUpon>
+        </Compile>
+        <Compile Update="RoMultiSpan.Constructors.cs">
+            <DependentUpon>RoMultiSpan.cs</DependentUpon>
+        </Compile>
     </ItemGroup>
 
     <ItemGroup>
