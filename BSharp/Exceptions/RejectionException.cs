@@ -72,7 +72,7 @@ public class RejectionException : ArgumentException {
                 }
             );
 
-            return string.Join("\n", lines);
+            return string.Join('\n', lines);
         }
     }
 
