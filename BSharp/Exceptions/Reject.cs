@@ -10,7 +10,7 @@ using FowlFever.Implementors;
 
 namespace FowlFever.BSharp.Exceptions;
 
-public static class Reject {
+public static partial class Reject {
     private readonly record struct TypeName(string? Value) : IHas<string?> {
         private TypeName(object? obj) : this(
             obj switch {
