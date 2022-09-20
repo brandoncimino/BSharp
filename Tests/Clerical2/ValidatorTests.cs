@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Reflection;
 
@@ -12,8 +13,6 @@ using FowlFever.Testing;
 
 using NUnit.Framework;
 using NUnit.Framework.Constraints;
-
-using Is = NUnit.Framework.Is;
 
 namespace BSharp.Tests.Clerical2;
 
@@ -113,12 +112,19 @@ public class ValidatorTests {
     }
 
     [Test]
+    [TestCase(typeof(PositiveNumber), nameof(PositiveNumber.Instance_Assertion), typeof(PositiveNumber))]
+    public void Get_Validated_Type(Type owningType, string methodName, Type expectedValidatedType) {
+        var bd = ImmutableArray.CreateBuilder<int>();
+        var lb = ImmutableList.CreateBuilder<string>();
+    }
+
+    [Test]
     public void Child_Fail_Parent_Pass() {
         var oddNumb           = new EvenPositiveNumber(9);
         var validationResults = Validator.TryValidate(oddNumb).ToArray();
         Asserter.Against(validationResults)
-                .And(it => it.Where(f => f.Failed).ToArray(),   Has.Length.EqualTo(EvenPositiveNumber.EvenNumberMethods.Length))
-                .And(it => it.Where(f => f.Passed()).ToArray(), Has.Length.EqualTo(PositiveNumber.PositiveNumberMethods.Length))
+                .And(it => it.Where(f => f.Failed).ToArray(), Has.Length.EqualTo(EvenPositiveNumber.EvenNumberMethods.Length))
+                .And(it => it.Where(f => f.Passed).ToArray(), Has.Length.EqualTo(PositiveNumber.PositiveNumberMethods.Length))
                 .Invoke();
     }
 
@@ -127,8 +133,8 @@ public class ValidatorTests {
         var negativeEven      = new EvenPositiveNumber(-8);
         var validationResults = Validator.TryValidate(negativeEven).ToArray();
         Asserter.Against(validationResults)
-                .And(it => it.Where(f => f.Failed).ToArray(),   Has.Length.EqualTo(PositiveNumber.PositiveNumberMethods.Length))
-                .And(it => it.Where(f => f.Passed()).ToArray(), Has.Length.EqualTo(EvenPositiveNumber.EvenNumberMethods.Length))
+                .And(it => it.Where(f => f.Failed).ToArray(), Has.Length.EqualTo(PositiveNumber.PositiveNumberMethods.Length))
+                .And(it => it.Where(f => f.Passed).ToArray(), Has.Length.EqualTo(EvenPositiveNumber.EvenNumberMethods.Length))
                 .Invoke();
     }
 }
