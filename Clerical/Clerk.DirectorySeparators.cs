@@ -2,7 +2,7 @@ using System.Diagnostics.Contracts;
 
 using FowlFever.BSharp.Clerical;
 
-namespace FowlFever.Clerical.Validated;
+namespace FowlFever.Clerical;
 
 public static partial class Clerk {
     /// <param name="c">a <see cref="char"/></param>

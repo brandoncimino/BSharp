@@ -5,7 +5,7 @@ using FowlFever.BSharp.Memory;
 using FowlFever.BSharp.Strings;
 using FowlFever.Clerical.Validated.Atomic;
 
-namespace FowlFever.Clerical.Validated;
+namespace FowlFever.Clerical;
 
 public static partial class Clerk {
     /// <summary>

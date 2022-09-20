@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 
 using FowlFever.Clerical.Validated.Composed;
 
-namespace FowlFever.Clerical.Validated;
+namespace FowlFever.Clerical;
 
 public static partial class Clerk {
     #region FileName

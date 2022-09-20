@@ -6,7 +6,7 @@ using FowlFever.BSharp.Memory;
 using FowlFever.Clerical.Validated.Atomic;
 using FowlFever.Clerical.Validated.Composed;
 
-namespace FowlFever.Clerical.Validated;
+namespace FowlFever.Clerical;
 
 /// <summary>
 /// Contains factory methods for <see cref="Validated"/> objects like <see cref="PathPart"/> and <see cref="FileName"/>.
