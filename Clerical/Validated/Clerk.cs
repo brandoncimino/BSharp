@@ -1,8 +1,9 @@
 using System.Collections.Immutable;
 using System.Diagnostics.Contracts;
-using System.Text.RegularExpressions;
+using System.Runtime.CompilerServices;
 
-using FowlFever.BSharp.Clerical;
+using FowlFever.BSharp.Collections;
+using FowlFever.BSharp.Exceptions;
 using FowlFever.BSharp.Memory;
 using FowlFever.BSharp.Strings;
 using FowlFever.Clerical.Validated.Atomic;
@@ -13,56 +14,7 @@ namespace FowlFever.Clerical.Validated;
 /// <summary>
 /// Contains factory methods for <see cref="Validated"/> objects like <see cref="PathPart"/> and <see cref="FileName"/>.
 /// </summary>
-public static class Clerk {
-    #region Constants
-
-    /// <summary>
-    /// The valid <see cref="DirectorySeparator"/>s; <b><c>/</c></b> and <b><c>\</c></b>.
-    /// </summary>
-    public static readonly ImmutableArray<char> DirectorySeparatorChars = ImmutableArray.Create('\\', '/');
-
-    /// <summary>
-    /// Combines <see cref="Path.GetInvalidPathChars"/> and <see cref="Path.GetInvalidFileNameChars"/>.
-    /// </summary>
-    /// <remarks>
-    /// Semicolon <c>:</c> is explicitly excluded from this list because it has a special rule where it is allowed <i>inside the <see cref="Path.GetPathRoot(System.ReadOnlySpan{char})"/></i>,
-    /// and we don't want to bother distinguishing the root for methods like <see cref="SplitPath(string?)"/>.
-    /// </remarks>
-    public static readonly ImmutableArray<char> InvalidPathChars = Path.GetInvalidPathChars()
-                                                                       .Union(Path.GetInvalidFileNameChars())
-                                                                       .ToImmutableArray()
-                                                                       .Remove(':');
-
-    /// <summary>
-    /// Combines <see cref="InvalidPathChars"/> and <see cref="DirectorySeparatorChars"/>.
-    /// </summary>
-    public static readonly ImmutableArray<char> InvalidPathPartChars = InvalidPathChars.Union(DirectorySeparatorChars).ToImmutableArray();
-
-    /// <inheritdoc cref="InvalidPathChars"/>
-    public static ImmutableArray<char> InvalidFileNameChars => InvalidPathChars;
-    /// <summary>
-    /// Combines <see cref="InvalidFileNameChars"/> with <c>.</c> <i>(period)</i>.
-    /// </summary>
-    public static ImmutableArray<char> InvalidFileNamePartChars = InvalidPathChars.Add('.');
-
-    /// <summary>
-    /// A <see cref="Regex"/> pattern matching <see cref="DirectorySeparatorChars"/>.
-    /// </summary>
-    public static readonly Regex DirectorySeparatorPattern = new(@"[\\\/]");
-    public static readonly Regex OuterSeparatorPattern = RegexPatterns.OuterMatch(DirectorySeparatorPattern);
-    public static readonly Regex InnerSeparatorPattern = RegexPatterns.InnerMatch(DirectorySeparatorPattern);
-
-    /// <summary>
-    /// Matches <b>any</b> single <see cref="FileExtension"/>.
-    /// </summary>
-    internal static readonly RegexGroup SingleExtensionGroup = new(@"\.[^.]+");
-    /// <summary>
-    /// Matches a contiguous sequence of <see cref="FileExtension"/>s at the <b>end</b> of a <see cref="string"/>.
-    /// </summary>
-    internal static readonly RegexGroup ExtensionGroup = new($@"({SingleExtensionGroup})+$");
-
-    #endregion
-
+public static partial class Clerk {
     /// <summary>
     /// Extracts the <see cref="Path.GetFileName(System.ReadOnlySpan{char})"/> without <b>ANY</b> <see cref="FileExtension"/>s from the given <paramref name="path"/>.
     /// <p/>
@@ -108,7 +60,7 @@ public static class Clerk {
 
     public static SpanSpliterator<char> SplitPath(ReadOnlySpan<char> path) => EnumeratePathParts(path);
 
-    [Pure] private static SpanSpliterator<char> EnumeratePathParts(ReadOnlySpan<char> path) => new(path, DirectorySeparatorChars.AsSpan(), SplitterStyle.AnyEntry, StringSplitOptions.RemoveEmptyEntries | (StringSplitOptions)2);
+    [Pure] private static SpanSpliterator<char> EnumeratePathParts(ReadOnlySpan<char> path) => new(path, DirectorySeparatorChars.AsSpan(), SplitterMatchStyle.AnyEntry, StringSplitOptions.RemoveEmptyEntries | (StringSplitOptions)2);
 
     /// <summary>
     /// Extracts each <b>individual</b> <see cref="FileExtension"/> from a path.
@@ -119,23 +71,51 @@ public static class Clerk {
     /// <remarks>This method is similar to <see cref="Path.GetExtension(System.ReadOnlySpan{char})"/>, except that it can retrieve multiple extensions, i.e. <c>game.sav.json</c> -> <c>[.sav, .json]</c></remarks>
     [Pure]
     public static ImmutableArray<FileExtension> GetExtensions(string? path) {
-        return EnumerateExtensions(path)
-            .ToImmutableArray(static span => new FileExtension('.' + span.ToString()));
+        var builder = ImmutableArray.CreateBuilder<FileExtension>();
+        var ct      = 0;
+        foreach (var span in EnumerateExtensions(path)) {
+            ct += 1;
+            builder.Add(new FileExtension('.' + span.ToString()));
+        }
+
+        builder.Capacity = ct;
+        return builder.MoveToImmutable();
     }
 
-    [Pure] internal static SpanSpliterator<char> EnumerateExtensions(ReadOnlySpan<char> path) => GetFullExtension(path).Spliterate(StringSplitOptions.RemoveEmptyEntries, '.');
-
-    [Pure] public static FileName GetFileName(string             path) => new(path);
-    [Pure] public static FileName GetFileName(ReadOnlySpan<char> path) => GetFileName(path.ToString());
+    [Pure] internal static SpanSpliterator<char> EnumerateExtensions(ReadOnlySpan<char> path) => GetFullExtension(path).Spliterate('.') with { Options = StringSplitOptions.RemoveEmptyEntries };
 
     [Pure]
-    public static bool EndsInDirectorySeparator(string path) {
-#if NET6_0_OR_GREATER
-        return Path.EndsInDirectorySeparator(path);
-#else
-        return DirectorySeparatorChars.Contains(path.Last());
-#endif
+    public static FileName? FindFileName(string path) {
+        return FindFileName(path.AsSpan());
     }
+
+    [Pure]
+    public static FileName? FindFileName(ReadOnlySpan<char> path) {
+        var coreFileName = Path.GetFileName(path);
+
+        if (coreFileName.IsEmpty) {
+            return default;
+        }
+
+        return new FileName(coreFileName.ToString());
+    }
+
+    private static ArgumentException NoFileNameException(ReadOnlySpan<char> path, [CallerArgumentExpression("path")] string? _path = default) {
+        return new ArgumentException($"[{path.ToString()}] did not contain a valid {nameof(FileName)}!", _path);
+    }
+
+    /// <summary>
+    /// Extracts the <see cref="FileName"/> from a path, throwing an exception if it can't.
+    /// </summary>
+    /// <param name="path">a file path</param>
+    /// <returns>a new <see cref="FileName"/></returns>
+    /// <exception cref="ArgumentException">if the <paramref name="path"/> didn't contain a <see cref="FileName"/></exception>
+    [Pure]
+    public static FileName GetFileName(string path) => FindFileName(path) ?? throw NoFileNameException(path);
+
+    /// <inheritdoc cref="GetFileName(string)"/>
+    [Pure]
+    public static FileName GetFileName(ReadOnlySpan<char> path) => FindFileName(path) ?? throw NoFileNameException(path);
 
     /// <summary>
     /// <inheritdoc cref="Path.GetTempPath"/>
@@ -159,5 +139,5 @@ public static class Clerk {
     /// </summary>
     /// <returns>a <see cref="FileName"/> equivalent of <see cref="Path.GetRandomFileName"/></returns>
     [Pure]
-    public static FileName GetRandomFileName() => GetFileName(Path.GetRandomFileName());
+    public static FileName GetRandomFileName() => FindFileName(Path.GetRandomFileName()).MustNotBeNull();
 }
