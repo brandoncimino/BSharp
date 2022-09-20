@@ -4,7 +4,6 @@ using System.Runtime.CompilerServices;
 
 using FowlFever.BSharp.Clerical;
 using FowlFever.BSharp.Collections;
-using FowlFever.BSharp.Memory;
 using FowlFever.Clerical.Validated.Atomic;
 using FowlFever.Implementors;
 
@@ -130,4 +129,6 @@ public readonly record struct FilePath() : IFilePath, IHas<string> {
 
     public int CompareTo(string? other, StringComparison comparisonType = StringComparison.Ordinal)                          => string.Compare(Value, other, comparisonType);
     public int CompareTo<T>(T?   other, StringComparison comparisonType = StringComparison.Ordinal) where T : IHas<string?>? => CompareTo(other?.Value, comparisonType);
+
+    public override string ToString() => Value;
 }
