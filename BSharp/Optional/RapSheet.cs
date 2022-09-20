@@ -101,7 +101,16 @@ public class RapSheet : IEnumerable<IFailable>, IPrettifiable, IFailable {
 
     #endregion
 
-    public Exception?        Excuse      => ExceptionUtils.Aggregate(Convictions.Select(it => it.Excuse));
+    public Exception?        Excuse      => Exceptional.Aggregate(Convictions.Select(it => it.Excuse));
     public bool              Failed      => Convictions.Any();
     public Supplied<string?> Description => GetHeadline().ToString();
+
+    public IRenderable GetRenderable() {
+        var tree = new Tree(GetHeadlineRenderable());
+        foreach (var charge in Charges) {
+            tree.AddNode(charge.GetRenderable());
+        }
+
+        return tree;
+    }
 }
