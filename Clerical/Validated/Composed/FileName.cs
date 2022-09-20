@@ -74,4 +74,6 @@ public readonly record struct FileName() : IFileName {
 
     public int CompareTo(string? other, StringComparison comparisonType = StringComparison.Ordinal)                          => string.Compare(Value, other, comparisonType);
     public int CompareTo<T>(T?   other, StringComparison comparisonType = StringComparison.Ordinal) where T : IHas<string?>? => CompareTo(other?.Value, comparisonType);
+
+    public override string ToString() => Value;
 }
