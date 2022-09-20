@@ -56,7 +56,23 @@ public readonly record struct PathPart : IPathPart {
     public static readonly PathPart ParentDirectory  = new("..", MustRatify.No);
     public static readonly PathPart HomeDirectory    = new("~", MustRatify.No);
 
-    public static implicit operator PathPart(SpecialPathPart specialPathPart) => specialPathPart.ToPathPart();
+    public static SpecialPathPart? GetSpecialPathPart(ReadOnlySpan<char> pathPart) {
+        return pathPart switch {
+            { Length: 1 } when pathPart[0] == '.'        => SpecialPathPart.CurrentDirectory,
+            { Length: 1 } when pathPart[0] == '~'        => SpecialPathPart.HomeDirectory,
+            { Length: 2 } when pathPart.StartsWith("..") => SpecialPathPart.ParentDirectory,
+            _                                            => null,
+        };
+    }
+
+    public static bool IsSpecialPathPart(string pathPart) => IsSpecialPathPart(pathPart.AsSpan());
+
+    public static bool IsSpecialPathPart(ReadOnlySpan<char> pathPart) {
+        return (pathPart.Length    == 2 && pathPart[0] == '.' && pathPart[1] == '.')
+               || (pathPart.Length == 1 && (pathPart[0] == '.' || pathPart[0] == '~'));
+    }
+
+    public static implicit operator PathPart(SpecialPathPart specialPathPart) => specialPathPart.GetPathPart();
 
     #endregion
 }
