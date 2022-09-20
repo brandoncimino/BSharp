@@ -1,4 +1,3 @@
-using System.Collections.Immutable;
 using System.Diagnostics.Contracts;
 
 using FowlFever.BSharp.Clerical;
@@ -6,11 +5,6 @@ using FowlFever.BSharp.Clerical;
 namespace FowlFever.Clerical.Validated;
 
 public static partial class Clerk {
-    /// <summary>
-    /// The valid <see cref="DirectorySeparator"/>s; <b><c>/</c></b> and <b><c>\</c></b>.
-    /// </summary>
-    public static readonly ImmutableArray<char> DirectorySeparatorChars = ImmutableArray.Create('\\', '/');
-
     /// <param name="c">a <see cref="char"/></param>
     /// <returns><c>true</c> if <paramref name="c"/> is a <see cref="DirectorySeparator"/>: <c>/</c> or <c>\</c></returns>
     [Pure]
