@@ -35,6 +35,7 @@ public static partial class Reject {
     }
 
     /// <inheritdoc cref="Parameter{T}(T,string?,System.Exception?,string?,string?)"/>
+    [Pure]
     public static RejectionException Parameter<T>(
         ReadOnlySpan<T> actualValue,
         string?         details        = default,
@@ -56,6 +57,7 @@ public static partial class Reject {
     }
 
     /// <inheritdoc cref="Parameter{T}(T,string?,System.Exception?,string?,string?)"/>
+    [Pure]
     public static RejectionException Parameter<T>(
         Span<T>    actualValue,
         string?    details        = default,
