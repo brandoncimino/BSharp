@@ -48,6 +48,30 @@
 
     <ItemGroup>
         <Compile Remove="Collections\Bookended.cs"/>
+        <Compile Update="Exceptions\Must.Collections.cs">
+            <DependentUpon>Must.cs</DependentUpon>
+        </Compile>
+        <Compile Update="Exceptions\Must.Files.cs">
+            <DependentUpon>Must.cs</DependentUpon>
+        </Compile>
+        <Compile Update="Exceptions\Must.Have.cs">
+            <DependentUpon>Must.cs</DependentUpon>
+        </Compile>
+        <Compile Update="Exceptions\Must.Nullity.cs">
+            <DependentUpon>Must.cs</DependentUpon>
+        </Compile>
+        <Compile Update="Exceptions\Must.Numbers.cs">
+            <DependentUpon>Must.cs</DependentUpon>
+        </Compile>
+        <Compile Update="Exceptions\Must.Reject.cs">
+            <DependentUpon>Must.cs</DependentUpon>
+        </Compile>
+        <Compile Update="Exceptions\Must.Strings.cs">
+            <DependentUpon>Must.cs</DependentUpon>
+        </Compile>
+        <Compile Update="Exceptions\Must.Types.cs">
+            <DependentUpon>Must.cs</DependentUpon>
+        </Compile>
     </ItemGroup>
 
 </Project>
