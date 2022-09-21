@@ -35,7 +35,7 @@ public readonly record struct Palette {
             Bad  = Color.Red,
         },
         Titles           = new Style(decoration: Decoration.Bold),
-        Delimiters       = Color.DarkBlue,
+        Delimiters       = Color.Default,
         Borders          = Color.Orange1,
         ExceptionPalette = new ExceptionPalette(),
     };
