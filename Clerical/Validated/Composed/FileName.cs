@@ -3,6 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
 using FowlFever.BSharp.Collections;
+using FowlFever.BSharp.Optional;
 using FowlFever.Clerical.Validated.Atomic;
 using FowlFever.Implementors;
 
@@ -47,7 +48,10 @@ public readonly record struct FileName() : IFileName {
 
     #region Construction
 
-    internal FileName(string fileName, MustRatify mustRatify) : this(Clerk.GetBaseName(fileName), Clerk.GetExtensions(fileName)) {
+    internal FileName(string fileName, MustRatify mustRatify) : this(
+        Clerk.GetBaseName(fileName).OrElseThrow(),
+        Clerk.GetExtensions(fileName)
+    ) {
         if (mustRatify == MustRatify.Yes) {
             IFileName.Ratify(fileName);
         }

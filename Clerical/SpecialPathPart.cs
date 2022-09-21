@@ -1,7 +1,7 @@
 using FowlFever.BSharp.Enums;
 using FowlFever.Clerical.Validated.Atomic;
 
-namespace FowlFever.Clerical.Validated;
+namespace FowlFever.Clerical;
 
 public enum SpecialPathPart : byte { CurrentDirectory, ParentDirectory, HomeDirectory }
 

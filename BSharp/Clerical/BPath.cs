@@ -1,15 +1,12 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 
-using FowlFever.BSharp.Collections;
 using FowlFever.BSharp.Enums;
 using FowlFever.BSharp.Strings;
-using FowlFever.Conjugal.Affixing;
 
 namespace FowlFever.BSharp.Clerical;
 
@@ -23,15 +20,6 @@ public class BPath {
 
     #region Character Sets
 
-    public static readonly ImmutableHashSet<char> SeparatorChars = Enum.GetValues(typeof(DirectorySeparator))
-                                                                       .Cast<DirectorySeparator>()
-                                                                       .Select(DirectorySeparatorExtensions.ToChar)
-                                                                       .ToImmutableHashSet();
-    /// <summary>
-    /// Combines <see cref="Path.GetInvalidPathChars"/> and <see cref="Path.GetInvalidFileNameChars"/> into a single <see cref="ImmutableHashSet{T}"/>.
-    /// </summary>
-    public static readonly ImmutableHashSet<char> InvalidChars = Path.GetInvalidPathChars().Union(Path.GetInvalidFileNameChars()).ToImmutableHashSet();
-
     #endregion
 
     #region Directory Separator Regex Patterns
@@ -44,16 +32,10 @@ public class BPath {
 
     #region Icons
 
-    internal static readonly string OpenFolderIcon   = "📂";
     internal static readonly string ClosedFolderIcon = "📁";
     internal static readonly string FileIcon         = "📄";
 
     #endregion
-
-    /// <param name="input">the containing <see cref="string"/></param>
-    /// <returns>true if <paramref name="input"/> contains <b>any</b> <see cref="InvalidChars"/></returns>
-    [Pure]
-    public static bool ContainsInvalidChars(string input) => input.ContainsAny(InvalidChars);
 
     [Pure]
     public static string[] SplitPath(string? path) {
@@ -90,24 +72,6 @@ public class BPath {
         public static IList<string> PathParts(IEnumerable<string?>? parts) {
             return parts?.Select((it, i) => PathPart(it, i == 0)).ToList()!;
         }
-
-        private static void PathChars(string? maybePath) {
-            if (maybePath?.ContainsAny(Path.GetInvalidPathChars()) == true) {
-                var badChars = maybePath.Intersect(Path.GetInvalidPathChars());
-                throw new ArgumentException($"[{maybePath}] contains invalid path characters: {badChars.Prettify()}");
-            }
-        }
-
-        private static void FileNameChars(string? maybeFile, bool isFirst) {
-            if (isFirst) {
-                return;
-            }
-
-            if (maybeFile?.Trim(OuterSeparatorPattern).ContainsAny(Path.GetInvalidFileNameChars()) == true) {
-                var badChars = maybeFile.Intersect(Path.GetInvalidFileNameChars());
-                throw new ArgumentException($"[{maybeFile}] contains invalid file name characters: [{badChars.JoinString(",")}]");
-            }
-        }
     }
 
     #endregion
@@ -139,55 +103,9 @@ public class BPath {
                    .Value;
     }
 
-    [Pure]
-    [return: NotNullIfNotNull("path")]
-    public static string? GetFileNameWithoutExtensions(string? path) {
-        if (path == null) {
-            return null;
-        }
-
-        var fileName    = Path.GetFileName(path);
-        var firstPeriod = fileName.IndexOf(".", StringComparison.Ordinal);
-        return firstPeriod < 0 ? fileName : fileName[..firstPeriod];
-    }
-
     #endregion
 
     #region Separators
-
-    /// <param name="path">a <see cref="Path"/> <see cref="string"/></param>
-    /// <returns>true if the <see cref="string"/> <b>ends</b> with <b>any</b> <see cref="DirectorySeparator"/></returns>
-    [Pure]
-    public static bool EndsWithSeparator(string path) {
-        return path.EndsWith(DirectorySeparatorPattern);
-    }
-
-    /// <param name="path">a <see cref="Path"/> <see cref="string"/></param>
-    /// <returns>true if the <see cref="string"/> <b>starts</b> with <b>any</b> <see cref="DirectorySeparator"/></returns>
-    [Pure]
-    public static bool StartsWithSeparator(string path) {
-        return path.StartsWith(DirectorySeparatorPattern);
-    }
-
-    [Pure]
-    public static string EnsureTrailingSeparator(string? path, DirectorySeparator separator = DirectorySeparator.Universal) {
-        return NormalizeSeparators(
-            (path?.Trim()
-                 .TrimEnd(DirectorySeparatorPattern))
-            .Suffix(separator.ToCharString()),
-            separator
-        );
-    }
-
-    /// <summary>
-    /// Removes any <see cref="DirectorySeparator"/>s from the <b>beginning</b> of <paramref name="path"/>.
-    /// </summary>
-    /// <param name="path">the original <see cref="Path"/> <see cref="string"/></param>
-    /// <returns>the original <see cref="string"/> with all of the leading <see cref="DirectorySeparator"/>s removed</returns>
-    [Pure]
-    public static string StripLeadingSeparator(string path) {
-        return path.TrimStart(DirectorySeparatorPattern);
-    }
 
     /// <summary>
     /// Replaces all <see cref="DirectorySeparator"/>s in <paramref name="path"/> with the desired <paramref name="separator"/>.
@@ -198,22 +116,6 @@ public class BPath {
     [Pure]
     public static string NormalizeSeparators(string? path, DirectorySeparator separator = DirectorySeparator.Universal) {
         return path.IsBlank() ? "" : DirectorySeparatorPattern.Replace(path!.Trim(), separator.ToCharString());
-    }
-
-    [Pure]
-    public static DirectorySeparator? InferSeparator(string path) {
-        if (path is not { Length: > 0 }) {
-            return null;
-        }
-
-        var hasWindows   = path.Contains(DirectorySeparator.Windows.ToChar());
-        var hasUniversal = path.Contains(DirectorySeparator.Universal.ToChar());
-
-        return (hasWindows, hasUniversal) switch {
-            (true, false) => DirectorySeparator.Windows,
-            (false, true) => DirectorySeparator.Universal,
-            _             => null,
-        };
     }
 
     #endregion
@@ -271,17 +173,6 @@ public class BPath {
         }
 
         return NormalizeSeparators(string.Join(separator.ToCharString(), parent, child));
-    }
-
-    /**
-         * <inheritdoc cref="JoinPath(string?,string?,FowlFever.BSharp.Clerical.DirectorySeparator)"/>
-         */
-    [Pure]
-    public static string JoinPath(
-        string? parent,
-        string? child
-    ) {
-        return JoinPath(parent, child, default(DirectorySeparator));
     }
 
     /// <summary>

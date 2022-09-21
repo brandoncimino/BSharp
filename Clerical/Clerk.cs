@@ -12,36 +12,6 @@ namespace FowlFever.Clerical;
 /// Contains factory methods for <see cref="Validated"/> objects like <see cref="PathPart"/> and <see cref="FileName"/>.
 /// </summary>
 public static partial class Clerk {
-    /// <summary>
-    /// Extracts the <see cref="Path.GetFileName(System.ReadOnlySpan{char})"/> without <b>ANY</b> <see cref="FileExtension"/>s from the given <paramref name="path"/>.
-    /// <p/>
-    /// If the <paramref name="path"/> doesn't contain a base file name (for example, it <see cref="string.IsNullOrEmpty"/>, or begins with a period like <c>.ssh</c>),
-    /// then <see cref="FileNamePart.Empty"/> is returned instead.
-    /// </summary>
-    /// <example>
-    /// <code><![CDATA[
-    /// a           => a  
-    /// a.txt       => a
-    /// a.b.txt     => a
-    /// a/b.txt     => b
-    /// a/.ssh      => null
-    /// ]]></code>
-    /// </example>
-    /// <param name="path">the full <see cref="Path"/></param>
-    /// <returns>the "base name" for the path, without any <see cref="FileExtension"/>s</returns>
-    [Pure]
-    public static FileNamePart GetBaseName(string? path) {
-        var bn = GetBaseName(path.AsSpan());
-        return new FileNamePart(bn);
-    }
-
-    [Pure]
-    public static ReadOnlySpan<char> GetBaseName(ReadOnlySpan<char> path) {
-        var fileName    = Path.GetFileName(path);
-        var firstPeriod = fileName.IndexOf('.');
-        return firstPeriod < 0 ? fileName : fileName[..firstPeriod];
-    }
-
     [Pure]
     public static IEnumerable<PathPart> SplitPath(string? path) {
         return EnumeratePathParts(path)
@@ -75,4 +45,13 @@ public static partial class Clerk {
     /// <returns>a <see cref="FileName"/> equivalent of <see cref="Path.GetRandomFileName"/></returns>
     [Pure]
     public static FileName GetRandomFileName() => FindFileName(Path.GetRandomFileName()).MustNotBeNull();
+
+    /// <param name="path">a file path</param>
+    /// <returns><c>true</c> if the <paramref name="path"/> <see cref="EndsInDirectorySeparator(System.ReadOnlySpan{char})"/> or is a <see cref="SpecialPathPart"/></returns>
+    [Pure]
+    public static bool IsDirectory(string path) => EndsInDirectorySeparator(path) || PathPart.IsSpecialPathPart(path);
+
+    /// <inheritdoc cref="IsDirectory(string)"/>
+    [Pure]
+    public static bool IsDirectory(ReadOnlySpan<char> path) => EndsInDirectorySeparator(path) || PathPart.IsSpecialPathPart(path);
 }
