@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 
 using FowlFever.BSharp.Collections;
 using FowlFever.BSharp.Reflection;
@@ -136,24 +135,4 @@ public static class ExceptionExtensions {
 
     /// <inheritdoc cref="Aggregate(System.Collections.Generic.IEnumerable{System.Exception?}?)"/>
     public static AggregateException? Aggregate(params Exception?[] exceptions) => Aggregate(exceptions.AsEnumerable());
-
-    #region Exception.Data
-
-    private static void KeyNotNull([NotNull] string? key, [CallerArgumentExpression("key")] string? _key = default) {
-        if (key == null) {
-            throw new ArgumentNullException(_key, $"Cannot use a null key in {nameof(Exception)}.{nameof(Exception.Data)}!");
-        }
-    }
-
-    public static void SetData<T>(this Exception exception, T value, [CallerMemberName] [NotNull] string? _key = default) {
-        KeyNotNull(_key);
-        exception.Data[_key] = value;
-    }
-
-    public static T? GetData<T>(this Exception exception, [CallerMemberName] [NotNull] string? _key = default) {
-        KeyNotNull(_key);
-        return exception.Data.Contains(_key) ? exception.Data[_key] is T? ? (T?)exception.Data[_key] : default : default;
-    }
-
-    #endregion
 }

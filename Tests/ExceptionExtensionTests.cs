@@ -47,44 +47,4 @@ public class ExceptionExtensionTests {
             );
         }
     }
-
-    public class MyDataException : Exception {
-        public int MyInt {
-            get => this.GetData<int>();
-            set => this.SetData(value);
-        }
-
-        public string? MyString {
-            get => this.GetData<string>();
-            set => this.SetData(value);
-        }
-    }
-
-    [Test]
-    public void SetData_Property() {
-        var mde = new MyDataException {
-            MyInt    = 5,
-            MyString = "yolo",
-        };
-
-        Asserter.Against(mde)
-                .And(it => it.Data[nameof(mde.MyInt)],    Is.EqualTo(5))
-                .And(it => it.Data[nameof(mde.MyString)], Is.EqualTo("yolo"))
-                .Invoke();
-    }
-
-    [Test]
-    public void GetData_Property() {
-        var mde = new MyDataException {
-            Data = {
-                [nameof(MyDataException.MyInt)]    = 5,
-                [nameof(MyDataException.MyString)] = "yolo",
-            },
-        };
-
-        Asserter.Against(mde)
-                .And(Has.Property(nameof(mde.MyInt)).EqualTo(5))
-                .And(Has.Property(nameof(mde.MyString)).EqualTo("yolo"))
-                .Invoke();
-    }
 }
