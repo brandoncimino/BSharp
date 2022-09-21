@@ -5,7 +5,7 @@ namespace FowlFever.BSharp.Memory;
 public static partial class Spanq {
     #region Writing
 
-    #region Write
+    #region Start
 
     /// <summary>
     /// <see cref="ReadOnlySpan{T}.CopyTo">Copies</see> <paramref name="toWrite"/> to <paramref name="span"/>, updating <paramref name="cursor"/> to the index in <paramref name="span"/> where we finished writing.
@@ -20,11 +20,16 @@ public static partial class Spanq {
         return span;
     }
 
+    #endregion
+
+    #region Write
+
     /// <summary>
     /// Helps you "fill" a <see cref="Span{T}"/> with stuff.
     /// </summary>
     /// <example>
-    /// Chaining <see cref="Write{T}(System.Span{T},System.ReadOnlySpan{T},ref int)"/> calls together lets you add entries to a <see cref="Span{T}"/> in a nice, clean way:
+    /// <see cref="Start{T}"/>, <see cref="Write{T}(System.Span{T},System.ReadOnlySpan{T},ref int)"/>, and <see cref="Build{T,TOut}"/> can be chained together
+    /// to populate <see cref="Span{T}"/> entries in a fluent way:
     /// <code><![CDATA[
     /// // Some strings we want to combine into a single Span<char>
     /// var one =   "one";
@@ -42,9 +47,9 @@ public static partial class Spanq {
     /// span                                        // => [...........]     not yet declared
     ///     .Start(one,   out var pos)              // => [one........]     3
     ///     .Write(two,   ref pos)                  // => [onetwo.....]     6
-    ///     .Write(three, ref pos);                 // => [onetwothree]     11
-    ///
-    /// Console.WriteLine(span.ToString());         // => "onetwothree" 
+    ///     .Write(three, ref pos)                  // => [onetwothree]     11
+    /// 
+    ///     .Build(pos, it => it.ToString());       // => "onetwothree" 
     /// ]]></code>
     /// </example>
     /// <param name="span">the <see cref="Span{T}"/> being filled</param>
@@ -150,6 +155,65 @@ public static partial class Spanq {
         }
 
         return span.Write(toWrite, ref cursor);
+    }
+
+    #endregion
+
+    #region End
+
+    private static InvalidOperationException SpanNotFinishedException<T>(Span<T> span, int cursor) {
+        return new InvalidOperationException($"The {nameof(cursor)} {cursor} is not at the end of the {span.SpanType()}[📏{span.Length}]!");
+    }
+
+    /// <summary>
+    /// Converts this <see cref="Span{T}"/> to a <typeparamref name="TOut"/>, asserting that the <paramref name="cursor"/> is at the end of the <see cref="Span{T}"/>. 
+    /// </summary>
+    /// <example>
+    /// <inheritdoc cref="Write{T}(System.Span{T},System.ReadOnlySpan{T},ref int)"/>
+    /// </example>
+    /// <param name="span">this <see cref="Span{T}"/></param>
+    /// <param name="cursor">the <i>exclusive</i> index where we finished <see cref="Write{T}(System.Span{T},System.ReadOnlySpan{T},ref int)">writing</see> to the <see cref="Span{T}"/></param>
+    /// <param name="finisher">transforms the <see cref="Span{T}"/> to a <see cref="TOut"/></param>
+    /// <typeparam name="T">the <see cref="Span{T}"/> entry type</typeparam>
+    /// <typeparam name="TOut">the result type</typeparam>
+    /// <returns>the <see cref="SpanFunc{TIn,TOut}"/> result</returns>
+    /// <exception cref="InvalidOperationException">if the <paramref name="cursor"/> isn't equal to the <see cref="Span{T}.Length"/></exception>
+    public static TOut Build<T, TOut>(this Span<T> span, in int cursor, SpanFunc<T, TOut> finisher) {
+        if (cursor != span.Length) {
+            throw SpanNotFinishedException(span, cursor);
+        }
+
+        return finisher(span);
+    }
+
+    /// <summary>
+    /// <inheritdoc cref="Build{T,TOut}"/>
+    /// </summary>
+    /// <param name="span">this <see cref="Span{T}"/></param>
+    /// <param name="cursor">the <i>exclusive</i> index where we finished <see cref="Write{T}(System.Span{T},System.ReadOnlySpan{T},ref int)">writing</see> to the <see cref="Span{T}"/></param>
+    /// <param name="arg">an additional value sent to the <paramref name="finisher"/></param>
+    /// <param name="finisher">transforms the <see cref="Span{T}"/> to a <typeparamref name="TOut"/></param>
+    /// <typeparam name="T">the <see cref="Span{T}"/> entry type</typeparam>
+    /// <typeparam name="TArg">the additional <paramref name="arg"/> type</typeparam>
+    /// <typeparam name="TOut">the result type</typeparam>
+    /// <returns>the <see cref="SpanFunc{TIn,TArg,TOut}"/> result</returns>
+    /// <exception cref="InvalidOperationException">if the <paramref name="cursor"/> isn't equal to the <see cref="Span{T}.Length"/></exception>
+    public static TOut Build<T, TArg, TOut>(this Span<T> span, in int cursor, TArg arg, SpanFunc<T, TArg, TOut> finisher) {
+        if (cursor != span.Length - 1) {
+            throw SpanNotFinishedException(span, cursor);
+        }
+
+        return finisher(span, arg);
+    }
+
+    /// <summary>
+    /// Converts this <see cref="Span{T}"/> to a <see cref="string"/>, asserting that the <paramref name="cursor"/> is at the end of the <see cref="Span{T}"/>.
+    /// </summary>
+    /// <param name="span">this <see cref="Span{T}"/></param>
+    /// <param name="cursor">the <i>exclusive</i> index where we finished <see cref="Write{T}(System.Span{T},System.ReadOnlySpan{T},ref int)">writing</see> to the <see cref="Span{T}"/></param>
+    /// <returns>a new <see cref="string"/></returns>
+    public static string BuildString(this Span<char> span, in int cursor) {
+        return span.Build(in cursor, static it => it.ToString());
     }
 
     #endregion
