@@ -25,23 +25,23 @@ public class RejectionException : ArgumentException {
     private       int ValueStringLengthLimit { get; init; } = DefaultValueStringLengthLimit;
 
     public string? ActualValueString {
-        get => TruncateString(Data[nameof(ActualValueString)]?.ToString(), ValueStringLengthLimit) ?? NullIcon;
-        init => Data[nameof(ActualValueString)] = value;
+        get => this.GetData<string>();
+        set => this.SetData(value);
     }
 
     public string? RejectedBy {
-        get => Data[nameof(RejectedBy)]?.ToString() ?? Source;
-        init => Data[nameof(RejectedBy)] = value;
+        get => this.GetData<string>() ?? Source;
+        set => this.SetData(value);
     }
 
     public string? Reason {
-        get => Data[nameof(Reason)]?.ToString();
-        init => Data[nameof(Reason)] = value;
+        get => this.GetData<string>();
+        set => this.SetData(value);
     }
 
     public string? Details {
-        get => Data[nameof(Details)]?.ToString();
-        init => Data[nameof(Details)] = value;
+        get => this.GetData<string>();
+        set => this.SetData(value);
     }
 
     private string Preamble => $"`{RejectedBy ?? NoRejector}` rejected `{ParamName}`";
