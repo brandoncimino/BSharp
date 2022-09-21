@@ -378,8 +378,8 @@ public abstract class MultipleAsserter<TSelf, TActual> : IMultipleAsserter<TSelf
     #region Constraints_AgainstActual
 
     [MustUseReturnValue]
-    public TSelf And(IResolveConstraint constraint, Supplied<string?>? description = default, [CallerArgumentExpression("constraint")] string? expression = default) {
-        return _Add(new Constraint_AgainstActual(constraint, description ?? expression));
+    public TSelf And(IResolveConstraint constraint, Supplied<string?>? description = default) {
+        return _Add(new Constraint_AgainstActual(constraint, description));
     }
 
     [Obsolete("ugliness")]

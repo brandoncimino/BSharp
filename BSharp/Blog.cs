@@ -9,9 +9,9 @@ using Spectre.Console.Rendering;
 
 namespace FowlFever.BSharp;
 
-public sealed record BlogList : IDisposable, IRenderable {
+public sealed record Blog : IDisposable, IRenderable {
     /// <summary>
-    /// The <see cref="Strings.Spectral.Palette"/> used when the <see cref="BlogList"/>.<see cref="Palette"/> isn't specified.
+    /// The <see cref="Strings.Spectral.Palette"/> used when the <see cref="Blog"/>.<see cref="Palette"/> isn't specified.
     /// </summary>
     public static Func<Palette> DefaultPalette { get; set; } = () => Palette.Fallback;
 
@@ -24,7 +24,7 @@ public sealed record BlogList : IDisposable, IRenderable {
         init => _palette = value;
     }
 
-    public BlogList(string? title = default, Palette? palette = default, [CallerMemberName] string? _caller = default) {
+    public Blog(string? title = default, Palette? palette = default, [CallerMemberName] string? _caller = default) {
         _title   = title ?? _caller;
         _palette = palette;
     }
@@ -65,22 +65,22 @@ public sealed record BlogList : IDisposable, IRenderable {
 
     #region Post
 
-    public BlogList Post<T, TLabel>(T? value, TLabel? label, Palette? palette = default, [CallerArgumentExpression("value")] string? _expression = default) {
+    public Blog Post<T, TLabel>(T? value, TLabel? label, Palette? palette = default, [CallerArgumentExpression("value")] string? _expression = default) {
         _rows.Add(Renderwerks.GetLabelled(value, label, palette ?? Palette, _expression));
         return this;
     }
 
-    public BlogList Post<T>(T? value, Palette? palette = default, [CallerArgumentExpression("value")] string? _expression = default) {
+    public Blog Post<T>(T? value, Palette? palette = default, [CallerArgumentExpression("value")] string? _expression = default) {
         _rows.Add(Renderwerks.GetLabelled(value, palette ?? Palette, _expression));
         return this;
     }
 
-    public BlogList Post<T, TLabel>(ReadOnlySpan<T> span, TLabel? label = default, Palette? palette = default, [CallerArgumentExpression("span")] string? _expression = default) {
+    public Blog Post<T, TLabel>(ReadOnlySpan<T> span, TLabel? label = default, Palette? palette = default, [CallerArgumentExpression("span")] string? _expression = default) {
         _rows.Add(Renderwerks.GetLabelled(span, label, palette ?? Palette, _expression));
         return this;
     }
 
-    public BlogList Post<T>(ReadOnlySpan<T> span, Palette? palette = default, [CallerArgumentExpression("span")] string? _expression = default) {
+    public Blog Post<T>(ReadOnlySpan<T> span, Palette? palette = default, [CallerArgumentExpression("span")] string? _expression = default) {
         _rows.Add(Renderwerks.GetLabelled(span, palette ?? Palette, _expression));
         return this;
     }
@@ -93,7 +93,7 @@ public sealed record BlogList : IDisposable, IRenderable {
         [CallerMemberName]              string? _caller = default,
         [CallerArgumentExpression("a")] string? _a      = default
     ) {
-        using var blog = new BlogList(_caller, palette);
+        using var blog = new Blog(_caller, palette);
         blog.Post(a, _a);
     }
 
@@ -105,7 +105,7 @@ public sealed record BlogList : IDisposable, IRenderable {
         [CallerArgumentExpression("a")] string? _a      = default,
         [CallerArgumentExpression("b")] string? _b      = default
     ) {
-        using BlogList blog = new(_caller, palette);
+        using Blog blog = new(_caller, palette);
         blog.Post(a, _a)
             .Post(b, _b);
     }
@@ -120,7 +120,7 @@ public sealed record BlogList : IDisposable, IRenderable {
         [CallerArgumentExpression("b")] string? _b      = default,
         [CallerArgumentExpression("c")] string? _c      = default
     ) {
-        using BlogList blog = new(_caller, palette);
+        using Blog blog = new(_caller, palette);
         blog.Post(a, _a)
             .Post(b, _b)
             .Post(c, _c);
@@ -138,7 +138,7 @@ public sealed record BlogList : IDisposable, IRenderable {
         [CallerArgumentExpression("c")] string? _c      = default,
         [CallerArgumentExpression("d")] string? _d      = default
     ) {
-        using BlogList blog = new(_caller, palette);
+        using Blog blog = new(_caller, palette);
         blog.Post(a, _a)
             .Post(b, _b)
             .Post(c, _c)
@@ -159,7 +159,7 @@ public sealed record BlogList : IDisposable, IRenderable {
         [CallerArgumentExpression("d")] string? _d      = default,
         [CallerArgumentExpression("e")] string? _e      = default
     ) {
-        using BlogList blog = new(_caller, palette);
+        using Blog blog = new(_caller, palette);
         blog.Post(a, _a)
             .Post(b, _b)
             .Post(c, _c)
