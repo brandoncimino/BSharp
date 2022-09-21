@@ -6,6 +6,7 @@ using System.Linq;
 using FowlFever.BSharp.Collections;
 using FowlFever.BSharp.Strings;
 using FowlFever.BSharp.Strings.Settings;
+using FowlFever.BSharp.Strings.Spectral;
 
 using JetBrains.Annotations;
 
@@ -20,7 +21,7 @@ namespace FowlFever.BSharp.Optional;
 /// Contains a set of <see cref="IFailable"/> results.
 /// </summary>
 [PublicAPI]
-public class RapSheet : IEnumerable<IFailable>, IPrettifiable, IFailable {
+public class RapSheet : IEnumerable<IFailable>, IPrettifiable, IFailable, IHasRenderable {
     public enum Verdict { Passed, Failed, }
 
     private readonly ILookup<Verdict, IFailable> _charges;
@@ -46,6 +47,13 @@ public class RapSheet : IEnumerable<IFailable>, IPrettifiable, IFailable {
     public RapSheet(Optional<object?> plaintiff, IEnumerable<IFailable> charges) : this(charges) => Plaintiff = plaintiff;
 
     public RapSheet(Optional<object?> plaintiff, IFailable charge, params IFailable[] charges) : this(plaintiff, charges.AsEnumerable().Prepend(charge)) { }
+
+    public static RapSheet Book(IEnumerable<IFailable> charges) {
+        return charges switch {
+            RapSheet rapSheet => rapSheet,
+            _                 => new RapSheet(charges),
+        };
+    }
 
     #region IEnumerable<> Implementation
 
@@ -77,6 +85,28 @@ public class RapSheet : IEnumerable<IFailable>, IPrettifiable, IFailable {
         string VerdictString() => Convictions.IsNotEmpty() ? "stuck" : "were dropped";
 
         return $"{Icon} {CountString()} charges {AgainstString()}{VerdictString()}!".OneLine();
+    }
+
+    private IRenderable GetHeadlineRenderable(Palette? palette = default) {
+        var pal = palette.OrFallback();
+        var pg  = new Paragraph();
+        pg.Append(Icon, pal.Severity.Bad);
+
+        if (Convictions.IsNotEmpty()) {
+            pg.Append(Icon, pal.Severity.Bad)
+              .Append(" ")
+              .Append("[",                            pal.Delimiters)
+              .Append(Convictions.Count().ToString(), pal.Numbers)
+              .Append("/",                            pal.Delimiters)
+              .Append(Charges.Count().ToString(),     pal.Numbers)
+              .Append("]",                            pal.Delimiters);
+
+            return pg;
+        }
+
+        //good version
+        var mk = Markup.FromInterpolated($"[{pal.Severity.Good}] All [{pal.Numbers}]{Charges.Count()}[/] charges were dropped![/]");
+        return mk;
     }
 
     private static string FormatPlaintiff_Default(object? plaintiff) => plaintiff switch {
