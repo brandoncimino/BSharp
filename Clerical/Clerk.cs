@@ -1,6 +1,5 @@
 using System.Diagnostics.Contracts;
 
-using FowlFever.BSharp.Collections;
 using FowlFever.BSharp.Exceptions;
 using FowlFever.BSharp.Memory;
 using FowlFever.Clerical.Validated.Atomic;
@@ -14,8 +13,34 @@ namespace FowlFever.Clerical;
 public static partial class Clerk {
     [Pure]
     public static IEnumerable<PathPart> SplitPath(string? path) {
-        return EnumeratePathParts(path)
-            .ToImmutableArray(static span => new PathPart(span.ToString()));
+        if (path == null) {
+            yield break;
+        }
+
+        int pos = 0;
+
+        static int SeparatorIndex(ReadOnlySpan<char> str) {
+            return str.IndexOfAny(DirectorySeparatorChars.AsSpan());
+        }
+
+        while (pos < path.Length) {
+            var remaining = path.AsSpan(pos);
+            var sep       = SeparatorIndex(path.AsSpan(pos));
+
+            // no more separators; yield whatever's is left and then break
+            if (sep <= -1) {
+                yield return new PathPart(remaining);
+                yield break;
+            }
+
+            // at least 1 char before the next separator, so yield that part
+            if (sep >= 1) {
+                yield return new PathPart(remaining[..sep]);
+            }
+
+            // advance `pos` by the size of the part + 1 (to account for the separator itself)
+            pos += sep + 1;
+        }
     }
 
     [Pure] public static SpanSpliterator<char> SplitPath(ReadOnlySpan<char> path) => EnumeratePathParts(path);
