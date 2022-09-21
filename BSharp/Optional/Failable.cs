@@ -42,10 +42,9 @@ namespace FowlFever.BSharp.Optional {
         public Failable(IFailable other, Supplied<string?>? description = default) : this(other.Excuse, other.IgnoredExceptionTypes, other.IgnoredException, description ?? other.Description) { }
 
         public static Failable Invoke(
-            [InstantHandle]
-            Action failableAction,
-            IEnumerable<Type>  ignoredExceptionTypes,
-            Supplied<string?>? description = default,
+            [InstantHandle] Action failableAction,
+            IEnumerable<Type>      ignoredExceptionTypes,
+            Supplied<string?>?     description = default,
             [CallerArgumentExpression("failableAction")]
             string? expression = default
         ) {
@@ -70,13 +69,14 @@ namespace FowlFever.BSharp.Optional {
             }
         }
 
-        public static Failable Success(Supplied<string?>? description                            = default) => new Failable(null,   null, null, description);
+        private static readonly Failable _success = new(null, null, null, null);
+
+        public static Failable Success(Supplied<string?>? description                            = default) => description == null ? _success : new Failable(null, null, null, description);
         public static Failable Failure(Exception          excuse, Supplied<string?>? description = default) => new Failable(excuse, null, null, description);
 
         public static Failable Invoke(
-            [InstantHandle]
-            Action failableAction,
-            Supplied<string?>? description = default,
+            [InstantHandle] Action failableAction,
+            Supplied<string?>?     description = default,
             [CallerArgumentExpression("failableAction")]
             string? expression = default,
             params Type[] ignoredExceptionTypes
