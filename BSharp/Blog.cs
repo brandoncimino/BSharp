@@ -87,17 +87,16 @@ public sealed record Blog : IDisposable, IRenderable {
 
     #region static Post
 
-    public static void Params<A>(
+    public static Blog Params<A>(
         A?                                      a,
         Palette?                                palette = default,
         [CallerMemberName]              string? _caller = default,
         [CallerArgumentExpression("a")] string? _a      = default
     ) {
-        using var blog = new Blog(_caller, palette);
-        blog.Post(a, _a);
+        return new Blog(_caller, palette).Post(a, _a);
     }
 
-    public static void Params<A, B>(
+    public static Blog Params<A, B>(
         A?                                      a,
         B?                                      b,
         Palette?                                palette = default,
@@ -105,12 +104,11 @@ public sealed record Blog : IDisposable, IRenderable {
         [CallerArgumentExpression("a")] string? _a      = default,
         [CallerArgumentExpression("b")] string? _b      = default
     ) {
-        using Blog blog = new(_caller, palette);
-        blog.Post(a, _a)
-            .Post(b, _b);
+        return new Blog(_caller, palette).Post(a, _a)
+                                         .Post(b, _b);
     }
 
-    public static void Params<A, B, C>(
+    public static Blog Params<A, B, C>(
         A?                                      a,
         B?                                      b,
         C?                                      c,
@@ -120,13 +118,12 @@ public sealed record Blog : IDisposable, IRenderable {
         [CallerArgumentExpression("b")] string? _b      = default,
         [CallerArgumentExpression("c")] string? _c      = default
     ) {
-        using Blog blog = new(_caller, palette);
-        blog.Post(a, _a)
-            .Post(b, _b)
-            .Post(c, _c);
+        return new Blog(_caller, palette).Post(a, _a)
+                                         .Post(b, _b)
+                                         .Post(c, _c);
     }
 
-    public static void Params<A, B, C, D>(
+    public static Blog Params<A, B, C, D>(
         A?                                      a,
         B?                                      b,
         C?                                      c,
@@ -138,14 +135,13 @@ public sealed record Blog : IDisposable, IRenderable {
         [CallerArgumentExpression("c")] string? _c      = default,
         [CallerArgumentExpression("d")] string? _d      = default
     ) {
-        using Blog blog = new(_caller, palette);
-        blog.Post(a, _a)
-            .Post(b, _b)
-            .Post(c, _c)
-            .Post(d, _d);
+        return new Blog(_caller, palette).Post(a, _a)
+                                         .Post(b, _b)
+                                         .Post(c, _c)
+                                         .Post(d, _d);
     }
 
-    public static void Params<A, B, C, D, E>(
+    public static Blog Params<A, B, C, D, E>(
         A?                                      a,
         B?                                      b,
         C?                                      c,
@@ -159,12 +155,11 @@ public sealed record Blog : IDisposable, IRenderable {
         [CallerArgumentExpression("d")] string? _d      = default,
         [CallerArgumentExpression("e")] string? _e      = default
     ) {
-        using Blog blog = new(_caller, palette);
-        blog.Post(a, _a)
-            .Post(b, _b)
-            .Post(c, _c)
-            .Post(d, _d)
-            .Post(e, _e);
+        return new Blog(_caller, palette).Post(a, _a)
+                                         .Post(b, _b)
+                                         .Post(c, _c)
+                                         .Post(d, _d)
+                                         .Post(e, _e);
     }
 
     #endregion
