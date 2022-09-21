@@ -44,4 +44,22 @@
         <Folder Include="Ratification"/>
     </ItemGroup>
 
+    <ItemGroup>
+        <Compile Update="Clerk.BaseName.cs">
+            <DependentUpon>Clerk.cs</DependentUpon>
+        </Compile>
+        <Compile Update="Clerk.Constants.cs">
+            <DependentUpon>Clerk.cs</DependentUpon>
+        </Compile>
+        <Compile Update="Clerk.DirectorySeparators.cs">
+            <DependentUpon>Clerk.cs</DependentUpon>
+        </Compile>
+        <Compile Update="Clerk.FileExtension.cs">
+            <DependentUpon>Clerk.cs</DependentUpon>
+        </Compile>
+        <Compile Update="Clerk.FileName.cs">
+            <DependentUpon>Clerk.cs</DependentUpon>
+        </Compile>
+    </ItemGroup>
+
 </Project>
