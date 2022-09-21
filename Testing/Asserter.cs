@@ -101,5 +101,14 @@ namespace FowlFever.Testing {
         ) {
             return WithHeading<ValueTuple>(heading, _caller);
         }
+
+        /// <summary>
+        /// Shorthand that bypasses the need to call <see cref="IMultipleAsserter.Invoke"/> when you only have a single <see cref="IConstraint"/>.
+        /// </summary>
+        /// <param name="actual">the value being tested</param>
+        /// <param name="constraint">an NUnit constraint</param>
+        /// <param name="_actual">see <see cref="CallerArgumentExpressionAttribute"/></param>
+        /// <typeparam name="T">the type of <paramref name="actual"/></typeparam>
+        public static void That<T>(T? actual, IConstraint constraint, [CallerArgumentExpression("actual")] string? _actual = default) => Against(actual).And(constraint).Invoke();
     }
 }
