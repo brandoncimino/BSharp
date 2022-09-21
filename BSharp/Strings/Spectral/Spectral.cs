@@ -13,8 +13,12 @@ namespace FowlFever.BSharp.Strings.Spectral;
 /// </summary>
 public static class Spectral {
     internal static void ForceAnsi() {
+        if (AnsiConsole.Console.Profile.Capabilities.Ansi) {
+            return;
+        }
+
         AnsiConsole.WriteLine($"Forcing the default {nameof(AnsiConsole)} to use {AnsiSupport.Yes.Prettify()}, despite its better judgement.");
-        AnsiConsole.Console = AnsiConsole.Create(new AnsiConsoleSettings { Ansi = AnsiSupport.Yes });
+        AnsiConsole.Console = AnsiConsole.Create(new AnsiConsoleSettings { Ansi = AnsiSupport.Yes, ColorSystem = ColorSystemSupport.TrueColor });
     }
 
     #region Escaping the dreaded Markup
