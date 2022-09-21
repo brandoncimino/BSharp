@@ -12,7 +12,7 @@ using JetBrains.Annotations;
 
 namespace FowlFever.BSharp.Exceptions;
 
-public static class Exceptional {
+public static class ExceptionExtensions {
     #region ConstructException
 
     /// <summary>
@@ -137,11 +137,23 @@ public static class Exceptional {
     /// <inheritdoc cref="Aggregate(System.Collections.Generic.IEnumerable{System.Exception?}?)"/>
     public static AggregateException? Aggregate(params Exception?[] exceptions) => Aggregate(exceptions.AsEnumerable());
 
-    public static void SetData<T>(this Exception exception, T value, [CallerMemberName] string? _key = default) {
-        if (_key == null) {
-            throw new ArgumentNullException(nameof(_key));
-        }
+    #region Exception.Data
 
-        // exception.Data[_key]
+    private static void KeyNotNull([NotNull] string? key, [CallerArgumentExpression("key")] string? _key = default) {
+        if (key == null) {
+            throw new ArgumentNullException(_key, $"Cannot use a null key in {nameof(Exception)}.{nameof(Exception.Data)}!");
+        }
     }
+
+    public static void SetData<T>(this Exception exception, T value, [CallerMemberName] [NotNull] string? _key = default) {
+        KeyNotNull(_key);
+        exception.Data[_key] = value;
+    }
+
+    public static T? GetData<T>(this Exception exception, [CallerMemberName] [NotNull] string? _key = default) {
+        KeyNotNull(_key);
+        return exception.Data.Contains(_key) ? exception.Data[_key] is T? ? (T?)exception.Data[_key] : default : default;
+    }
+
+    #endregion
 }

@@ -4,11 +4,15 @@ using System.Collections.Generic;
 using System.Linq;
 
 using FowlFever.BSharp.Collections;
-using FowlFever.BSharp.Exceptions;
 using FowlFever.BSharp.Strings;
 using FowlFever.BSharp.Strings.Settings;
 
 using JetBrains.Annotations;
+
+using Spectre.Console;
+using Spectre.Console.Rendering;
+
+using ExceptionExtensions = FowlFever.BSharp.Exceptions.ExceptionExtensions;
 
 namespace FowlFever.BSharp.Optional;
 
@@ -101,7 +105,7 @@ public class RapSheet : IEnumerable<IFailable>, IPrettifiable, IFailable {
 
     #endregion
 
-    public Exception?        Excuse      => Exceptional.Aggregate(Convictions.Select(it => it.Excuse));
+    public Exception?        Excuse      => ExceptionExtensions.Aggregate(Convictions.Select(it => it.Excuse));
     public bool              Failed      => Convictions.Any();
     public Supplied<string?> Description => GetHeadline().ToString();
 
