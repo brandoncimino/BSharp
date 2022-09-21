@@ -108,7 +108,16 @@ namespace FowlFever.Testing {
         /// <param name="actual">the value being tested</param>
         /// <param name="constraint">an NUnit constraint</param>
         /// <param name="_actual">see <see cref="CallerArgumentExpressionAttribute"/></param>
+        /// <param name="_constraint">see <see cref="CallerArgumentExpressionAttribute"/></param>
         /// <typeparam name="T">the type of <paramref name="actual"/></typeparam>
-        public static void That<T>(T? actual, IConstraint constraint, [CallerArgumentExpression("actual")] string? _actual = default) => Against(actual).And(constraint).Invoke();
+        public static void That<T>(
+            T?                                           actual,
+            IConstraint                                  constraint,
+            [CallerArgumentExpression("actual")] string? _actual = default,
+            [CallerArgumentExpression("constraint")]
+            string? _constraint = default
+        ) {
+            Against(actual, _actual).And(constraint).Invoke();
+        }
     }
 }
