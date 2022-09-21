@@ -58,6 +58,17 @@ public static partial class Reject {
 
     /// <inheritdoc cref="Parameter{T}(T,string?,System.Exception?,string?,string?)"/>
     [Pure]
+    public static RejectionException Parameter(
+        ReadOnlySpan<char> actualValue,
+        string?            details        = default,
+        Exception?         innerException = default,
+        [CallerArgumentExpression("actualValue")]
+        string? _actualValue = default,
+        [CallerMemberName] string? _caller = default
+    ) => Parameter(actualValue.ToString(), details, innerException, _actualValue, _caller);
+
+    /// <inheritdoc cref="Parameter{T}(T,string?,System.Exception?,string?,string?)"/>
+    [Pure]
     public static RejectionException Parameter<T>(
         Span<T>    actualValue,
         string?    details        = default,
@@ -77,6 +88,17 @@ public static partial class Reject {
             ActualValueString = $"{nameof(Span<T>)}<{typeof(T).Name}> [{string.Join(", ", array)}]"
         };
     }
+
+    /// <inheritdoc cref="Parameter{T}(T,string?,System.Exception?,string?,string?)"/>
+    [Pure]
+    public static RejectionException Parameter(
+        Span<char> actualValue,
+        string?    details        = default,
+        Exception? innerException = default,
+        [CallerArgumentExpression("actualValue")]
+        string? _actualValue = default,
+        [CallerMemberName] string? _caller = default
+    ) => Parameter(actualValue.ToString(), details, innerException, _actualValue, _caller);
 
     #endregion
 }
