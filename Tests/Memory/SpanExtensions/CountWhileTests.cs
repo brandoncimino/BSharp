@@ -64,7 +64,7 @@ public class CountWhileTests {
         var expectedSkipAmount = data.Ending.Clamp(0, limit.Max(0));
         var expectedSkipped    = data.Source[..^expectedSkipAmount];
 
-        using var blog = new BlogList();
+        using var blog = new Blog();
         blog.Post(data.Source);
         blog.Post(expectedSkipAmount);
         blog.Post(expectedSkipped);
