@@ -137,5 +137,12 @@ public static class ExceptionExtensions {
     /// <inheritdoc cref="Aggregate(System.Collections.Generic.IEnumerable{System.Exception?}?)"/>
     public static AggregateException? Aggregate(params Exception?[] exceptions) => Aggregate(exceptions.AsEnumerable());
 
-    [DoesNotReturn] public static void Throw(this Exception exception) => throw exception ?? throw new ArgumentNullException(nameof(exception));
+    /// <summary>
+    /// <a href="https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/throw">throw</a>s this <see cref="Exception"/>. Best used with the <a href="https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/operators/member-access-operators#null-conditional-operators--and-">null-conditional operator</a>. 
+    /// </summary>
+    /// <param name="exception">this <see cref="Exception"/></param>
+    /// <exception cref="Exception">the re-thrown <paramref name="exception"/> parameter</exception>
+    /// <exception cref="ArgumentNullException">if this <see cref="Exception"/> is <c>null</c></exception>
+    [DoesNotReturn]
+    public static void Assert(this Exception exception) => throw exception ?? throw new ArgumentNullException(nameof(exception), "Can't throw a `null` Exception!");
 }
