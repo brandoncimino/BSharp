@@ -1,9 +1,6 @@
-using System;
 using System.Collections.Generic;
 
-using FowlFever.BSharp;
-using FowlFever.BSharp.Collections;
-using FowlFever.Clerical.Validated;
+using FowlFever.Clerical;
 using FowlFever.Clerical.Validated.Atomic;
 using FowlFever.Testing;
 
@@ -18,7 +15,7 @@ public class PathPartTests : BaseClericalTest {
 
     [Test]
     public void PathPart_InvalidChar_AtStart([ValueSource(nameof(GetInvalidPathPartChars))] char badChar) {
-        Ignore.If(Clerk.DirectorySeparatorChars, Contains.Item(badChar));
+        Ignore.If(badChar, Is.In(Clerk.DirectorySeparatorChars));
         Assert.That(() => new PathPart($"{badChar}abc"), Throws.Exception);
     }
 
@@ -33,14 +30,10 @@ public class PathPartTests : BaseClericalTest {
         Assert.That(() => new PathPart($"ab{badChar}cd"), Throws.Exception);
     }
 
-    private static void PathPart_Expectations(Expectation expectation) {
-        Console.WriteLine(expectation);
-        Brandon.Print($"[{expectation.Value}]");
-        Brandon.Print(expectation.Value.IsEmpty());
-        Brandon.Print(expectation.Value.IsNotEmpty());
-        Assert.That(() => new PathPart(expectation.Value!), expectation.Should.Constrain(ShouldStyle.Exception));
+    [Test]
+    public static void PathPart_OfSpecialPathPart([Values] SpecialPathPart specialPathPart) {
+        var str      = specialPathPart.PathString();
+        var pathPart = new PathPart(str);
+        Assert.That(pathPart, Is.EqualTo(str));
     }
-
-    [Test] public void PathPart_Positive([ValueSource(nameof(PositivePathParts))] Expectation expectation) => PathPart_Expectations(expectation);
-    [Test] public void PathPart_Negative([ValueSource(nameof(NegativePathParts))] Expectation expectation) => PathPart_Expectations(expectation);
 }
