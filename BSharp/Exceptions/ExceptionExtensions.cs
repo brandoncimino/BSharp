@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 
@@ -135,4 +136,6 @@ public static class ExceptionExtensions {
 
     /// <inheritdoc cref="Aggregate(System.Collections.Generic.IEnumerable{System.Exception?}?)"/>
     public static AggregateException? Aggregate(params Exception?[] exceptions) => Aggregate(exceptions.AsEnumerable());
+
+    [DoesNotReturn] public static void Throw(this Exception exception) => throw exception ?? throw new ArgumentNullException(nameof(exception));
 }
