@@ -8,7 +8,7 @@ public interface IFileNamePart : IPathPart {
     public new static ReadOnlySpan<char> Ratify(ReadOnlySpan<char> fileNamePart) {
         var specialPathPart = PathPart.GetSpecialPathPart(fileNamePart);
         if (specialPathPart != null) {
-            Reject.Parameter(fileNamePart, $"The {nameof(SpecialPathPart)} {specialPathPart} `{specialPathPart.Value.PathString()}` cannot be an {nameof(IFileNamePart)}!");
+            throw Reject.Parameter(fileNamePart, $"The {nameof(SpecialPathPart)} {specialPathPart} `{specialPathPart.Value.PathString()}` cannot be an {nameof(IFileNamePart)}!");
         }
 
         IPathPart.Ratify(fileNamePart);
@@ -17,7 +17,7 @@ public interface IFileNamePart : IPathPart {
     }
 
     public new static string Ratify(string fileNamePart) {
-        Ratify((ReadOnlySpan<char>)fileNamePart);
+        Ratify(fileNamePart.AsSpan());
         return fileNamePart;
     }
 }
