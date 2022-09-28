@@ -61,12 +61,12 @@ public ref struct SpanSpliterator<T> where T : IEquatable<T> {
     /// Dependent on <see cref="MatchStyle"/>, <see cref="Splitters"/> will be treated as multiple possible splitters <i>(<see cref="SplitterMatchStyle.AnyEntry"/>)</i>
     /// or a sub-sequence <i>(<see cref="SplitterMatchStyle.SubSequence"/>)</i>.
     /// </summary>
-    public readonly ReadOnlySpan<T> Splitters { get; init; }
+    public readonly ReadOnlySpan<T> Splitters { private get; init; }
 
     /// <summary>
     /// Determines how we should treat the <see cref="Splitters"/>.
     /// </summary>
-    public readonly SplitterMatchStyle MatchStyle { get; init; }
+    public readonly SplitterMatchStyle MatchStyle { private get; init; }
 
     /// <summary>
     /// Hijacks <see cref="StringSplitOptions"/> to determine whether we trim the partitions and/or remove empty ones.
@@ -75,14 +75,14 @@ public ref struct SpanSpliterator<T> where T : IEquatable<T> {
     /// Though <see cref="F:System.StringSplitOptions.TrimEntries"/> isn't technically supported until .NET 5+, a <see cref="StringSplitOptions"/> that <see cref="Enum.HasFlag"/> <c>2</c>
     /// will still be respected. 
     /// </remarks>
-    public readonly StringSplitOptions Options { get; init; }
+    public readonly StringSplitOptions Options { private get; init; }
 
     /// <summary>
     /// The maximum number of <see cref="ReadOnlySpan{T}"/>s that this <see cref="SpanSpliterator{T}"/> will produce.
     /// <br/>
     /// If the <see cref="PartitionLimit"/> is reached, the final <see cref="ReadOnlySpan{T}"/> will contain the remainder of the entries.
     /// </summary>
-    public readonly int PartitionLimit { get; init; }
+    public readonly int PartitionLimit { private get; init; }
 
     #endregion
 
