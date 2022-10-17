@@ -10,6 +10,7 @@ public static partial class Spanq {
         return $"{nameof(ReadOnlySpan<T>)}<{typeof(T).Name}>";
     }
 
+    /// <exception cref="InvalidOperationException">if this <paramref name="span"/> <see cref="ReadOnlySpan{T}.IsEmpty"/></exception>
     private static ReadOnlySpan<T> RequireNotEmpty<T>(this ReadOnlySpan<T> span, [CallerMemberName] string? caller = default) {
         if (span.IsEmpty) {
             throw WasEmpty(span, caller);

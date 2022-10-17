@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Runtime.CompilerServices;
 
 using JetBrains.Annotations;
@@ -27,10 +28,31 @@ public static partial class Spanq {
 
     #region Last
 
+    /// <summary>
+    /// Returns the final entry in this <see cref="ReadOnlySpan{T}"/>.
+    /// </summary>
+    /// <remarks>
+    /// Analogous to <see cref="Enumerable.Last{TSource}(System.Collections.Generic.IEnumerable{TSource})"/>.
+    /// </remarks>
+    /// <param name="span">this <see cref="ReadOnlySpan{T}"/></param>
+    /// <typeparam name="T">the span element type</typeparam>
+    /// <returns>the final entry in this <see cref="ReadOnlySpan{T}"/></returns>
+    /// <inheritdoc cref="RequireNotEmpty{T}"/>
     public static T Last<T>(this ReadOnlySpan<T> span) => span.RequireNotEmpty()[^1];
 
-    public static T Last<T, TExpected>(this ReadOnlySpan<T> span, [RequireStaticDelegate] Func<T, TExpected> selector,  TExpected                                       expected, [CallerArgumentExpression("selector")] string? _selector = default) where TExpected : IEquatable<TExpected> => span.RequireFound(span.IndexWhere(selector, expected), _selector, expected);
-    public static T Last<T>(this            ReadOnlySpan<T> span, [RequireStaticDelegate] Func<T, bool>      predicate, [CallerArgumentExpression("predicate")] string? _predicate = default) => span.First(predicate, true, _predicate);
+    /// <summary>
+    /// Returns the latter-most entry in this <see cref="ReadOnlySpan{T}"/> for whom <paramref name="selector"/> returns <paramref name="expected"/>.
+    /// </summary>
+    /// <param name="span">this <see cref="ReadOnlySpan{T}"/></param>
+    /// <param name="selector">applied to each entry in this span</param>
+    /// <param name="expected">the desired output of the <paramref name="selector"/></param>
+    /// <param name="_selector">see <see cref="CallerArgumentExpressionAttribute"/></param>
+    /// <typeparam name="T">the span element type</typeparam>
+    /// <typeparam name="TExpected">the <paramref name="selector"/> output type</typeparam>
+    /// <returns>the latter-most satisfactory <typeparamref name="T"/> element</returns>
+    public static T Last<T, TExpected>(this ReadOnlySpan<T> span, [RequireStaticDelegate] Func<T, TExpected> selector, TExpected expected, [CallerArgumentExpression("selector")] string? _selector = default) where TExpected : IEquatable<TExpected> => span.RequireFound(span.IndexWhere(selector, expected), _selector, expected);
+
+    public static T Last<T>(this ReadOnlySpan<T> span, [RequireStaticDelegate] Func<T, bool> predicate, [CallerArgumentExpression("predicate")] string? _predicate = default) => span.First(predicate, true, _predicate);
 
     public static T? LastOrDefault<T>(this ReadOnlySpan<T> span)                 => span.GetOrDefault(^1);
     public static T  LastOrDefault<T>(this ReadOnlySpan<T> span, T defaultValue) => span.GetOrDefault(^1, defaultValue);
