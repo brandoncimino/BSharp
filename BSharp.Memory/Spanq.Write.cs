@@ -81,7 +81,7 @@ public static partial class Spanq {
     }
 
     /// <summary>
-    /// Sets <c>this[cursor]</c> to <paramref name="toAdd"/>, then advances the <paramref name="cursor"/> by 1.
+    /// Sets <see cref="Span{T}.this">this[cursor]</see> to <paramref name="toAdd"/>, then advances the <paramref name="cursor"/> by 1.
     /// </summary>
     /// <param name="span">this <see cref="Span{T}"/></param>
     /// <param name="toAdd">the <typeparamref name="T"/></param>
@@ -155,6 +155,53 @@ public static partial class Spanq {
         }
 
         return span.Write(toWrite, ref cursor);
+    }
+
+    /// <summary>
+    /// <see cref="Write{T}(System.Span{T},T,ref int)"/>s <paramref name="joiner"/> if this <see cref="Span{T}"/> isn't <see cref="Span{T}.IsEmpty"/>; then <see cref="Write{T}(System.Span{T},T,ref int)"/>s <paramref name="toWrite"/>. 
+    /// </summary>
+    /// <param name="span">this <see cref="Span{T}"/></param>
+    /// <param name="toWrite">the <typeparamref name="T"/> entry being written to this <paramref name="span"/></param>
+    /// <param name="joiner">it this <see cref="Span{T}"/> isn't <see cref="Span{T}.IsEmpty"/>, then write this first before <paramref name="toWrite"/></param>
+    /// <param name="cursor">the index in this <paramref name="span"/> where we will write things. <i>📎 Updated during the course of this method!</i></param>
+    /// <typeparam name="T">the type of the entries in this <paramref name="span"/></typeparam>
+    /// <returns>this <paramref name="span"/>, for method chaining</returns>
+    public static Span<T> WriteJoin<T>(
+        this Span<T> span,
+        T            toWrite,
+        T            joiner,
+        ref int      cursor
+    ) {
+        if (cursor > 0) {
+            span.Write(joiner, ref cursor);
+        }
+
+        return span.Write(toWrite, ref cursor);
+    }
+
+    #endregion
+
+    #region Specialized
+
+    /// <summary>
+    /// <see cref="Write{T}(System.Span{T},T,ref int)"/>s <paramref name="toWrite"/> if it isn't the most recent entry written to the <paramref name="span"/> (i.e. <paramref name="cursor"/> - 1)
+    /// </summary>
+    /// <param name="span">this <see cref="Span{T}"/></param>
+    /// <param name="toWrite">the <typeparamref name="T"/> value being written to the <paramref name="span"/></param>
+    /// <param name="cursor">the index in this <paramref name="span"/> where we will write stuff</param>
+    /// <typeparam name="T">the span entry type</typeparam>
+    /// <returns>this <see cref="Span{T}"/>, for method chaining</returns>
+    public static Span<T> WriteIfMissing<T>(this Span<T> span, T toWrite, ref int cursor) where T : IEquatable<T> {
+        if (cursor > 0 && span[cursor - 1].Equals(toWrite)) {
+            return span;
+        }
+
+        return span.Write(toWrite, ref cursor);
+    }
+
+    /// <inheritdoc cref="WriteIfMissing{T}(System.Span{T},T,ref int)"/>
+    public static Span<T> WriteIfMissing<T>(this Span<T> span, ReadOnlySpan<T> toWrite, ref int cursor) where T : IEquatable<T> {
+        return span[..cursor].EndsWith(toWrite) ? span : span.Write(toWrite, ref cursor);
     }
 
     #endregion
