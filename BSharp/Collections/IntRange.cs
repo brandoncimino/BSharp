@@ -39,8 +39,9 @@ public readonly partial record struct IntRange : IRange<int> {
         (Offset, Length) = range.GetOffsetAndLength(length);
     }
 
-    public IEnumerator<int>                         GetEnumerator() => Enumerable.Range(Offset, Length).GetEnumerator();
-    IEnumerator IEnumerable.                        GetEnumerator() => GetEnumerator();
+    public IndexRangeEnumerator                     GetEnumerator() => new(Start, End);
+    IEnumerator<int> IEnumerable<int>.              GetEnumerator() => Enumerable.Range(Offset, Length).GetEnumerator();
+    IEnumerator IEnumerable.                        GetEnumerator() => Enumerable.Range(Offset, Length).GetEnumerator();
     [NonNegativeValue] int ICollection.             Count           => Length;
     [NonNegativeValue] int ICollection<int>.        Count           => Length;
     [NonNegativeValue] int IReadOnlyCollection<int>.Count           => Length;
