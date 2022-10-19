@@ -165,9 +165,7 @@ public static partial class Brandom {
 
     #endregion
 
-    internal static Random OrDefault(this Random? generator) {
-        return generator ?? Gen;
-    }
+    [Pure] internal static Random OrDefault(this Random? generator) => generator ?? Gen;
 
     #region Primitives
 
@@ -176,14 +174,24 @@ public static partial class Brandom {
     [Pure]
     public static bool Bool(this Random? generator) => generator.OrDefault().Next(2) == 0;
 
-    public static int      Int(this      Random? generator, int      min, int      max) => generator.OrDefault().Next(min, max);
+    #region Int
+
+    /// <inheritdoc cref="System.Random.Next(int,int)"/>
+    public static int Int(this Random? generator, int min, int max) => min > max ? generator.OrDefault().Next(max, min) : generator.OrDefault().Next(min, max);
+
+    /// <inheritdoc cref="System.Random.Next(int,int)"/>
+    public static int Int(this Random? generator, (int min, int max) range) => generator.Int(range.min, range.max);
+
+    public static int Int(this Random? generator, int max) => generator.Int(0, max);
+
+    #endregion
+
     public static long     Long(this     Random? generator, long     min, long     max) => (min, max).LerpInt(generator.NextDoubleInclusive());
     public static float    Float(this    Random? generator, float    min, float    max) => (min, max).Lerp(generator.NextDoubleInclusive().ToFloat());
     public static double   Double(this   Random? generator, double   min, double   max) => (min, max).Lerp(generator.NextDoubleInclusive());
     public static decimal  Decimal(this  Random? generator, decimal  min, decimal  max) => (min, max).Lerp(generator.NextDoubleInclusive().ToDecimal());
     public static TimeSpan TimeSpan(this Random? generator, TimeSpan min, TimeSpan max) => (min, max).Lerp(generator.NextDoubleInclusive());
     public static DateTime DateTime(this Random? generator, DateTime min, DateTime max) => (min, max).Lerp(generator.NextDoubleInclusive());
-    public static int      Int(this      Random? generator, int      max) => generator.Int(0, max);
     public static long     Long(this     Random? generator, long     max) => generator.Long(0, max);
     public static float    Float(this    Random? generator, float    max) => generator.Float(0, max);
     public static double   Double(this   Random? generator, double   max) => generator.Double(0, max);
@@ -204,7 +212,7 @@ public static partial class Brandom {
     /// <summary>
     /// Generates an <see cref="int"/> index inside of the given <see cref="Range"/> for a collection of size <paramref name="length"/>.
     /// </summary>
-    /// <param name="generator">a <see cref="Random"/> instance. Defaults to <see cref="Gen"/></param>
+    /// <param name="generator">a <see cref="System.Random"/> instance. Defaults to <see cref="Gen"/></param>
     /// <param name="length">the (length / count / size) of the collection that the <see cref="Range"/> will be used with</param>
     /// <param name="range">the <see cref="Range"/> we'd like to be between</param>
     /// <returns>a valid <see cref="int"/> index inside of the <see cref="Range"/></returns>
@@ -215,6 +223,14 @@ public static partial class Brandom {
         var (o, l) = range.GetOffsetAndLength(length);
         return o + generator.Int(l);
     }
+
+    /// <summary>
+    /// Generates an <see cref="int"/> between the <see cref="IndexExtensions.SignedValue"/>s of a <see cref="Range"/>'s <see cref="Range.Start"/> and <see cref="Range.End"/>.
+    /// </summary>
+    /// <param name="generator">a <see cref="System.Random"/> instance. Defaults to <see cref="Gen"/></param>
+    /// <param name="range">a <see cref="Range"/> of possible values</param>
+    /// <returns>an <see cref="int"/> within the <see cref="IndexExtensions.SignedValue"/>s of the <see cref="Range"/></returns>
+    public static int InRange(this Random? generator, Range range) => generator.Int(range.Start.SignedValue(), range.End.SignedValue());
 
     #endregion
 
