@@ -1,9 +1,9 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
 using FowlFever.BSharp.Collections;
+using FowlFever.BSharp.Enums;
 using FowlFever.BSharp.Exceptions;
 using FowlFever.BSharp.Strings;
 
@@ -81,10 +81,9 @@ namespace FowlFever.BSharp.Randomization {
         /// <exception cref="ArgumentNullException">if <paramref name="weightedChoices"/> is null or empty</exception>
         /// <exception cref="ArgumentOutOfRangeException">if any of the <paramref name="weightedChoices"/>' weights is negative</exception>
         /// <exception cref="BrandonException">if we fail to select any of the <paramref name="weightedChoices"/></exception>
-        public static T? FromWeightedList<T>(
-            this Random? generator,
-            [InstantHandle]
-            IEnumerable<(T choice, double weight)> weightedChoices
+        public static T FromWeightedList<T>(
+            this            Random?                                generator,
+            [InstantHandle] IEnumerable<(T choice, double weight)> weightedChoices
         ) {
             if (weightedChoices == null) {
                 throw new ArgumentNullException(nameof(weightedChoices));
@@ -130,7 +129,6 @@ namespace FowlFever.BSharp.Randomization {
             return generator.FromWeightedList(weightedChoices.Select(it => (it.Key, it.Value)))!;
         }
 
-
         public static T FromWeightedList<T>(this Random? generator, IDictionary<T, int> weightedChoices) {
             return generator.FromWeightedList(weightedChoices.Select(it => (it.Key, it.Value)))!;
         }
@@ -147,10 +145,9 @@ namespace FowlFever.BSharp.Randomization {
         /// <exception cref="ArgumentNullException">if <paramref name="weightSelector"/> is null</exception>
         /// <exception cref="ArgumentOutOfRangeException">if any of the results of <paramref name="weightSelector"/> are <c><![CDATA[< 0]]></c></exception>
         public static T? FromWeightedList<T>(
-            this Random? generator,
-            [InstantHandle]
-            IEnumerable<T?> choices,
-            Func<T, double> weightSelector
+            this            Random?         generator,
+            [InstantHandle] IEnumerable<T?> choices,
+            Func<T, double>                 weightSelector
         ) {
             if (weightSelector == null) {
                 throw new ArgumentNullException(nameof(weightSelector));
@@ -216,6 +213,19 @@ namespace FowlFever.BSharp.Randomization {
             Must.BePositive(length);
             var (o, l) = range.GetOffsetAndLength(length);
             return o + generator.Int(l);
+        }
+
+        #endregion
+
+        #region Enums
+
+        /// <param name="generator">a <see cref="Random"/> generator. Defaults to <see cref="Gen"/></param>
+        /// <param name="includeAliases">if <c>true</c>, then duplicate values with the same value but different <see cref="Enum.GetName"/></param>
+        /// <typeparam name="T">the type of <see cref="Enum"/></typeparam>
+        /// <returns>a random <typeparamref name="T"/> value</returns>
+        public static T Enum<T>(this Random? generator, bool includeAliases = false) where T : Enum {
+            var source = includeAliases ? BEnum.GetAllValues<T>() : BEnum.GetValues<T>();
+            return source.Random(generator);
         }
 
         #endregion
