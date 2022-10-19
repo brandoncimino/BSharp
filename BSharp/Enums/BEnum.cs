@@ -17,22 +17,33 @@ using JetBrains.Annotations;
 
 namespace FowlFever.BSharp.Enums {
     [PublicAPI]
-    public static class BEnum {
+    public static partial class BEnum {
+        /// <remarks>
         /// TODO: Replace the return with a more efficient, nullable-safe version of <see cref="EnumSet"/>, maybe
+        /// TODO: Is it more efficient to use <see cref="IImmutableSet{T}"/> or <see cref="ImmutableArray{T}"/>? Probably <see cref="ImmutableArray{T}"/>, right? Since it's a <see cref="ValueType"/>?
+        ///     It may be worth while to create a wrapper for <see cref="ImmutableArray{T}"/> that implements <see cref="IImmutableSet{T}"/>.
+        /// TODO: It's <i>definitely</i> more efficient to use <see cref="ImmutableArray{T}"/>, because then we don't have to allocate a second collection (we can re-use the one from <see cref="Enum.GetValues"/>)
+        ///     (*Actually I don't think we can do that)
+        /// </remarks>
         private static class BenumCache<T>
-            where T : struct, Enum {
+            where T : Enum {
             private static readonly Type StructEnumType = Nullable.GetUnderlyingType(typeof(T)) ?? typeof(T);
 
-            public static readonly IImmutableSet<T> Values = Enum.GetValues(StructEnumType)
-                                                                 .Cast<T>()
-                                                                 .ToImmutableHashSet();
+            public static readonly ImmutableArray<T> AllValues = Enum.GetValues(StructEnumType)
+                                                                     .Cast<T>()
+                                                                     .ToImmutableArray();
+
+            public static readonly ImmutableArray<T> UniqueValues = Enum.GetValues(StructEnumType)
+                                                                        .Cast<T>()
+                                                                        .Distinct()
+                                                                        .ToImmutableArray();
         }
 
         /// <typeparam name="T">an <see cref="Enum"/> type</typeparam>
         /// <returns>an array containing the <see cref="Type.GetEnumValues"/> of <typeparamref name="T"/>.</returns>
         /// <exception cref="ArgumentException">if <typeparamref name="T"/> is not an <see cref="Enum"/> type</exception>
         /// <remarks>
-        /// This is similar to the <a href="https://docs.microsoft.com/en-us/dotnet/api/system.enum.getvalues?view=net-6.0#system-enum-getvalues-1">.NET 5+ Enum.GetValues<![CDATA[<T>]]>()</a> method,
+        /// This is similar to the <a href="https://docs.microsoft.com/en-us/dotnet/api/system.enum.getvalues?view=net-6.0#system-enum-getvalues-1">.NET 5+ Enum.GetValues<![CDATA[<T>]]>()</a> method (<i><see cref="M:System.Enum.GetValues``1"/></i>),
         /// with some improvements:
         /// <ul>
         /// <li>It can be used in .NET Standard 2+</li>
@@ -41,9 +52,12 @@ namespace FowlFever.BSharp.Enums {
         /// <li>The results are returned as an <see cref="IImmutableSet{T}"/> instead of an array</li> 
         /// </ul>
         /// </remarks>
-        public static IImmutableSet<T> GetValues<T>()
-            where T : struct, Enum {
-            return BenumCache<T>.Values;
+        public static ImmutableArray<T> GetValues<T>() where T : Enum {
+            return BenumCache<T>.UniqueValues;
+        }
+
+        public static ImmutableArray<T> GetAllValues<T>() where T : Enum {
+            return BenumCache<T>.AllValues;
         }
 
         /// <summary>
@@ -267,8 +281,6 @@ namespace FowlFever.BSharp.Enums {
 
         #endregion
 
-        #region Flags
-
         /// <param name="enumType">this <see cref="Type"/></param>
         /// <returns><c>true</c> if the <see cref="FlagsAttribute"/> <see cref="MemberInfo.IsDefined"/></returns>
         public static bool IsEnumFlags(this Type enumType) => enumType.IsDefined(typeof(FlagsAttribute));
@@ -335,7 +347,7 @@ namespace FowlFever.BSharp.Enums {
         /// <b>It ends in an <c>else</c> statement</b>
         /// <p>
         /// The code should have an additional branch that fails if the "size" thingy isn't any of the values we expect.
-        /// My guess is helps the <see cref="MethodImplAttributes.AggressiveInlining"/> option, since as <a href="https://github.com/dotnet/runtime/issues/14084#issuecomment-557362093">mikernet</a> stated, <i>"The conditional branches are eliminated by the JIT."</i>
+        /// My guess is, not having it helps the <see cref="MethodImplAttributes.AggressiveInlining"/> option, since as <a href="https://github.com/dotnet/runtime/issues/14084#issuecomment-557362093">mikernet</a> stated, <i>"The conditional branches are eliminated by the JIT."</i>
         /// I imagine it would be less possible for the compiler to "eliminate the conditional branches" if the method has code both in and outside of the <c>if</c> statements.
         /// <br/>
         /// (📎 "JIT" means <a href="https://en.wikipedia.org/wiki/Just-in-time_compilation">just-in-time compilation</a>)  
@@ -384,7 +396,5 @@ namespace FowlFever.BSharp.Enums {
                 return Unsafe.As<ulong, T>(ref x);
             }
         }
-
-        #endregion
     }
 }
