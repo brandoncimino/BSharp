@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 
 using FowlFever.BSharp.Attributes;
+using FowlFever.BSharp.Collections;
 using FowlFever.BSharp.Enums;
 using FowlFever.BSharp.Exceptions;
+using FowlFever.BSharp.Randomization;
 
 using JetBrains.Annotations;
 
@@ -96,4 +98,33 @@ public static class RangeExtensions {
     /// <returns><c>true</c> if the <see cref="Range"/>'s <see cref="Range.Start"/> and <see cref="Range.End"/> would both fall within the collection</returns>
     [Pure]
     public static bool ContainsRange(this int collectionLength, Range range) => collectionLength.ContainsIndex(range.Start) && collectionLength.ContainsIndex(range.End);
+
+    /// <summary>
+    /// <a href="https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/functional/deconstruct">Deconstructs</a> the <see cref="Range.Start"/> and <see cref="Range.End"/> of a <see cref="Range"/>.
+    /// </summary>
+    /// <param name="range">this <see cref="Range"/></param>
+    /// <param name="start">set to the <see cref="Range.Start"/></param>
+    /// <param name="end">set to the <see cref="Range.End"/></param>
+    [Pure]
+    public static void Deconstruct(this Range range, out Index start, out Index end) {
+        start = range.Start;
+        end   = range.End;
+    }
+
+    /// <summary>
+    /// Iterates through the <see cref="IndexExtensions.SignedValue"/>s of this <see cref="Range"/>'s <see cref="Range.Start"/> and <see cref="Range.End"/>.
+    /// </summary>
+    /// <param name="range">this <see cref="Range"/></param>
+    /// <returns></returns>
+    [Pure]
+    public static IndexRangeEnumerator GetEnumerator(this Range range) => new(range);
+
+    /// <summary>
+    /// Generates a random <see cref="int"/> within the <see cref="IndexExtensions.SignedValue"/>s of this <see cref="Range"/>'s <see cref="Range.Start"/> and <see cref="Range.End"/>.
+    /// </summary>
+    /// <param name="range">this <see cref="Range"/></param>
+    /// <param name="generator">a <see cref="System.Random"/> instance. Defaults to <see cref="Brandom.Gen"/> if <c>null</c> or omitted</param>
+    /// <returns>a random <see cref="int"/></returns>
+    [Pure]
+    public static int Random(this Range range, Random? generator = default) => generator.InRange(range);
 }
