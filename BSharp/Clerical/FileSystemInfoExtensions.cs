@@ -153,10 +153,6 @@ namespace FowlFever.BSharp.Clerical {
             return BPath.JoinPath(parent, relativePath);
         }
 
-        public static FileInfo GetChildFile(this DirectoryInfo parent, string? relativePath) {
-            return new FileInfo(parent.GetChildPath(relativePath));
-        }
-
         private static InvalidOperationException NotMyChildException(DirectoryInfo parent, FileSystemInfo child) {
             return new InvalidOperationException(
                 $"The {nameof(parent)} {parent.GetType().Prettify()} does not contain the {nameof(child)} {child.GetType().Prettify()}!\n{FamilyString(parent, child)}"

@@ -1,17 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Text.Json;
 
-using FowlFever.BSharp.Collections;
 using FowlFever.BSharp.Enums;
 using FowlFever.BSharp.Strings;
 
 using JetBrains.Annotations;
-
-using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace FowlFever.BSharp.Clerical {
     [PublicAPI]
@@ -26,22 +22,6 @@ namespace FowlFever.BSharp.Clerical {
         public static string BaseName(this FileSystemInfo fileSystemInfo) {
             return Path.GetFileNameWithoutExtension(fileSystemInfo.Name);
         }
-
-        #region BPath Extensions
-
-        public static string[] Extensions(this FileSystemInfo fileSystemInfo) {
-            return BPath.GetExtensions(fileSystemInfo.Name);
-        }
-
-        public static string FullExtension(this FileSystemInfo fileSystemInfo) {
-            return BPath.GetFullExtension(fileSystemInfo.Name);
-        }
-
-        public static string FileNameWithoutExtensions(this FileSystemInfo fileSystemInfo) {
-            return BPath.GetFileNameWithoutExtensions(fileSystemInfo.Name);
-        }
-
-        #endregion
 
         #region System.IO.File Extensions
 
@@ -227,7 +207,7 @@ namespace FowlFever.BSharp.Clerical {
             this FileInfo           fileInfo,
             T?                      obj,
             DuplicateFileResolution duplicateFileResolution = DuplicateFileResolution.Error,
-            JsonSerializerOptions? options                = default
+            JsonSerializerOptions?  options                 = default
         ) {
             switch (duplicateFileResolution) {
                 case DuplicateFileResolution.Error:
@@ -256,16 +236,16 @@ namespace FowlFever.BSharp.Clerical {
         }
 
         public static void SerializeForcefully<T>(
-            this FileInfo           fileInfo,
-            T?                      obj,
+            this FileInfo          fileInfo,
+            T?                     obj,
             JsonSerializerOptions? options = default
         ) {
             fileInfo.Write(JsonSerializer.Serialize(obj, options));
         }
 
         public static void SerializeWithBackup<T>(
-            this FileInfo           fileInfo,
-            T?                      obj,
+            this FileInfo          fileInfo,
+            T?                     obj,
             JsonSerializerOptions? options = default
         ) {
             fileInfo.Backup(true);
