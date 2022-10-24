@@ -9,4 +9,5 @@ public static class HasStringExtensions {
     public static bool               IsNotEmpty<T>([NotNullWhen(true)] this  T? self) where T : IHas<string?>? => !self.IsEmpty();
     public static bool               IsBlank<T>([NotNullWhen(   false)] this T? self) where T : IHas<string?>? => string.IsNullOrWhiteSpace(self?.Value);
     public static bool               IsNotBlank<T>([NotNullWhen(true)] this  T? self) where T : IHas<string?>? => !self.IsBlank();
+    public static int                GetLength<T>(this                       T  self) where T : IHas<string?>  => self.Value?.Length ?? 0;
 }
