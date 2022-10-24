@@ -127,7 +127,9 @@ public static partial class ImmutableExtensions {
     /// Gets a sub-<see cref="ImmutableArray{T}"/> defined by a <see cref="Range"/>.
     /// </summary>
     /// <remarks>
-    /// This will allocate a <b>new <see cref="ImmutableArray{T}"/></b>!
+    /// This will <i>(usually)</i> allocate a <b>new <see cref="ImmutableArray{T}"/></b>!
+    /// <i>(The doc comments for <see cref="ImmutableArray.CreateRange{T}"/> claim that it will avoid "tax" when creating <see cref="ImmutableArray{T}"/>s that are sub-sections of existing <see cref="ImmutableArray{T}"/>s,
+    /// but I don't see how the logic can actually do that (with the exception of the obvious cases where the <see cref="Range"/> is empty or <see cref="Range.All"/>))</i> 
     /// <p/>
     /// If you want to pass a subsection around without this allocation, use <see cref="ImmutableArray{T}.AsSpan"/>.<see cref="ReadOnlySpan{T}.Slice(int,int)"/> instead
     /// (which can implicitly use [<see cref="Range"/>] syntax).
@@ -139,7 +141,8 @@ public static partial class ImmutableExtensions {
     /// <typeparam name="T">the type of elements in <see cref="source"/></typeparam>
     /// <returns>a new <see cref="ImmutableArray{T}"/></returns>
     public static ImmutableArray<T> Slice<T>(this ImmutableArray<T> source, Range range) {
-        return source.AsSpan()[range].ToImmutableArray();
+        var (off, len) = range.GetOffsetAndLength(source.Length);
+        return ImmutableArray.Create(source, off, len);
     }
 
     /// <inheritdoc cref="Slice{T}(System.Collections.Immutable.ImmutableArray{T},System.Range)"/>
@@ -167,6 +170,31 @@ public static partial class ImmutableExtensions {
         }
 
         return builder.MoveToImmutable();
+    }
+
+    /// <summary>
+    /// Creates a new <see cref="ImmutableArray{T}"/> containing the original <paramref name="source"/> repeated <paramref name="repetitions"/> times.
+    /// </summary>
+    /// <param name="source">the original <see cref="ImmutableArray{T}"/></param>
+    /// <param name="repetitions">the number of duplicates of <paramref name="source"/> that you want concatenated together</param>
+    /// <typeparam name="T">the array element type</typeparam>
+    /// <returns>an <see cref="ImmutableArray{T}"/> containing all of the results</returns>
+    public static ImmutableArray<T> Repeat<T>(this ImmutableArray<T> source, int repetitions = 2) {
+        ImmutableArray<T> RepeatToImmutable(ImmutableArray<T> immutableArray, int repetitions1) {
+            var totalLength = immutableArray.Length * repetitions1;
+            var builder     = ImmutableArray.CreateBuilder<T>(totalLength);
+            for (int i = 0; i < repetitions1; i++) {
+                builder.AddRange(immutableArray);
+            }
+
+            return builder.MoveToImmutable();
+        }
+
+        return repetitions switch {
+            <= 0 => ImmutableArray<T>.Empty,
+            1    => source,
+            _    => RepeatToImmutable(source, repetitions)
+        };
     }
 
     #region Collecting Spans
@@ -198,9 +226,31 @@ public static partial class ImmutableExtensions {
         return builder;
     }
 
+    /// <summary>
+    /// Creates a new <see cref="ImmutableList{T}"/> containing the entries of this <see cref="ReadOnlySpan{T}"/>.
+    /// </summary>
+    /// <param name="span">this <see cref="ReadOnlySpan{T}"/></param>
+    /// <typeparam name="T">the element type of <paramref name="span"/></typeparam>
+    /// <returns>a new <see cref="ImmutableList{T}"/></returns>
     public static ImmutableList<T> ToImmutableList<T>(this ReadOnlySpan<T> span) {
         return span.ToArray().ToImmutableList();
     }
 
     #endregion
+
+    /// <summary>
+    /// Creates a <see cref="object.GetHashCode"/> value using each entry in this <see cref="ImmutableArray{T}"/>, <i>in order</i>.
+    /// </summary>
+    /// <param name="source">this <see cref="ImmutableArray{T}"/></param>
+    /// <typeparam name="T">the array entry type</typeparam>
+    /// <returns>an <see cref="int"/> value usable as a <see cref="object.GetHashCode"/></returns>
+    public static int GetSequenceHashCode<T>(this ImmutableArray<T> source) {
+        var hc = new HashCode();
+
+        foreach (var t in source) {
+            hc.Add(t);
+        }
+
+        return hc.ToHashCode();
+    }
 }
