@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.CompilerServices;
 
 using FowlFever.BSharp;
 using FowlFever.BSharp.Collections;
@@ -94,11 +95,19 @@ namespace FowlFever.Testing {
         /// <param name="actual">the actual <typeparamref name="T"/> value</param>
         /// <param name="constraint">the <see cref="IResolveConstraint"/> applied to <paramref name="actual"/></param>
         /// <typeparam name="T">the type of <paramref name="actual"/></typeparam>
-        public static void Unless<T>(T actual, IResolveConstraint constraint) {
+        public static void Unless<T>(T actual, IResolveConstraint constraint, [CallerArgumentExpression("actual")] string? _actual = default, [CallerMemberName] string? _caller = default) {
             var appliedConstraint = constraint.Resolve().ApplyTo(actual);
             if (appliedConstraint.IsSuccess == false) {
-                Assert.Ignore(appliedConstraint.Description);
+                Assert.Ignore($"The test {_caller} is being ignored because [{_actual}] failed the constraint: {appliedConstraint.Description}");
             }
+        }
+
+        public static void Unless<T>(T actual, T expected, [CallerArgumentExpression("actual")] string? _actual = default, [CallerMemberName] string? _caller = default) {
+            Unless(actual, Is.EqualTo(expected), _actual, _caller);
+        }
+
+        public static void Unless(bool condition, [CallerArgumentExpression("condition")] string? _condition = default, [CallerMemberName] string? _caller = default) {
+            Unless(condition, Is.True, _condition, _caller);
         }
 
         public static void Unless<T>(Func<T> actual, IResolveConstraint constraint) {
