@@ -49,4 +49,12 @@ public readonly record struct FileNamePart : IFileNamePart {
     public PathString   ToPathString()   => new(Value, MustRatify.No);
     public PathPart     ToPathPart()     => new(Value, MustRatify.No);
     public FileNamePart ToFileNamePart() => this;
+
+    // public static bool IsValid(ReadOnlySpan<char> fileNamePart) {
+    //     if (PathPart.IsSpecialPathPart(fileNamePart)) {
+    //         return false;
+    //     }
+    //     
+    //     if()
+    // }
 }

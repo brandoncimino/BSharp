@@ -12,7 +12,7 @@ using Ratified;
 namespace FowlFever.Clerical.Validated.Composed;
 
 /// <summary>
-/// Represents a group of <see cref="PathPart"/>s.
+/// Represents a group of <see cref="Atomic.PathPart"/>s.
 /// </summary>
 [SuppressMessage("ReSharper", "InvertIf")]
 public readonly record struct DirectoryPath() : IDirectoryPath, IHasDirectoryInfo {
@@ -21,7 +21,7 @@ public readonly record struct DirectoryPath() : IDirectoryPath, IHasDirectoryInf
     [MaybeNull] private readonly StrongBox<string> _value = new();
     public string Value => _value switch {
         null     => "",
-        not null => _value.Value ??= Parts.JoinPathString(Separator),
+        not null => _value.Value ??= Parts.ToPathString(Separator),
     };
 
     #region "Fields"
@@ -58,13 +58,20 @@ public readonly record struct DirectoryPath() : IDirectoryPath, IHasDirectoryInf
 
     #region Construction
 
+    public DirectoryPath(ImmutableArray<PathPart> parts, DirectorySeparator separator = DirectorySeparator.Universal) : this() {
+        Parts     = parts;
+        Separator = separator;
+    }
+
     public DirectoryPath(
         IEnumerable<PathPart> parts,
         DirectorySeparator    separator = DirectorySeparator.Universal
-    ) : this() {
-        Parts     = parts.ToImmutableArray();
-        Separator = separator;
-    }
+    ) : this(parts.ToImmutableArray(), separator) { }
+
+    public DirectoryPath(ReadOnlySpan<char> directoryPath, DirectorySeparator separator = DirectorySeparator.Universal) : this(
+        Clerk.SplitPath(directoryPath),
+        separator
+    ) { }
 
     public DirectoryPath(
         string             directoryPath,

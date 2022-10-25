@@ -21,11 +21,11 @@ public readonly record struct FilePath() : IFilePath, IHas<string> {
     [MaybeNull] private readonly StrongBox<string> _value = new();
     public string Value => _value switch {
         null     => "",
-        not null => _value.Value ??= Parts.JoinPathString(Separator) + FileName,
+        not null => _value.Value ??= Parts.ToPathString(Separator) + FileName,
     };
 
-    public bool                     IsEmpty => Value.IsEmpty();
-    public ImmutableArray<PathPart> Parts   { get; } = new();
+    public bool                            IsEmpty => Value.IsEmpty();
+    public ImmutableArray<Atomic.PathPart> Parts   { get; } = new();
 
     public DirectoryPath Parent {
         get => Directory;
@@ -94,9 +94,9 @@ public readonly record struct FilePath() : IFilePath, IHas<string> {
 
     #region Construction
 
-    public FilePath(IEnumerable<PathPart> parts, DirectorySeparator separator = DirectorySeparator.Universal) : this(parts.ToImmutableArray(), separator) { }
+    public FilePath(IEnumerable<Atomic.PathPart> parts, DirectorySeparator separator = DirectorySeparator.Universal) : this(parts.ToImmutableArray(), separator) { }
 
-    public FilePath(ImmutableArray<PathPart> parts, DirectorySeparator separator = DirectorySeparator.Universal) : this() {
+    public FilePath(ImmutableArray<Atomic.PathPart> parts, DirectorySeparator separator = DirectorySeparator.Universal) : this() {
         Parts      = parts;
         FileName   = new FileName(Parts.Last().Value);
         _directory = new DirectoryPath(Parts.Slice(..^1));
@@ -114,14 +114,13 @@ public readonly record struct FilePath() : IFilePath, IHas<string> {
         DirectorySeparator separator = DirectorySeparator.Universal
     ) : this(
         Clerk.SplitPath(IFilePath.Ratify(filePath))
-             .ToImmutableArray(static span => new PathPart(span))
     ) { }
 
     #endregion
 
-    public PathString  ToPathString() => new(Value, MustRatify.No);
-    public FileName    ToFileName()   => FileName;
-    PathPart IPathPart.ToPathPart()   => FileName.ToPathPart();
+    public PathString                ToPathString() => new(Value, MustRatify.No);
+    public FileName                  ToFileName()   => FileName;
+    Atomic.PathPart Atomic.IPathPart.ToPathPart()   => FileName.ToPathPart();
 
     public bool Equals(string?        other)                          => Value.Equals(other);
     public bool Equals(IHas<string?>? other)                          => Equals(other?.Value);

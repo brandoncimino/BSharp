@@ -5,14 +5,20 @@ namespace FowlFever.Clerical.Validated.Atomic;
 public interface IFileNamePart : IPathPart {
     public FileNamePart ToFileNamePart();
 
-    public new static ReadOnlySpan<char> Ratify(ReadOnlySpan<char> fileNamePart) {
+    public new static bool IsValid(ReadOnlySpan<char> fileNamePart) => _tryValidate(fileNamePart) == null;
+
+    private static Exception? _tryValidate(ReadOnlySpan<char> fileNamePart) {
         var specialPathPart = PathPart.GetSpecialPathPart(fileNamePart);
         if (specialPathPart != null) {
-            throw Reject.Parameter(fileNamePart, $"The {nameof(SpecialPathPart)} {specialPathPart} `{specialPathPart.Value.PathString()}` cannot be an {nameof(IFileNamePart)}!");
+            return Reject.Parameter(fileNamePart, $"The {nameof(SpecialPathPart)} {specialPathPart} `{specialPathPart.Value.ToPathString()}` cannot be an {nameof(IFileNamePart)}!");
         }
 
-        IPathPart.Ratify(fileNamePart);
-        BadCharException.Assert(fileNamePart, Clerk.InvalidFileNamePartChars);
+        return IPathPart._tryValidate(fileNamePart) ??
+               BadCharException.TryAssert(fileNamePart, Clerk.InvalidFileNameChars.AsSpan());
+    }
+
+    public new static ReadOnlySpan<char> Ratify(ReadOnlySpan<char> fileNamePart) {
+        _tryValidate(fileNamePart)?.Assert();
         return fileNamePart;
     }
 

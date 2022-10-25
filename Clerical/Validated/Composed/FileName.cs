@@ -49,7 +49,7 @@ public readonly record struct FileName() : IFileName {
     #region Construction
 
     internal FileName(string fileName, MustRatify mustRatify) : this(
-        Clerk.GetBaseName(fileName).OrElseThrow(),
+        Clerk.FindBaseName(fileName).OrElseThrow(),
         Clerk.GetExtensions(fileName)
     ) {
         if (mustRatify == MustRatify.Yes) {
@@ -69,12 +69,12 @@ public readonly record struct FileName() : IFileName {
         Extensions = extensions;
     }
 
-    public FileName   ToFileName()                                          => this;
-    public PathPart   ToPathPart()                                          => new(Value, MustRatify.No);
-    public PathString ToPathString()                                        => new(Value, MustRatify.No);
-    public bool       Equals(string?        other)                          => Value.Equals(other);
-    public bool       Equals(IHas<string?>? other)                          => Equals(other?.Value);
-    public bool       Equals<T>(T?          other) where T : IHas<string?>? => Equals(other?.Value);
+    public FileName        ToFileName()                                          => this;
+    public Atomic.PathPart ToPathPart()                                          => new(Value, MustRatify.No);
+    public PathString      ToPathString()                                        => new(Value, MustRatify.No);
+    public bool            Equals(string?        other)                          => Value.Equals(other);
+    public bool            Equals(IHas<string?>? other)                          => Equals(other?.Value);
+    public bool            Equals<T>(T?          other) where T : IHas<string?>? => Equals(other?.Value);
 
     public int CompareTo(string? other, StringComparison comparisonType = StringComparison.Ordinal)                          => string.Compare(Value, other, comparisonType);
     public int CompareTo<T>(T?   other, StringComparison comparisonType = StringComparison.Ordinal) where T : IHas<string?>? => CompareTo(other?.Value, comparisonType);

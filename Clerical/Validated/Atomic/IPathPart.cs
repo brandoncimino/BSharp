@@ -10,11 +10,9 @@ public interface IPathPart : IPathString {
 
     private const string DoublePeriod = "..";
 
-    public static bool IsValid(ReadOnlySpan<char> pathPart) {
-        return _tryValidate(pathPart) == null;
-    }
+    public static bool IsValid(ReadOnlySpan<char> pathPart) => _tryValidate(pathPart) == null;
 
-    private static Exception? _tryValidate(ReadOnlySpan<char> pathPart) {
+    internal static Exception? _tryValidate(ReadOnlySpan<char> pathPart) {
         if (PathPart.GetSpecialPathPart(pathPart).HasValue) {
             return default;
         }
@@ -31,7 +29,7 @@ public interface IPathPart : IPathString {
 
     [StackTraceHidden]
     public new static ReadOnlySpan<char> Ratify(ReadOnlySpan<char> pathPart) {
-        _tryValidate(pathPart)?.Throw();
+        _tryValidate(pathPart)?.Assert();
         return pathPart;
     }
 

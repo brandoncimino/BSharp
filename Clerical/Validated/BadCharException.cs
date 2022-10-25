@@ -23,11 +23,11 @@ public class BadCharException : BrandonException {
         ReadOnlySpan<char>                             source,
         ReadOnlySpan<char>                             badChars,
         string?                                        message   = default,
-        [CallerArgumentExpression("source")]   string? sourceExp = default,
-        [CallerArgumentExpression("badChars")] string? badExp    = default
-    ) : this(GetBaseMessage(source, badChars, sourceExp, badExp), message) { }
+        [CallerArgumentExpression("source")]   string? _source   = default,
+        [CallerArgumentExpression("badChars")] string? _badChars = default
+    ) : this(GetBaseMessage(source, badChars, _source, _badChars), message) { }
 
-    private static string GetBaseMessage(ReadOnlySpan<char> source, ReadOnlySpan<char> badChars, string? sourceExp, string? badExp) {
+    private static string GetBaseMessage(ReadOnlySpan<char> source, ReadOnlySpan<char> badChars, string? _source, string? _badChars) {
         Span<char> line2 = stackalloc char[source.Length];
 
         for (int i = 0; i < source.Length; i++) {
@@ -35,17 +35,23 @@ public class BadCharException : BrandonException {
         }
 
         return new StringBuilder()
-               .AppendLine($"{sourceExp} contained {badExp}!")
+               .AppendLine($"{_source} contained {_badChars}!")
                .AppendLine(source.ToString())
                .AppendLine(line2.ToString())
                .ToString();
     }
 
-    public static void Assert(ReadOnlySpan<char> source, ReadOnlySpan<char> badChars, [CallerArgumentExpression("source")] string? sourceExp = default, [CallerArgumentExpression("badChars")] string? badExp = default) {
+    public static void Assert(ReadOnlySpan<char> source, ReadOnlySpan<char> badChars, [CallerArgumentExpression("source")] string? _source = default, [CallerArgumentExpression("badChars")] string? _badChars = default) {
         if (source.ContainsAny(badChars)) {
-            throw new BadCharException(source, badChars, sourceExp, badExp);
+            throw new BadCharException(source, badChars, _source, _badChars);
         }
     }
 
-    public static void Assert(ReadOnlySpan<char> source, ImmutableArray<char> badChars, [CallerArgumentExpression("source")] string? sourceExp = default, [CallerArgumentExpression("badChars")] string? badExp = default) => Assert(source, badChars.AsSpan(), sourceExp, badExp);
+    public static void Assert(ReadOnlySpan<char> source, ImmutableArray<char> badChars, [CallerArgumentExpression("source")] string? _source = default, [CallerArgumentExpression("badChars")] string? _badChars = default) {
+        Assert(source, badChars.AsSpan(), _source, _badChars);
+    }
+
+    public static BadCharException? TryAssert(ReadOnlySpan<char> source, ReadOnlySpan<char> badChars, [CallerArgumentExpression("source")] string? _source = default, [CallerArgumentExpression("badChars")] string? _badChars = default) {
+        return source.ContainsAny(badChars) ? new BadCharException(source, badChars, _source, _badChars) : default;
+    }
 }

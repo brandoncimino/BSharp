@@ -21,7 +21,7 @@ public readonly record struct PathString : IPathString {
     /// <li>Some anecdotes about Mac's being <a href="https://stackoverflow.com/questions/7140575/mac-os-x-lion-what-is-the-max-path-length">255</a></li>
     /// </ul>
     /// </summary>
-    internal const int MaxLength = 255;
+    public const int MaxLength = 255;
 
     public static readonly PathString Empty = new();
 
