@@ -30,14 +30,14 @@ public static partial class Spanq {
     public static string AppendToString(this ReadOnlySpan<char> span, char suffix) {
         return stackalloc char[span.Length + 1].Start(span, out var pos)
                                                .Write(suffix, ref pos)
-                                               .BuildString(in pos);
+                                               .Finish(in pos);
     }
 
     /// <inheritdoc cref="AppendToString(System.ReadOnlySpan{char},char)"/>
     public static string AppendToString(this ReadOnlySpan<char> span, ReadOnlySpan<char> suffix) {
         return stackalloc char[span.Length + suffix.Length].Start(span, out var pos)
                                                            .Write(suffix, ref pos)
-                                                           .BuildString(in pos);
+                                                           .Finish(in pos);
     }
 
     /// <summary>
@@ -49,14 +49,14 @@ public static partial class Spanq {
     public static string PrependToString(this ReadOnlySpan<char> span, char prefix) {
         return stackalloc char[span.Length + prefix].Start(span, out var pos)
                                                     .Write(prefix, ref pos)
-                                                    .BuildString(in pos);
+                                                    .Finish(in pos);
     }
 
     /// <inheritdoc cref="PrependToString(System.ReadOnlySpan{char},char)"/>
     public static string PrependToString(this ReadOnlySpan<char> span, ReadOnlySpan<char> prefix) {
         return stackalloc char[span.Length + prefix.Length].Start(span, out var pos)
                                                            .Write(prefix, ref pos)
-                                                           .BuildString(in pos);
+                                                           .Finish(in pos);
     }
 
     #endregion
