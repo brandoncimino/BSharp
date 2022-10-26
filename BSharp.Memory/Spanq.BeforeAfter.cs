@@ -17,6 +17,10 @@ public static partial class Spanq {
     public static ReadOnlySpan<T> AfterFirst<T>(this ReadOnlySpan<T> span, ReadOnlySpan<T> subSequence)
         where T : IEquatable<T> => span.Skip(span.IndexOf(subSequence)).Take(subSequence.Length);
 
+    [Pure]
+    public static ReadOnlySpan<char> AfterFirst(this ReadOnlySpan<char> span, ReadOnlySpan<char> subString, StringComparison comparisonType = StringComparison.Ordinal)
+        => span.Skip(span.IndexOf(subString, comparisonType)).Take(subString.Length);
+
     #endregion
 
     #region BeforeFirst
@@ -32,6 +36,10 @@ public static partial class Spanq {
     [Pure]
     public static ReadOnlySpan<T> BeforeFirst<T>(this ReadOnlySpan<T> span, ReadOnlySpan<T> subSequence)
         where T : IEquatable<T> => span.Take(span.IndexOf(subSequence));
+
+    [Pure]
+    public static ReadOnlySpan<char> BeforeFirst(this ReadOnlySpan<char> span, ReadOnlySpan<char> subString, StringComparison comparisonType = StringComparison.Ordinal)
+        => span.Take(span.IndexOf(subString, comparisonType));
 
     #endregion
 
@@ -52,6 +60,14 @@ public static partial class Spanq {
         return index >= 0 ? span[(index + subSequence.Length)..] : default;
     }
 
+#if NET5_0_OR_GREATER
+    [Pure]
+    public static ReadOnlySpan<char> AfterLast(this ReadOnlySpan<char> span, ReadOnlySpan<char> subString, StringComparison comparisonType = StringComparison.Ordinal) {
+        var index = span.LastIndexOf(subString, comparisonType);
+        return index >= 0 ? span[(index + subString.Length)..] : default;
+    }
+#endif
+
     #endregion
 
     #region BeforeLast
@@ -66,7 +82,13 @@ public static partial class Spanq {
 
     [Pure]
     public static ReadOnlySpan<T> BeforeLast<T>(this ReadOnlySpan<T> span, ReadOnlySpan<T> subSequence)
-        where T : IEquatable<T> => span.SkipLast(span.IndexOf(subSequence) + subSequence.Length);
+        where T : IEquatable<T> => span.SkipLast(span.LastIndexOf(subSequence) + subSequence.Length);
+
+#if NET5_0_OR_GREATER
+    [Pure]
+    public static ReadOnlySpan<char> BeforeLast(this ReadOnlySpan<char> span, ReadOnlySpan<char> subString, StringComparison comparisonType = StringComparison.Ordinal)
+        => span.SkipLast(span.LastIndexOf(subString, comparisonType) + subString.Length);
+#endif
 
     #endregion
 }
