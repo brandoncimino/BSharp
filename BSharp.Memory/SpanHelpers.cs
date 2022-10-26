@@ -68,7 +68,7 @@ internal static class SpanHelpers {
         var off = index.GetOffset(length);
 
         if (off < 0 || off >= length) {
-            throw new ArgumentOutOfRangeException($"🙅 {_caller}: {_index} {index} is out-of-bounds for {_length} {length}!");
+            throw new ArgumentOutOfRangeException(_index, index, $"🙅 {_caller}: {_index} {index} is out-of-bounds for {_length} {length}!");
         }
 
         return off;
@@ -97,11 +97,11 @@ internal static class SpanHelpers {
         [CallerMemberName]                    string? _caller  = default
     ) {
         if (amountToAdd == 1 && count >= maximum) {
-            throw new ArgumentOutOfRangeException($"🙅‍♀️ {_caller}: {_count} {count} has already hit the {_maximum} limit of {maximum}!");
+            throw new ArgumentOutOfRangeException(_amountToAdd, amountToAdd, $"🙅‍♀️ {_caller}: {_count} {count} has already hit the {_maximum} limit of {maximum}!");
         }
 
         if (count + amountToAdd > maximum) {
-            throw new ArgumentOutOfRangeException($"🙅‍♀️ {_caller}: {_count} {count} + {_amountToAdd} {amountToAdd} would exceed the {_maximum} limit of {maximum}!");
+            throw new ArgumentOutOfRangeException(_amountToAdd, amountToAdd, $"🙅‍♀️ {_caller}: {_count} {count} + {_amountToAdd} {amountToAdd} would exceed the {_maximum} limit of {maximum}!");
         }
     }
 }
