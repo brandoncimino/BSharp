@@ -157,6 +157,23 @@ public static partial class Spanq {
         return span.Write(toWrite, ref cursor);
     }
 
+    public static Span<T> WriteJoin<T>(
+        this Span<T>    span,
+        ReadOnlySpan<T> toWrite,
+        T               joiner,
+        ref int         cursor
+    ) {
+        if (toWrite.IsEmpty) {
+            return span;
+        }
+
+        if (cursor > 0) {
+            span.Write(joiner, ref cursor);
+        }
+
+        return span.Write(toWrite, ref cursor);
+    }
+
     /// <summary>
     /// <see cref="Write{T}(System.Span{T},T,ref int)"/>s <paramref name="joiner"/> if this <see cref="Span{T}"/> isn't <see cref="Span{T}.IsEmpty"/>; then <see cref="Write{T}(System.Span{T},T,ref int)"/>s <paramref name="toWrite"/>. 
     /// </summary>
