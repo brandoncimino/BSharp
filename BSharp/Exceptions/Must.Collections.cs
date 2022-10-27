@@ -54,75 +54,30 @@ public static partial class Must {
 
     #endregion
 
-    #region Contain (Index)
+    #region Contain (Range)
 
-    public static T ContainIndex<T>(
-        [NotNull] T actualValue,
-        Index       index,
-        string?     details = default,
-        [CallerArgumentExpression("actualValue")]
-        string? _index = default,
-        [CallerMemberName] string? _caller = default
-    )
-        where T : ICollection {
-        return Be(
-            actualValue,
-            it => it.ContainsIndex(index),
-            details,
-            _index,
-            _caller,
-            $"must contain the index [{index}] (actual size: {actualValue.Count})"
-        );
-    }
-
-    public static TCollection ContainIndex<TElements, TCollection>(
-        [NotNull] TCollection actualValue,
-        Index                 index,
-        string?               details = default,
-        [CallerArgumentExpression("actualValue")]
-        string? _index = default,
-        [CallerMemberName] string? _caller = default
-    )
-        where TCollection : IReadOnlyCollection<TElements> {
-        return Be(
-            actualValue,
-            it => it.ContainsIndex(index),
-            details,
-            _index,
-            _caller,
-            $"must contain the index [{index}] (actual size: {actualValue.Count})"
-        );
-    }
-
-    /// <summary>
-    /// Requires <paramref name="index"/> to fall inside of a collection of size <paramref name="collectionLength"/>.
-    /// </summary>
-    /// <param name="collectionLength">the number of elements in the theoretical collection</param>
-    /// <param name="index">the <see cref="Index"/> that must fall inside the collection</param>
-    /// <param name="details">optional additional details</param>
-    /// <param name="_index">see <see cref="CallerArgumentExpressionAttribute"/></param>
-    /// <param name="_caller">see <see cref="CallerMemberNameAttribute"/></param>
-    /// <returns>the <see cref="Index.GetOffset"/> calculated using <paramref name="index"/> and <paramref name="collectionLength"/></returns>
-    /// <exception cref="RejectionException">if <see cref="Index.GetOffset"/> results in a value outside of <paramref name="collectionLength"/></exception>
-    public static int ContainIndex(
-        int     collectionLength,
-        Index   index,
-        string? details = default,
-        [CallerArgumentExpression("collectionLength")]
-        string? _index = default,
-        [CallerMemberName] string? _caller = default
+    public static int ContainRange(
+        int                                          collectionLength,
+        int                                          offset,
+        int                                          length,
+        string?                                      details = default,
+        [CallerArgumentExpression("offset")] string? _offset = default,
+        [CallerArgumentExpression("length")] string? _length = default,
+        [CallerMemberName]                   string? _caller = default
     ) {
-        var offset = index.GetOffset(collectionLength);
-        if (offset < 0 || offset >= collectionLength) {
-            throw Exceptions.Reject.IndexOutOfRange(index, collectionLength, details, _index, _caller);
+        var endPoint = offset + length;
+        if (offset < 0 || offset >= collectionLength || endPoint < 0 || endPoint >= collectionLength || length < 0) {
+            throw new RejectionException(
+                offset..endPoint,
+                details: details,
+                rejectedBy: _caller,
+                _actualValue: $"{_offset}..{endPoint}",
+                reason: $"The given range is out-of-bounds for a collection of length {collectionLength}"
+            );
         }
 
-        return offset;
+        return collectionLength;
     }
-
-    #endregion
-
-    #region Contain (Range)
 
     public static T ContainRange<T>(
         [NotNull] T actualValue,
