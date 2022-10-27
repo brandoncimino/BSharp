@@ -23,4 +23,22 @@ public static class RoSpanTupleExtensions {
         ReadOnlySpan<C>              otherC,
         ReadOnlySpan<D>              otherD
     ) where A : IEquatable<A> where B : IEquatable<B> where C : IEquatable<C> where D : IEquatable<D> => self.A.SequenceEqual(otherA) && self.B.SequenceEqual(otherB) && self.C.SequenceEqual(otherC) && self.D.SequenceEqual(otherD);
+
+    #region ToMultiSpan
+
+    public static RoMultiSpan<T> ToMultiSpan<T>(this RoSpanTuple<T>          spans) => spans;
+    public static RoMultiSpan<T> ToMultiSpan<T>(this RoSpanTuple<T, T>       spans) => spans;
+    public static RoMultiSpan<T> ToMultiSpan<T>(this RoSpanTuple<T, T, T>    spans) => spans;
+    public static RoMultiSpan<T> ToMultiSpan<T>(this RoSpanTuple<T, T, T, T> spans) => spans;
+
+    #endregion
+
+    #region GetEnumerator
+
+    public static RoMultiSpan<T>.SpanEnumerator GetEnumerator<T>(this RoSpanTuple<T>          spans) => new(spans);
+    public static RoMultiSpan<T>.SpanEnumerator GetEnumerator<T>(this RoSpanTuple<T, T>       spans) => new(spans);
+    public static RoMultiSpan<T>.SpanEnumerator GetEnumerator<T>(this RoSpanTuple<T, T, T>    spans) => new(spans);
+    public static RoMultiSpan<T>.SpanEnumerator GetEnumerator<T>(this RoSpanTuple<T, T, T, T> spans) => new(spans);
+
+    #endregion
 }
