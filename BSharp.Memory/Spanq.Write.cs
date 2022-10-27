@@ -21,8 +21,6 @@ public static partial class Spanq {
     /// <typeparam name="T">the <paramref name="span"/> entry type</typeparam>
     /// <returns>this <see cref="Span{T}"/>, for method chaining</returns>
     /// <exception cref="ArgumentOutOfRangeException">if <paramref name="cursor"/> + <paramref name="amountToWrite"/> would exceed <see cref="Span{T}.Length"/></exception>
-    [Pure]
-    [AssertionMethod]
     public static Span<T> RequireSpace<T>(
         this                                 Span<T> span,
         [NonNegativeValue]                   int     cursor,
