@@ -31,4 +31,20 @@ public readonly ref partial struct RoMultiSpan<T> {
 
         return ar;
     }
+
+    /// <summary>
+    /// Combines all of the contents of this <see cref="RoMultiSpan{T}"/> into a <b>single</b>, <i>pre-allocated</i> <see cref="Span{T}"/>.
+    /// </summary>
+    /// <param name="destination">a <i>pre-allocated</i> <see cref="Span{T}"/></param>
+    /// <param name="cursor">the position in the <paramref name="destination"/> were we'd like to write these elements</param>
+    /// <returns>the updated <paramref name="destination"/> <see cref="Span{T}"/></returns>
+    public Span<T> FlattenInto(Span<T> destination, ref int cursor) {
+        destination.RequireSpace(cursor, ElementCount);
+
+        foreach (var span in this) {
+            destination.Write(span, ref cursor);
+        }
+
+        return destination;
+    }
 }
