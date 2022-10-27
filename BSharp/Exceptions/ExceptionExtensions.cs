@@ -143,6 +143,9 @@ public static class ExceptionExtensions {
     /// <param name="exception">this <see cref="Exception"/></param>
     /// <exception cref="Exception">the re-thrown <paramref name="exception"/> parameter</exception>
     /// <exception cref="ArgumentNullException">if this <see cref="Exception"/> is <c>null</c></exception>
+    /// <remarks>
+    /// This method shouldn't be named <c>"Throw"</c> because that will cause conflicts with the auto-completion of <c>throw</c> expressions in Rider.
+    /// </remarks>
     [DoesNotReturn]
     public static void Assert(this Exception exception) => throw exception ?? throw new ArgumentNullException(nameof(exception), "Can't throw a `null` Exception!");
 }
