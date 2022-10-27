@@ -1,9 +1,7 @@
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 
-using FowlFever.BSharp.Collections;
 using FowlFever.BSharp.Strings;
 
 namespace FowlFever.BSharp.Exceptions;
@@ -40,8 +38,7 @@ public static partial class Must {
         string?           details = default,
         [CallerArgumentExpression("actualValue")]
         string? parameterName = default,
-        [CallerMemberName]
-        string? rejectedBy = default
+        [CallerMemberName] string? rejectedBy = default
     ) {
         if (!actualValue.IsNotBlank()) {
             throw Reject(actualValue, details: details, parameterName: parameterName, rejectedBy: rejectedBy, reason: nameof(NotBeBlank));
@@ -55,8 +52,7 @@ public static partial class Must {
         string?           details = default,
         [CallerArgumentExpression("actualValue")]
         string? parameterName = default,
-        [CallerMemberName]
-        string? rejectedBy = default
+        [CallerMemberName] string? rejectedBy = default
     ) {
         if (!actualValue.IsNotEmpty()) {
             throw Reject(actualValue, details: details, parameterName: parameterName, rejectedBy: rejectedBy, reason: nameof(NotBeEmpty));
@@ -76,8 +72,7 @@ public static partial class Must {
         string? details = default,
         [CallerArgumentExpression("actualValue")]
         string? parameterName = default,
-        [CallerMemberName]
-        string? rejectedBy = default
+        [CallerMemberName] string? rejectedBy = default
     ) {
         if (actualValue?.Contains(unwantedString) == true) {
             throw Reject(actualValue, details, parameterName: parameterName, rejectedBy: rejectedBy, reason: $"must NOT contain the substring \"{unwantedString}\"");
@@ -86,33 +81,13 @@ public static partial class Must {
         return actualValue;
     }
 
-    [return: NotNullIfNotNull("actualValue")]
-    public static string? NotContain(
-        string?           actualValue,
-        IEnumerable<char> unwantedCharacters,
-        string?           details = default,
-        [CallerArgumentExpression("actualValue")]
-        string? parameterName = default,
-        [CallerMemberName]
-        string? rejectedBy = default
-    ) {
-        return Be(
-            actualValue,
-            it => it?.ContainsAny(unwantedCharacters) == false,
-            details,
-            parameterName,
-            rejectedBy
-        );
-    }
-
     public static string Contain(
         [NotNull] string? actualValue,
         string            substring,
         string?           details = default,
         [CallerArgumentExpression("actualValue")]
         string? parameterName = default,
-        [CallerMemberName]
-        string? rejectedBy = default
+        [CallerMemberName] string? rejectedBy = default
     ) {
         if (actualValue?.Contains(substring) == true) {
             return actualValue;
@@ -131,8 +106,7 @@ public static partial class Must {
         string?           details = default,
         [CallerArgumentExpression("actualValue")]
         string? parameterName = default,
-        [CallerMemberName]
-        string? rejectedBy = default
+        [CallerMemberName] string? rejectedBy = default
     ) {
         if (actualValue?.Matches(pattern) == true) {
             return actualValue;
@@ -148,8 +122,7 @@ public static partial class Must {
         string? details = default,
         [CallerArgumentExpression("actualValue")]
         string? parameterName = default,
-        [CallerMemberName]
-        string? rejectedBy = default
+        [CallerMemberName] string? rejectedBy = default
     ) {
         if (actualValue?.Matches(pattern) != true) {
             return actualValue;
