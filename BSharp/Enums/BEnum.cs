@@ -332,7 +332,12 @@ public static partial class BEnum {
         where T : struct, Enum => flags.SetFlag(unwantedFlags, false);
 
     /// <summary>
-    /// 
+    /// TODO: This code is probably incorrect, because it assumes that <see cref="Type.GetEnumUnderlyingType"/> is always unsigned (i.e. <see cref="Byte"/>, <see cref="uint"/>, etc.). However:
+    /// <ul>
+    /// <li>It is completely valid to declare an <see cref="Enum"/> type that extends <see cref="sbyte"/>, which will return a <see cref="Unsafe.SizeOf{T}"/> of 1 - the same as <see cref="byte"/>.</li>
+    /// <li>The default <see cref="Enum.GetUnderlyingType"/> is <see cref="int"/>, which can absolutely be negative.</li>
+    /// </ul>
+    /// <b><i>However</i></b>, it is useful to note that bitwise operations have a conniption when used with negative numbers,
     /// </summary>
     /// <param name="flags"></param>
     /// <param name="flagToSet"></param>
