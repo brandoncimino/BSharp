@@ -1,8 +1,7 @@
+using System.Collections.Immutable;
 using System.Diagnostics.Contracts;
 
 using FowlFever.BSharp;
-using FowlFever.BSharp.Collections;
-using FowlFever.BSharp.Memory;
 
 namespace FowlFever.Clerical;
 
@@ -14,10 +13,36 @@ public static partial class Clerk {
     /// <returns><b>all</b> of the extensions at the end of the <paramref name="path"/></returns>
     [Pure]
     public static ValueArray<FileExtension> GetExtensions(ReadOnlySpan<char> path) {
-        return EnumerateExtensions(path).ToImmutableArray(static span => FileExtension.Of(span));
+        return GetExtensions(path, out _);
     }
 
-    [Pure] internal static SpanSpliterator<char> EnumerateExtensions(ReadOnlySpan<char> path) => Path.GetFileName(path).Spliterate('.') with { Options = StringSplitOptions.RemoveEmptyEntries };
+    internal static ValueArray<FileExtension> GetExtensions(ReadOnlySpan<char> path, out ReadOnlySpan<char> remaining) {
+        remaining = path;
+
+        // most files have 0 or 1 extension, so we check for that scenario first
+        if (!FileExtension.TryGetLastExtension(remaining, out remaining, out var first)) {
+            // The input didn't have any extensions
+            return default;
+        }
+
+        if (!FileExtension.TryGetLastExtension(remaining, out remaining, out var second)) {
+            // The input didn't have a *second* extension, so we just return the first
+            return first;
+        }
+
+        // At this point, we have at least 2 extensions, so let's allocate a new ImmutableArray builder and start looping
+
+        var extensions = ImmutableArray.CreateBuilder<FileExtension>();
+        extensions.Add(first);
+        extensions.Add(second);
+
+        while (FileExtension.TryGetLastExtension(remaining, out remaining, out var ext)) {
+            extensions.Add(ext);
+        }
+
+        extensions.Capacity = extensions.Count;
+        return extensions.MoveToImmutable();
+    }
 
     [Pure]
     public static ReadOnlySpan<char> GetFullExtension(ReadOnlySpan<char> path) {
