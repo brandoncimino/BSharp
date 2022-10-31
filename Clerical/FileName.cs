@@ -14,6 +14,25 @@ public readonly record struct FileName(PathPart BaseName, ValueArray<FileExtensi
     /// </summary>
     public int Length => BaseName.Length + Extensions.Sum(static it => it.Length) + 1;
 
+    #region Construction & factories
+
+    public FileName(PathPart baseName, FileExtension extension) : this(baseName, ValueArray.Of(extension)) { }
+    public FileName(PathPart baseName, FileExtension first, FileExtension second) : this(baseName, ValueArray.Of(first,                      second)) { }
+    public FileName(PathPart baseName, FileExtension first, FileExtension second, FileExtension third) : this(baseName, ValueArray.Of(first, second, third)) { }
+
+    /// <summary>
+    /// Extracts a <see cref="FileName"/> from a <see cref="FileSystemInfo.FullPath"/> <i>(which may or may not contain parent directories, etc.)</i>
+    /// </summary>
+    /// <param name="path"></param>
+    /// <returns></returns>
+    public static FileName GetFromPath(ReadOnlySpan<char> path) {
+        var extensions = Clerk.GetExtensions(path, out var withoutExtensions);
+        var baseName   = Path.GetFileName(withoutExtensions);
+        return new FileName(baseName, extensions);
+    }
+
+    #endregion
+
     public override string ToString() {
         Span<char> span = stackalloc char[Length];
 
