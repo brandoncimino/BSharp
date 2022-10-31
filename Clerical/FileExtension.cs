@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using System.Diagnostics.Contracts;
 
 using FowlFever.BSharp.Memory;
 using FowlFever.Clerical.Validated;
@@ -52,12 +53,17 @@ public readonly record struct FileExtension : IEquatable<string> {
     /// <summary>
     /// This <see cref="FileExtension"/>, <i>including</i> the leading period that separates it from the file name, e.g. <c>".json"</c>.
     /// </summary>
+    [Pure]
     public string WithPeriod => _value?.AsSpan().PrependToString('.') ?? "";
     /// <summary>
     /// This <see cref="FileExtension"/>, <i>without</i> the leading period that separates it from the file name, e.g. <c>"json"</c>.
     /// </summary>
+    [Pure]
     public ReadOnlySpan<char> WithoutPeriod => _value ?? "";
-    private static ReadOnlySpan<char> _GetTrimmed(ReadOnlySpan<char> extension) => extension[0] == '.' ? extension[1..] : extension;
+
+    [Pure] private static ReadOnlySpan<char> _GetTrimmed(ReadOnlySpan<char> extension) => extension[0] == '.' ? extension[1..] : extension;
+
+    [Pure] public int Length => _value?.Length ?? 0;
 
     #endregion
 
@@ -74,6 +80,7 @@ public readonly record struct FileExtension : IEquatable<string> {
         _value = value.ToLowerInvariant();
     }
 
+    [Pure]
     private static FileExtension _Of(string? stringy, ReadOnlySpan<char> spanny) {
         spanny = _GetTrimmed(spanny);
 
@@ -96,16 +103,64 @@ public readonly record struct FileExtension : IEquatable<string> {
     /// </remarks>
     /// <param name="extension">the string value of the <see cref="FileExtension"/> <i>(with or without a leading period)</i></param>
     /// <returns>a new <see cref="FileExtension"/></returns>
+    [Pure]
     public static FileExtension Of(string? extension) => _Of(extension, extension);
 
     /// <inheritdoc cref="Of(string?)"/>
+    [Pure]
     public static FileExtension Of(ReadOnlySpan<char> extension) => _Of(default, extension);
+
+    /// <summary>
+    /// Attempts to find the last <see cref="FileExtension"/> in the <paramref name="source"/>, while also validating each <see cref="char"/> encountered via the <see cref="CharPredicate"/>.
+    ///
+    /// Stops upon hitting a directory separator.
+    /// </summary>
+    /// <param name="source">the input string</param>
+    /// <param name="remaining">the <paramref name="source"/> after the <paramref name="extension"/> has been removed</param>
+    /// <param name="extension">the found <see cref="FileExtension"/></param>
+    /// <returns><c>true</c> if we found a <see cref="FileExtension"/> before hitting a directory separator or the end of the string</returns>
+    /// <exception cref="BadCharException">if an invalid <see cref="char"/> is encountered in the last <see cref="FileName"/> of the <paramref name="source"/></exception>
+    [Pure]
+    internal static bool TryGetLastExtension(ReadOnlySpan<char> source, out ReadOnlySpan<char> remaining, out FileExtension extension) {
+        static ReadOnlySpan<char> TrimAfter(ReadOnlySpan<char> src, int index) {
+            return index == src.Length - 1 ? default : src[index..];
+        }
+
+        remaining = source;
+        extension = default;
+
+        for (int i = source.Length - 1; i >= 0; i--) {
+            var c = source[i];
+            if (c == '.') {
+                extension = Of(TrimAfter(source, i));
+                remaining = source[..i];
+                return true;
+            }
+
+            if (c is '/' or '\\') {
+                remaining = TrimAfter(source, i);
+            }
+
+            if (CharPredicate(c) == false) {
+                throw BadCharException.Create(source, CharPredicate);
+            }
+        }
+
+        return false;
+    }
+
+    [Pure]
+    public static FileExtension GetLastExtension(ReadOnlySpan<char> source) {
+        TryGetLastExtension(source, out _, out var ext);
+        return ext;
+    }
 
     #endregion
 
     #region Equality
 
     /// <inheritdoc cref="object.Equals(object?)"/>
+    [Pure]
     public bool Equals(ReadOnlySpan<char> other) => _value.AsSpan().Equals(_GetTrimmed(other), StringComparison.OrdinalIgnoreCase);
 
     public bool Equals(string? other) => Equals(other.AsSpan());
@@ -114,16 +169,20 @@ public readonly record struct FileExtension : IEquatable<string> {
     /// <remarks>
     /// We know that a <see cref="FileExtension"/> is always lowercase, so we can use `Ordinal` instead of `OrdinalIgnoreCase` _(NOTE: I have no evidence to support my hypothesis that `Ordinal` is faster)_
     /// </remarks>
+    [Pure]
     public bool Equals(FileExtension other) => _value.AsSpan().Equals(other, StringComparison.Ordinal);
 
-    public override int GetHashCode() => HashCode.Combine(_value);
+    [Pure] public override int GetHashCode() => HashCode.Combine(_value);
 
     #endregion
 
     /// <remarks>
     /// ⚠ Returns the internal <see cref="_value"/>, which may change between <see cref="WithoutPeriod"/> and <see cref="WithPeriod"/> in future versions.
     /// </remarks>
+    [Pure]
     public override string ToString() => _value ?? "";
 
-    public static implicit operator ReadOnlySpan<char>(FileExtension self) => self._value;
+    [Pure] public static implicit operator ReadOnlySpan<char>(FileExtension self) => self._value;
+
+    [Pure] public static FileName operator +(PathPart baseName, FileExtension extension) => new(baseName, extension);
 }
