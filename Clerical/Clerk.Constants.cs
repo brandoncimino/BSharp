@@ -1,9 +1,6 @@
 using System.Collections.Immutable;
-using System.Text.RegularExpressions;
 
 using FowlFever.BSharp.Clerical;
-using FowlFever.BSharp.Strings;
-using FowlFever.Clerical.Validated.Atomic;
 
 namespace FowlFever.Clerical;
 
@@ -35,21 +32,6 @@ public static partial class Clerk {
     /// Combines <see cref="InvalidFileNameChars"/> with <c>.</c> <i>(period)</i>.
     /// </summary>
     public static ImmutableArray<char> InvalidFileNamePartChars = InvalidPathChars.Add('.');
-
-    /// <summary>
-    /// A <see cref="Regex"/> pattern matching <see cref="DirectorySeparatorChars"/>.
-    /// </summary>
-    internal static readonly Regex DirectorySeparatorPattern = new(@"[\\\/]");
-    internal static readonly Regex OuterSeparatorPattern = RegexPatterns.OuterMatch(DirectorySeparatorPattern);
-    internal static readonly Regex InnerSeparatorPattern = RegexPatterns.InnerMatch(DirectorySeparatorPattern);
-    /// <summary>
-    /// Matches <b>any</b> single <see cref="FileExtension"/>.
-    /// </summary>
-    internal static readonly RegexGroup SingleExtensionGroup = new(@"\.[^.]+");
-    /// <summary>
-    /// Matches a contiguous sequence of <see cref="FileExtension"/>s at the <b>end</b> of a <see cref="string"/>.
-    /// </summary>
-    internal static readonly RegexGroup ExtensionGroup = new($@"({SingleExtensionGroup})+$");
 
     #endregion
 }
