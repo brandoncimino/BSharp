@@ -21,6 +21,10 @@ public static partial class Spanq {
         return span[start..end];
     }
 
+    /// <param name="span">this <see cref="ReadOnlySpan{T}"/></param>
+    /// <param name="toSkip">the number of entries to skip</param>
+    /// <typeparam name="T">the span entry type</typeparam>
+    /// <returns>all of the entries after the first <paramref name="toSkip"/></returns>
     [Pure]
     public static ReadOnlySpan<T> Skip<T>(this ReadOnlySpan<T> span, int toSkip) => toSkip switch {
         <= 0                         => span,
@@ -28,6 +32,10 @@ public static partial class Spanq {
         _                            => span[toSkip..]
     };
 
+    /// <param name="span">this <see cref="ReadOnlySpan{T}"/></param>
+    /// <param name="toTake">the number of entries we want</param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns>the first <paramref name="toTake"/> entries</returns>
     [Pure]
     public static ReadOnlySpan<T> Take<T>(this ReadOnlySpan<T> span, int toTake) => toTake switch {
         <= 0                         => default,
@@ -43,51 +51,54 @@ public static partial class Spanq {
 
     #region {x}Last
 
-    [Pure] public static ReadOnlySpan<T> SkipLast<T>(this ReadOnlySpan<T> span, int toSkip) => span.Take(span.Length - toSkip);
-    [Pure] public static ReadOnlySpan<T> TakeLast<T>(this ReadOnlySpan<T> span, int toTake) => span.Skip(span.Length - toTake);
+    /// <inheritdoc cref="Skip{T}"/>
+    [Pure]
+    public static ReadOnlySpan<T> SkipLast<T>(this ReadOnlySpan<T> span, int toSkip) => span.Take(span.Length - toSkip);
+
+    /// <inheritdoc cref="Take{T}"/>
+    [Pure]
+    public static ReadOnlySpan<T> TakeLast<T>(this ReadOnlySpan<T> span, int toTake) => span.Skip(span.Length - toTake);
 
     #endregion
 
     #region SkipWhile
 
+    /// <summary>
+    /// [Skip/Take]s up to <paramref name="limit"/> entries where <paramref name="selector"/> returns <paramref name="expected"/>.
+    /// </summary>
+    /// <param name="span">this <see cref="ReadOnlySpan{T}"/></param>
+    /// <param name="selector">transforms entries in the <paramref name="span"/></param>
+    /// <param name="expected">if <paramref name="selector"/> returns this, we [skip/take] that entry</param>
+    /// <param name="limit">the maximum number of entries we can [skip/take]</param>
+    /// <param name="from">whether to skip from the start or end of the <paramref name="span"/></param>
+    /// <typeparam name="T">the span entry type</typeparam>
+    /// <typeparam name="TExpected">the <paramref name="selector"/> output type</typeparam>
+    /// <returns>this <paramref name="span"/>, possibly with some leading entries [skipped/taken]</returns>
     [Pure]
-    public static ReadOnlySpan<T> SkipWhile<T, T2>(this ReadOnlySpan<T> span, [RequireStaticDelegate] Func<T, T2> selector, T2 expected, int skipLimit = int.MaxValue)
-        where T2 : IEquatable<T2> => span.Skip(span.CountWhile(selector, expected, skipLimit));
+    public static ReadOnlySpan<T> SkipWhile<T, TExpected>(
+        this                    ReadOnlySpan<T>    span,
+        [RequireStaticDelegate] Func<T, TExpected> selector,
+        TExpected                                  expected,
+        int                                        limit = int.MaxValue,
+        From                                       from  = From.Start
+    )
+        where TExpected : IEquatable<TExpected> {
+        return span.Skip(span.CountWhile(selector, expected, limit, from));
+    }
 
-    [Pure] public static ReadOnlySpan<T> SkipWhile<T>(this ReadOnlySpan<T> span, [RequireStaticDelegate] Func<T, bool> predicate, int skipLimit = int.MaxValue) => span.SkipWhile(predicate, true, skipLimit);
-
+    /// <summary>
+    /// [Skip/Take]s up to <paramref name="limit"/> entries where <paramref name="predicate"/> returns <c>true</c>.
+    /// </summary>
+    /// <param name="span">this <see cref="ReadOnlySpan{T}"/></param>
+    /// <param name="predicate">if this returns <c>true</c>, we should [skip/take] this entry</param>
+    /// <param name="limit">the maximum number of entries to [skip/take]</param>
+    /// <param name="from">whether to skip from the start or end of the <paramref name="span"/></param>
+    /// <typeparam name="T">the span entry type</typeparam>
+    /// <returns>this <paramref name="span"/>, possibly with some leading entries removed</returns>
     [Pure]
-    public static ReadOnlySpan<T> SkipLastWhile<T, T2>(this ReadOnlySpan<T> span, [RequireStaticDelegate] Func<T, T2> selector, T2 equals, int skipLimit = int.MaxValue)
-        where T2 : IEquatable<T2> =>
-        span.SkipLast(span.CountLastWhile(selector, equals, skipLimit));
-
-    [Pure]
-    public static ReadOnlySpan<T> SkipLastWhile<T>(
-        this                    ReadOnlySpan<T> span,
-        [RequireStaticDelegate] Func<T, bool>   predicate,
-        int                                     skipLimit = int.MaxValue
-    ) =>
-        span.SkipLastWhile(
-            predicate,
-            true,
-            skipLimit
-        );
-
-    #endregion
-
-    #region TakeWhile
-
-    [Pure]
-    public static ReadOnlySpan<T> TakeWhile<T, T2>(this ReadOnlySpan<T> span, Func<T, T2> selector, T2 expected, int takeLimit = int.MaxValue)
-        where T2 : IEquatable<T2> => span.Take(Math.Min(span.CountWhile(selector, expected), takeLimit));
-
-    [Pure] public static ReadOnlySpan<T> TakeWhile<T>(this ReadOnlySpan<T> span, Func<T, bool> predicate, int takeLimit = int.MaxValue) => span.TakeWhile(predicate, true, takeLimit);
-
-    [Pure]
-    public static ReadOnlySpan<T> TakeLastWhile<T, T2>(this ReadOnlySpan<T> span, Func<T, T2> selector, T2 expected, int takeLimit = int.MaxValue)
-        where T2 : IEquatable<T2> => span.Take(Math.Min(span.CountLastWhile(selector, expected), takeLimit));
-
-    [Pure] public static ReadOnlySpan<T> TakeLastWhile<T>(this ReadOnlySpan<T> span, Func<T, bool> predicate, int takeLimit = int.MaxValue) => span.TakeLastWhile(predicate, true);
+    public static ReadOnlySpan<T> SkipWhile<T>(this ReadOnlySpan<T> span, [RequireStaticDelegate] Func<T, bool> predicate, int limit = int.MaxValue, From from = From.Start) {
+        return span.SkipWhile(predicate, true, limit, from);
+    }
 
     #endregion
 
