@@ -69,7 +69,7 @@ public class BuilderTests {
         using var ass = Asserter.WithHeading()
                                 .And(builder.Count,                  Is.EqualTo(0))
                                 .And(builder.Add(addedString).Count, Is.EqualTo(1))
-                                .And(builder[0].ToString(),          Is.EqualTo(addedString))
+                                .And(builder[0].ToString(),          Is.EqualTo(addedString ?? ""))
                                 .AndBuild(builder, addedString);
     }
 
