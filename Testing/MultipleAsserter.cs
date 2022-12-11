@@ -360,6 +360,22 @@ public abstract class MultipleAsserter<TSelf, TActual> : IMultipleAsserter<TSelf
         return _Add(new Action_AgainstActual(action, default, description, expression));
     }
 
+    /// <summary>
+    /// Adds a new <see cref="Subtest"/> that requires a <paramref name="predicate"/> to return <c>true</c>.
+    /// </summary>
+    /// <param name="predicate">must return <c>true</c> for the <see cref="Subtest"/> to succeed</param>
+    /// <param name="description">an optional description of the assertion</param>
+    /// <param name="_condition">see <see cref="CallerArgumentExpressionAttribute"/></param>
+    /// <returns><see cref="Self"/>, for method chaining</returns>
+    public TSelf And(
+        Func<TActual?, bool> predicate,
+        Supplied<string?>?   description = default,
+        [CallerArgumentExpression("predicate")]
+        string? _condition = default
+    ) {
+        return And(predicate, Is.True, description, _condition);
+    }
+
     [MustUseReturnValue]
     [Obsolete]
     public TSelf Satisfies(
