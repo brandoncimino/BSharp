@@ -32,7 +32,7 @@ public static class AssertionExtensions {
     [MustUseReturnValue]
     public static T IsEmpty<T>(this IMultipleAsserter<T> asserter, RoMultiSpan<char>.Builder builder) where T : IMultipleAsserter<T> {
         return asserter.And(builder.Count, Is.EqualTo(0))
-                       .And(builder.RemainingSpans, Is.EqualTo(FowlFever.BSharp.Memory.RoMultiSpan.MaxSpans))
+                       .And(builder.RemainingSpans, Is.EqualTo(RoMultiSpan.MaxSpans))
                        .AndBuild(builder)
                        .Self;
     }
@@ -49,8 +49,8 @@ public class BuilderTests {
 
     [Test]
     public void CannotAddBeyondMaxSpans() {
-        var builder = FowlFever.BSharp.Memory.RoMultiSpan.CreateBuilder<char>();
-        for (int i = 0; i < FowlFever.BSharp.Memory.RoMultiSpan.MaxSpans; i++) {
+        var builder = RoMultiSpan.CreateBuilder<char>();
+        for (int i = 0; i < RoMultiSpan.MaxSpans; i++) {
             builder.Add($"[{i}]");
         }
 
@@ -58,14 +58,14 @@ public class BuilderTests {
             builder.Add("FAIL");
             Assert.Fail("expected an exception");
         }
-        catch (InvalidOperationException e) {
+        catch (ArgumentOutOfRangeException e) {
             Assert.Pass();
         }
     }
 
     [Test]
     public void AddTest([Values("abc", null, "", " ")] string? addedString) {
-        var builder = FowlFever.BSharp.Memory.RoMultiSpan.CreateBuilder<char>();
+        var builder = RoMultiSpan.CreateBuilder<char>();
         using var ass = Asserter.WithHeading()
                                 .And(builder.Count,                  Is.EqualTo(0))
                                 .And(builder.Add(addedString).Count, Is.EqualTo(1))
@@ -76,7 +76,7 @@ public class BuilderTests {
     [Test]
     [TestCase("abc", "a", " ", "", null, "yolo")]
     public void AddRepeatedTest(params string?[] strings) {
-        var builder = FowlFever.BSharp.Memory.RoMultiSpan.CreateBuilder<char>();
+        var builder = RoMultiSpan.CreateBuilder<char>();
         using var ass = Asserter.WithHeading()
                                 .And(builder.Count, Is.EqualTo(0))
                                 .AndBuild(builder);
@@ -97,8 +97,8 @@ public class BuilderTests {
         string e,
         string f
     ) {
-        var builder = FowlFever.BSharp.Memory.RoMultiSpan.CreateBuilder<char>();
-        var strings = FowlFever.BSharp.Memory.RoMultiSpan.Of(a, b, c, d, e, f);
+        var builder = RoMultiSpan.CreateBuilder<char>();
+        var strings = RoMultiSpan.Of(a, b, c, d, e, f);
 
         using var ass = Asserter.WithHeading()
                                 .And(builder.AddRange(strings).Count, Is.EqualTo(strings.SpanCount))
@@ -119,10 +119,10 @@ public class BuilderTests {
 
     [Test]
     public void RemoveTest() {
-        var builder = FowlFever.BSharp.Memory.RoMultiSpan.CreateBuilder<char>()
-                               .Add("one")
-                               .Add("two")
-                               .Add("three");
+        var builder = RoMultiSpan.CreateBuilder<char>()
+                                 .Add("one")
+                                 .Add("two")
+                                 .Add("three");
 
         Asserter.WithHeading()
                 .And(builder.Count,          Is.EqualTo(3))
@@ -130,6 +130,20 @@ public class BuilderTests {
                 .And(builder[0].ToString(),  Is.EqualTo("one"))
                 .And(builder[1].ToString(),  Is.EqualTo("two"))
                 .Invoke();
+    }
+
+    [Test]
+    public void GetOutOfRangeThrowsException() {
+        var builder = RoMultiSpan.CreateBuilder<char>()
+                                 .Add("one");
+
+        try {
+            var x = builder[2];
+            Asserter.FailBecauseNoException();
+        }
+        catch (ArgumentOutOfRangeException e) {
+            Assert.Pass();
+        }
     }
 
     [Test]
