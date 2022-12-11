@@ -1,6 +1,8 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
+using FowlFever.BSharp.Exceptions;
 using FowlFever.BSharp.Strings;
 
 using JetBrains.Annotations;
@@ -119,5 +121,20 @@ namespace FowlFever.Testing {
         ) {
             Against(actual, _actual).And(constraint).Invoke();
         }
+
+        #region Fail
+
+        /// <summary>
+        /// Throws an <see cref="AssertionException"/> that indicates that we wanted an <see cref="Exception"/> to be thrown, but none was.
+        /// </summary>
+        /// <param name="caller">see <see cref="CallerMemberNameAttribute"/></param>
+        /// <exception cref="AssertionException"><i>always</i> thrown</exception>
+        [DoesNotReturn]
+        public static Exception FailBecauseNoException([CallerMemberName] string caller = "Test") {
+            Assert.Fail($"{caller} failed because no exception was thrown!");
+            throw Reject.Unreachable();
+        }
+
+        #endregion
     }
 }
