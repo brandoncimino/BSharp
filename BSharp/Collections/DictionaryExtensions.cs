@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 
 using FowlFever.BSharp.Exceptions;
 
@@ -16,15 +15,7 @@ public static class DictionaryExtensions {
         TKey                           key,
         TValue?                        fallback = default
     ) {
-        if (dic == null) {
-            throw new ArgumentNullException(nameof(dic));
-        }
-
-        if (key == null) {
-            throw new ArgumentNullException(nameof(key));
-        }
-
-        return dic.ContainsKey(key) ? dic[key] : fallback;
+        return dic.TryGetValue(key, out var val) ? val : fallback;
     }
 
     public static TValue? GetOrDefault<TKey, TValue>(
