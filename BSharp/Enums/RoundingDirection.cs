@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 using FowlFever.BSharp.Exceptions;
 
@@ -34,14 +35,71 @@ public static class RoundingDirectionExtensions {
     };
 }
 
+/// <summary>
+/// Performs rounding operations on decimal numbers (<see cref="float"/>, <see cref="double"/>, and <see cref="decimal"/>).
+/// </summary>
+/// <remarks>
+/// The <c>default</c>(<see cref="Rounder"/>) is equivalent to <see cref="HalfEven"/> rounding.
+/// </remarks>
 public readonly record struct Rounder {
-    private readonly RounderSource _rounderSource = RounderSource.HalfEven;
-    private          RounderSource RounderSource => _rounderSource ?? RounderSource.HalfEven;
+    [MaybeNull] private readonly RounderSource _rounderSource = RounderSource.HalfEven;
+    private                      RounderSource RounderSource => _rounderSource ?? RounderSource.HalfEven;
 
-    public static readonly Rounder HalfEven     = new(RounderSource.Get(MidpointRounding.ToEven));
+    /// <summary>
+    /// Midpoint values (i.e. <c>.5</c>) will be rounded to the nearest <b>even</b> number <i>(with 0 considered even)</i>.
+    /// </summary>
+    /// <example>
+    /// <code>
+    ///  3.5  ↗  4
+    ///  2.5  ↘  2
+    ///  1.5  ↗  2
+    ///  0.5  ↘  0
+    ///  0    →  0
+    /// -0.5  ↗  0
+    /// -1.5  ↘ -2
+    /// -2.5  ↗ -2
+    /// </code>
+    /// </example>
+    public static readonly Rounder HalfEven = new(RounderSource.Get(MidpointRounding.ToEven));
+    /// <summary>
+    /// Midpoint values (i.e. <c>.5</c>) will be rounded to the value with the largest <see cref="Math.Abs(decimal)">absolute value</see>.
+    /// </summary>
+    /// <example>
+    /// <code>
+    ///  1.5 ↗  2
+    ///   .5 ↗  1
+    ///  0   →  0
+    /// - .5 ↘ -1
+    /// -1.5 ↘ -2
+    /// </code>
+    /// </example>
     public static readonly Rounder AwayFromZero = new(RounderSource.Get(MidpointRounding.AwayFromZero));
-    public static readonly Rounder Ceiling      = new(RounderSource.Get(RoundingDirection.Ceiling));
-    public static readonly Rounder Floor        = new(RounderSource.Get(RoundingDirection.Floor));
+    /// <summary>
+    /// Midpoint values (i.e. <c>.5</c>) will always be rounded <b>up</b> to the <b>greatest</b> value.
+    /// </summary>
+    /// <example>
+    /// <code>
+    ///  1.5  ↗  2
+    ///   .5  ↗  1
+    ///    0  →  0
+    /// - .5  ↗  0
+    /// -1.5  ↗ -1
+    /// </code>
+    /// </example>
+    public static readonly Rounder Ceiling = new(RounderSource.Get(RoundingDirection.Ceiling));
+    /// <summary>
+    /// Midpoint values (i.e. <c>.5</c>) will always be rounded <b>down</b> to the <b>lowest</b> value.
+    /// </summary>
+    /// <example>
+    /// <code>
+    ///  1.5  ↘  1
+    ///   .5  ↘  0
+    ///    0  →  0
+    /// - .5  ↘ -1
+    /// -1.5  ↘ -2
+    /// </code>
+    /// </example>
+    public static readonly Rounder Floor = new(RounderSource.Get(RoundingDirection.Floor));
 
     public Rounder() {
         _rounderSource = RounderSource.HalfEven;
