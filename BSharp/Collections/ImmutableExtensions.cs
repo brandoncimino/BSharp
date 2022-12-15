@@ -253,4 +253,34 @@ public static partial class ImmutableExtensions {
 
         return hc.ToHashCode();
     }
+
+    /// <summary>
+    /// Modifies an existing <see cref="KeyValuePair{TKey,TValue}.value"/> in an <see cref="IImmutableDictionary{TKey,TValue}"/>.
+    /// </summary>
+    /// <param name="dic">this <see cref="IImmutableDictionary{TKey,TValue}"/></param>
+    /// <param name="key">the <see cref="KeyValuePair{TKey,TValue}.key"/> whose value will be updated</param>
+    /// <param name="update">takes in the old <see cref="KeyValuePair{TKey,TValue}.value"/> and produces the new one</param>
+    /// <typeparam name="K">the <see cref="KeyValuePair{TKey,TValue}.key"/> type</typeparam>
+    /// <typeparam name="V">the <see cref="KeyValuePair{TKey,TValue}.value"/> type</typeparam>
+    /// <returns>a new <see cref="IImmutableDictionary{TKey,TValue}"/></returns>
+    /// <exception cref="KeyNotFoundException">if the <paramref name="key"/> isn't in the dictionary</exception>
+    public static IImmutableDictionary<K, V> Update<K, V>(this IImmutableDictionary<K, V> dic, K key, Func<V, V> update) {
+        return dic.SetItem(key, update(dic[key]));
+    }
+
+    /// <summary>
+    /// <inheritdoc cref="Update{K,V}"/>
+    /// </summary>
+    /// <param name="dic">this <see cref="IImmutableDictionary{TKey,TValue}"/></param>
+    /// <param name="key">the <see cref="KeyValuePair{TKey,TValue}.key"/> whose value will be updated</param>
+    /// <param name="arg">an argument to the <paramref name="update"/> function</param>
+    /// <param name="update">takes in the old <see cref="KeyValuePair{TKey,TValue}.value"/> and the <paramref name="arg"/> and produces the new value</param>
+    /// <typeparam name="K">the <see cref="KeyValuePair{TKey,TValue}.key"/> type</typeparam>
+    /// <typeparam name="V">the <see cref="KeyValuePair{TKey,TValue}.value"/> type</typeparam>
+    /// <typeparam name="A">the <paramref name="arg"/> type</typeparam>
+    /// <returns><inheritdoc cref="Update{K,V}"/></returns>
+    /// <exception cref="KeyNotFoundException">if the <paramref name="key"/> isn't in the dictionary</exception>
+    public static IImmutableDictionary<K, V> Update<K, V, A>(this IImmutableDictionary<K, V> dic, K key, A arg, Func<V, A, V> update) {
+        return dic.SetItem(key, update(dic[key], arg));
+    }
 }
