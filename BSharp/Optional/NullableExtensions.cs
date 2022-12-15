@@ -16,11 +16,6 @@ public static class NullableExtensions {
     }
 
     [Pure]
-    public static Optional<T> ToOptional<T>(this T? nullableValue) {
-        return nullableValue == null ? Optional.Empty<T>() : Optional.Of(nullableValue);
-    }
-
-    [Pure]
     public static Optional<T> ToOptional<T>(this T? nullableValue)
         where T : struct {
         return nullableValue.HasValue ? Optional.Of(nullableValue.Value) : default;
@@ -52,5 +47,17 @@ public static class NullableExtensions {
     public static Optional<T2> Select<T, T2>(this T? nullable, Func<T, T2> selector)
         where T : struct {
         return nullable.IsEmpty() ? Optional.Empty<T2>() : selector(nullable.Value);
+    }
+
+    /// <summary>
+    /// Invokes the <paramref name="selector"/> against this <see cref="Nullable{T}"/> if it <see cref="Nullable{T}.HasValue"/>.
+    /// </summary>
+    /// <param name="nullable">this <see cref="Nullable{T}"/></param>
+    /// <param name="selector">a <see cref="Func{T,TResult}"/> that produces an <see cref="IEnumerable{T}"/> from a non-null <typeparamref name="T"/></param>
+    /// <typeparam name="T">the <see cref="Nullable{T}"/> value type</typeparam>
+    /// <typeparam name="T2">the <paramref name="selector"/> output element type</typeparam>
+    /// <returns>an <see cref="IEnumerable{T}"/> of <typeparamref name="T2"/> entries</returns>
+    public static IEnumerable<T2> SelectMany<T, T2>(this T? nullable, Func<T, IEnumerable<T2>> selector) where T : struct {
+        return nullable.HasValue == false ? Enumerable.Empty<T2>() : selector(nullable.Value);
     }
 }
