@@ -60,5 +60,9 @@ public static class ConvertibleExtensions {
     [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool ToBool<T>(this T obj, IFormatProvider? provider = default) where T : IConvertible => obj.ToBoolean(provider);
 
+    /// <inheritdoc cref="IConvertible.ToChar"/>
+    [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static char ToChar<T>(this T obj, IFormatProvider? provider = default) where T : IConvertible => obj.ToChar(provider);
+
     #endregion
 }
