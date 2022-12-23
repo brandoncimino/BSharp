@@ -9,8 +9,6 @@ using FowlFever.BSharp.Strings;
 using FowlFever.BSharp.Strings.Settings;
 using FowlFever.Conjugal.Affixing;
 
-using JetBrains.Annotations;
-
 namespace FowlFever.BSharp.Chronic {
     /// <summary>
     /// Wraps a <see cref="List{T}"/> of <see cref="ExecutionTime"/>s and provides some convenient Linq methods and a flexible <see cref="CompareTo"/>.
@@ -20,7 +18,7 @@ namespace FowlFever.BSharp.Chronic {
     /// <br/>
     /// From Brandon on 10/15/2021: I think I just started making this again.
     /// </remarks>
-    [PublicAPI]
+    [Obsolete("This method isn't very useful now that I know about Benchmark.net")]
     public class AggregateExecutionTime : IComparable<AggregateExecutionTime> {
         public string Nickname { get; }
 
@@ -109,7 +107,7 @@ namespace FowlFever.BSharp.Chronic {
 
             // ReSharper disable once ConditionIsAlwaysTrueOrFalse
             if (Nickname != null) {
-                table = table.PrefixIfMissing("\n").Prefix(Nickname);
+                table = table.PrependIfMissing("\n").Prefix(Nickname);
             }
 
             return table;
