@@ -10,50 +10,8 @@ namespace FowlFever.BSharp;
 /// <summary>
 /// Extension methods for operating on basic <see cref="Type.IsPrimitive"/> types.
 /// </summary>
-public static class PrimitiveUtils {
+public static partial class PrimitiveUtils {
     #region Truthiness
-
-    /// <summary>
-    /// Extension method for <see cref="Convert.ToInt32(bool)"/>, which converts a <see cref="bool"/> to either 0 or 1.
-    /// </summary>
-    /// <param name="boolean">a <see cref="bool"/></param>
-    /// <returns><c>0</c> if the <see cref="bool"/> is <c>false</c>; <c>1</c> if the <see cref="bool"/> is <c>true</c></returns>
-    [Pure]
-    public static int ToInt(this bool boolean) {
-        return Convert.ToInt32(boolean);
-    }
-
-    #region Int -> Bool
-
-    /// <summary>
-    /// Extension method for <see cref="Convert.ToBoolean(int)"/>, i.e. <c>0 ? false : true</c>
-    /// </summary>
-    /// <param name="integer">an <see cref="int"/> value</param>
-    /// <returns><see langword="false"/> if the <see cref="integer"/> is <c>0</c>; otherwise, <see langword="true"/></returns>
-    [Pure]
-    public static bool Truthy(this int integer) {
-        return Convert.ToBoolean(integer);
-    }
-
-    /// <summary>
-    /// Negation of <see cref="Convert.ToBoolean(bool)"/>, i.e. <c>0 ? true : false</c>
-    /// </summary>
-    /// <param name="integer"><inheritdoc cref="Truthy(int)"/></param>
-    /// <returns><see langword="true"/> if the <see cref="integer"/> is <c>0</c>; otherwise, <see langword="false"/></returns>
-    [Pure]
-    public static bool Falsey(this int integer) {
-        return !Convert.ToBoolean(integer);
-    }
-
-    /**
-         * <inheritdoc cref="Truthy(int)"/>
-         */
-    [Pure]
-    public static bool Boolean(this int integer) {
-        return Convert.ToBoolean(integer);
-    }
-
-    #endregion
 
     #region String -> Bool
 
@@ -139,46 +97,6 @@ public static class PrimitiveUtils {
     public static bool NOT(this bool value) {
         return !value;
     }
-
-    #endregion
-
-    #region Convert.To{x}
-
-    public static short ToShort<T>(this T obj)
-        where T : IConvertible => obj.ToInt16(default);
-
-    public static ushort ToUShort<T>(this T obj)
-        where T : IConvertible => obj.ToUInt16(default);
-
-    public static int ToInt<T>(this T obj)
-        where T : IConvertible => obj.ToInt32(default);
-
-    public static uint ToUInt<T>(this T obj)
-        where T : IConvertible => obj.ToUInt32(default);
-
-    public static long ToLong<T>(this T obj)
-        where T : IConvertible => obj.ToInt64(default);
-
-    public static ulong ToULong<T>(this T obj)
-        where T : IConvertible => obj.ToUInt64(default);
-
-    public static float ToFloat<T>(this T obj)
-        where T : IConvertible => obj.ToSingle(default);
-
-    public static double ToDouble<T>(this T obj)
-        where T : IConvertible => obj.ToDouble(default);
-
-    public static decimal ToDecimal<T>(this T obj)
-        where T : IConvertible => obj.ToDecimal(default);
-
-    public static byte ToByte<T>(this T obj)
-        where T : IConvertible => obj.ToByte(default);
-
-    public static sbyte ToSByte<T>(this T obj)
-        where T : IConvertible => obj.ToSByte(default);
-
-    public static bool ToBool<T>(this T obj)
-        where T : IConvertible => obj.ToBoolean(default);
 
     #endregion
 
