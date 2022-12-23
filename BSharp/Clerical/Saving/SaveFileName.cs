@@ -25,7 +25,7 @@ namespace FowlFever.BSharp.Clerical.Saving {
 
         public string FullExtension {
             get => _fullExtension;
-            set => _fullExtension = value.PrefixIfMissing(".");
+            set => _fullExtension = value.PrependIfMissing(".");
         }
 
         public string BaseName => $"{Nickname}_{TimeStamp.Ticks}";
