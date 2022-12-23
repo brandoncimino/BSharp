@@ -60,6 +60,9 @@ public readonly record struct Rounder {
     /// -2.5  ↗ -2
     /// </code>
     /// </example>
+    /// <remarks>
+    /// This the default <see cref="Rounder"/>, matching the default behavior of <see cref="Math"/>.<see cref="Math.Round(double)"/> operations.
+    /// </remarks>
     public static readonly Rounder HalfEven = new(RounderSource.Get(MidpointRounding.ToEven));
     /// <summary>
     /// Midpoint values (i.e. <c>.5</c>) will be rounded to the value with the largest <see cref="Math.Abs(decimal)">absolute value</see>.
