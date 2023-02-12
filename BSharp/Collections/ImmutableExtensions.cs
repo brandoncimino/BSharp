@@ -147,7 +147,7 @@ public static partial class ImmutableExtensions {
 
     /// <inheritdoc cref="Slice{T}(System.Collections.Immutable.ImmutableArray{T},System.Range)"/>
     public static ImmutableArray<T> Slice<T>(this ImmutableArray<T> source, int start, int length) {
-        return source.AsSpan().Slice(start, length).ToImmutableArray();
+        return source.AsSpan().Slice(start, length).CreateImmutableArray();
     }
 
     /// <summary>
@@ -202,13 +202,20 @@ public static partial class ImmutableExtensions {
     /// <summary>
     /// Creates a new <see cref="ImmutableArray{T}"/> containing the entries of this <see cref="ReadOnlySpan{T}"/>.
     /// </summary>
+    /// <remarks>
+    /// This is named such that it doesn't conflict with the non-.NET-Standard-2.1 method <a href="https://learn.microsoft.com/en-us/dotnet/api/System.Collections.Immutable.ImmutableArray.ToImmutableArray?view=net-7.0">ImmutableArray.Create()</a>.
+    /// </remarks>
     /// <param name="span">this <see cref="ReadOnlySpan{T}"/></param>
     /// <typeparam name="T">the element type of <paramref name="span"/></typeparam>
     /// <returns>a new <see cref="ImmutableArray{T}"/></returns>
-    public static ImmutableArray<T> ToImmutableArray<T>(this ReadOnlySpan<T> span) {
+    public static ImmutableArray<T> CreateImmutableArray<T>(this ReadOnlySpan<T> span) {
+#if NET5_0_OR_GREATER
+        return ImmutableArray.Create(span);
+#else
         return ImmutableArray.CreateBuilder<T>(span.Length)
                              .AddRange(span)
                              .MoveToImmutable();
+#endif
     }
 
     /// <summary>

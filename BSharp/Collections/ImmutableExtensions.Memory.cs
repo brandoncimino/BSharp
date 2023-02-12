@@ -21,5 +21,10 @@ public static partial class ImmutableExtensions {
         return builder.MoveToImmutableSafely();
     }
 
+    [MustUseReturnValue]
+    public static ImmutableArray<string> ToImmutableStringArray(this SpanSpliterator<char> spliterator) {
+        return spliterator.ToImmutableArray(static span => span.ToString());
+    }
+
     #endregion
 }
