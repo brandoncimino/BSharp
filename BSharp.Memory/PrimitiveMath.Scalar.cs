@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 
 namespace FowlFever.BSharp.Memory;
 
-internal static partial class PrimitiveMath {
+public static partial class PrimitiveMath {
     /// <summary>
     /// </summary>
     /// <remarks>
@@ -12,6 +12,24 @@ internal static partial class PrimitiveMath {
     /// <typeparam name="T">a <see cref="Type.IsPrimitive"/> numeric type suitable for <see cref="System.Numerics.Vector"/>ization</typeparam>
     internal static class Scalar<T>
         where T : struct {
+        private static Exception NotPrimitiveType() {
+            return RejectType("not a primitive numeric type!");
+        }
+
+        private static Exception NotIntegerType() {
+            return RejectType("not a primitive integer type!");
+        }
+
+        private static Exception NotFloatingPointType() {
+            return RejectType("not a primitive floating-point type!");
+        }
+
+        private static Exception RejectType(string reason, [CallerMemberName] string? caller = default) {
+            return caller != null
+                       ? new NotSupportedException($"{caller}() type {typeof(T).Name} is invalid: {reason}")
+                       : new NotSupportedException($"type {typeof(T).Name} is invalid: {reason}");
+        }
+
         public static T AllBitsSet {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get {
@@ -52,7 +70,7 @@ internal static partial class PrimitiveMath {
                     return (T)(object)ulong.MaxValue;
                 }
                 else {
-                    throw new NotSupportedException("Provided a type that isn't a valid Vector<T> numeric value type!");
+                    throw NotPrimitiveType();
                 }
             }
         }
@@ -97,7 +115,7 @@ internal static partial class PrimitiveMath {
                     return (T)(object)(ulong)1;
                 }
                 else {
-                    throw new NotSupportedException("Provided a type that isn't a valid Vector<T> numeric value type!");
+                    throw NotPrimitiveType();
                 }
             }
         }
@@ -128,7 +146,7 @@ internal static partial class PrimitiveMath {
                 return (T)(object)Math.Abs((float)(object)value);
             }
             else {
-                throw new NotSupportedException("Provided a type that isn't a valid Vector<T> numeric value type!");
+                throw RejectType("not a signed type!");
             }
         }
 
@@ -171,7 +189,7 @@ internal static partial class PrimitiveMath {
                 return (T)(object)((ulong)(object)left + (ulong)(object)right);
             }
             else {
-                throw new NotSupportedException("Provided a type that isn't a valid Vector<T> numeric value type!");
+                throw NotPrimitiveType();
             }
         }
 
@@ -184,7 +202,7 @@ internal static partial class PrimitiveMath {
                 return (T)(object)MathF.Ceiling((float)(object)value);
             }
             else {
-                throw new NotSupportedException("Provided a type that isn't a valid Vector<T> numeric value type!");
+                throw NotFloatingPointType();
             }
         }
 
@@ -227,7 +245,7 @@ internal static partial class PrimitiveMath {
                 return (T)(object)((ulong)(object)left / (ulong)(object)right);
             }
             else {
-                throw new NotSupportedException("Provided a type that isn't a valid Vector<T> numeric value type!");
+                throw NotPrimitiveType();
             }
         }
 
@@ -270,7 +288,7 @@ internal static partial class PrimitiveMath {
                 return (ulong)(object)left == (ulong)(object)right;
             }
             else {
-                throw new NotSupportedException("Provided a type that isn't a valid Vector<T> numeric value type!");
+                throw NotPrimitiveType();
             }
         }
 
@@ -343,7 +361,7 @@ internal static partial class PrimitiveMath {
                 return (uint)(bits >> 63);
             }
             else {
-                throw new NotSupportedException("Provided a type that isn't a valid Vector<T> numeric value type!");
+                throw NotPrimitiveType();
             }
         }
 
@@ -356,7 +374,7 @@ internal static partial class PrimitiveMath {
                 return (T)(object)MathF.Floor((float)(object)value);
             }
             else {
-                throw new NotSupportedException("Provided a type that isn't a valid Vector<T> numeric value type!");
+                throw NotFloatingPointType();
             }
         }
 
@@ -399,7 +417,7 @@ internal static partial class PrimitiveMath {
                 return (ulong)(object)left > (ulong)(object)right;
             }
             else {
-                throw new NotSupportedException("Provided a type that isn't a valid Vector<T> numeric value type!");
+                throw NotPrimitiveType();
             }
         }
 
@@ -442,7 +460,7 @@ internal static partial class PrimitiveMath {
                 return (ulong)(object)left >= (ulong)(object)right;
             }
             else {
-                throw new NotSupportedException("Provided a type that isn't a valid Vector<T> numeric value type!");
+                throw NotPrimitiveType();
             }
         }
 
@@ -485,7 +503,7 @@ internal static partial class PrimitiveMath {
                 return (ulong)(object)left < (ulong)(object)right;
             }
             else {
-                throw new NotSupportedException("Provided a type that isn't a valid Vector<T> numeric value type!");
+                throw NotPrimitiveType();
             }
         }
 
@@ -528,7 +546,7 @@ internal static partial class PrimitiveMath {
                 return (ulong)(object)left <= (ulong)(object)right;
             }
             else {
-                throw new NotSupportedException("Provided a type that isn't a valid Vector<T> numeric value type!");
+                throw NotPrimitiveType();
             }
         }
 
@@ -571,7 +589,7 @@ internal static partial class PrimitiveMath {
                 return (T)(object)((ulong)(object)left * (ulong)(object)right);
             }
             else {
-                throw new NotSupportedException("Provided a type that isn't a valid Vector<T> numeric value type!");
+                throw NotPrimitiveType();
             }
         }
 
@@ -613,7 +631,7 @@ internal static partial class PrimitiveMath {
                 return ((ulong)(object)left).Equals((ulong)(object)right);
             }
             else {
-                throw new NotSupportedException("Provided a type that isn't a valid Vector<T> numeric value type!");
+                throw NotPrimitiveType();
             }
         }
 
@@ -650,7 +668,7 @@ internal static partial class PrimitiveMath {
                 return (T)(object)(ulong)((ulong)(object)value << shiftCount);
             }
             else {
-                throw new NotSupportedException("Provided a type that isn't a valid Vector<T> numeric value type!");
+                throw NotIntegerType();
             }
         }
 
@@ -672,7 +690,7 @@ internal static partial class PrimitiveMath {
                 return (T)(object)(sbyte)((sbyte)(object)value >> (shiftCount & 7));
             }
             else {
-                throw new NotSupportedException($"{nameof(T)} isn't a valid {nameof(Scalar<T>)} type!");
+                throw RejectType("not a signed primitive numeric type!");
             }
         }
 
@@ -709,7 +727,7 @@ internal static partial class PrimitiveMath {
                 return (T)(object)(ulong)((ulong)(object)value >> shiftCount);
             }
             else {
-                throw new NotSupportedException($"{nameof(T)} isn't a valid {nameof(Scalar<T>)} type!");
+                throw NotPrimitiveType();
             }
         }
 
@@ -752,7 +770,7 @@ internal static partial class PrimitiveMath {
                 return (T)(object)(ulong)Math.Sqrt((ulong)(object)value);
             }
             else {
-                throw new NotSupportedException($"{nameof(T)} isn't a valid {nameof(Scalar<T>)} type!");
+                throw NotPrimitiveType();
             }
         }
 
@@ -795,7 +813,7 @@ internal static partial class PrimitiveMath {
                 return (T)(object)((ulong)(object)left - (ulong)(object)right);
             }
             else {
-                throw new NotSupportedException($"{nameof(T)} isn't a valid {nameof(Scalar<T>)} type!");
+                throw NotPrimitiveType();
             }
         }
 
