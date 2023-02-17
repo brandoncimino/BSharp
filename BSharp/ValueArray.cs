@@ -12,7 +12,7 @@ public static class ValueArray {
     public static ValueArray<T> Of<T>(T                 a, T b, T c) where T : struct, IEquatable<T>      => ImmutableArray.Create(a, b, c);
     public static ValueArray<T> Of<T>(T                 a, T b, T c, T d) where T : struct, IEquatable<T> => ImmutableArray.Create(a, b, c, d);
     public static ValueArray<T> Of<T>(params T[]        items) where T : struct, IEquatable<T> => ImmutableArray.Create(items);
-    public static ValueArray<T> Of<T>(ReadOnlySpan<T>   items) where T : struct, IEquatable<T> => items.ToImmutableArray();
+    public static ValueArray<T> Of<T>(ReadOnlySpan<T>   items) where T : struct, IEquatable<T> => items.CreateImmutableArray();
     public static ValueArray<T> Of<T>(ImmutableArray<T> items) where T : struct, IEquatable<T> => items;
     public static ValueArray<T> Of<T>(IEnumerable<T>    items) where T : struct, IEquatable<T> => items.ToImmutableArray();
 
