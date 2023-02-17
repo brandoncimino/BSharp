@@ -42,6 +42,7 @@ public static partial class PrimitiveMath {
     /// <param name="b">the addend</param>
     /// <typeparam name="T">an <see cref="IsPrimitiveNumeric{T}"/> type</typeparam>
     /// <returns><paramref name="a"/> ➕ <paramref name="b"/></returns>
+    /// <exception cref="NotSupportedException">if <typeparamref name="T"/> is not <see cref="IsPrimitiveNumeric{T}"/></exception>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Add<T>(T a, T b) where T : unmanaged => Scalar<T>.Add(a, b);
 
@@ -50,8 +51,9 @@ public static partial class PrimitiveMath {
     /// </summary>
     /// <param name="a">the minuend</param>
     /// <param name="b">the subtrahend</param>
-    /// <typeparam name="T">an <see cref="IsPrimitiveNumeric{T}"/> type</typeparam>
+    /// <typeparam name="T"><inheritdoc cref="Add{T}"/></typeparam>
     /// <returns><paramref name="a"/> ➖ <paramref name="b"/></returns>
+    /// <exception cref="NotSupportedException"><inheritdoc cref="Add{T}"/></exception>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Subtract<T>(T a, T b) where T : unmanaged => Scalar<T>.Subtract(a, b);
 
@@ -60,8 +62,9 @@ public static partial class PrimitiveMath {
     /// </summary>
     /// <param name="a">the multiplicand</param>
     /// <param name="b">the multiplier</param>
-    /// <typeparam name="T">an <see cref="IsPrimitiveNumeric{T}"/> type</typeparam>
+    /// <typeparam name="T"><inheritdoc cref="Add{T}"/></typeparam>
     /// <returns><paramref name="a"/> ✖ <paramref name="b"/></returns>
+    /// <exception cref="NotSupportedException"><inheritdoc cref="Add{T}"/></exception>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Multiply<T>(T a, T b) where T : unmanaged => Scalar<T>.Multiply(a, b);
 
@@ -70,8 +73,9 @@ public static partial class PrimitiveMath {
     /// </summary>
     /// <param name="a">the dividend</param>
     /// <param name="b">the divisor</param>
-    /// <typeparam name="T">an <see cref="IsPrimitiveNumeric{T}"/> type</typeparam>
+    /// <typeparam name="T"><inheritdoc cref="Add{T}"/></typeparam>
     /// <returns><paramref name="a"/> ➗ <paramref name="b"/></returns>
+    /// <exception cref="NotSupportedException"><inheritdoc cref="Add{T}"/></exception>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Divide<T>(T a, T b) where T : unmanaged => Scalar<T>.Divide(a, b);
 
@@ -80,8 +84,9 @@ public static partial class PrimitiveMath {
     /// </summary>
     /// <param name="a">the first value</param>
     /// <param name="b">the second value</param>
-    /// <typeparam name="T">an <see cref="IsPrimitiveNumeric{T}"/> type</typeparam>
+    /// <typeparam name="T"><inheritdoc cref="Add{T}"/></typeparam>
     /// <returns>the lesser of <paramref name="a"/> and <paramref name="b"/></returns>
+    /// <exception cref="NotSupportedException"><inheritdoc cref="Add{T}"/></exception>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Min<T>(T a, T b) where T : unmanaged => Scalar<T>.Min(a, b);
 
@@ -96,11 +101,12 @@ public static partial class PrimitiveMath {
     #region Vectors
 
     /// <summary>
-    /// Gets the <see cref="Scalar{T}.Min"/> element from a single <see cref="Vector{T}"/>.
+    /// Gets the <see cref="Min{T}(T,T)"/> element from this <see cref="Vector{T}"/>.
     /// </summary>
     /// <param name="vector">this <see cref="Vector{T}"/></param>
-    /// <typeparam name="T"></typeparam>
-    /// <returns></returns>
+    /// <typeparam name="T"><inheritdoc cref="Add{T}"/></typeparam>
+    /// <returns>the <see cref="Min{T}(T,T)"/> value in this vector</returns>
+    /// <exception cref="NotSupportedException"><inheritdoc cref="Add{T}"/></exception>
     public static T Min<T>(this Vector<T> vector) where T : unmanaged {
         T min = default;
 
@@ -111,6 +117,11 @@ public static partial class PrimitiveMath {
         return min;
     }
 
+    /// <summary>
+    /// Gets the <see cref="Max{T}(T,T)"/> element from this <see cref="Vector{T}"/>.
+    /// </summary>
+    /// <inheritdoc cref="Min{T}(T,T)"/>
+    /// <returns>the <see cref="Max{T}(T,T)"/> value in this vector</returns>
     public static T Max<T>(this Vector<T> vector) where T : unmanaged {
         T max = default;
 
@@ -121,6 +132,14 @@ public static partial class PrimitiveMath {
         return max;
     }
 
+    /// <summary>
+    /// <see cref="Add{T}"/>s the elements of this <see cref="Vector{T}"/> together.
+    /// </summary>
+    /// <param name="vector">this <see cref="Vector{T}"/></param>
+    /// <typeparam name="T"><inheritdoc cref="Add{T}"/></typeparam>
+    /// <returns>the total of all of the elements from this <see cref="Vector{T}"/></returns>
+    /// <exception cref="NotSupportedException"><inheritdoc cref="Add{T}"/></exception>
+    /// <remarks>TODO: link to online docs for future Vector.Sum() method</remarks>
     public static T Sum<T>(this Vector<T> vector) where T : unmanaged {
 #if NET6_0_OR_GREATER
         return Vector.Sum(vector);
@@ -140,7 +159,7 @@ public static partial class PrimitiveMath {
     /// <param name="span">a <see cref="ReadOnlySpan{T}"/></param>
     /// <typeparam name="T">the span element type</typeparam>
     /// <returns>a new <see cref="Vector{T}"/> containing the first <see cref="Vector{T}.Count"/> elements of the span</returns>
-    /// <exception cref="IndexOutOfRangeException"></exception>
+    /// <exception cref="IndexOutOfRangeException">if the input span doesn't contain at least <see cref="Vector{T}.Count"/> elements</exception>
     public static Vector<T> CreateVector<T>(ReadOnlySpan<T> span) where T : unmanaged {
 #if NET5_0_OR_GREATER
         return new Vector<T>(span);
@@ -153,6 +172,15 @@ public static partial class PrimitiveMath {
 #endif
     }
 
+    /// <summary>
+    /// Creates a <see cref="Vector{T}"/> from this span that starts at the the given <paramref name="index"/> and contains <see cref="Vector{T}.Count"/> items.
+    /// The <paramref name="index"/> is then incremented by <see cref="Vector{T}.Count"/>.
+    /// </summary>
+    /// <param name="span">this span</param>
+    /// <param name="index">the index in the span that will become the first element of the <see cref="Vector{T}"/></param>
+    /// <typeparam name="T"><inheritdoc cref="Add{T}"/></typeparam>
+    /// <returns>a new <see cref="Vector{T}"/></returns>
+    /// <exception cref="IndexOutOfRangeException">if the (<paramref name="index"/>) or (<paramref name="index"/> + <see cref="Vector{T}.Count"/>) is out-of-bounds for this span</exception>
     public static Vector<T> NextVector<T>(this ReadOnlySpan<T> span, ref int index) where T : unmanaged {
         var vector = CreateVector(span[index..]);
         index += Vector<T>.Count;
