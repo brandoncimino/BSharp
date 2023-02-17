@@ -1169,7 +1169,7 @@ public static partial class CollectionUtils {
     }
 
     // Actual good implementations of these are available in .NET Standard 2.1+
-#if !NETSTANDARD2_1_OR_GREATER && !NET6_0_OR_GREATER
+#if !(NETSTANDARD2_1_OR_GREATER || NET5_0_OR_GREATER)
     [Pure]
     public static IEnumerable<T> TakeLast<T>(
         [InstantHandle]
