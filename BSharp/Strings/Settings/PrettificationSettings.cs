@@ -38,7 +38,7 @@ public record PrettificationSettings : Settings {
     public static implicit operator PrettificationSettings(HeaderStyle      headerStyle)    => Default with { HeaderStyle = headerStyle };
     public static implicit operator PrettificationSettings?(FillerSettings? fillerSettings) => fillerSettings == null ? null : Default with { FillerSettings = fillerSettings };
 
-    public IList<int> GetAutoColumnWidths() {
+    public IEnumerable<int> GetAutoColumnWidths() {
         return TableSettings.GetAutoColumnWidths(LineLengthLimit);
     }
 }

@@ -14,7 +14,7 @@ public record TableSettings : Settings {
     public StringAlignment HeaderAlignment      { get; init; } = StringAlignment.Center;
     public string          EmptyCellPlaceholder { get; init; } = " - ";
 
-    public IList<int> GetAutoColumnWidths(int totalWidth) {
+    public IEnumerable<int> GetAutoColumnWidths(int totalWidth) {
         return Apportion.Evenly(totalWidth, AutoColumnCount);
     }
 }
