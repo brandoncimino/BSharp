@@ -209,7 +209,7 @@ public static partial class ImmutableExtensions {
     /// <typeparam name="T">the element type of <paramref name="span"/></typeparam>
     /// <returns>a new <see cref="ImmutableArray{T}"/></returns>
     public static ImmutableArray<T> CreateImmutableArray<T>(this ReadOnlySpan<T> span) {
-#if NET5_0_OR_GREATER
+#if NET7_0_OR_GREATER
         return ImmutableArray.Create(span);
 #else
         return ImmutableArray.CreateBuilder<T>(span.Length)
