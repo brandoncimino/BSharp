@@ -212,9 +212,9 @@ public static partial class ImmutableExtensions {
 #if NET7_0_OR_GREATER
         return ImmutableArray.Create(span);
 #else
-        return ImmutableArray.CreateBuilder<T>(span.Length)
-                             .AddRange(span)
-                             .MoveToImmutable();
+        var builder = ImmutableArray.CreateBuilder<T>(span.Length);
+        builder.AddRange(span);
+        return builder.MoveToImmutable();
 #endif
     }
 
