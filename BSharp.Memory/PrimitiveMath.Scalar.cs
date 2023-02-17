@@ -26,21 +26,21 @@ public static partial class PrimitiveMath {
     /// </ul>
     /// </remarks>
     /// <typeparam name="T">a <see cref="Type.IsPrimitive"/> numeric type suitable for <see cref="System.Numerics.Vector"/>ization</typeparam>
-    internal static class Scalar<T>
+    private static class Scalar<T>
         where T : struct {
-        private static Exception NotPrimitiveType() {
+        private static NotSupportedException NotPrimitiveType() {
             return RejectType("not a primitive numeric type!");
         }
 
-        private static Exception NotIntegerType() {
+        private static NotSupportedException NotIntegerType() {
             return RejectType("not a primitive integer type!");
         }
 
-        private static Exception NotFloatingPointType() {
+        private static NotSupportedException NotFloatingPointType() {
             return RejectType("not a primitive floating-point type!");
         }
 
-        private static Exception RejectType(string reason, [CallerMemberName] string? caller = default) {
+        private static NotSupportedException RejectType(string reason, [CallerMemberName] string? caller = default) {
             return caller != null
                        ? new NotSupportedException($"{caller}() type {typeof(T).Name} is invalid: {reason}")
                        : new NotSupportedException($"type {typeof(T).Name} is invalid: {reason}");
