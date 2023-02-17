@@ -1,13 +1,29 @@
 using System;
+using System.Numerics;
 using System.Runtime.CompilerServices;
 
 namespace FowlFever.BSharp.Memory;
 
 public static partial class PrimitiveMath {
     /// <summary>
+    /// Utility methods for working with <see cref="Vector{T}"/>izeable types.
     /// </summary>
     /// <remarks>
     /// Stolen as verbatim as possible from stolen from <a href="https://github.com/dotnet/runtime/blob/main/src/libraries/System.Private.CoreLib/src/System/Runtime/Intrinsics/Scalar.cs">Scalar.cs</a> from <c>System.Private.CoreLib</c>.
+    /// <p/>
+    /// 📎 This class should only be exposed through <see cref="PrimitiveMath"/> for a few reasons:
+    /// <ul>
+    /// <li>The <typeparamref name="T"/> parameter here constrained to <see cref="ValueType"/>, but the more specific <i>(though still slightly too broad)</i> <a href="https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/unmanaged-types">unmanaged</a> could be used instead.</li>
+    /// <li>This class itself has a generic <typeparamref name="T"/> parameter, which:
+    /// <ul>
+    /// <li>is ugly</li>
+    /// <li><a href="https://www.jetbrains.com/help/resharper/StaticMemberInGenericType.html">Rider hates</a></li>
+    /// <li>can't contain extension methods</li>
+    /// <li>can be inferred from method parameters</li>
+    /// </ul>
+    /// </li>
+    /// <li>The name <a href="https://en.wikipedia.org/wiki/Scalar">scalar</a> is egregiously unintuitive.</li>
+    /// </ul>
     /// </remarks>
     /// <typeparam name="T">a <see cref="Type.IsPrimitive"/> numeric type suitable for <see cref="System.Numerics.Vector"/>ization</typeparam>
     internal static class Scalar<T>
