@@ -8,7 +8,7 @@ public static partial class TupleExtensions {
     #region Delta
 
     /// <summary>
-    /// Calculates the change from <see cref="(T, T2).Item1">before</see> to <see cref="(T, T2).Item2">after</see>.
+    /// Calculates the change from <see cref="(T, T2).Item1">before</see> to <see cref="ValueTuple{T, T2}.Item2">after</see>.
     /// </summary>
     /// <remarks>
     /// In target frameworks where <a href="https://learn.microsoft.com/en-us/dotnet/standard/generics/math">generic math</a> is supported (.NET 6+), this method
