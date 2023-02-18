@@ -25,6 +25,22 @@ using Spectre.Console.Rendering;
 
 namespace FowlFever.Testing;
 
+/// <summary>
+/// My hacky take on a fluent assertion builder.
+/// <p/>
+/// <ul>
+/// <li>Create an instance using static factory methods from the corresponding non-generic class, e.g. <see cref="Asserter"/>.<see cref="Asserter.Against{TActual}(TActual,string)"/>.</li>
+/// <li>Add <see cref="Subtests"/> to the asserter by using <see cref="And(bool,FowlFever.BSharp.Supplied{string?}?,string?)">And(...)</see> methods.</li>
+/// <li>Call <see cref="Invoke"/> to execute all of the <see cref="Subtests"/> and print their results.</li>
+/// </ul>
+/// </summary>
+/// <remarks>
+/// This class serves as the basis for <see cref="Asserter{T}"/>, <see cref="Ignorer{T}"/>, and <see cref="Assumer{T}"/>.
+/// <p/>
+/// 📎 You can avoid the need to call <see cref="Invoke"/> by instantiating the asserter in a <a href="https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/using-statement">using</a> statement.
+/// </remarks>
+/// <typeparam name="TSelf">the actual child type of this <see cref="MultipleAsserter{TSelf,TActual}"/>, for use with the <a href="https://en.wikipedia.org/wiki/Curiously_recurring_template_pattern">curiously recurring template pattern</a></typeparam>
+/// <typeparam name="TActual">the <see cref="Actual"/> object being asserted against, if any</typeparam>
 [SuppressMessage("ReSharper", "AccessToStaticMemberViaDerivedType")]
 public abstract class MultipleAsserter<TSelf, TActual> : IMultipleAsserter<TSelf>
     where TSelf : MultipleAsserter<TSelf, TActual>, new() {
@@ -307,6 +323,13 @@ public abstract class MultipleAsserter<TSelf, TActual> : IMultipleAsserter<TSelf
 
     #region "And" Constraints
 
+    /// <summary>
+    /// Adds a new <see cref="Subtest"/> that requires <paramref name="condition"/> to be <c>true</c>.
+    /// </summary>
+    /// <param name="condition">an expression that must be <c>true</c> for the test to succeed</param>
+    /// <param name="description">an optional description of the <paramref name="condition"/></param>
+    /// <param name="_condition">see <see cref="CallerArgumentExpressionAttribute"/></param>
+    /// <returns><see cref="Self"/>, for method chaining</returns>
     [MustUseReturnValue]
     public TSelf And(
         bool               condition,
@@ -367,6 +390,7 @@ public abstract class MultipleAsserter<TSelf, TActual> : IMultipleAsserter<TSelf
     /// <param name="description">an optional description of the assertion</param>
     /// <param name="_condition">see <see cref="CallerArgumentExpressionAttribute"/></param>
     /// <returns><see cref="Self"/>, for method chaining</returns>
+    [MustUseReturnValue]
     public TSelf And(
         Func<TActual?, bool> predicate,
         Supplied<string?>?   description = default,
@@ -377,7 +401,7 @@ public abstract class MultipleAsserter<TSelf, TActual> : IMultipleAsserter<TSelf
     }
 
     [MustUseReturnValue]
-    [Obsolete]
+    [Obsolete($"Please use {nameof(And)}(Action, IResolveConstraint) instead")]
     public TSelf Satisfies(
         Action<TActual?>   action,
         IResolveConstraint constraint,
