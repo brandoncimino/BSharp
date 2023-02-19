@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 
@@ -266,6 +267,7 @@ public static partial class PrimitiveMath {
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [SuppressMessage("ReSharper", "CompareOfFloatsByEqualityOperator", Justification = "Taken verbatim from .NET 7 source code")]
         public static bool Equals(T left, T right) {
             if (typeof(T) == typeof(byte)) {
                 return (byte)(object)left == (byte)(object)right;

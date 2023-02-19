@@ -235,4 +235,22 @@ public static partial class PrimitiveMath {
         return Scalar<T>.IsSupported;
 #endif
     }
+
+    /// <summary>
+    /// Compares two <see cref="IsPrimitiveNumeric{T}"/> values for equality.
+    /// </summary>
+    /// <param name="a">the first value</param>
+    /// <param name="b">the second value</param>
+    /// <typeparam name="T">an <see cref="IsPrimitiveNumeric{T}"/> type</typeparam>
+    /// <returns>true if <paramref name="a"/> and <paramref name="b"/> are equal</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool Equals<T>(T a, T b) where T : unmanaged => Scalar<T>.Equals(a, b);
+
+    /// <summary>
+    /// Gets an <see cref="IsPrimitiveNumeric{T}"/> value equivalent to 1.
+    /// </summary>
+    /// <typeparam name="T">an <see cref="IsPrimitiveNumeric{T}"/> type</typeparam>
+    /// <returns>the <typeparamref name="T"/> value equivalent to 1</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T One<T>() where T : unmanaged => Scalar<T>.One;
 }
