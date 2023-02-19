@@ -43,7 +43,7 @@ public static partial class PrimitiveMath {
     /// <typeparam name="T">an <see cref="IsPrimitiveNumeric{T}"/> type</typeparam>
     /// <returns><paramref name="a"/> ➕ <paramref name="b"/></returns>
     /// <exception cref="NotSupportedException">if <typeparamref name="T"/> is not <see cref="IsPrimitiveNumeric{T}"/></exception>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Add<T>(T a, T b) where T : unmanaged => Scalar<T>.Add(a, b);
 
     /// <summary>
@@ -54,7 +54,7 @@ public static partial class PrimitiveMath {
     /// <typeparam name="T"><inheritdoc cref="Add{T}"/></typeparam>
     /// <returns><paramref name="a"/> ➖ <paramref name="b"/></returns>
     /// <exception cref="NotSupportedException"><inheritdoc cref="Add{T}"/></exception>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Subtract<T>(T a, T b) where T : unmanaged => Scalar<T>.Subtract(a, b);
 
     /// <summary>
@@ -65,7 +65,7 @@ public static partial class PrimitiveMath {
     /// <typeparam name="T"><inheritdoc cref="Add{T}"/></typeparam>
     /// <returns><paramref name="a"/> ✖ <paramref name="b"/></returns>
     /// <exception cref="NotSupportedException"><inheritdoc cref="Add{T}"/></exception>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Multiply<T>(T a, T b) where T : unmanaged => Scalar<T>.Multiply(a, b);
 
     /// <summary>
@@ -76,7 +76,7 @@ public static partial class PrimitiveMath {
     /// <typeparam name="T"><inheritdoc cref="Add{T}"/></typeparam>
     /// <returns><paramref name="a"/> ➗ <paramref name="b"/></returns>
     /// <exception cref="NotSupportedException"><inheritdoc cref="Add{T}"/></exception>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Divide<T>(T a, T b) where T : unmanaged => Scalar<T>.Divide(a, b);
 
     /// <summary>
@@ -87,7 +87,7 @@ public static partial class PrimitiveMath {
     /// <typeparam name="T"><inheritdoc cref="Add{T}"/></typeparam>
     /// <returns>the lesser of <paramref name="a"/> and <paramref name="b"/></returns>
     /// <exception cref="NotSupportedException"><inheritdoc cref="Add{T}"/></exception>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Min<T>(T a, T b) where T : unmanaged => Scalar<T>.Min(a, b);
 
     /// <summary>
@@ -95,7 +95,7 @@ public static partial class PrimitiveMath {
     /// </summary>
     /// <inheritdoc cref="Min{T}(T,T)"/>
     /// <returns>the greater of <paramref name="a"/> and <paramref name="b"/></returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Max<T>(T a, T b) where T : unmanaged => Scalar<T>.Max(a, b);
 
     #region Vectors
@@ -227,7 +227,7 @@ public static partial class PrimitiveMath {
     /// </summary>
     /// <typeparam name="T">the <see cref="Type"/> under scrutiny</typeparam>
     /// <inheritdoc cref="Scalar{T}.IsSupported"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool IsPrimitiveNumeric<T>() where T : unmanaged {
 #if NET7_0_OR_GREATER
         return Vector<T>.IsSupported;
@@ -243,7 +243,7 @@ public static partial class PrimitiveMath {
     /// <param name="b">the second value</param>
     /// <typeparam name="T">an <see cref="IsPrimitiveNumeric{T}"/> type</typeparam>
     /// <returns>true if <paramref name="a"/> and <paramref name="b"/> are equal</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool Equals<T>(T a, T b) where T : unmanaged => Scalar<T>.Equals(a, b);
 
     /// <summary>
@@ -251,6 +251,12 @@ public static partial class PrimitiveMath {
     /// </summary>
     /// <typeparam name="T">an <see cref="IsPrimitiveNumeric{T}"/> type</typeparam>
     /// <returns>the <typeparamref name="T"/> value equivalent to 1</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T One<T>() where T : unmanaged => Scalar<T>.One;
+
+    [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool IsZero<T>(T value) where T : unmanaged => Equals(value, default);
+
+    [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool IsOne<T>(T value) where T : unmanaged => Equals(value, One<T>);
 }
