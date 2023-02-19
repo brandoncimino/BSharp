@@ -255,8 +255,27 @@ public static partial class PrimitiveMath {
     public static T One<T>() where T : unmanaged => Scalar<T>.One;
 
     [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Zero<T>() where T : unmanaged => default;
+
+    [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool IsZero<T>(T value) where T : unmanaged => Equals(value, default);
 
     [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool IsOne<T>(T value) where T : unmanaged => Equals(value, One<T>);
+
+    #region Comparisons
+
+    [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool LessThan<T>(T left, T right) where T : unmanaged => Scalar<T>.LessThan(left, right);
+
+    [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool LessThanOrEqualTo<T>(T left, T right) where T : unmanaged => Scalar<T>.LessThanOrEqual(left, right);
+
+    [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool GreaterThan<T>(T left, T right) where T : unmanaged => Scalar<T>.GreaterThan(left, right);
+
+    [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool GreaterThanOrEqualTo<T>(T left, T right) where T : unmanaged => Scalar<T>.GreaterThanOrEqual(left, right);
+
+    #endregion
 }
