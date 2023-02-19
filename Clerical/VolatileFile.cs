@@ -1,12 +1,7 @@
-using System.ComponentModel;
-using System.Diagnostics;
 using System.Text.Json;
 
 using FowlFever.BSharp.Clerical;
 using FowlFever.BSharp.Exceptions;
-using FowlFever.BSharp.Optional;
-
-using Microsoft.Diagnostics.Tracing.Parsers.FrameworkEventSource;
 
 namespace FowlFever.Clerical;
 
@@ -36,7 +31,7 @@ public class VolatileFile<T> : IFileData<T> {
 
     public VolatileFile(T? data, FileInfo fileInfo) {
         File = fileInfo;
-        Data     = data;
+        Data = data;
     }
 
     public static VolatileFile<T> FromExistingFile(FileInfo fileInfo) {
@@ -50,7 +45,7 @@ public class VolatileFile<T> : IFileData<T> {
         return new VolatileFile<T>(data, fileInfo);
     }
 
-    public  bool IsPersisted => File is { Exists: true, Length: > 0 };
+    public bool IsPersisted => File is { Exists: true, Length: > 0 };
 
     /// <summary>
     /// Either <see cref="LoadDataFromFile"/> <b>or</b> <see cref="SaveDataToFile"/> - whichever is necessary.
