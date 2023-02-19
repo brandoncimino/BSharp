@@ -35,7 +35,8 @@ public class ShuffleTests {
         var rng    = new Random(range);
         var og     = Enumerable.Range(0, range).ToImmutableArray();
         var copied = og.ToArray().AsSpan();
-        copied.Shuffle(rng).Sort();
+        copied.Shuffle(rng);
+        copied.Sort();
         Assert.That(copied.SequenceEqual(og.AsSpan()));
     }
 }
