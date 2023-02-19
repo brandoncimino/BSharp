@@ -15,7 +15,7 @@ public static partial class Spanq {
     /// <typeparam name="T">the type of entries in the <paramref name="span"/></typeparam>
     /// <returns>as much of the <paramref name="span"/> as the <see cref="Range"/> overlaps</returns>
     [Pure]
-    public static ReadOnlySpan<T> SafeSlice<T>(this ReadOnlySpan<T> span, Range range) {
+    public static ReadOnlySpan<T> Take<T>(this ReadOnlySpan<T> span, Range range) {
         var start = Math.Clamp(range.Start.GetOffset(span.Length), 0, span.Length);
         var end   = Math.Clamp(range.End.GetOffset(span.Length),   0, span.Length);
         return span[start..end];
@@ -55,7 +55,7 @@ public static partial class Spanq {
     [Pure]
     public static ReadOnlySpan<T> SkipLast<T>(this ReadOnlySpan<T> span, int toSkip) => span.Take(span.Length - toSkip);
 
-    /// <inheritdoc cref="Take{T}"/>
+    /// <inheritdoc cref="Take{T}(System.ReadOnlySpan{T},int)"/>
     [Pure]
     public static ReadOnlySpan<T> TakeLast<T>(this ReadOnlySpan<T> span, int toTake) => span.Skip(span.Length - toTake);
 

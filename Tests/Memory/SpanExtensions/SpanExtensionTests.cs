@@ -27,13 +27,13 @@ public partial class SpanExtensionTests {
 
     [Test]
     public void SafeSliceTest([ValueSource(nameof(SafeSliceExpectations))] SafeSliceExpectation expectation) {
-        var actual = expectation.Source.AsSpan().SafeSlice(expectation.UnsafeRange);
+        var actual = expectation.Source.AsSpan().Take(expectation.UnsafeRange);
         Assert.That(actual.ToString(), Is.EqualTo(expectation.ExpectedSlice));
     }
 
     [Test]
     public void SafeSliceTest_FutureTake([ValueSource(nameof(SafeSliceExpectations))] SafeSliceExpectation expectation) {
-        var actual   = expectation.Source.AsSpan().SafeSlice(expectation.UnsafeRange);
+        var actual   = expectation.Source.AsSpan().Take(expectation.UnsafeRange);
         var expected = expectation.Source.Take(expectation.UnsafeRange).JoinString();
         Assert.That(actual.ToString(), Is.EqualTo(expected));
     }
