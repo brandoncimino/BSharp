@@ -41,7 +41,7 @@ public static partial class Spanq {
         }
 
         for (; index < span.Length; index++) {
-            span[index] = PrimitiveMath.Add(span[index], value);
+            span[index] = operation.Apply(span[index], value);
         }
     }
 
