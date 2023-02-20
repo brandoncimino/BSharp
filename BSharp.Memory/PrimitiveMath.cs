@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 
@@ -188,6 +189,17 @@ public static partial class PrimitiveMath {
     }
 
     /// <inheritdoc cref="Vector.ConvertToInt32"/>
+    /// <remarks>
+    /// This will drop the non-integer portion of the <see cref="float"/>s in the same way that an explicit cast would, i.e.:
+    /// <code><![CDATA[
+    /// -1.5 => -1
+    /// - .5 => 0
+    ///   .5 => 0
+    ///  1.5 => 1
+    ///  2.5 => 2
+    ///  3.5 => 3 
+    /// ]]></code>
+    /// </remarks>
     public static Vector<int> ToInts(this Vector<float> floats) => Vector.ConvertToInt32(floats);
 
     /// <inheritdoc cref="Vector.ConvertToInt64"/>
@@ -236,6 +248,9 @@ public static partial class PrimitiveMath {
 #endif
     }
 
+    [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Abs<T>(T value) where T : unmanaged => Scalar<T>.Abs(value);
+
     /// <summary>
     /// Compares two <see cref="IsPrimitiveNumeric{T}"/> values for equality.
     /// </summary>
@@ -244,7 +259,14 @@ public static partial class PrimitiveMath {
     /// <typeparam name="T">an <see cref="IsPrimitiveNumeric{T}"/> type</typeparam>
     /// <returns>true if <paramref name="a"/> and <paramref name="b"/> are equal</returns>
     [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool Equals<T>(T a, T b) where T : unmanaged => Scalar<T>.Equals(a, b);
+    public static bool EqualTo<T>(T a, T b) where T : unmanaged => Scalar<T>.Equals(a, b);
+
+    [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool EqualTo<T>(T a, T b, T tolerance) where T : unmanaged => GreaterThan(Abs(Subtract(a, b)), tolerance);
+
+    private const string NoEqualsMessage = $"Do not use {nameof(PrimitiveMath)}.{nameof(Equals)}(). If you wanted mathematical equality, use {nameof(PrimitiveMath)}.{nameof(EqualTo)}(). If you wanted object equality, use object.{nameof(object.Equals)}() directly.";
+
+    [Obsolete(NoEqualsMessage)] public new static bool Equals(object? objA, object? objB) => throw new NotSupportedException(NoEqualsMessage);
 
     /// <summary>
     /// Gets an <see cref="IsPrimitiveNumeric{T}"/> value equivalent to 1.
@@ -258,10 +280,10 @@ public static partial class PrimitiveMath {
     public static T Zero<T>() where T : unmanaged => default;
 
     [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool IsZero<T>(T value) where T : unmanaged => Equals(value, default);
+    public static bool IsZero<T>(T value) where T : unmanaged => EqualTo(value, default);
 
     [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool IsOne<T>(T value) where T : unmanaged => Equals(value, One<T>);
+    public static bool IsOne<T>(T value) where T : unmanaged => EqualTo(value, One<T>());
 
     #region Comparisons
 
@@ -284,4 +306,58 @@ public static partial class PrimitiveMath {
 
     [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Decrement<T>(T value) where T : unmanaged => Subtract(value, One<T>());
+
+    /// <returns>true if <typeparamref name="T"/> is an integer type <b>AND <see cref="IsPrimitiveNumeric{T}"/></b></returns>
+    [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static bool IsBinaryInteger<T>() where T : unmanaged =>
+        typeof(T) == typeof(int)    ||
+        typeof(T) == typeof(uint)   ||
+        typeof(T) == typeof(short)  ||
+        typeof(T) == typeof(ushort) ||
+        typeof(T) == typeof(long)   ||
+        typeof(T) == typeof(ulong)  ||
+        typeof(T) == typeof(byte)   ||
+        typeof(T) == typeof(sbyte);
+
+    /// <returns>true if <typeparamref name="T"/> is a floating-point type <b>AND <see cref="IsPrimitiveNumeric{T}"/></b></returns>
+    /// <remarks>Notably, this excludes <see cref="decimal"/> and <see cref="T:System.Half"/>.</remarks>
+    [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static bool IsFloatingPoint<T>() where T : unmanaged =>
+        typeof(T) == typeof(float) ||
+        typeof(T) == typeof(double);
+
+    [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [SuppressMessage("ReSharper", "CompareOfFloatsByEqualityOperator")]
+    public static bool IsInteger<T>(T value) where T : unmanaged {
+        if (IsBinaryInteger<T>()) {
+            return true;
+        }
+
+        if (typeof(T) == typeof(float)) {
+            var f = (float)(object)value;
+            return float.IsFinite(f) && f == MathF.Truncate(f);
+        }
+
+        // ReSharper disable once InvertIf
+        if (typeof(T) == typeof(double)) {
+            var d = (double)(object)value;
+            return double.IsFinite(d) && d == Math.Truncate(d);
+        }
+
+        throw NotPrimitiveType<T>();
+    }
+
+    #region Exceptions
+
+    private static NotSupportedException NotPrimitiveType<T>()     => RejectType<T>("not a primitive numeric type!");
+    private static NotSupportedException NotIntegerType<T>()       => RejectType<T>("not a primitive integer type!");
+    private static NotSupportedException NotFloatingPointType<T>() => RejectType<T>("not a primitive floating-point type!");
+
+    private static NotSupportedException RejectType<T>(string reason, [CallerMemberName] string? caller = default) {
+        return caller != null
+                   ? new NotSupportedException($"{caller}() type {typeof(T).Name} is invalid: {reason}")
+                   : new NotSupportedException($"type {typeof(T).Name} is invalid: {reason}");
+    }
+
+    #endregion
 }

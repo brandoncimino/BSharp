@@ -29,24 +29,6 @@ public static partial class PrimitiveMath {
     /// <typeparam name="T">a <see cref="Type.IsPrimitive"/> numeric type suitable for <see cref="System.Numerics.Vector"/>ization</typeparam>
     private static class Scalar<T>
         where T : struct {
-        private static NotSupportedException NotPrimitiveType() {
-            return RejectType("not a primitive numeric type!");
-        }
-
-        private static NotSupportedException NotIntegerType() {
-            return RejectType("not a primitive integer type!");
-        }
-
-        private static NotSupportedException NotFloatingPointType() {
-            return RejectType("not a primitive floating-point type!");
-        }
-
-        private static NotSupportedException RejectType(string reason, [CallerMemberName] string? caller = default) {
-            return caller != null
-                       ? new NotSupportedException($"{caller}() type {typeof(T).Name} is invalid: {reason}")
-                       : new NotSupportedException($"type {typeof(T).Name} is invalid: {reason}");
-        }
-
         public static T AllBitsSet {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get {
@@ -87,7 +69,7 @@ public static partial class PrimitiveMath {
                     return (T)(object)ulong.MaxValue;
                 }
                 else {
-                    throw NotPrimitiveType();
+                    throw NotPrimitiveType<T>();
                 }
             }
         }
@@ -132,7 +114,7 @@ public static partial class PrimitiveMath {
                     return (T)(object)(ulong)1;
                 }
                 else {
-                    throw NotPrimitiveType();
+                    throw NotPrimitiveType<T>();
                 }
             }
         }
@@ -163,7 +145,7 @@ public static partial class PrimitiveMath {
                 return (T)(object)Math.Abs((float)(object)value);
             }
             else {
-                throw RejectType("not a signed type!");
+                throw RejectType<T>("not a signed type!");
             }
         }
 
@@ -206,7 +188,7 @@ public static partial class PrimitiveMath {
                 return (T)(object)((ulong)(object)left + (ulong)(object)right);
             }
             else {
-                throw NotPrimitiveType();
+                throw NotPrimitiveType<T>();
             }
         }
 
@@ -219,7 +201,7 @@ public static partial class PrimitiveMath {
                 return (T)(object)MathF.Ceiling((float)(object)value);
             }
             else {
-                throw NotFloatingPointType();
+                throw NotFloatingPointType<T>();
             }
         }
 
@@ -262,7 +244,7 @@ public static partial class PrimitiveMath {
                 return (T)(object)((ulong)(object)left / (ulong)(object)right);
             }
             else {
-                throw NotPrimitiveType();
+                throw NotPrimitiveType<T>();
             }
         }
 
@@ -306,7 +288,7 @@ public static partial class PrimitiveMath {
                 return (ulong)(object)left == (ulong)(object)right;
             }
             else {
-                throw NotPrimitiveType();
+                throw NotPrimitiveType<T>();
             }
         }
 
@@ -379,7 +361,7 @@ public static partial class PrimitiveMath {
                 return (uint)(bits >> 63);
             }
             else {
-                throw NotPrimitiveType();
+                throw NotPrimitiveType<T>();
             }
         }
 
@@ -392,7 +374,7 @@ public static partial class PrimitiveMath {
                 return (T)(object)MathF.Floor((float)(object)value);
             }
             else {
-                throw NotFloatingPointType();
+                throw NotFloatingPointType<T>();
             }
         }
 
@@ -435,7 +417,7 @@ public static partial class PrimitiveMath {
                 return (ulong)(object)left > (ulong)(object)right;
             }
             else {
-                throw NotPrimitiveType();
+                throw NotPrimitiveType<T>();
             }
         }
 
@@ -478,7 +460,7 @@ public static partial class PrimitiveMath {
                 return (ulong)(object)left >= (ulong)(object)right;
             }
             else {
-                throw NotPrimitiveType();
+                throw NotPrimitiveType<T>();
             }
         }
 
@@ -521,7 +503,7 @@ public static partial class PrimitiveMath {
                 return (ulong)(object)left < (ulong)(object)right;
             }
             else {
-                throw NotPrimitiveType();
+                throw NotPrimitiveType<T>();
             }
         }
 
@@ -564,7 +546,7 @@ public static partial class PrimitiveMath {
                 return (ulong)(object)left <= (ulong)(object)right;
             }
             else {
-                throw NotPrimitiveType();
+                throw NotPrimitiveType<T>();
             }
         }
 
@@ -607,7 +589,7 @@ public static partial class PrimitiveMath {
                 return (T)(object)((ulong)(object)left * (ulong)(object)right);
             }
             else {
-                throw NotPrimitiveType();
+                throw NotPrimitiveType<T>();
             }
         }
 
@@ -649,7 +631,7 @@ public static partial class PrimitiveMath {
                 return ((ulong)(object)left).Equals((ulong)(object)right);
             }
             else {
-                throw NotPrimitiveType();
+                throw NotPrimitiveType<T>();
             }
         }
 
@@ -686,7 +668,7 @@ public static partial class PrimitiveMath {
                 return (T)(object)(ulong)((ulong)(object)value << shiftCount);
             }
             else {
-                throw NotIntegerType();
+                throw NotIntegerType<T>();
             }
         }
 
@@ -708,7 +690,7 @@ public static partial class PrimitiveMath {
                 return (T)(object)(sbyte)((sbyte)(object)value >> (shiftCount & 7));
             }
             else {
-                throw RejectType("not a signed primitive numeric type!");
+                throw RejectType<T>("not a signed primitive numeric type!");
             }
         }
 
@@ -745,7 +727,7 @@ public static partial class PrimitiveMath {
                 return (T)(object)(ulong)((ulong)(object)value >> shiftCount);
             }
             else {
-                throw NotPrimitiveType();
+                throw NotPrimitiveType<T>();
             }
         }
 
@@ -788,7 +770,7 @@ public static partial class PrimitiveMath {
                 return (T)(object)(ulong)Math.Sqrt((ulong)(object)value);
             }
             else {
-                throw NotPrimitiveType();
+                throw NotPrimitiveType<T>();
             }
         }
 
@@ -831,7 +813,7 @@ public static partial class PrimitiveMath {
                 return (T)(object)((ulong)(object)left - (ulong)(object)right);
             }
             else {
-                throw NotPrimitiveType();
+                throw NotPrimitiveType<T>();
             }
         }
 
