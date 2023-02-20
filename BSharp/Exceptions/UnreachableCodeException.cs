@@ -7,8 +7,13 @@ namespace FowlFever.BSharp.Exceptions;
 /// <summary>
 /// An <see cref="Exception"/> thrown by code that should have been unreachable.
 /// </summary>
+/// <remarks>
+/// This is named so that it won't conflict with the .NET 7+ <a href="https://learn.microsoft.com/en-us/dotnet/api/System.Diagnostics.UnreachableException?view=net-7.0">UnreachableException</a>.
+///
+/// TODO: Figure out a better way to handle the conflict with <a href="https://learn.microsoft.com/en-us/dotnet/api/System.Diagnostics.UnreachableException?view=net-7.0">UnreachableException</a>. Maybe just steal the version from .NET 7 and conditional compile it, like I do with <see cref="CallerArgumentExpressionAttribute"/>?
+/// </remarks>
 [SuppressMessage("ReSharper", "ExplicitCallerInfoArgument", Justification = "Values are being passed-through to matching caller info parameters.")]
-public class UnreachableException : BrandonException {
+public class UnreachableCodeException : BrandonException {
     private readonly   string? _caller;
     private readonly   string? _filePath;
     private readonly   int?    _lineNo;
@@ -22,7 +27,7 @@ public class UnreachableException : BrandonException {
     /// <param name="_caller">see <see cref="CallerMemberNameAttribute"/></param>
     /// <param name="_filePath">see <see cref="CallerFilePathAttribute"/></param>
     /// <param name="_lineNo">see <see cref="CallerLineNumberAttribute"/></param>
-    public UnreachableException(
+    public UnreachableCodeException(
         string?                    message,
         Exception?                 innerException,
         [CallerMemberName] string? _caller   = default,
@@ -35,7 +40,7 @@ public class UnreachableException : BrandonException {
     }
 
     /// <inheritdoc cref="M:FowlFever.BSharp.Exceptions.UnreachableException.#ctor(System.String,System.Exception,System.String,System.String,System.Nullable{System.Int32})"/>
-    public UnreachableException(
+    public UnreachableCodeException(
         string?                    message   = default,
         [CallerMemberName] string? _caller   = default,
         [CallerFilePath]   string? _filePath = default,

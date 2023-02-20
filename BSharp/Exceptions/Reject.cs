@@ -115,13 +115,13 @@ public static partial class Reject {
     /// <returns>a new <see cref="RejectionException"/></returns>
     [Pure]
     [SuppressMessage("ReSharper", "ExplicitCallerInfoArgument", Justification = "Values are being passed-through to matching caller info parameters.")]
-    public static UnreachableException Unreachable(
+    public static UnreachableCodeException Unreachable(
         string?                    details   = default,
         [CallerMemberName] string? _caller   = default,
         [CallerFilePath]   string? _filePath = default,
         [CallerLineNumber] int?    _lineNo   = default
     ) {
-        return new UnreachableException(details, _caller, _filePath, _lineNo);
+        return new UnreachableCodeException(details, _caller, _filePath, _lineNo);
     }
 
     public static RejectionException IndexOutOfRange(
