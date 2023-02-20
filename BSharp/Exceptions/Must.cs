@@ -199,9 +199,9 @@ public static partial class Must {
     }
 
     public static T MustBe<T>(
-        this T        actualValue,
-        Func<T, bool> predicate,
-        string?       details = default,
+        this                    T             actualValue,
+        [RequireStaticDelegate] Func<T, bool> predicate,
+        string?                               details = default,
         [CallerArgumentExpression("actualValue")]
         string? parameterName = default,
         [CallerMemberName] string? rejectedBy = default,
