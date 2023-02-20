@@ -278,4 +278,10 @@ public static partial class PrimitiveMath {
     public static bool GreaterThanOrEqualTo<T>(T left, T right) where T : unmanaged => Scalar<T>.GreaterThanOrEqual(left, right);
 
     #endregion
+
+    [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Increment<T>(T value) where T : unmanaged => Add(value, One<T>());
+
+    [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Decrement<T>(T value) where T : unmanaged => Subtract(value, One<T>());
 }
