@@ -266,7 +266,8 @@ public static partial class PrimitiveMath {
 
     private const string NoEqualsMessage = $"Do not use {nameof(PrimitiveMath)}.{nameof(Equals)}(). If you wanted mathematical equality, use {nameof(PrimitiveMath)}.{nameof(EqualTo)}(). If you wanted object equality, use object.{nameof(object.Equals)}() directly.";
 
-    [Obsolete(NoEqualsMessage)] public new static bool Equals(object? objA, object? objB) => throw new NotSupportedException(NoEqualsMessage);
+    [Obsolete(NoEqualsMessage, error: true)]
+    public new static bool Equals(object? objA, object? objB) => throw new NotSupportedException(NoEqualsMessage);
 
     /// <summary>
     /// Gets an <see cref="IsPrimitiveNumeric{T}"/> value equivalent to 1.

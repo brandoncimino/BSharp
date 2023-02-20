@@ -16,7 +16,7 @@ public static partial class Spanq {
     /// <typeparam name="T">an <see cref="PrimitiveMath.IsPrimitiveNumeric{T}"/> type</typeparam>
     /// <exception cref="NotSupportedException">if <typeparamref name="T"/> is not <see cref="PrimitiveMath.IsPrimitiveNumeric{T}"/></exception>
     public static void FastAddAll<T>(this Span<T> span, T addend) where T : unmanaged {
-        if (PrimitiveMath.Equals(addend, default)) {
+        if (PrimitiveMath.EqualTo(addend, default)) {
             return;
         }
 
@@ -50,10 +50,10 @@ public static partial class Spanq {
     /// </summary>
     /// <param name="span">this <see cref="Span{T}"/></param>
     /// <param name="subtrahend">the value to subtract from each element of the span</param>
-    /// <typeparam name="T"><inheritdoc cref="FastAddAll{T}"/></typeparam>
-    /// <exception cref="NotSupportedException"><inheritdoc cref="FastAddAll{T}"/></exception>
+    /// <typeparam name="T"><inheritdoc cref="FastAddAll{T}(System.Span{T},T)"/></typeparam>
+    /// <exception cref="NotSupportedException"><inheritdoc cref="FastAddAll{T}(System.Span{T},T)"/></exception>
     public static void FastSubtractAll<T>(this Span<T> span, T subtrahend) where T : unmanaged {
-        if (PrimitiveMath.Equals(subtrahend, default)) {
+        if (PrimitiveMath.EqualTo(subtrahend, default)) {
             return;
         }
 
@@ -65,8 +65,8 @@ public static partial class Spanq {
     /// </summary>
     /// <param name="span">this <see cref="Span{T}"/></param>
     /// <param name="multiplier">the factor by which each element will be multiplied</param>
-    /// <typeparam name="T"><inheritdoc cref="FastAddAll{T}"/></typeparam>
-    /// <exception cref="NotSupportedException"><inheritdoc cref="FastAddAll{T}"/></exception>
+    /// <typeparam name="T"><inheritdoc cref="FastAddAll{T}(System.Span{T},T)"/></typeparam>
+    /// <exception cref="NotSupportedException"><inheritdoc cref="FastAddAll{T}(System.Span{T},T)"/></exception>
     public static void FastMultiplyAll<T>(this Span<T> span, T multiplier) where T : unmanaged {
         if (PrimitiveMath.IsOne(multiplier)) {
             return;
@@ -80,8 +80,8 @@ public static partial class Spanq {
     /// </summary>
     /// <param name="span">this <see cref="Span{T}"/></param>
     /// <param name="divisor">the value to divide each element by</param>
-    /// <typeparam name="T"><inheritdoc cref="FastAddAll{T}"/></typeparam>
-    /// <exception cref="NotSupportedException"><inheritdoc cref="FastAddAll{T}"/></exception>
+    /// <typeparam name="T"><inheritdoc cref="FastAddAll{T}(System.Span{T},T)"/></typeparam>
+    /// <exception cref="NotSupportedException"><inheritdoc cref="FastAddAll{T}(System.Span{T},T)"/></exception>
     public static void FastDivideAll<T>(this Span<T> span, T divisor) where T : unmanaged {
         if (PrimitiveMath.IsOne(divisor)) {
             return;
@@ -92,6 +92,59 @@ public static partial class Spanq {
 
     #endregion
 
+    #region Arithmetic - All; Vector Pattern
+
+    internal static void FastOperatePattern<T>(this Span<T> span, Vector<T> pattern, PrimitiveMath.ArithmeticOperation operation) where T : unmanaged {
+        var index = 0;
+
+        while (index + Vector<T>.Count <= span.Length) {
+            var spanSlice = span[index..];
+            index += Vector<T>.Count;
+            var sliceVector = new Vector<T>(spanSlice);
+            sliceVector = operation.Apply(sliceVector, pattern);
+            PrimitiveMath.CopyTo(sliceVector, spanSlice);
+        }
+
+        for (; index < span.Length; index++) {
+            var vectorIndex = index % Vector<T>.Count;
+            span[index] = operation.Apply(span[index], pattern[vectorIndex]);
+        }
+    }
+
+    public static void FastAddPattern<T>(this Span<T> span, Vector<T> pattern) where T : unmanaged {
+        if (pattern == Vector<T>.Zero) {
+            return;
+        }
+        
+        span.FastOperatePattern(pattern, PrimitiveMath.ArithmeticOperation.Addition);
+    }
+
+    public static void FastSubtractPattern<T>(this Span<T> span, Vector<T> pattern) where T : unmanaged {
+        if (pattern == Vector<T>.Zero) {
+            return;
+        }
+
+        span.FastOperatePattern(pattern, PrimitiveMath.ArithmeticOperation.Subtraction);
+    }
+
+    public static void FastMultiplyPattern<T>(this Span<T> span, Vector<T> pattern) where T : unmanaged {
+        if (pattern == Vector<T>.One) {
+            return;
+        }
+        
+        span.FastOperatePattern(pattern, PrimitiveMath.ArithmeticOperation.Multiplication);
+    }
+
+    public static void FastDividePattern<T>(this Span<T> span, Vector<T> pattern) where T : unmanaged {
+        if (pattern == Vector<T>.One) {
+            return;
+        }
+
+        span.FastOperatePattern(pattern, PrimitiveMath.ArithmeticOperation.Division);
+    }
+
+    #endregion
+    
     #region Arithmetic - Each
 
     internal static void FastZip<T>(this Span<T> span, ReadOnlySpan<T> other, PrimitiveMath.ArithmeticOperation operation) where T : unmanaged {
