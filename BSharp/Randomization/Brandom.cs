@@ -13,7 +13,19 @@ namespace FowlFever.BSharp.Randomization;
 
 [PublicAPI]
 public static partial class Brandom {
-    public static readonly Random Gen = new Random();
+    /// <summary>
+    /// A shared <see cref="Random"/> instance.
+    /// </summary>
+    /// <remarks>
+    /// In .NET 6+, this will delegate to the built-in <a href="https://learn.microsoft.com/en-us/dotnet/api/System.Random.Shared">Random.Shared</a>.
+    /// In previous versions, it will use a less-efficient, hand-rolled <see cref="ThreadSafeRandom"/> instead.
+    /// </remarks>
+    public static Random Gen { get; } =
+#if NET6_0_OR_GREATER
+        Random.Shared;
+#else
+        new ThreadSafeRandom();
+#endif
 
     /// <returns>a random <see cref="double"/> in the range of <c>[0..1]</c>, i.e. <c><![CDATA[0 <= x <= 1]]></c></returns>
     [Pure]
