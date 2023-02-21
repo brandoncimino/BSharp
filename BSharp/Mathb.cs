@@ -216,17 +216,6 @@ public static partial class Mathb {
 
     #region Rounding
 
-    #region Floor
-
-    [Pure] public static float   Floor(this      float   value) => (float)Math.Floor(value);
-    [Pure] public static double  Floor(this      double  value) => Math.Floor(value);
-    [Pure] public static decimal Floor(this      decimal value) => Math.Floor(value);
-    [Pure] public static int     FloorToInt(this float   value) => (int)Math.Floor(value);
-    [Pure] public static int     FloorToInt(this double  value) => (int)Math.Floor(value);
-    [Pure] public static int     FloorToInt(this decimal value) => (int)Math.Floor(value);
-
-    #endregion
-
     #region Round
 
     /// <inheritdoc cref="Math.Round(double)"/>

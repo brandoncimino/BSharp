@@ -1,4 +1,4 @@
-using System;
+using System.Numerics;
 using System.Runtime.CompilerServices;
 
 namespace FowlFever.BSharp;
@@ -8,6 +8,14 @@ public static partial class Mathb {
 
     #region Ceiling
 
+#if NET7_0_OR_GREATER
+    /// <inheritdoc cref="IFloatingPoint{F}.Ceiling"/>
+    [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static F Ceiling<F>(this F x) where F : IFloatingPoint<F> => F.Floor(x);
+
+    /// <inheritdoc cref="IFloatingPoint{TSelf}.Ceiling"/>
+    public static int CeilingToInt<F>(this F x) where F : IFloatingPoint<F> => int.CreateChecked(F.Floor(x));
+#else
     /// <inheritdoc cref="MathF.Ceiling"/>
     [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static float Ceiling(this float x) => MathF.Ceiling(x);
@@ -34,21 +42,7 @@ public static partial class Mathb {
     /// <returns><see cref="decimal.Ceiling"/> as an <see cref="int"/></returns>
     [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int CeilingToInt(this decimal d) => (int)d.Ceiling();
-
-    /// <inheritdoc cref="MathF.Ceiling"/>
-    /// <returns><see cref="MathF.Ceiling"/> as an <see cref="long"/></returns>
-    [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static long CeilingToLong(this float x) => (long)x.Ceiling();
-
-    /// <inheritdoc cref="Math.Ceiling(double)"/>
-    /// <returns><see cref="Math.Ceiling(double)"/> as an <see cref="long"/></returns>
-    [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static long CeilingToLong(this double a) => (long)a.Ceiling();
-
-    /// <inheritdoc cref="decimal.Ceiling"/>
-    /// <returns><see cref="decimal.Ceiling"/> as an <see cref="long"/></returns>
-    [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static long CeilingToLong(this decimal d) => (long)d.Ceiling();
+#endif
 
     #endregion
 
