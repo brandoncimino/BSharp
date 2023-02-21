@@ -227,22 +227,6 @@ public static partial class Mathb {
 
     #endregion
 
-    #region Ceiling
-
-    [Pure] public static float Ceiling(this float value) => (float)Math.Ceiling(value);
-
-    [Pure] public static double Ceiling(this double value) => Math.Ceiling(value);
-
-    [Pure] public static decimal Ceiling(this decimal value) => Math.Ceiling(value);
-
-    [Pure] public static int CeilingToInt(this float value) => (int)Math.Ceiling(value);
-
-    [Pure] public static int CeilingToInt(this double value) => (int)Math.Ceiling(value);
-
-    [Pure] public static int CeilingToInt(this decimal value) => (int)Math.Ceiling(value);
-
-    #endregion
-
     #region Round
 
     /// <inheritdoc cref="Math.Round(double)"/>
