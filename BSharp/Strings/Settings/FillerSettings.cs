@@ -1,4 +1,3 @@
-using FowlFever.BSharp.Enums;
 using FowlFever.BSharp.Strings.Enums;
 
 using JetBrains.Annotations;
@@ -44,7 +43,7 @@ public record FillerSettings : Settings {
     /// <summary>
     /// Used when splitting filling between both the left and right sides of the string
     /// </summary>
-    public RoundingDirection LeftSideRounding { get; init; } = default;
+    public RoundingMode LeftSideRounding { get; init; } = default;
     /// <summary>
     /// Replaces the last characters of a <see cref="Enums.OverflowStyle.Truncate"/>d string
     /// </summary>
