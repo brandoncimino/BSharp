@@ -1,7 +1,3 @@
-using System;
-
-using FowlFever.BSharp.Enums;
-
 using JetBrains.Annotations;
 
 namespace FowlFever.BSharp;
@@ -209,74 +205,6 @@ public static partial class Mathb {
         (a.Item1.Max(b.Item1), a.Item2.Max(b.Item2));
 
     #endregion
-
-    #endregion
-
-    #endregion
-
-    #region Rounding
-
-    #region Round
-
-    /// <inheritdoc cref="Math.Round(double)"/>
-    [Pure]
-    public static double Round(this double value) => Math.Round(value);
-
-    /// <inheritdoc cref="Math.Round(decimal)"/>
-    [Pure]
-    public static decimal Round(this decimal value) => Math.Round(value);
-
-    /// <inheritdoc cref="Math.Round(double, MidpointRounding)"/>
-    [Pure]
-    public static double Round(this double value, MidpointRounding mode) => Math.Round(value, mode);
-
-    /// <inheritdoc cref="Math.Round(decimal, MidpointRounding)"/>
-    [Pure]
-    public static decimal Round(this decimal value, MidpointRounding mode) => Math.Round(value, mode);
-
-    [Pure] public static double  Round(this float   value, Rounder direction) => direction.Round(value);
-    [Pure] public static double  Round(this double  value, Rounder direction) => direction.Round(value);
-    [Pure] public static decimal Round(this decimal value, Rounder direction) => direction.Round(value);
-
-    /// <inheritdoc cref="Math.Round(double, int)"/>
-    [Pure]
-    public static double Round(this double value, int digits) => Math.Round(value, digits);
-
-    /// <inheritdoc cref="Math.Round(decimal, int)"/>
-    [Pure]
-    public static decimal Round(this decimal value, int decimals) => Math.Round(value, decimals);
-
-    /// <inheritdoc cref="Math.Round(double, int, MidpointRounding)"/>
-    [Pure]
-    public static double Round(this double value, int digits, MidpointRounding mode) => Math.Round(value, digits, mode);
-
-    /// <inheritdoc cref="Math.Round(decimal, int, MidpointRounding)"/>
-    [Pure]
-    public static decimal Round(this decimal value, int decimals, MidpointRounding mode) => Math.Round(value, decimals, mode);
-
-    [Pure] public static int     Round(this      float   value, int digits,   Rounder direction) => value.Round(direction).ToInt();
-    [Pure] public static int     Round(this      double  value, int digits,   Rounder direction) => value.Round(direction).ToInt();
-    [Pure] public static int     Round(this      decimal value, int decimals, Rounder direction) => value.Round(direction).ToInt();
-    [Pure] public static int     RoundToInt(this float   value)                                    => Math.Round(value).ToInt();
-    [Pure] public static int     RoundToInt(this double  value)                                    => Math.Round(value).ToInt();
-    [Pure] public static int     RoundToInt(this decimal value)                                    => Math.Round(value).ToInt();
-    [Pure] public static int     RoundToInt(this float   value, Rounder rounder)                   => rounder.RoundToInt(value);
-    [Pure] public static int     RoundToInt(this double  value, Rounder rounder)                   => rounder.RoundToInt(value);
-    [Pure] public static int     RoundToInt(this decimal value, Rounder rounder)                   => rounder.RoundToInt(value);
-    [Pure] public static int     RoundToInt(this float   value, int     digits)                    => Math.Round(value, digits).ToInt();
-    [Pure] public static int     RoundToInt(this double  value, int     digits)                    => Math.Round(value, digits).ToInt();
-    [Pure] public static int     RoundToInt(this decimal value, int     decimals)                  => Math.Round(value, decimals).ToInt();
-    [Pure] public static double  RoundToInt(this float   value, int     digits,   Rounder rounder) => rounder.RoundToInt(value);
-    [Pure] public static double  RoundToInt(this double  value, int     digits,   Rounder rounder) => rounder.RoundToInt(value);
-    [Pure] public static decimal RoundToInt(this decimal value, int     decimals, Rounder rounder) => rounder.RoundToInt(value);
-
-    #endregion
-
-    #region WouldRound
-
-    [Pure] public static RoundingDirection WouldRound(this float   value) => value.Fraction() >= 0.5 ? RoundingDirection.Ceiling : RoundingDirection.Floor;
-    [Pure] public static RoundingDirection WouldRound(this double  value) => value.Fraction() >= 0.5 ? RoundingDirection.Ceiling : RoundingDirection.Floor;
-    [Pure] public static RoundingDirection WouldRound(this decimal value) => value.Fraction() >= (decimal)0.5 ? RoundingDirection.Ceiling : RoundingDirection.Floor;
 
     #endregion
 
