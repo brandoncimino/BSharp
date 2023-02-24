@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Collections.Immutable;
 
 using JetBrains.Annotations;
 
@@ -12,6 +13,10 @@ internal static class CollectionHelpers {
     /// <param name="count">set to the number of items in <see cref="source"/> if we could get it without enumerating; otherwise, set to -1</param>
     /// <typeparam name="T">the entry type</typeparam>
     /// <returns>true if we could get the count of items without enumerating the <paramref name="source"/></returns>
+    /// <remarks>
+    /// We don't really need to worry about boxing the <see cref="IEnumerable{T}"/> <paramref name="source"/> here when it's an <see cref="ImmutableArray{T}"/> because, if we had an <see cref="ImmutableArray{T}"/>, we'd already have the count.
+    /// This method is only relevant when we don't know what <paramref name="source"/> is, which means it's already been boxed into an <see cref="IEnumerable{T}"/>.
+    /// </remarks>
     public static bool TryGetCount<T>([NoEnumeration] this IEnumerable<T> source, out int count) {
 #if NET6_0_OR_GREATER
         return System.Linq.Enumerable.TryGetNonEnumeratedCount(source, out count);
