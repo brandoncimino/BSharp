@@ -9,8 +9,6 @@ namespace FowlFever.BSharp.Memory;
 /// </summary>
 /// <remarks>
 /// This is a <see cref="ValueType"/> instead of a <c>static</c> class to match the built-in <see cref="ValueTuple"/>.
-/// <p/>
-/// Equivalent methods also exist in <see cref="Spanq"/>, e.g. <see cref="RoSpanTuple"/>.<see cref="Of"/> -> <see cref="Spanq"/>.<see cref="Spanq.Tuple"/>.
 /// </remarks>
 public readonly ref struct RoSpanTuple {
     [Pure] public static RoSpanTuple                  Of()                                                                                           => default;
