@@ -11,7 +11,7 @@ namespace FowlFever.BSharp.Memory;
 /// </remarks>
 /// <typeparam name="TValue">the non-span <see cref="Value"/> type</typeparam>
 /// <typeparam name="TA"><see cref="A"/>'s element type</typeparam>
-public readonly ref struct ValueSpanTuple<TValue, TA> {
+public readonly ref struct ValueRoSpanTuple<TValue, TA> {
     public TValue Value { get; init; }
 
     #region Spans
@@ -27,12 +27,12 @@ public readonly ref struct ValueSpanTuple<TValue, TA> {
 
     #region 'structors
 
-    public ValueSpanTuple(TValue value, RoSpanTuple<TA> spans) {
+    public ValueRoSpanTuple(TValue value, RoSpanTuple<TA> spans) {
         Value = value;
         Spans = spans;
     }
 
-    public ValueSpanTuple(TValue value, ReadOnlySpan<TA> a) : this(value, new RoSpanTuple<TA>(a)) { }
+    public ValueRoSpanTuple(TValue value, ReadOnlySpan<TA> a) : this(value, new RoSpanTuple<TA>(a)) { }
 
     public void Deconstruct(out TValue value, out ReadOnlySpan<TA> a) {
         value = Value;
@@ -43,8 +43,11 @@ public readonly ref struct ValueSpanTuple<TValue, TA> {
 
     #region object methods
 
-    [Obsolete, DoesNotReturn] public override bool Equals(object obj) => throw RoSpanTuple.BecauseSpanDoesnt();
-    [Obsolete, DoesNotReturn] public override int  GetHashCode()      => throw RoSpanTuple.BecauseSpanDoesnt();
+    [Obsolete(RoSpanTuple.SpanDoesntSupport), DoesNotReturn]
+    public override bool Equals(object obj) => throw RoSpanTuple.BecauseSpanDoesnt();
+
+    [Obsolete(RoSpanTuple.SpanDoesntSupport), DoesNotReturn]
+    public override int GetHashCode() => throw RoSpanTuple.BecauseSpanDoesnt();
 
     #endregion
 }
@@ -52,11 +55,11 @@ public readonly ref struct ValueSpanTuple<TValue, TA> {
 /// <summary>
 /// Combines a non-span <see cref="Value"/> with spans <see cref="A"/> and <see cref="B"/>.
 /// </summary>
-/// <remarks><inheritdoc cref="ValueSpanTuple{TValue,TA}"/></remarks>
+/// <remarks><inheritdoc cref="ValueRoSpanTuple{TValue,TA}"/></remarks>
 /// <typeparam name="TValue">the non-span <see cref="Value"/> type</typeparam>
 /// <typeparam name="TA"><see cref="A"/>'s element type</typeparam>
 /// <typeparam name="TB"><see cref="B"/>'s element type</typeparam>
-public readonly ref struct ValueSpanTuple<TValue, TA, TB> {
+public readonly ref struct ValueRoSpanTuple<TValue, TA, TB> {
     public TValue Value { get; init; }
 
     #region Spans
@@ -77,12 +80,12 @@ public readonly ref struct ValueSpanTuple<TValue, TA, TB> {
 
     #region 'structors
 
-    public ValueSpanTuple(TValue value, RoSpanTuple<TA, TB> spans) {
+    public ValueRoSpanTuple(TValue value, RoSpanTuple<TA, TB> spans) {
         Value = value;
         Spans = spans;
     }
 
-    public ValueSpanTuple(TValue value, ReadOnlySpan<TA> a, ReadOnlySpan<TB> b) : this(value, new RoSpanTuple<TA, TB>(a, b)) { }
+    public ValueRoSpanTuple(TValue value, ReadOnlySpan<TA> a, ReadOnlySpan<TB> b) : this(value, new RoSpanTuple<TA, TB>(a, b)) { }
 
     public void Deconstruct(out TValue value, out ReadOnlySpan<TA> a, out ReadOnlySpan<TB> b) {
         value = Value;
@@ -94,8 +97,11 @@ public readonly ref struct ValueSpanTuple<TValue, TA, TB> {
 
     #region object methods
 
-    [Obsolete, DoesNotReturn] public override bool Equals(object obj) => throw RoSpanTuple.BecauseSpanDoesnt();
-    [Obsolete, DoesNotReturn] public override int  GetHashCode()      => throw RoSpanTuple.BecauseSpanDoesnt();
+    [Obsolete(RoSpanTuple.SpanDoesntSupport), DoesNotReturn]
+    public override bool Equals(object obj) => throw RoSpanTuple.BecauseSpanDoesnt();
+
+    [Obsolete(RoSpanTuple.SpanDoesntSupport), DoesNotReturn]
+    public override int GetHashCode() => throw RoSpanTuple.BecauseSpanDoesnt();
 
     #endregion
 }
@@ -103,12 +109,12 @@ public readonly ref struct ValueSpanTuple<TValue, TA, TB> {
 /// <summary>
 /// Combines a non-span <see cref="Value"/> with spans <see cref="A"/>, <see cref="B"/> and <see cref="C"/>.
 /// </summary>
-/// /// <remarks><inheritdoc cref="ValueSpanTuple{TValue,TA}"/></remarks>
+/// /// <remarks><inheritdoc cref="ValueRoSpanTuple{TValue,TA}"/></remarks>
 /// <typeparam name="TValue">the non-span <see cref="Value"/> type</typeparam>
 /// <typeparam name="TA"><see cref="A"/>'s element type</typeparam>
 /// <typeparam name="TB"><see cref="B"/>'s element type</typeparam>
 /// <typeparam name="TC"><see cref="C"/>'s element type</typeparam>
-public readonly ref struct ValueSpanTuple<TValue, TA, TB, TC> {
+public readonly ref struct ValueRoSpanTuple<TValue, TA, TB, TC> {
     public TValue Value { get; init; }
 
     #region Spans
@@ -134,12 +140,12 @@ public readonly ref struct ValueSpanTuple<TValue, TA, TB, TC> {
 
     #region 'structors
 
-    public ValueSpanTuple(TValue value, RoSpanTuple<TA, TB, TC> spans) {
+    public ValueRoSpanTuple(TValue value, RoSpanTuple<TA, TB, TC> spans) {
         Value = value;
         Spans = spans;
     }
 
-    public ValueSpanTuple(TValue value, ReadOnlySpan<TA> a, ReadOnlySpan<TB> b, ReadOnlySpan<TC> c) : this(value, new RoSpanTuple<TA, TB, TC>(a, b, c)) { }
+    public ValueRoSpanTuple(TValue value, ReadOnlySpan<TA> a, ReadOnlySpan<TB> b, ReadOnlySpan<TC> c) : this(value, new RoSpanTuple<TA, TB, TC>(a, b, c)) { }
 
     public void Deconstruct(out TValue value, out ReadOnlySpan<TA> a, out ReadOnlySpan<TB> b, out ReadOnlySpan<TC> c) {
         value = Value;
@@ -152,8 +158,11 @@ public readonly ref struct ValueSpanTuple<TValue, TA, TB, TC> {
 
     #region object methods
 
-    [Obsolete, DoesNotReturn] public override bool Equals(object obj) => throw RoSpanTuple.BecauseSpanDoesnt();
-    [Obsolete, DoesNotReturn] public override int  GetHashCode()      => throw RoSpanTuple.BecauseSpanDoesnt();
+    [Obsolete(RoSpanTuple.SpanDoesntSupport), DoesNotReturn]
+    public override bool Equals(object obj) => throw RoSpanTuple.BecauseSpanDoesnt();
+
+    [Obsolete(RoSpanTuple.SpanDoesntSupport), DoesNotReturn]
+    public override int GetHashCode() => throw RoSpanTuple.BecauseSpanDoesnt();
 
     #endregion
 }
@@ -161,13 +170,13 @@ public readonly ref struct ValueSpanTuple<TValue, TA, TB, TC> {
 /// <summary>
 /// Combines a non-span <see cref="Value"/> with spans <see cref="A"/>, <see cref="B"/>, <see cref="C"/> and <see cref="D"/>.
 /// </summary>
-/// /// <remarks><inheritdoc cref="ValueSpanTuple{TValue,TA}"/></remarks>
+/// /// <remarks><inheritdoc cref="ValueRoSpanTuple{TValue,TA}"/></remarks>
 /// <typeparam name="TValue">the non-span <see cref="Value"/> type</typeparam>
 /// <typeparam name="TA"><see cref="A"/>'s element type</typeparam>
 /// <typeparam name="TB"><see cref="B"/>'s element type</typeparam>
 /// <typeparam name="TC"><see cref="C"/>'s element type</typeparam>
 /// <typeparam name="TD"><see cref="D"/>'s element type</typeparam>
-public readonly ref struct ValueSpanTuple<TValue, TA, TB, TC, TD> {
+public readonly ref struct ValueRoSpanTuple<TValue, TA, TB, TC, TD> {
     public TValue Value { get; init; }
 
     #region Spans
@@ -198,12 +207,12 @@ public readonly ref struct ValueSpanTuple<TValue, TA, TB, TC, TD> {
 
     #region 'structors
 
-    public ValueSpanTuple(TValue value, RoSpanTuple<TA, TB, TC, TD> spans) {
+    public ValueRoSpanTuple(TValue value, RoSpanTuple<TA, TB, TC, TD> spans) {
         Value = value;
         Spans = spans;
     }
 
-    public ValueSpanTuple(
+    public ValueRoSpanTuple(
         TValue           value,
         ReadOnlySpan<TA> a,
         ReadOnlySpan<TB> b,
@@ -229,8 +238,11 @@ public readonly ref struct ValueSpanTuple<TValue, TA, TB, TC, TD> {
 
     #region object methods
 
-    [Obsolete, DoesNotReturn] public override bool Equals(object obj) => throw RoSpanTuple.BecauseSpanDoesnt();
-    [Obsolete, DoesNotReturn] public override int  GetHashCode()      => throw RoSpanTuple.BecauseSpanDoesnt();
+    [Obsolete(RoSpanTuple.SpanDoesntSupport), DoesNotReturn]
+    public override bool Equals(object obj) => throw RoSpanTuple.BecauseSpanDoesnt();
+
+    [Obsolete(RoSpanTuple.SpanDoesntSupport), DoesNotReturn]
+    public override int GetHashCode() => throw RoSpanTuple.BecauseSpanDoesnt();
 
     #endregion
 }

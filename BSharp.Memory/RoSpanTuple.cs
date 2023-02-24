@@ -1,6 +1,5 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Diagnostics.Contracts;
 using System.Runtime.CompilerServices;
 
 namespace FowlFever.BSharp.Memory;
@@ -14,17 +13,17 @@ namespace FowlFever.BSharp.Memory;
 /// Equivalent methods also exist in <see cref="Spanq"/>, e.g. <see cref="RoSpanTuple"/>.<see cref="Of"/> -> <see cref="Spanq"/>.<see cref="Spanq.Tuple"/>.
 /// </remarks>
 public readonly ref struct RoSpanTuple {
-    [Pure] public static RoSpanTuple                Of()                                                                                           => default;
-    [Pure] public static RoSpanTuple<A>             Of<A>(ReadOnlySpan<A>          a)                                                              => new(a);
-    [Pure] public static RoSpanTuple<A, B>          Of<A, B>(ReadOnlySpan<A>       a,     ReadOnlySpan<B> b)                                       => new(a, b);
-    [Pure] public static RoSpanTuple<A, B, C>       Of<A, B, C>(ReadOnlySpan<A>    a,     ReadOnlySpan<B> b, ReadOnlySpan<C> c)                    => new(a, b, c);
-    [Pure] public static RoSpanTuple<A, B, C, D>    Of<A, B, C, D>(ReadOnlySpan<A> a,     ReadOnlySpan<B> b, ReadOnlySpan<C> c, ReadOnlySpan<D> d) => new(a, b, c, d);
-    [Pure] public static ValueSpanTuple<T, A>       Of<T, A>(T                     value, ReadOnlySpan<A> a)                                       => new(value, a);
-    [Pure] public static ValueSpanTuple<T, A, B>    Of<T, A, B>(T                  value, ReadOnlySpan<A> a, ReadOnlySpan<B> b)                    => new(value, a, b);
-    [Pure] public static ValueSpanTuple<T, A, B, C> Of<T, A, B, C>(T               value, ReadOnlySpan<A> a, ReadOnlySpan<B> b, ReadOnlySpan<C> c) => new(value, a, b, c);
+    [Pure] public static RoSpanTuple                  Of()                                                                                           => default;
+    [Pure] public static RoSpanTuple<A>               Of<A>(ReadOnlySpan<A>          a)                                                              => new(a);
+    [Pure] public static RoSpanTuple<A, B>            Of<A, B>(ReadOnlySpan<A>       a,     ReadOnlySpan<B> b)                                       => new(a, b);
+    [Pure] public static RoSpanTuple<A, B, C>         Of<A, B, C>(ReadOnlySpan<A>    a,     ReadOnlySpan<B> b, ReadOnlySpan<C> c)                    => new(a, b, c);
+    [Pure] public static RoSpanTuple<A, B, C, D>      Of<A, B, C, D>(ReadOnlySpan<A> a,     ReadOnlySpan<B> b, ReadOnlySpan<C> c, ReadOnlySpan<D> d) => new(a, b, c, d);
+    [Pure] public static ValueRoSpanTuple<T, A>       Of<T, A>(T                     value, ReadOnlySpan<A> a)                                       => new(value, a);
+    [Pure] public static ValueRoSpanTuple<T, A, B>    Of<T, A, B>(T                  value, ReadOnlySpan<A> a, ReadOnlySpan<B> b)                    => new(value, a, b);
+    [Pure] public static ValueRoSpanTuple<T, A, B, C> Of<T, A, B, C>(T               value, ReadOnlySpan<A> a, ReadOnlySpan<B> b, ReadOnlySpan<C> c) => new(value, a, b, c);
 
     [Pure]
-    public static ValueSpanTuple<T, A, B, C, D> Of<T, A, B, C, D>(
+    public static ValueRoSpanTuple<T, A, B, C, D> Of<T, A, B, C, D>(
         T               value,
         ReadOnlySpan<A> a,
         ReadOnlySpan<B> b,
@@ -33,6 +32,7 @@ public readonly ref struct RoSpanTuple {
     ) => new(value, a, b, c, d);
 
     internal static NotSupportedException BecauseSpanDoesnt([CallerMemberName] string? _caller = default) => new NotSupportedException($"{_caller}() isn't supported because {nameof(ReadOnlySpan<byte>)} doesn't support it!");
+    internal const  string                SpanDoesntSupport = $"{nameof(ReadOnlySpan<byte>)} doesn't support this, so {nameof(RoSpanTuple<byte>)} doesn't either.";
 }
 
 /// <summary>
@@ -59,10 +59,13 @@ public readonly ref struct RoSpanTuple<TA> {
     public RoSpanTuple<TA, TB, TC>     Append<TB, TC>(RoSpanTuple<TB, TC>         other) => new(A, other.A, other.B);
     public RoSpanTuple<TA, TB, TC, TD> Append<TB, TC, TD>(RoSpanTuple<TB, TC, TD> other) => new(A, other.A, other.B, other.C);
 
-    public ValueSpanTuple<TValue, TA> WithValue<TValue>(TValue value) => new(value, A);
+    public ValueRoSpanTuple<TValue, TA> WithValue<TValue>(TValue value) => new(value, A);
 
-    [Obsolete, DoesNotReturn] public override bool Equals(object obj) => throw RoSpanTuple.BecauseSpanDoesnt();
-    [Obsolete, DoesNotReturn] public override int  GetHashCode()      => throw RoSpanTuple.BecauseSpanDoesnt();
+    [Obsolete(RoSpanTuple.SpanDoesntSupport), DoesNotReturn]
+    public override bool Equals(object obj) => throw RoSpanTuple.BecauseSpanDoesnt();
+
+    [Obsolete(RoSpanTuple.SpanDoesntSupport), DoesNotReturn]
+    public override int GetHashCode() => throw RoSpanTuple.BecauseSpanDoesnt();
 }
 
 /// <summary>
@@ -91,10 +94,13 @@ public readonly ref struct RoSpanTuple<TA, TB> {
     public RoSpanTuple<TA, TB, TC>     Append<TC>(RoSpanTuple<TC>         other) => new(A, B, other.A);
     public RoSpanTuple<TA, TB, TC, TD> Append<TC, TD>(RoSpanTuple<TC, TD> other) => new(A, B, other.A, other.B);
 
-    public ValueSpanTuple<TValue, TA, TB> WithValue<TValue>(TValue value) => new(value, A, B);
+    public ValueRoSpanTuple<TValue, TA, TB> WithValue<TValue>(TValue value) => new(value, A, B);
 
-    [Obsolete, DoesNotReturn] public override bool Equals(object obj) => throw RoSpanTuple.BecauseSpanDoesnt();
-    [Obsolete, DoesNotReturn] public override int  GetHashCode()      => throw RoSpanTuple.BecauseSpanDoesnt();
+    [Obsolete(RoSpanTuple.SpanDoesntSupport), DoesNotReturn]
+    public override bool Equals(object obj) => throw RoSpanTuple.BecauseSpanDoesnt();
+
+    [Obsolete(RoSpanTuple.SpanDoesntSupport), DoesNotReturn]
+    public override int GetHashCode() => throw RoSpanTuple.BecauseSpanDoesnt();
 }
 
 /// <summary>
@@ -126,10 +132,13 @@ public readonly ref struct RoSpanTuple<TA, TB, TC> {
     public RoSpanTuple<TA, TB, TC, TD> Append<TD>(ReadOnlySpan<TD> other) => new(A, B, C, other);
     public RoSpanTuple<TA, TB, TC, TD> Append<TD>(RoSpanTuple<TD>  other) => new(A, B, C, other.A);
 
-    public ValueSpanTuple<TValue, TA, TB, TC> WithValue<TValue>(TValue value) => new(value, A, B, C);
+    public ValueRoSpanTuple<TValue, TA, TB, TC> WithValue<TValue>(TValue value) => new(value, A, B, C);
 
-    [Obsolete, DoesNotReturn] public override bool Equals(object obj) => throw RoSpanTuple.BecauseSpanDoesnt();
-    [Obsolete, DoesNotReturn] public override int  GetHashCode()      => throw RoSpanTuple.BecauseSpanDoesnt();
+    [Obsolete(RoSpanTuple.SpanDoesntSupport), DoesNotReturn]
+    public override bool Equals(object obj) => throw RoSpanTuple.BecauseSpanDoesnt();
+
+    [Obsolete(RoSpanTuple.SpanDoesntSupport), DoesNotReturn]
+    public override int GetHashCode() => throw RoSpanTuple.BecauseSpanDoesnt();
 }
 
 /// <summary>
@@ -162,8 +171,11 @@ public readonly ref struct RoSpanTuple<TA, TB, TC, TD> {
     public static bool operator ==(RoSpanTuple<TA, TB, TC, TD> a, RoSpanTuple<TA, TB, TC, TD> b) => a.A == b.A && a.B == b.B && a.C == b.C;
     public static bool operator !=(RoSpanTuple<TA, TB, TC, TD> a, RoSpanTuple<TA, TB, TC, TD> b) => !(a == b);
 
-    public ValueSpanTuple<TValue, TA, TB, TC, TD> WithValue<TValue>(TValue value) => new(value, A, B, C, D);
+    public ValueRoSpanTuple<TValue, TA, TB, TC, TD> WithValue<TValue>(TValue value) => new(value, A, B, C, D);
 
-    [Obsolete, DoesNotReturn] public override bool Equals(object obj) => throw RoSpanTuple.BecauseSpanDoesnt();
-    [Obsolete, DoesNotReturn] public override int  GetHashCode()      => throw RoSpanTuple.BecauseSpanDoesnt();
+    [Obsolete(RoSpanTuple.SpanDoesntSupport), DoesNotReturn]
+    public override bool Equals(object obj) => throw RoSpanTuple.BecauseSpanDoesnt();
+
+    [Obsolete(RoSpanTuple.SpanDoesntSupport), DoesNotReturn]
+    public override int GetHashCode() => throw RoSpanTuple.BecauseSpanDoesnt();
 }
