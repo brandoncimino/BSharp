@@ -44,22 +44,22 @@ public readonly ref struct RoSpanTuple<TA> {
     public RoSpanTuple(ReadOnlySpan<TA>          a) => A = a;
     public void Deconstruct(out ReadOnlySpan<TA> a) => a = A;
 
-    public static bool operator ==(RoSpanTuple<TA>  a, RoSpanTuple<TA>  b) => a.A == b.A;
-    public static bool operator !=(RoSpanTuple<TA>  a, RoSpanTuple<TA>  b) => !(a == b);
-    public static bool operator ==(RoSpanTuple<TA>  a, ReadOnlySpan<TA> b) => a.A == b;
-    public static bool operator !=(RoSpanTuple<TA>  a, ReadOnlySpan<TA> b) => !(a == b);
-    public static bool operator ==(ReadOnlySpan<TA> a, RoSpanTuple<TA>  b) => a == b.A;
-    public static bool operator !=(ReadOnlySpan<TA> a, RoSpanTuple<TA>  b) => !(a == b);
+    [Pure] public static bool operator ==(RoSpanTuple<TA>  a, RoSpanTuple<TA>  b) => a.A == b.A;
+    [Pure] public static bool operator !=(RoSpanTuple<TA>  a, RoSpanTuple<TA>  b) => !(a == b);
+    [Pure] public static bool operator ==(RoSpanTuple<TA>  a, ReadOnlySpan<TA> b) => a.A == b;
+    [Pure] public static bool operator !=(RoSpanTuple<TA>  a, ReadOnlySpan<TA> b) => !(a == b);
+    [Pure] public static bool operator ==(ReadOnlySpan<TA> a, RoSpanTuple<TA>  b) => a == b.A;
+    [Pure] public static bool operator !=(ReadOnlySpan<TA> a, RoSpanTuple<TA>  b) => !(a == b);
 
-    public static implicit operator RoSpanTuple<TA>(ReadOnlySpan<TA> span)      => new(span);
-    public static implicit operator ReadOnlySpan<TA>(RoSpanTuple<TA> spanTuple) => spanTuple.A;
+    [Pure] public static implicit operator RoSpanTuple<TA>(ReadOnlySpan<TA> span)      => new(span);
+    [Pure] public static implicit operator ReadOnlySpan<TA>(RoSpanTuple<TA> spanTuple) => spanTuple.A;
 
-    public RoSpanTuple<TA, TB>         Append<TB>(ReadOnlySpan<TB>                other) => new(A, other);
-    public RoSpanTuple<TA, TB>         Append<TB>(RoSpanTuple<TB>                 other) => new(A, other.A);
-    public RoSpanTuple<TA, TB, TC>     Append<TB, TC>(RoSpanTuple<TB, TC>         other) => new(A, other.A, other.B);
-    public RoSpanTuple<TA, TB, TC, TD> Append<TB, TC, TD>(RoSpanTuple<TB, TC, TD> other) => new(A, other.A, other.B, other.C);
+    [Pure] public RoSpanTuple<TA, TB>         Append<TB>(ReadOnlySpan<TB>                other) => new(A, other);
+    [Pure] public RoSpanTuple<TA, TB>         Append<TB>(RoSpanTuple<TB>                 other) => new(A, other.A);
+    [Pure] public RoSpanTuple<TA, TB, TC>     Append<TB, TC>(RoSpanTuple<TB, TC>         other) => new(A, other.A, other.B);
+    [Pure] public RoSpanTuple<TA, TB, TC, TD> Append<TB, TC, TD>(RoSpanTuple<TB, TC, TD> other) => new(A, other.A, other.B, other.C);
 
-    public ValueRoSpanTuple<TValue, TA> WithValue<TValue>(TValue value) => new(value, A);
+    [Pure] public ValueRoSpanTuple<TValue, TA> WithValue<TValue>(TValue value) => new(value, A);
 
     [Obsolete(RoSpanTuple.SpanDoesntSupport), DoesNotReturn]
     public override bool Equals(object obj) => throw RoSpanTuple.BecauseSpanDoesnt();
@@ -87,14 +87,14 @@ public readonly ref struct RoSpanTuple<TA, TB> {
         b = B;
     }
 
-    public static bool operator ==(RoSpanTuple<TA, TB> a, RoSpanTuple<TA, TB> b) => a.A == b.A && a.B == b.B;
-    public static bool operator !=(RoSpanTuple<TA, TB> a, RoSpanTuple<TA, TB> b) => !(a == b);
+    [Pure] public static bool operator ==(RoSpanTuple<TA, TB> a, RoSpanTuple<TA, TB> b) => a.A == b.A && a.B == b.B;
+    [Pure] public static bool operator !=(RoSpanTuple<TA, TB> a, RoSpanTuple<TA, TB> b) => !(a == b);
 
-    public RoSpanTuple<TA, TB, TC>     Append<TC>(ReadOnlySpan<TC>        other) => new(A, B, other);
-    public RoSpanTuple<TA, TB, TC>     Append<TC>(RoSpanTuple<TC>         other) => new(A, B, other.A);
-    public RoSpanTuple<TA, TB, TC, TD> Append<TC, TD>(RoSpanTuple<TC, TD> other) => new(A, B, other.A, other.B);
+    [Pure] public RoSpanTuple<TA, TB, TC>     Append<TC>(ReadOnlySpan<TC>        other) => new(A, B, other);
+    [Pure] public RoSpanTuple<TA, TB, TC>     Append<TC>(RoSpanTuple<TC>         other) => new(A, B, other.A);
+    [Pure] public RoSpanTuple<TA, TB, TC, TD> Append<TC, TD>(RoSpanTuple<TC, TD> other) => new(A, B, other.A, other.B);
 
-    public ValueRoSpanTuple<TValue, TA, TB> WithValue<TValue>(TValue value) => new(value, A, B);
+    [Pure] public ValueRoSpanTuple<TValue, TA, TB> WithValue<TValue>(TValue value) => new(value, A, B);
 
     [Obsolete(RoSpanTuple.SpanDoesntSupport), DoesNotReturn]
     public override bool Equals(object obj) => throw RoSpanTuple.BecauseSpanDoesnt();
@@ -126,13 +126,13 @@ public readonly ref struct RoSpanTuple<TA, TB, TC> {
         c = C;
     }
 
-    public static bool operator ==(RoSpanTuple<TA, TB, TC> a, RoSpanTuple<TA, TB, TC> b) => a.A == b.A && a.B == b.B && a.C == b.C;
-    public static bool operator !=(RoSpanTuple<TA, TB, TC> a, RoSpanTuple<TA, TB, TC> b) => !(a == b);
+    [Pure] public static bool operator ==(RoSpanTuple<TA, TB, TC> a, RoSpanTuple<TA, TB, TC> b) => a.A == b.A && a.B == b.B && a.C == b.C;
+    [Pure] public static bool operator !=(RoSpanTuple<TA, TB, TC> a, RoSpanTuple<TA, TB, TC> b) => !(a == b);
 
-    public RoSpanTuple<TA, TB, TC, TD> Append<TD>(ReadOnlySpan<TD> other) => new(A, B, C, other);
-    public RoSpanTuple<TA, TB, TC, TD> Append<TD>(RoSpanTuple<TD>  other) => new(A, B, C, other.A);
+    [Pure] public RoSpanTuple<TA, TB, TC, TD> Append<TD>(ReadOnlySpan<TD> other) => new(A, B, C, other);
+    [Pure] public RoSpanTuple<TA, TB, TC, TD> Append<TD>(RoSpanTuple<TD>  other) => new(A, B, C, other.A);
 
-    public ValueRoSpanTuple<TValue, TA, TB, TC> WithValue<TValue>(TValue value) => new(value, A, B, C);
+    [Pure] public ValueRoSpanTuple<TValue, TA, TB, TC> WithValue<TValue>(TValue value) => new(value, A, B, C);
 
     [Obsolete(RoSpanTuple.SpanDoesntSupport), DoesNotReturn]
     public override bool Equals(object obj) => throw RoSpanTuple.BecauseSpanDoesnt();
@@ -168,10 +168,10 @@ public readonly ref struct RoSpanTuple<TA, TB, TC, TD> {
         d = D;
     }
 
-    public static bool operator ==(RoSpanTuple<TA, TB, TC, TD> a, RoSpanTuple<TA, TB, TC, TD> b) => a.A == b.A && a.B == b.B && a.C == b.C;
-    public static bool operator !=(RoSpanTuple<TA, TB, TC, TD> a, RoSpanTuple<TA, TB, TC, TD> b) => !(a == b);
+    [Pure] public static bool operator ==(RoSpanTuple<TA, TB, TC, TD> a, RoSpanTuple<TA, TB, TC, TD> b) => a.A == b.A && a.B == b.B && a.C == b.C;
+    [Pure] public static bool operator !=(RoSpanTuple<TA, TB, TC, TD> a, RoSpanTuple<TA, TB, TC, TD> b) => !(a == b);
 
-    public ValueRoSpanTuple<TValue, TA, TB, TC, TD> WithValue<TValue>(TValue value) => new(value, A, B, C, D);
+    [Pure] public ValueRoSpanTuple<TValue, TA, TB, TC, TD> WithValue<TValue>(TValue value) => new(value, A, B, C, D);
 
     [Obsolete(RoSpanTuple.SpanDoesntSupport), DoesNotReturn]
     public override bool Equals(object obj) => throw RoSpanTuple.BecauseSpanDoesnt();
