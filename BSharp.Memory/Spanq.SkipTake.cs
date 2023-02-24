@@ -21,7 +21,7 @@ public static partial class Spanq {
         return span[start..end];
     }
 
-    /// <param name="span">this <see cref="ReadOnlySpan{T}"/></param>
+    /// <param name="span">this span></param>
     /// <param name="toSkip">the number of entries to skip</param>
     /// <typeparam name="T">the span entry type</typeparam>
     /// <returns>all of the entries after the first <paramref name="toSkip"/></returns>
@@ -32,9 +32,17 @@ public static partial class Spanq {
         _                            => span[toSkip..]
     };
 
-    /// <param name="span">this <see cref="ReadOnlySpan{T}"/></param>
+    /// <inheritdoc cref="Skip{T}(System.ReadOnlySpan{T},int)"/>
+    [Pure]
+    public static Span<T> Skip<T>(this Span<T> span, int toSkip) => toSkip switch {
+        <= 0                         => span,
+        _ when toSkip >= span.Length => default,
+        _                            => span[toSkip..]
+    };
+
+    /// <param name="span">this span</param>
     /// <param name="toTake">the number of entries we want</param>
-    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="T">the span element type</typeparam>
     /// <returns>the first <paramref name="toTake"/> entries</returns>
     [Pure]
     public static ReadOnlySpan<T> Take<T>(this ReadOnlySpan<T> span, int toTake) => toTake switch {
@@ -43,21 +51,56 @@ public static partial class Spanq {
         _                            => span[..toTake]
     };
 
+    /// <inheritdoc cref="Take{T}(System.ReadOnlySpan{T},System.Range)"/>
+    [Pure]
+    public static Span<T> Take<T>(this Span<T> span, int toTake) => toTake switch {
+        <= 0                         => default,
+        _ when toTake >= span.Length => span,
+        _                            => span[..toTake]
+    };
+
+    /// <summary>
+    /// Splits a span into 2 separate <see cref="RoSpanTuple{TA, TB}.A"/> and <see cref="RoSpanTuple{TA,TB}.B"/> spans.
+    /// </summary>
+    /// <param name="span">this span</param>
+    /// <param name="toTake">the number of elements to put into the <see cref="RoSpanTuple{TA,TB}.A"/> span</param>
+    /// <typeparam name="T">the span element type</typeparam>
+    /// <returns>a <see cref="RoSpanTuple{TA,TB}"/></returns>
     public static RoSpanTuple<T, T> TakeLeftovers<T>(this ReadOnlySpan<T> span, int toTake) =>
         new() {
             A = span.Take(toTake),
             B = span.Skip(toTake),
         };
 
+    /// <summary>
+    /// Splits a span into 2 separate <see cref="SpanTuple{TA,TB}.A"/> and <see cref="SpanTuple{TA,TB}.B"/> spans.
+    /// </summary>
+    /// <param name="span">this span</param>
+    /// <param name="toTake">the number of elements to put into the <see cref="SpanTuple{TA,TB}.A"/> span</param>
+    /// <typeparam name="T">the span element type</typeparam>
+    /// <returns>a <see cref="SpanTuple{TA,TB}"/></returns>
+    public static SpanTuple<T, T> TakeLeftovers<T>(this Span<T> span, int toTake) => new() {
+        A = span.Take(toTake),
+        B = span.Skip(toTake),
+    };
+
     #region {x}Last
 
-    /// <inheritdoc cref="Skip{T}"/>
+    /// <inheritdoc cref="Skip{T}(System.ReadOnlySpan{T},int)"/>
     [Pure]
     public static ReadOnlySpan<T> SkipLast<T>(this ReadOnlySpan<T> span, int toSkip) => span.Take(span.Length - toSkip);
+
+    /// <inheritdoc cref="Skip{T}(System.Span{T},int)"/>
+    [Pure]
+    public static Span<T> SkipLast<T>(this Span<T> span, int toSkip) => span.Take(span.Length - toSkip);
 
     /// <inheritdoc cref="Take{T}(System.ReadOnlySpan{T},int)"/>
     [Pure]
     public static ReadOnlySpan<T> TakeLast<T>(this ReadOnlySpan<T> span, int toTake) => span.Skip(span.Length - toTake);
+
+    /// <inheritdoc cref="Take{T}(System.Span{T},int)"/>
+    [Pure]
+    public static Span<T> TakeLast<T>(this Span<T> span, int toTake) => span.Skip(span.Length - toTake);
 
     #endregion
 
