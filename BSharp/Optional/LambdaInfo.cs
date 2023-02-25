@@ -1,4 +1,3 @@
-using System;
 using System.Runtime.CompilerServices;
 
 using JetBrains.Annotations;
@@ -16,4 +15,8 @@ public record LambdaInfo<TDelegate>(TDelegate Lambda, [CallerArgumentExpression(
     where TDelegate : Delegate {
     /// <inheritdoc cref="LambdaInfo{TDelegate}"/>
     public static LambdaInfo<TDelegate> Of(TDelegate lambda, [CallerArgumentExpression("lambda")] string? expression = default) => new(lambda, expression);
+
+    public override string ToString() {
+        return Expression ?? Lambda.ToString();
+    }
 }
