@@ -1,8 +1,6 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 
 using FowlFever.BSharp.Strings;
 using FowlFever.BSharp.Strings.Settings;
@@ -19,7 +17,8 @@ namespace FowlFever.BSharp.Optional {
     /// This gives access to the full suite of <see cref="System.Linq"/> extension methods.
     /// </remarks>
     [PublicAPI]
-    [JsonConverter(typeof(OptionalJsonConverter))]
+    [JsonConverter(typeof(OptionalJsonConverter.Newtonsoft))]
+    [System.Text.Json.Serialization.JsonConverter(typeof(OptionalJsonConverter.SystemTextFactory))]
     public readonly struct Optional<T> : IOptional<T>,
                                          IEquatable<T>,
                                          IEquatable<IHas<T>>,
@@ -132,7 +131,7 @@ namespace FowlFever.BSharp.Optional {
 
         [Pure] public bool Equals(T?             other) => Comparer.Equals(this, other);
         [Pure] public bool Equals(IOptional<T?>? other) => Comparer.Equals(this, other);
-        [Pure] public bool Equals(IHas<T?>?      other) => Comparer.Equals(this, other.GetValueOrDefault());
+        [Pure] public bool Equals(IHas<T?>?      other) => Comparer.Equals(this, other.OrDefault());
 
         // 📝 NOTE: No longer considering IOptional<T> for OPERATOR comparisons because going between structs and interfaces is clunky and weird.
         [Pure] public static bool operator ==(Optional<T> a, Optional<T> b) => Comparer.Equals(a, b);
