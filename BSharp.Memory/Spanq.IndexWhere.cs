@@ -11,6 +11,9 @@ public static partial class Spanq {
     [Pure]
     public static int IndexNot<T>(this ReadOnlySpan<T> span, T value)
         where T : IEquatable<T> {
+#if NET7_0_OR_GREATER
+        return span.IndexOfAnyExcept(value);
+#else
         for (int i = 0; i < span.Length; i++) {
             if (span[i].Equals(value) == false) {
                 return i;
@@ -18,6 +21,7 @@ public static partial class Spanq {
         }
 
         return -1;
+#endif
     }
 
     /// <returns>either:
@@ -48,6 +52,9 @@ public static partial class Spanq {
     [Pure]
     public static int LastIndexNot<T>(this ReadOnlySpan<T> span, T value)
         where T : IEquatable<T> {
+#if NET7_0_OR_GREATER
+        return span.LastIndexOfAnyExcept(value);
+#else
         for (int i = span.Length - 1; i >= 0; i--) {
             if (span[i].Equals(value) == false) {
                 return i;
@@ -55,6 +62,7 @@ public static partial class Spanq {
         }
 
         return -1;
+#endif
     }
 
     /// <returns>either:
