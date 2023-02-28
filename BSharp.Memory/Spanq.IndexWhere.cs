@@ -1,13 +1,17 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 using JetBrains.Annotations;
 
 namespace FowlFever.BSharp.Memory;
 
 public static partial class Spanq {
+    /// <param name="span">the span to search</param>
+    /// <param name="value">the value to avoid</param>
+    /// <typeparam name="T">the span element type</typeparam>
     /// <returns>the first index of the <paramref name="span"/> that <b>ISN'T</b> <paramref name="value"/></returns>
-    /// <remarks>This is the complement of <see cref="MemoryExtensions.IndexOf{T}(ReadOnlySpan{T},T)"/>.</remarks>
-    /// <seealso cref="LastIndexNot{T}"/>
+    /// <remarks>This is the complement of <see cref="MemoryExtensions.IndexOf{T}(ReadOnlySpan{T},T)"/>, and forwards to the .NET 7+ <a href="https://learn.microsoft.com/en-us/dotnet/api/System.MemoryExtensions.IndexOfAnyExcept">IndexOfAnyExcept</a> if possible.</remarks>
+    /// <seealso cref="LastIndexNot{T}(System.ReadOnlySpan{T},T)"/> 
     [Pure]
     public static int IndexNot<T>(this ReadOnlySpan<T> span, T value)
         where T : IEquatable<T> {
@@ -24,30 +28,102 @@ public static partial class Spanq {
 #endif
     }
 
-    /// <returns>either:
-    /// <list type="table">
-    /// <item>
-    /// <term><paramref name="positiveMatch"/> = <c>true</c></term>
-    /// <description><see cref="MemoryExtensions.IndexOf{T}(System.ReadOnlySpan{T},T)"/></description>
-    /// </item>
-    /// <item>
-    /// <term><paramref name="positiveMatch"/> = <c>false</c></term>
-    /// <description><see cref="IndexNot{T}"/></description>
-    /// </item>
-    /// </list>
-    /// </returns>
+    /// <inheritdoc cref="IndexNot{T}(System.ReadOnlySpan{T},T)"/>
     [Pure]
-    public static int IndexOf<T>(this ReadOnlySpan<T> span, T value, bool positiveMatch)
-        where T : IEquatable<T> => positiveMatch switch {
-        true  => span.IndexOf(value),
-        false => span.IndexNot(value),
-    };
+    public static int IndexNot<T>(this Span<T> span, T value) where T : IEquatable<T> => ((ReadOnlySpan<T>)span).IndexNot(value);
 
+    /// <param name="span">the span to search</param>
+    /// <param name="value0">the first unwanted value</param>
+    /// <param name="value1">the second unwanted value</param>
+    /// <typeparam name="T">the span element type</typeparam>
+    /// <returns>the first index of the <paramref name="span"/> that <b>ISN'T</b> <paramref name="value0"/> or <paramref name="value1"/></returns>
+    /// <remarks>This is the complement of <see cref="MemoryExtensions.IndexOfAny{T}(System.ReadOnlySpan{T},T,T)"/>, and forwards to the .NET 7+ <a href="https://learn.microsoft.com/en-us/dotnet/api/system.memoryextensions.indexofanyexcept#system-memoryextensions-indexofanyexcept-1(system-readonlyspan((-0))-0-0)">IndexOfAnyExcept</a> if possible.</remarks>
+    [Pure]
+    public static int IndexNot<T>(this ReadOnlySpan<T> span, T value0, T value1) where T : IEquatable<T> {
+#if NET7_0_OR_GREATER
+        return span.IndexOfAnyExcept(value0, value1);
+#else
+        for (int i = 0; i < span.Length; i++) {
+            if (span[i].Equals(value0) == false && span[i].Equals(value1) == false) {
+                return i;
+            }
+        }
+
+        return -1;
+#endif
+    }
+
+    /// <inheritdoc cref="IndexNot{T}(System.ReadOnlySpan{T},T,T)"/>
+    [Pure]
+    public static int IndexNot<T>(this Span<T> span, T value0, T value1) where T : IEquatable<T> => ((ReadOnlySpan<T>)span).IndexNot(value0, value1);
+
+    /// <inheritdoc cref="IndexNot{T}(System.ReadOnlySpan{T},T,T)"/>
+    /// <param name="value2">the third unwanted value</param>
+    /// <returns>the first index of the <paramref name="span"/> that <b>ISN'T</b> <paramref name="value0"/>, <paramref name="value1"/> or <paramref name="value2"/></returns>
+    /// <remarks>This is the complement of <see cref="MemoryExtensions.IndexOfAny{T}(System.ReadOnlySpan{T},T,T,T)"/>, and forwards to the .NET 7+ <a href="https://learn.microsoft.com/en-us/dotnet/api/system.memoryextensions.indexofanyexcept#system-memoryextensions-indexofanyexcept-1(system-readonlyspan((-0))-0-0-0)">IndexOfAnyExcept</a> if possible.</remarks>
+    [Pure]
+    [SuppressMessage("ReSharper", "InvalidXmlDocComment", Justification = "Inherited docs")]
+    public static int IndexNot<T>(this ReadOnlySpan<T> span, T value0, T value1, T value2) where T : IEquatable<T> {
+#if NET7_0_OR_GREATER
+        return span.IndexOfAnyExcept(value0, value1, value2);
+#else
+
+        for (int i = 0; i < span.Length; i++) {
+            // TODO: Benchmark -
+            //  if:
+            //      a == b == c
+            //      x != a
+            //  which is faster:
+            //      x == a || x == b || x == c
+            //  or
+            //      a == b == c ?
+            //          x == a  :
+            //          x == a || x == b || x == c
+            var it = span[i];
+            if (it.Equals(value0) == false && it.Equals(value1) == false && it.Equals(value2) == false) {
+                return i;
+            }
+        }
+
+        return -1;
+#endif
+    }
+
+    /// <inheritdoc cref="IndexNot{T}(System.ReadOnlySpan{T},T,T,T)"/>
+    [Pure]
+    public static int IndexNot<T>(this Span<T> span, T value0, T value1, T value2) where T : IEquatable<T> => ((ReadOnlySpan<T>)span).IndexNot(value0, value1, value2);
+
+    /// <param name="span">the span to search</param>
+    /// <param name="values">the unwanted values</param>
+    /// <typeparam name="T">the span element type</typeparam>
+    /// <returns>the first index of the <paramref name="span"/> that <b>ISN'T</b> one of the unwanted <paramref name="values"/></returns>
+    /// <remarks>This is the complement of <see cref="MemoryExtensions.IndexOfAny{T}(System.ReadOnlySpan{T},System.ReadOnlySpan{T})"/>, and forwards to the .NET 7+ <a href="https://learn.microsoft.com/en-us/dotnet/api/system.memoryextensions.indexofanyexcept#system-memoryextensions-indexofanyexcept-1(system-readonlyspan((-0))-system-readonlyspan((-0)))">IndexOfAnyExcept</a> if possible.</remarks>
+    [Pure]
+    public static int IndexNot<T>(this ReadOnlySpan<T> span, ReadOnlySpan<T> values) where T : IEquatable<T> {
+#if NET7_0_OR_GREATER
+        return span.IndexOfAnyExcept(values);
+#else
+        for (int i = 0; i < span.Length; i++) {
+            if (values.IndexOf(span[i]) < 0) {
+                return i;
+            }
+        }
+
+        return -1;
+#endif
+    }
+
+    /// <inheritdoc cref="IndexNot{T}(System.ReadOnlySpan{T},ReadOnlySpan{T})"/>
+    [Pure]
+    public static int IndexNot<T>(this Span<T> span, ReadOnlySpan<T> values) where T : IEquatable<T> => ((ReadOnlySpan<T>)span).IndexNot(values);
+
+    /// <param name="span">the span to search</param>
+    /// <param name="value">the unwanted value</param>
     /// <returns>the <b><i>last</i></b> index of <paramref name="span"/> that <b>ISN'T</b> <paramref name="value"/></returns>
     /// <remarks>
-    /// This is the complement of <see cref="MemoryExtensions.LastIndexOf{T}(System.ReadOnlySpan{T},T)"/>.
+    /// This is the complement of <see cref="MemoryExtensions.LastIndexOf{T}(System.ReadOnlySpan{T},T)"/>, and forwards to the .NET 7+ <a href="https://learn.microsoft.com/en-us/dotnet/api/system.memoryextensions.lastindexofanyexcept#system-memoryextensions-lastindexofanyexcept-1(system-readonlyspan((-0))-0)">LastIndexOfAnyExcept</a> if possible.
     /// </remarks>
-    /// <seealso cref="IndexNot{T}"/>
+    /// <seealso cref="IndexNot{T}(System.ReadOnlySpan{T},T)"/>
     /// <seealso cref="MemoryExtensions.LastIndexOf{T}(System.ReadOnlySpan{T},T)"/>
     [Pure]
     public static int LastIndexNot<T>(this ReadOnlySpan<T> span, T value)
@@ -65,24 +141,83 @@ public static partial class Spanq {
 #endif
     }
 
-    /// <returns>either:
-    /// <list type="table">
-    /// <item>
-    /// <term><paramref name="positiveMatch"/> = <c>true</c></term>
-    /// <description><see cref="MemoryExtensions.LastIndexOf{T}(System.ReadOnlySpan{T},T)"/></description>
-    /// </item>
-    /// <item>
-    /// <term><paramref name="positiveMatch"/> = <c>false</c></term>
-    /// <description><see cref="LastIndexNot{T}"/></description>
-    /// </item>
-    /// </list>
-    /// </returns>
+    /// <inheritdoc cref="LastIndexNot{T}(System.ReadOnlySpan{T},T)"/>
     [Pure]
-    public static int LastIndexOf<T>(this ReadOnlySpan<T> span, T value, bool positiveMatch)
-        where T : IEquatable<T> => positiveMatch switch {
-        true  => span.IndexOf(value),
-        false => span.LastIndexNot(value),
-    };
+    public static int LastIndexNot<T>(this Span<T> span, T value) where T : IEquatable<T> => ((ReadOnlySpan<T>)span).LastIndexNot(value);
+
+    /// <param name="span">the span to search</param>
+    /// <param name="value0">the first unwanted value</param>
+    /// <param name="value1">the second unwanted value</param>
+    /// <typeparam name="T">the span element type</typeparam>
+    /// <returns>the <b><i>last</i></b> index of the <paramref name="span"/> that <b>ISN'T</b> <paramref name="value0"/> or <paramref name="value1"/></returns>
+    [Pure]
+    public static int LastIndexNot<T>(this ReadOnlySpan<T> span, T value0, T value1) where T : IEquatable<T> {
+#if NET7_0_OR_GREATER
+        return span.LastIndexOfAnyExcept(value0, value1);
+#else
+        for (int i = span.Length - 1; i >= 0; i--) {
+            var it = span[i];
+            if ((it.Equals(value0) || it.Equals(value1)) == false) {
+                return i;
+            }
+        }
+
+        return -1;
+#endif
+    }
+
+    /// <inheritdoc cref="LastIndexNot{T}(System.ReadOnlySpan{T},T,T)"/>
+    [Pure]
+    public static int LastIndexNot<T>(this Span<T> span, T value0, T value1) where T : IEquatable<T> => ((ReadOnlySpan<T>)span).LastIndexNot(value0, value1);
+
+    /// <param name="span">the span to search</param>
+    /// <param name="value0">the first unwanted value</param>
+    /// <param name="value1">the second unwanted value</param>
+    /// <param name="value2">the third unwanted value</param>
+    /// <typeparam name="T">the span element type</typeparam>
+    /// <returns>the <b><i>last</i></b> element of the <paramref name="span"/> that <b>ISN'T</b> <paramref name="value0"/>, <paramref name="value1"/> or <paramref name="value2"/></returns>
+    [Pure]
+    public static int LastIndexNot<T>(this ReadOnlySpan<T> span, T value0, T value1, T value2) where T : IEquatable<T> {
+#if NET7_0_OR_GREATER
+        return span.LastIndexOfAnyExcept(value0, value1, value2);
+#else
+        for (int i = span.Length - 1; i >= 0; i--) {
+            var it = span[i];
+            if ((it.Equals(value0) || it.Equals(value1) || it.Equals(value2)) == false) {
+                return i;
+            }
+        }
+
+        return -1;
+#endif
+    }
+
+    /// <inheritdoc cref="LastIndexNot{T}(System.ReadOnlySpan{T},T,T,T)"/>
+    [Pure]
+    public static int LastIndexNot<T>(this Span<T> span, T value0, T value1, T value2) where T : IEquatable<T> => ((ReadOnlySpan<T>)span).LastIndexNot(value0, value1, value2);
+
+    /// <param name="span">the span to search</param>
+    /// <param name="values">the unwanted values</param>
+    /// <typeparam name="T">the span element type</typeparam>
+    /// <returns>the <b><i>last</i></b> index of the <paramref name="span"/> that <b>ISN'T</b> one of the unwanted <paramref name="values"/></returns>
+    [Pure]
+    public static int LastIndexNot<T>(this ReadOnlySpan<T> span, ReadOnlySpan<T> values) where T : IEquatable<T> {
+#if NET7_0_OR_GREATER
+        return span.LastIndexOfAnyExcept(values);
+#else
+        for (int i = span.Length - 1; i >= 0; i--) {
+            if (values.IndexOf(span[i]) < 0) {
+                return i;
+            }
+        }
+
+        return -1;
+#endif
+    }
+
+    /// <inheritdoc cref="LastIndexNot{T}(System.ReadOnlySpan{T},ReadOnlySpan{T})"/>
+    [Pure]
+    public static int LastIndexNot<T>(this Span<T> span, ReadOnlySpan<T> values) where T : IEquatable<T> => ((ReadOnlySpan<T>)span).LastIndexNot(values);
 
     #region IndexWhere
 
