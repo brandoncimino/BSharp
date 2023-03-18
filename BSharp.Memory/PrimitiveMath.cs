@@ -3,6 +3,8 @@ using System.Diagnostics.CodeAnalysis;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 
+using JetBrains.Annotations;
+
 namespace FowlFever.BSharp.Memory;
 
 /// <summary>
@@ -348,10 +350,128 @@ public static partial class PrimitiveMath {
         throw NotPrimitiveType<T>();
     }
 
+    #region Rounding
+
+    /// <summary>
+    /// Rounds a <paramref name="value"/> <b>down</b> to the closest integral value.
+    /// </summary>
+    /// <param name="value">a <see cref="float"/> or <see cref="double"/></param>
+    /// <typeparam name="T">an <see cref="IsPrimitiveNumeric{T}"/>, floating-point type</typeparam>
+    /// <inheritdoc cref="NotFloatingPointType{T}"/>
+    /// <returns>the closest integer that is less than <paramref name="value"/></returns>
+    [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Floor<T>(T value) where T : unmanaged => Scalar<T>.Floor(value);
+
+    /// <summary>
+    /// Rounds a <paramref name="value"/> <b>up</b> to the closest integral value.
+    /// </summary>
+    /// <param name="value">a <see cref="float"/> or <see cref="double"/></param>
+    /// <typeparam name="T">an <see cref="IsPrimitiveNumeric{T}"/>, floating-point type</typeparam>
+    /// <returns>the closest integer that is greater than <paramref name="value"/></returns>
+    /// <inheritdoc cref="NotFloatingPointType{T}"/>
+    [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Ceiling<T>(T value) where T : unmanaged => Scalar<T>.Ceiling(value);
+
+    /// <inheritdoc cref="Math.Truncate(double)"/>
+    /// <inheritdoc cref="NotFloatingPointType{T}"/>
+    [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Truncate<T>(T value) where T : unmanaged {
+        if (typeof(T) == typeof(float)) {
+            return (T)(object)MathF.Truncate((float)(object)value);
+        }
+        else if (typeof(T) == typeof(double)) {
+            return (T)(object)Math.Truncate((double)(object)value);
+        }
+        else {
+            throw NotFloatingPointType<T>();
+        }
+    }
+
+    /// <summary>
+    /// Similar to <see cref="Truncate{T}"/>, but allows <typeparamref name="T"/> to be an <see cref="IsBinaryInteger{T}"/>.
+    /// </summary>
+    /// <param name="value"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T TruncateSafely<T>(T value) where T : unmanaged {
+        return IsBinaryInteger<T>() ? value : Truncate(value);
+    }
+
+    #endregion
+
+    [ValueRange(-1, 1)]
+    [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static int Sign<T>(T value) where T : unmanaged {
+        // byte, ushort, uint, and ulong should have already been handled
+
+        if (typeof(T) == typeof(double)) {
+            return Math.Sign((double)(object)value);
+        }
+        else if (typeof(T) == typeof(short)) {
+            return Math.Sign((short)(object)value);
+        }
+        else if (typeof(T) == typeof(int)) {
+            return Math.Sign((int)(object)value);
+        }
+        else if (typeof(T) == typeof(long)) {
+            return Math.Sign((long)(object)value);
+        }
+        else if (typeof(T) == typeof(nint)) {
+            return Math.Sign((nint)(object)value);
+        }
+        else if (typeof(T) == typeof(sbyte)) {
+            return Math.Sign((sbyte)(object)value);
+        }
+        else if (typeof(T) == typeof(float)) {
+            return Math.Sign((float)(object)value);
+        }
+        else {
+            throw NotSignedType<T>();
+        }
+    }
+
+    /// <param name="value">an <see cref="IsPrimitiveNumeric{T}"/> value</param>
+    /// <typeparam name="T">an <see cref="IsPrimitiveNumeric{T}"/> type</typeparam>
+    /// <returns>true if <paramref name="value"/> ≥ 0</returns>
+    /// <remarks>
+    /// This should match the logic of the .NET 7+ <see cref="M:System.Numerics.INumberBase`1.IsPositive(`0)"/> method.
+    /// </remarks>
+    /// <seealso cref="IsStrictlyPositive{T}"/>
+    [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool IsPositive<T>(T value) where T : unmanaged => GreaterThanOrEqualTo(value, Zero<T>());
+
+    /// <param name="value">an <see cref="IsPrimitiveNumeric{T}"/> value</param>
+    /// <typeparam name="T">an <see cref="IsPrimitiveNumeric{T}"/> type</typeparam>
+    /// <returns>true if <paramref name="value"/> > 0</returns>
+    [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool IsStrictlyPositive<T>(T value) where T : unmanaged => GreaterThan(value, Zero<T>());
+
+    /// <param name="value">an <see cref="IsPrimitiveNumeric{T}"/> value</param>
+    /// <typeparam name="T">an <see cref="IsPrimitiveNumeric{T}"/> type</typeparam>
+    /// <returns>true if <paramref name="value"/> &lt; 0 <i>(strictly negative)</i></returns>
+    /// <remarks>
+    /// This should match the logic of the .NET 7+ <see cref="M:System.Numerics.INumberBase`1.IsNegative(`0)"/> method.
+    /// </remarks>
+    [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool IsNegative<T>(T value) where T : unmanaged => LessThan(value, Zero<T>());
+
     #region Exceptions
 
-    private static NotSupportedException NotPrimitiveType<T>()     => RejectType<T>("not a primitive numeric type!");
-    private static NotSupportedException NotIntegerType<T>()       => RejectType<T>("not a primitive integer type!");
+    /// <exception cref="NotSupportedException">if <typeparamref name="T"/> isn't an <see cref="IsPrimitiveNumeric{T}"/> type</exception>
+    [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static NotSupportedException NotPrimitiveType<T>() => RejectType<T>("not a primitive numeric type!");
+
+    /// <exception cref="NotSupportedException">if <typeparamref name="T"/> isn't an <see cref="IsPrimitiveNumeric{T}"/>, signed type</exception>
+    [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static NotSupportedException NotSignedType<T>() => RejectType<T>("not a primitive, signed numeric type!");
+
+    /// <exception cref="NotSupportedException">if <typeparamref name="T"/> isn't an <see cref="IsPrimitiveNumeric{T}"/>, integer type <i>(<see cref="int"/>, <see cref="long"/>, etc.)</i></exception>
+    [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static NotSupportedException NotIntegerType<T>() => RejectType<T>("not a primitive integer type!");
+
+    /// <exception cref="NotSupportedException">if <typeparamref name="T"/> isn't an <see cref="IsPrimitiveNumeric{T}"/>, floating-point type <i>(<see cref="float"/> or <see cref="double"/>)</i></exception>
+    [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static NotSupportedException NotFloatingPointType<T>() => RejectType<T>("not a primitive floating-point type!");
 
     private static NotSupportedException RejectType<T>(string reason, [CallerMemberName] string? caller = default) {

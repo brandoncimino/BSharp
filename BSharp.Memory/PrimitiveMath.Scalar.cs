@@ -145,7 +145,7 @@ public static partial class PrimitiveMath {
                 return (T)(object)Math.Abs((float)(object)value);
             }
             else {
-                throw RejectType<T>("not a signed type!");
+                throw NotSignedType<T>();
             }
         }
 
@@ -690,7 +690,7 @@ public static partial class PrimitiveMath {
                 return (T)(object)(sbyte)((sbyte)(object)value >> (shiftCount & 7));
             }
             else {
-                throw RejectType<T>("not a signed primitive numeric type!");
+                throw RejectType<T>("not a signed, primitive, binary-integral type!");
             }
         }
 
