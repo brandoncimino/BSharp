@@ -1,7 +1,7 @@
-using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
+using FowlFever.BSharp.Attributes;
 using FowlFever.BSharp.Strings.Spectral;
 
 using Spectre.Console;
@@ -9,15 +9,19 @@ using Spectre.Console.Rendering;
 
 namespace FowlFever.BSharp;
 
-public sealed record Blog : IDisposable, IRenderable {
+[Experimental("Haven't looked at this in a while, and it's very silly")]
+internal sealed record Blog : IDisposable, IRenderable {
     /// <summary>
     /// The <see cref="Strings.Spectral.Palette"/> used when the <see cref="Blog"/>.<see cref="Palette"/> isn't specified.
     /// </summary>
     public static Func<Palette> DefaultPalette { get; set; } = () => Palette.Fallback;
 
-    private readonly List<(IRenderable, IRenderable)> _rows = new();
-    private readonly string?                          _title;
-    private readonly Palette?                         _palette;
+    private static Blog? _mainBlog;
+
+    private readonly List<(IRenderable?, IRenderable?)?> _rows = new();
+    private readonly string?                             _title;
+    private readonly Palette?                            _palette;
+    private          bool                                _isPosted = false;
 
     public Palette Palette {
         get => _palette.OrFallback(DefaultPalette.Invoke(), Palette.Fallback);
@@ -40,7 +44,14 @@ public sealed record Blog : IDisposable, IRenderable {
         grid.AddColumns(2);
 
         foreach (var r in _rows) {
-            grid.AddRow(r.Item1, r.Item2);
+            if (r == null) {
+                grid.AddEmptyRow();
+            }
+            else {
+                var label = r?.Item1 ?? Text.Empty;
+                var value = r?.Item2 ?? Text.Empty;
+                grid.AddRow(label, value);
+            }
         }
 
         var title = GetTitle();
@@ -65,24 +76,37 @@ public sealed record Blog : IDisposable, IRenderable {
 
     #region Post
 
-    public Blog Post<T, TLabel>(T? value, TLabel? label, Palette? palette = default, [CallerArgumentExpression("value")] string? _expression = default) {
-        _rows.Add(Renderwerks.GetLabelled(value, label, palette ?? Palette, _expression));
+    private void RequireNotPosted() {
+        if (_isPosted) {
+            throw new InvalidOperationException($"This {GetType().Name} has already been posted!");
+        }
+    }
+
+    private Blog AddRow(IRenderable? label, IRenderable? value) {
+        return AddRow((label, value));
+    }
+
+    private Blog AddRow((IRenderable?, IRenderable?)? row) {
+        RequireNotPosted();
+
+        _rows.Add(row);
         return this;
+    }
+
+    public Blog Post<T, TLabel>(T? value, TLabel? label, Palette? palette = default, [CallerArgumentExpression("value")] string? _expression = default) {
+        return AddRow(Renderwerks.GetLabelled(value, label, palette ?? Palette, _expression));
     }
 
     public Blog Post<T>(T? value, Palette? palette = default, [CallerArgumentExpression("value")] string? _expression = default) {
-        _rows.Add(Renderwerks.GetLabelled(value, palette ?? Palette, _expression));
-        return this;
+        return AddRow(Renderwerks.GetLabelled(value, palette ?? Palette, _expression));
     }
 
     public Blog Post<T, TLabel>(ReadOnlySpan<T> span, TLabel? label = default, Palette? palette = default, [CallerArgumentExpression("span")] string? _expression = default) {
-        _rows.Add(Renderwerks.GetLabelled(span, label, palette ?? Palette, _expression));
-        return this;
+        return AddRow(Renderwerks.GetLabelled(span, label, palette ?? Palette, _expression));
     }
 
     public Blog Post<T>(ReadOnlySpan<T> span, Palette? palette = default, [CallerArgumentExpression("span")] string? _expression = default) {
-        _rows.Add(Renderwerks.GetLabelled(span, palette ?? Palette, _expression));
-        return this;
+        return AddRow(Renderwerks.GetLabelled(span, palette ?? Palette, _expression));
     }
 
     #region static Post
@@ -167,7 +191,13 @@ public sealed record Blog : IDisposable, IRenderable {
     #endregion
 
     public void Dispose() {
-        Brandon.Render(this);
+        if (_mainBlog != null) {
+            _mainBlog.AddRow(this, null);
+            return;
+        }
+        else {
+            Brandon.Render(this);
+        }
     }
 
     public Measurement          Measure(RenderContext context, int maxWidth) => ToRenderable().GetMeasurement(context, maxWidth);
