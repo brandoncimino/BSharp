@@ -1,9 +1,9 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
+using System.Runtime.CompilerServices;
 
 using FowlFever.BSharp.Collections;
 using FowlFever.BSharp.Enums;
@@ -18,6 +18,9 @@ namespace FowlFever.BSharp.Strings;
 ///
 /// TODO: What about adding a <see cref="StringMirroring"/> property?
 /// TODO: Ensure proper serializability!
+/// TODO: Investigate the implications of this containing reference type fields. In particular, <see cref="_stringInfo"/> could be switched from <see cref="ITextElements"/> to <see cref="ImmutableArray{T}"/>.
+/// TODO: Investigate creating a version of <see cref="OneLine"/> that can be converted to and from <see cref="ReadOnlySpan{T}"/> of <see cref="char"/> using <see cref="Unsafe.As{T}"/>.
+/// TODO: Should probably separate this from the <see cref="GraphemeCluster"/> system, since those are inherently expensive to compute.
 /// </summary>
 public readonly partial record struct OneLine : IHas<string>, IEnumerable<GraphemeCluster>, IEquivalent<string> {
     internal enum ShouldValidate { Yes, No }
@@ -65,8 +68,11 @@ public readonly partial record struct OneLine : IHas<string>, IEnumerable<Graphe
 
     #region Validation
 
-    private static string Validate(string? str) => str.MustNotBeNull()
-                                                      .MustNotBe(it => it.ContainsAny(LineBreakChars));
+    private static string Validate(string? str) {
+        Debug.Assert(str != null);
+        Validate(str.AsSpan());
+        return str;
+    }
 
     internal static ReadOnlySpan<char> Validate(ReadOnlySpan<char> span) {
         var lineEnumerator = span.EnumerateLines();
