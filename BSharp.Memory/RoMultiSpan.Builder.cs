@@ -204,13 +204,18 @@ public readonly ref partial struct RoMultiSpan<T> {
         #region Remove
 
         /// <summary>
+        /// Removes an entry from the <see cref="Builder"/>, shifting everything as appropriate.
+        /// 
         /// <i>(👀 element)</i>: Move 1 position back <i>(toward 0)</i> in line.
         /// <p/>
         /// <i>(👀 index)</i>: Grab the value of the next <i>(away from 0)</i> element. If it doesn't exist, take <see cref="ReadOnlySpan{T}.Empty"/>.
         /// </summary>
         /// <param name="index">the element that was removed, causing everything <i>after</i> it to need to move</param>
         /// <returns>this <see cref="Builder"/></returns>
+        /// <exception cref="ArgumentOutOfRangeException">if <paramref name="index"/> is out-of-bounds for the current <see cref="Count"/></exception>
         public Builder RemoveAt([ValueRange(0, RoMultiSpan.MaxSpans)] int index) {
+            Count.RequireIndex(index);
+
             // starting from `i`, shift everything back 1 spot
             for (int i = index; i < Count; i++) {
                 var setSpan = i + 1 < Count ? this[i + 1] : default;
