@@ -8,6 +8,9 @@ namespace FowlFever.BSharp.Strings;
 /// <summary>
 /// Methods to help build & transform <see cref="Regex"/> patterns.
 /// </summary>
+/// <remarks>
+/// If possible, these methods should be avoided in favor of <see cref="T:System.Text.RegularExpressions.GeneratedRegexAttribute"/>.
+/// </remarks>
 [PublicAPI]
 public static class RegexPatterns {
     public static readonly Regex NotStart = new Regex("(?<!^)");
