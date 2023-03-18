@@ -1,7 +1,5 @@
-using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Linq;
 using System.Text.RegularExpressions;
 
 using FowlFever.BSharp.Collections;
@@ -9,6 +7,20 @@ using FowlFever.BSharp.Enums;
 
 namespace FowlFever.BSharp.Strings;
 
+/// <summary>
+/// Builds regex <a href="https://learn.microsoft.com/en-us/dotnet/standard/base-types/character-classes-in-regular-expressions">character classes</a>, which match a given set of characters.
+/// </summary>
+/// <remarks>
+/// Does not currently support character ranges, i.e. "lowercase letters" which would be the regex <c>[a-z]</c>.
+/// </remarks>
+/// <example>
+/// <ul>
+/// <li><c>a</c>, <c>b</c>, or <c>c</c> → <c>[abc]</c> → <c>new RegexCharacterSet(new []{'a','b','c'})</c></li>
+/// </ul>
+/// </example>
+/// <param name="Inclusions"></param>
+/// <param name="Exclusions"></param>
+[Obsolete($"Should be avoided in favor of [GeneratedRegex]")]
 internal sealed record RegexCharacterSet(IEnumerable<char>? Inclusions = default, IEnumerable<char>? Exclusions = default) : RegexBuilder {
     private readonly IImmutableSet<string> _inclusions = EscapeChars(Inclusions).ToImmutableHashSet();
     private readonly IImmutableSet<string> _exclusions = EscapeChars(Exclusions).ToImmutableHashSet();
