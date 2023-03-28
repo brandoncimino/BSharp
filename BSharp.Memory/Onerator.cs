@@ -1,3 +1,7 @@
+using System;
+
+using JetBrains.Annotations;
+
 namespace FowlFever.BSharp.Memory;
 
 /// <summary>
@@ -20,6 +24,10 @@ public ref struct Onerator<T> {
         set => _notDone = !value;
     }
 
+    /// <remarks>
+    /// We don't need to worry about un-setting <see cref="Current"/> because this is a <see cref="Type.IsByRefLike"/> struct, which has a naturally limited lifespan.
+    /// </remarks>
+    [UsedImplicitly]
     public T Current { get; }
 
     public Onerator(T thing) {
@@ -35,4 +43,6 @@ public ref struct Onerator<T> {
         _done = true;
         return true;
     }
+
+    [UsedImplicitly] public Onerator<T> GetEnumerator() => this;
 }
