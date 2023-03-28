@@ -60,7 +60,7 @@ public readonly ref struct RoSpanTuple<TA> {
     [Pure] public ValueRoSpanTuple<TValue, TA> WithValue<TValue>(TValue value) => new(value, A);
 
     [Obsolete(RoSpanTuple.SpanDoesntSupport), DoesNotReturn]
-    public override bool Equals(object obj) => throw RoSpanTuple.BecauseSpanDoesnt();
+    public override bool Equals(object? obj) => throw RoSpanTuple.BecauseSpanDoesnt();
 
     [Obsolete(RoSpanTuple.SpanDoesntSupport), DoesNotReturn]
     public override int GetHashCode() => throw RoSpanTuple.BecauseSpanDoesnt();
@@ -95,7 +95,7 @@ public readonly ref struct RoSpanTuple<TA, TB> {
     [Pure] public ValueRoSpanTuple<TValue, TA, TB> WithValue<TValue>(TValue value) => new(value, A, B);
 
     [Obsolete(RoSpanTuple.SpanDoesntSupport), DoesNotReturn]
-    public override bool Equals(object obj) => throw RoSpanTuple.BecauseSpanDoesnt();
+    public override bool Equals(object? obj) => throw RoSpanTuple.BecauseSpanDoesnt();
 
     [Obsolete(RoSpanTuple.SpanDoesntSupport), DoesNotReturn]
     public override int GetHashCode() => throw RoSpanTuple.BecauseSpanDoesnt();
@@ -133,7 +133,7 @@ public readonly ref struct RoSpanTuple<TA, TB, TC> {
     [Pure] public ValueRoSpanTuple<TValue, TA, TB, TC> WithValue<TValue>(TValue value) => new(value, A, B, C);
 
     [Obsolete(RoSpanTuple.SpanDoesntSupport), DoesNotReturn]
-    public override bool Equals(object obj) => throw RoSpanTuple.BecauseSpanDoesnt();
+    public override bool Equals(object? obj) => throw RoSpanTuple.BecauseSpanDoesnt();
 
     [Obsolete(RoSpanTuple.SpanDoesntSupport), DoesNotReturn]
     public override int GetHashCode() => throw RoSpanTuple.BecauseSpanDoesnt();
@@ -172,7 +172,7 @@ public readonly ref struct RoSpanTuple<TA, TB, TC, TD> {
     [Pure] public ValueRoSpanTuple<TValue, TA, TB, TC, TD> WithValue<TValue>(TValue value) => new(value, A, B, C, D);
 
     [Obsolete(RoSpanTuple.SpanDoesntSupport), DoesNotReturn]
-    public override bool Equals(object obj) => throw RoSpanTuple.BecauseSpanDoesnt();
+    public override bool Equals(object? obj) => throw RoSpanTuple.BecauseSpanDoesnt();
 
     [Obsolete(RoSpanTuple.SpanDoesntSupport), DoesNotReturn]
     public override int GetHashCode() => throw RoSpanTuple.BecauseSpanDoesnt();

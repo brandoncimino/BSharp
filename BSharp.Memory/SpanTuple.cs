@@ -67,7 +67,7 @@ public readonly ref struct SpanTuple<TA> {
     #region object methods
 
     [Obsolete(SpanTuple.SpanDoesntSupport), DoesNotReturn]
-    public override bool Equals(object obj) => throw SpanTuple.BecauseSpanDoesnt();
+    public override bool Equals(object? obj) => throw SpanTuple.BecauseSpanDoesnt();
 
     [Obsolete(SpanTuple.SpanDoesntSupport), DoesNotReturn]
     public override int GetHashCode() => throw SpanTuple.BecauseSpanDoesnt();
@@ -113,7 +113,7 @@ public readonly ref struct SpanTuple<TA, TB> {
     #region object methods
 
     [Obsolete(SpanTuple.SpanDoesntSupport), DoesNotReturn]
-    public override bool Equals(object obj) => throw SpanTuple.BecauseSpanDoesnt();
+    public override bool Equals(object? obj) => throw SpanTuple.BecauseSpanDoesnt();
 
     [Obsolete(SpanTuple.SpanDoesntSupport), DoesNotReturn]
     public override int GetHashCode() => throw SpanTuple.BecauseSpanDoesnt();
@@ -152,7 +152,7 @@ public readonly ref struct SpanTuple<TA, TB, TC> {
     [Pure] public SpanTuple<TA, TB, TC, TD> Append<TD>(SpanTuple<TD> other) => new(A, B, C, other.A);
 
     [Obsolete(SpanTuple.SpanDoesntSupport), DoesNotReturn]
-    public override bool Equals(object obj) => throw SpanTuple.BecauseSpanDoesnt();
+    public override bool Equals(object? obj) => throw SpanTuple.BecauseSpanDoesnt();
 
     [Obsolete(SpanTuple.SpanDoesntSupport), DoesNotReturn]
     public override int GetHashCode() => throw SpanTuple.BecauseSpanDoesnt();
@@ -190,7 +190,7 @@ public readonly ref struct SpanTuple<TA, TB, TC, TD> {
     [Pure] public static implicit operator RoSpanTuple<TA, TB, TC, TD>(SpanTuple<TA, TB, TC, TD> spanTuple) => new(spanTuple.A, spanTuple.B, spanTuple.C, spanTuple.D);
 
     [Obsolete(SpanTuple.SpanDoesntSupport), DoesNotReturn]
-    public override bool Equals(object obj) => throw SpanTuple.BecauseSpanDoesnt();
+    public override bool Equals(object? obj) => throw SpanTuple.BecauseSpanDoesnt();
 
     [Obsolete(SpanTuple.SpanDoesntSupport), DoesNotReturn]
     public override int GetHashCode() => throw SpanTuple.BecauseSpanDoesnt();
