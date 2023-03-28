@@ -1,9 +1,7 @@
-using System;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
-using FowlFever.BSharp.Functionally;
 using FowlFever.BSharp.Strings;
 
 using JetBrains.Annotations;
@@ -294,15 +292,6 @@ public static partial class LambdaExtensions {
     public static Func<IN, OUT> Chain<IN, MID, OUT>(this Func<IN, MID> func, Func<MID, OUT> andThen) {
         return it => andThen(func(it));
     }
-
-    #region Lambda expression strings
-
-    /// <inheritdoc cref="LambdaExpressionString"/>
-    public static LambdaExpressionString Parse(ReadOnlySpan<char> lambdaExpression) {
-        return new LambdaExpressionString(lambdaExpression);
-    }
-
-    #endregion
 
     public static bool OrFalse<T>(this Func<T, bool>? predicate, T arg) => predicate?.Invoke(arg) ?? false;
     public static bool OrTrue<T>(this  Func<T, bool>? predicate, T arg) => predicate?.Invoke(arg) ?? true;

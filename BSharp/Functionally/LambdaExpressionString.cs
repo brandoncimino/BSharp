@@ -1,4 +1,3 @@
-using System;
 using System.Linq.Expressions;
 using System.Text;
 
@@ -18,7 +17,8 @@ namespace FowlFever.BSharp.Functionally;
 /// <p/>
 /// For in-depth analysis of a lambda expression, use <see cref="LambdaExpression"/> instead.
 /// </remarks>
-public readonly ref struct LambdaExpressionString {
+[Obsolete("Should be replaced with Roslyn's LambdaExpressionSyntax")]
+internal readonly ref struct LambdaExpressionString {
     private const  string             Arrow          = "=>";
     internal const string             StaticModifier = "static";
     public         ReadOnlySpan<char> Modifier        { get; init; }
@@ -202,7 +202,7 @@ internal static class LambdaExpressingStringHelpers {
         Span<char> trimmed = stackalloc char[text.Length];
         var        pos     = 0;
         foreach (var line in text.EnumerateLines()) {
-            var trimLine = line.SkipWhile(static c => c.IsWhitespace(), textStartsAt);
+            var trimLine = line[textStartsAt..];
             trimmed.WriteJoin(trimLine, "\n", ref pos);
         }
 
