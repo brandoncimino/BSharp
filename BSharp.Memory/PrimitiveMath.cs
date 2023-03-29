@@ -110,6 +110,7 @@ public static partial class PrimitiveMath {
     /// <typeparam name="T"><inheritdoc cref="Add{T}"/></typeparam>
     /// <returns>the <see cref="Min{T}(T,T)"/> value in this vector</returns>
     /// <exception cref="NotSupportedException"><inheritdoc cref="Add{T}"/></exception>
+    [Pure]
     public static T Min<T>(this Vector<T> vector) where T : unmanaged {
         T min = default;
 
@@ -125,6 +126,7 @@ public static partial class PrimitiveMath {
     /// </summary>
     /// <inheritdoc cref="Min{T}(T,T)"/>
     /// <returns>the <see cref="Max{T}(T,T)"/> value in this vector</returns>
+    [Pure]
     public static T Max<T>(this Vector<T> vector) where T : unmanaged {
         T max = default;
 
@@ -143,6 +145,7 @@ public static partial class PrimitiveMath {
     /// <returns>the total of all of the elements from this <see cref="Vector{T}"/></returns>
     /// <exception cref="NotSupportedException"><inheritdoc cref="Add{T}"/></exception>
     /// <remarks>TODO: link to online docs for future Vector.Sum() method</remarks>
+    [Pure]
     public static T Sum<T>(this Vector<T> vector) where T : unmanaged {
 #if NET6_0_OR_GREATER
         return Vector.Sum(vector);
@@ -163,6 +166,7 @@ public static partial class PrimitiveMath {
     /// <typeparam name="T">the span element type</typeparam>
     /// <returns>a new <see cref="Vector{T}"/> containing the first <see cref="Vector{T}.Count"/> elements of the span</returns>
     /// <exception cref="IndexOutOfRangeException">if the input span doesn't contain at least <see cref="Vector{T}.Count"/> elements</exception>
+    [Pure]
     public static Vector<T> CreateVector<T>(ReadOnlySpan<T> span) where T : unmanaged {
 #if NET5_0_OR_GREATER
         return new Vector<T>(span);
@@ -184,6 +188,7 @@ public static partial class PrimitiveMath {
     /// <typeparam name="T"><inheritdoc cref="Add{T}"/></typeparam>
     /// <returns>a new <see cref="Vector{T}"/></returns>
     /// <exception cref="IndexOutOfRangeException">if the (<paramref name="index"/>) or (<paramref name="index"/> + <see cref="Vector{T}.Count"/>) is out-of-bounds for this span</exception>
+    [Pure]
     public static Vector<T> NextVector<T>(this ReadOnlySpan<T> span, ref int index) where T : unmanaged {
         var vector = CreateVector(span[index..]);
         index += Vector<T>.Count;
@@ -202,16 +207,20 @@ public static partial class PrimitiveMath {
     ///  3.5 => 3 
     /// ]]></code>
     /// </remarks>
-    public static Vector<int> ToInts(this Vector<float> floats) => Vector.ConvertToInt32(floats);
+    [Pure]
+    internal static Vector<int> ToInts(this Vector<float> floats) => Vector.ConvertToInt32(floats);
 
     /// <inheritdoc cref="Vector.ConvertToInt64"/>
-    public static Vector<long> ToLongs(this Vector<double> doubles) => Vector.ConvertToInt64(doubles);
+    [Pure]
+    internal static Vector<long> ToLongs(this Vector<double> doubles) => Vector.ConvertToInt64(doubles);
 
     /// <inheritdoc cref="Vector.ConvertToSingle(System.Numerics.Vector{int})"/>
-    public static Vector<float> ToFloats(this Vector<int> ints) => Vector.ConvertToSingle(ints);
+    [Pure]
+    internal static Vector<float> ToFloats(this Vector<int> ints) => Vector.ConvertToSingle(ints);
 
     /// <inheritdoc cref="Vector.ConvertToDouble(System.Numerics.Vector{long})"/>
-    public static Vector<double> ToDoubles(this Vector<long> longs) => Vector.ConvertToDouble(longs);
+    [Pure]
+    internal static Vector<double> ToDoubles(this Vector<long> longs) => Vector.ConvertToDouble(longs);
 
     /// <summary>
     /// Copies the contents of a <see cref="Vector{T}"/> into a <see cref="Span{T}"/>.
@@ -268,7 +277,7 @@ public static partial class PrimitiveMath {
 
     private const string NoEqualsMessage = $"Do not use {nameof(PrimitiveMath)}.{nameof(Equals)}(). If you wanted mathematical equality, use {nameof(PrimitiveMath)}.{nameof(EqualTo)}(). If you wanted object equality, use object.{nameof(object.Equals)}() directly.";
 
-    [Obsolete(NoEqualsMessage, error: true)]
+    [Obsolete(NoEqualsMessage, error: true), DoesNotReturn]
     public new static bool Equals(object? objA, object? objB) => throw new NotSupportedException(NoEqualsMessage);
 
     /// <summary>
