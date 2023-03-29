@@ -37,7 +37,7 @@ public static partial class Apportion {
 
             while (index + Vector<float>.Count <= weights.Length) {
                 var weightVector  = weights.NextVector(ref index);
-                var portionVector = (weightVector / sumVector * amount).ToInts();
+                var portionVector = Vector.ConvertToInt32(weightVector / sumVector * amount);
                 PrimitiveMath.CopyTo(portionVector, output[index..]);
                 distributedVector += portionVector;
             }
