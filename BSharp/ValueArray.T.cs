@@ -1,9 +1,8 @@
-using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Linq;
 
 using FowlFever.BSharp.Exceptions;
+using FowlFever.BSharp.Memory;
 using FowlFever.Implementors;
 
 namespace FowlFever.BSharp;
@@ -14,7 +13,8 @@ namespace FowlFever.BSharp;
 /// <param name="AsImmutableArray">the actual <see cref="ImmutableArray{T}"/> that stores this <see cref="ValueArray{T}"/>'s contents</param>
 /// <typeparam name="T">the type of the elements in this array</typeparam>
 public readonly partial record struct ValueArray<T>(ImmutableArray<T> AsImmutableArray) :
-    IHasImmutableArray<T> where T : struct, IEquatable<T> {
+    IHasImmutableArray<T>,
+    IAsReadOnlySpan<T> where T : struct, IEquatable<T> {
     private readonly ImmutableArray<T> _parts = AsImmutableArray;
     public           ImmutableArray<T> AsImmutableArray => _parts.IsDefault ? ImmutableArray<T>.Empty : _parts;
     public           ReadOnlySpan<T>   AsSpan()         => AsImmutableArray.AsSpan();
@@ -42,4 +42,8 @@ public readonly partial record struct ValueArray<T>(ImmutableArray<T> AsImmutabl
     /// Note that using <see cref="System.Linq"/> (<i><see cref="Enumerable"/></i>) extension methods with <see cref="ValueArray"/> <i>will</i> incur a boxing cost.
     /// </remarks>
     public ImmutableArray<T>.Enumerator GetEnumerator() => AsImmutableArray.GetEnumerator();
+
+    public ReadOnlySpan<T> AsReadOnlySpan() {
+        return this.AsSpan();
+    }
 }
