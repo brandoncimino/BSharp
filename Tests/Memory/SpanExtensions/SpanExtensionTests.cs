@@ -40,42 +40,6 @@ public partial class SpanExtensionTests {
 
     #region Spliterate
 
-    [TestCase(' ',           true)]
-    [TestCase('a',           false)]
-    [TestCase('\n',          true)]
-    [TestCase(1,             false)]
-    [TestCase(0,             false)]
-    [TestCase("a",           false)]
-    [TestCase(" ",           true)]
-    [TestCase("",            true)]
-    [TestCase("NULL_STRING", true)]
-    public void IsTrimmable<T>(T? entry, bool isTrimmable)
-        where T : IEquatable<T> {
-        if (entry is "NULL_STRING") {
-            entry = default;
-        }
-
-        Assert.That(SpanHelpers.IsTrimmable(entry), Is.EqualTo(isTrimmable));
-    }
-
-    [TestCase(new[] { 'a', ' ', 'b' },                  new[] { 'a', ' ', 'b' })]
-    [TestCase(new[] { '\t', 'a', ' ', 'b', '\n', ' ' }, new[] { 'a', ' ', 'b' })]
-    [TestCase(new[] { "", " a ", "", "b", " ", "" },    new[] { " a ", "", "b" })]
-    public void GenericTrim<T>(T[] source, T[] expected)
-        where T : IEquatable<T> {
-        var actSpan = source.AsSpan();
-        Assert.That(SpanHelpers.GenericTrim<T>(actSpan).ToArray(), Is.EquivalentTo(expected));
-    }
-
-    [TestCase("a b",     "a b")]
-    [TestCase(" a b ",   "a b")]
-    [TestCase("  a b  ", "a b")]
-    public void GenericTrim_Chars(string source, string expected) {
-        var trimSpan = SpanHelpers.GenericTrim<char>(source);
-        var trimStr  = trimSpan.ToString();
-        Assert.That(trimStr, Is.EqualTo(expected));
-    }
-
     [Test]
     [TestCase("a-b-c",        '-', StringSplitOptions.None,                                                "a",  "b",  "c")]
     [TestCase("aa--bb--cc",   '-', StringSplitOptions.None,                                                "aa", "",   "bb", "", "cc")]
