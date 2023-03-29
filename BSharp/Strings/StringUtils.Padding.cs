@@ -1,4 +1,3 @@
-using System;
 using System.Text.RegularExpressions;
 
 using FowlFever.BSharp.Enums;
@@ -36,7 +35,7 @@ public static partial class StringUtils {
             var shortLimit = maxLength   + trail.Length * 2;
             var cutAmount  = self.Length - shortLimit;
             Must.BePositive(cutAmount);
-            var (leftCut, rightCut) = cutAmount.Splerp(.5);
+            var (leftCut, rightCut) = cutAmount.Terp(.5);
             return self[leftCut..^rightCut];
         }
 
