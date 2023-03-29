@@ -1,7 +1,5 @@
 using System;
 
-using JetBrains.Annotations;
-
 namespace FowlFever.BSharp.Memory;
 
 public static partial class Spanq {
@@ -26,46 +24,61 @@ public static partial class Spanq {
     /// <typeparam name="T">the span entry type</typeparam>
     /// <returns>all of the entries after the first <paramref name="toSkip"/></returns>
     [Pure]
-    public static ReadOnlySpan<T> Skip<T>(this ReadOnlySpan<T> span, int toSkip) => toSkip switch {
-        <= 0                         => span,
-        _ when toSkip >= span.Length => default,
-        _                            => span[toSkip..]
-    };
+    public static ReadOnlySpan<T> Skip<T>(this ReadOnlySpan<T> span, int toSkip) {
+        if (toSkip <= 0) {
+            return span;
+        }
+
+        return toSkip >= span.Length ? default : span[toSkip..];
+    }
 
     /// <inheritdoc cref="Skip{T}(System.ReadOnlySpan{T},int)"/>
     [Pure]
-    public static Span<T> Skip<T>(this Span<T> span, int toSkip) => toSkip switch {
-        <= 0                         => span,
-        _ when toSkip >= span.Length => default,
-        _                            => span[toSkip..]
-    };
+    public static Span<T> Skip<T>(this Span<T> span, int toSkip) {
+        if (toSkip <= 0) {
+            return span;
+        }
+
+        return toSkip >= span.Length ? default : span[toSkip..];
+    }
 
     /// <param name="span">this span</param>
     /// <param name="toTake">the number of entries we want</param>
     /// <typeparam name="T">the span element type</typeparam>
     /// <returns>the first <paramref name="toTake"/> entries</returns>
     [Pure]
-    public static ReadOnlySpan<T> Take<T>(this ReadOnlySpan<T> span, int toTake) => toTake switch {
-        <= 0                         => default,
-        _ when toTake >= span.Length => span,
-        _                            => span[..toTake]
-    };
+    public static ReadOnlySpan<T> Take<T>(this ReadOnlySpan<T> span, int toTake) {
+        if (toTake <= 0) {
+            return default;
+        }
+
+        return toTake >= span.Length ? span : span[..toTake];
+    }
 
     /// <inheritdoc cref="Take{T}(System.ReadOnlySpan{T},System.Range)"/>
     [Pure]
-    public static Span<T> Take<T>(this Span<T> span, int toTake) => toTake switch {
-        <= 0                         => default,
-        _ when toTake >= span.Length => span,
-        _                            => span[..toTake]
-    };
+    public static Span<T> Take<T>(this Span<T> span, int toTake) {
+        if (toTake <= 0) {
+            return default;
+        }
+
+        return toTake >= span.Length ? span : span[..toTake];
+    }
 
     /// <summary>
     /// Splits a span into 2 separate <see cref="RoSpanTuple{TA, TB}.A"/> and <see cref="RoSpanTuple{TA,TB}.B"/> spans.
     /// </summary>
+    /// <example>
+    /// This method is most convenient when used with <see cref="RoSpanTuple{TA,TB}.Deconstruct">Deconstruct</see>ion:
+    /// <code><![CDATA[
+    /// var (a, b) = span.TakeLeftovers(5);
+    /// ]]></code>
+    /// </example>
     /// <param name="span">this span</param>
     /// <param name="toTake">the number of elements to put into the <see cref="RoSpanTuple{TA,TB}.A"/> span</param>
     /// <typeparam name="T">the span element type</typeparam>
     /// <returns>a <see cref="RoSpanTuple{TA,TB}"/></returns>
+    [Pure]
     public static RoSpanTuple<T, T> TakeLeftovers<T>(this ReadOnlySpan<T> span, int toTake) =>
         new() {
             A = span.Take(toTake),
@@ -75,10 +88,12 @@ public static partial class Spanq {
     /// <summary>
     /// Splits a span into 2 separate <see cref="SpanTuple{TA,TB}.A"/> and <see cref="SpanTuple{TA,TB}.B"/> spans.
     /// </summary>
+    /// <example><inheritdoc cref="TakeLeftovers{T}(System.ReadOnlySpan{T},int)"/></example>
     /// <param name="span">this span</param>
     /// <param name="toTake">the number of elements to put into the <see cref="SpanTuple{TA,TB}.A"/> span</param>
     /// <typeparam name="T">the span element type</typeparam>
     /// <returns>a <see cref="SpanTuple{TA,TB}"/></returns>
+    [Pure]
     public static SpanTuple<T, T> TakeLeftovers<T>(this Span<T> span, int toTake) => new() {
         A = span.Take(toTake),
         B = span.Skip(toTake),
@@ -101,47 +116,6 @@ public static partial class Spanq {
     /// <inheritdoc cref="Take{T}(System.Span{T},int)"/>
     [Pure]
     public static Span<T> TakeLast<T>(this Span<T> span, int toTake) => span.Skip(span.Length - toTake);
-
-    #endregion
-
-    #region SkipWhile
-
-    /// <summary>
-    /// [Skip/Take]s up to <paramref name="limit"/> entries where <paramref name="selector"/> returns <paramref name="expected"/>.
-    /// </summary>
-    /// <param name="span">this <see cref="ReadOnlySpan{T}"/></param>
-    /// <param name="selector">transforms entries in the <paramref name="span"/></param>
-    /// <param name="expected">if <paramref name="selector"/> returns this, we [skip/take] that entry</param>
-    /// <param name="limit">the maximum number of entries we can [skip/take]</param>
-    /// <param name="from">whether to skip from the start or end of the <paramref name="span"/></param>
-    /// <typeparam name="T">the span entry type</typeparam>
-    /// <typeparam name="TExpected">the <paramref name="selector"/> output type</typeparam>
-    /// <returns>this <paramref name="span"/>, possibly with some leading entries [skipped/taken]</returns>
-    [Pure]
-    public static ReadOnlySpan<T> SkipWhile<T, TExpected>(
-        this                    ReadOnlySpan<T>    span,
-        [RequireStaticDelegate] Func<T, TExpected> selector,
-        TExpected                                  expected,
-        int                                        limit = int.MaxValue,
-        From                                       from  = From.Start
-    )
-        where TExpected : IEquatable<TExpected> {
-        return span.Skip(span.CountWhile(selector, expected, limit, from));
-    }
-
-    /// <summary>
-    /// [Skip/Take]s up to <paramref name="limit"/> entries where <paramref name="predicate"/> returns <c>true</c>.
-    /// </summary>
-    /// <param name="span">this <see cref="ReadOnlySpan{T}"/></param>
-    /// <param name="predicate">if this returns <c>true</c>, we should [skip/take] this entry</param>
-    /// <param name="limit">the maximum number of entries to [skip/take]</param>
-    /// <param name="from">whether to skip from the start or end of the <paramref name="span"/></param>
-    /// <typeparam name="T">the span entry type</typeparam>
-    /// <returns>this <paramref name="span"/>, possibly with some leading entries removed</returns>
-    [Pure]
-    public static ReadOnlySpan<T> SkipWhile<T>(this ReadOnlySpan<T> span, [RequireStaticDelegate] Func<T, bool> predicate, int limit = int.MaxValue, From from = From.Start) {
-        return span.SkipWhile(predicate, true, limit, from);
-    }
 
     #endregion
 

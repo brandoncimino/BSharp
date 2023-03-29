@@ -13,6 +13,7 @@ public static partial class Spanq {
     /// <remarks>The methods prefixed with <c>Fast{X}</c> only work with <see cref="PrimitiveMath.IsPrimitiveNumeric{T}"/> types.</remarks>
     /// <seealso cref="PrimitiveMath"/>
     /// <exception cref="NotSupportedException">if <typeparamref name="T"/> is not <see cref="PrimitiveMath.IsPrimitiveNumeric{T}"/></exception>
+    [Pure]
     public static T FastSum<T>(this ReadOnlySpan<T> span) where T : unmanaged {
         if (span.IsEmpty) {
             return default;
@@ -41,6 +42,7 @@ public static partial class Spanq {
     }
 
     /// <inheritdoc cref="FastSum{T}(System.ReadOnlySpan{T})"/>
+    [Pure]
     public static T FastSum<T>(this Span<T> span) where T : unmanaged => span.AsReadOnly().FastSum();
 
     /// <summary>
@@ -48,6 +50,7 @@ public static partial class Spanq {
     /// </summary>
     /// <returns>the <see cref="PrimitiveMath.Max{T}(T,T)"/></returns>
     /// <inheritdoc cref="FastSum{T}(System.ReadOnlySpan{T})"/>
+    [Pure]
     public static T FastMax<T>(this ReadOnlySpan<T> span) where T : unmanaged {
         if (span.IsEmpty) {
             return default;
@@ -77,6 +80,7 @@ public static partial class Spanq {
     }
 
     /// <inheritdoc cref="FastMax{T}(System.ReadOnlySpan{T})"/>
+    [Pure]
     public static T FastMax<T>(this Span<T> span) where T : unmanaged => span.AsReadOnly().FastMax();
 
     /// <summary>
@@ -84,6 +88,7 @@ public static partial class Spanq {
     /// </summary>
     /// <returns>the <see cref="PrimitiveMath.Min{T}(T,T)"/></returns>
     /// <inheritdoc cref="FastSum{T}(System.ReadOnlySpan{T})"/>
+    [Pure]
     public static T FastMin<T>(this ReadOnlySpan<T> span) where T : unmanaged {
         if (span.IsEmpty) {
             return default;
@@ -113,6 +118,7 @@ public static partial class Spanq {
     }
 
     /// <inheritdoc cref="FastMin{T}(System.ReadOnlySpan{T})"/>
+    [Pure]
     public static T FastMin<T>(this Span<T> span) where T : unmanaged => span.AsReadOnly().FastMin();
 
     /// <summary>
@@ -120,6 +126,7 @@ public static partial class Spanq {
     /// </summary>
     /// <returns>(<see cref="PrimitiveMath.Min{T}(T,T)">min</see>, <see cref="PrimitiveMath.Max{T}(T,T)"> max</see>)</returns>
     /// <inheritdoc cref="FastSum{T}(System.ReadOnlySpan{T})"/>
+    [Pure]
     public static (T min, T max) FastMinMax<T>(this ReadOnlySpan<T> span) where T : unmanaged {
         if (span.IsEmpty) {
             return default;
@@ -154,6 +161,7 @@ public static partial class Spanq {
     }
 
     /// <inheritdoc cref="FastMinMax{T}(System.ReadOnlySpan{T})"/>
+    [Pure]
     public static (T min, T max) FastMinMax<T>(this Span<T> span) where T : unmanaged => span.AsReadOnly().FastMinMax();
 
     //region Measure
@@ -163,6 +171,7 @@ public static partial class Spanq {
     /// </summary>
     /// <returns>(<see cref="PrimitiveMath.Min{T}(T,T)">min</see>, <see cref="PrimitiveMath.Max{T}(T,T)">max</see>, <see cref="PrimitiveMath.Add{T}">sum</see>)</returns>
     /// <inheritdoc cref="FastSum{T}(System.ReadOnlySpan{T})"/>
+    [Pure]
     public static (T min, T max, T sum) FastMeasure<T>(this ReadOnlySpan<T> span) where T : unmanaged {
         if (span.IsEmpty) {
             return default;
@@ -203,6 +212,7 @@ public static partial class Spanq {
     }
 
     /// <inheritdoc cref="FastMeasure{T}(System.ReadOnlySpan{T})"/>
+    [Pure]
     public static (T min, T max, T sum) FastMeasure<T>(this Span<T> span) where T : unmanaged => span.AsReadOnly().FastMeasure();
 
     //endregion

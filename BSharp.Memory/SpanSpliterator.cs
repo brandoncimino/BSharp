@@ -52,8 +52,6 @@ public enum SearchDirection : byte {
 /// </remarks>
 /// <typeparam name="T">the span element type. 📎 Must implement <see cref="IEquatable{T}"/> for efficient use of <see cref="MemoryExtensions.IndexOf{T}(ReadOnlySpan{T}, T)"/> and friends</typeparam>
 public ref struct SpanSpliterator<T> where T : IEquatable<T> {
-    internal const StringSplitOptions TrimEntriesOption = (StringSplitOptions)2;
-
     #region "Configuration"
 
     /// <summary>
@@ -155,8 +153,6 @@ public ref struct SpanSpliterator<T> where T : IEquatable<T> {
         }
 
         #region Handle _options flags
-
-        _current = Options.HasFlag(TrimEntriesOption) ? _current.GenericTrim() : _current;
 
         while (Options.HasFlag(StringSplitOptions.RemoveEmptyEntries) && _current.IsEmpty) {
             if (MoveNext() == false) {
