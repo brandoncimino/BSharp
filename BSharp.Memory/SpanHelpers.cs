@@ -40,34 +40,6 @@ internal static class SpanHelpers {
         return new ArgumentOutOfRangeException(_index, index, $"🙅 {_caller}: {_index} {index} is out-of-bounds for a collection of {_length} {length}!");
     }
 
-    internal static int RequireIndex(
-        this int                                     length,
-        Index                                        index,
-        [CallerArgumentExpression("length")] string? _length = default,
-        [CallerArgumentExpression("index")]  string? _index  = default,
-        [CallerMemberName]                   string? _caller = default
-    ) {
-        var off = index.GetOffset(length);
-
-        if (off < 0 || off >= length) {
-            throw new ArgumentOutOfRangeException(_index, index, $"🙅 {_caller}: {_index} {index} is out-of-bounds for {_length} {length}!");
-        }
-
-        return off;
-    }
-
-    internal static (int off, int len) RequireRange(
-        this int                                     length,
-        Range                                        range,
-        [CallerArgumentExpression("length")] string? _length = default,
-        [CallerArgumentExpression("range")]  string? _range  = default,
-        [CallerMemberName]                   string? _caller = default
-    ) {
-        var start = length.RequireIndex(range.Start, _length: _length, _caller: _caller);
-        var end   = length.RequireIndex(range.End,   _length: _length, _caller: _caller);
-        return (start, end - start);
-    }
-
     internal static void RequireSpace(
         [NonNegativeValue] this             int     count,
         [NonNegativeValue]                  int     amountToAdd = 1,

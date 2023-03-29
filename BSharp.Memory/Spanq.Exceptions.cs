@@ -6,7 +6,7 @@ namespace FowlFever.BSharp.Memory;
 public static partial class Spanq {
     #region Exceptions
 
-    private static string SpanName<T>(this ReadOnlySpan<T> span) {
+    private static string SpanName<T>(ReadOnlySpan<T> span) {
         return $"{nameof(ReadOnlySpan<T>)}<{typeof(T).Name}>";
     }
 
@@ -21,7 +21,7 @@ public static partial class Spanq {
 
     private static ReadOnlySpan<T> RequireLength<T>(this ReadOnlySpan<T> span, int length, [CallerMemberName] string? _caller = default) {
         if (span.Length < length) {
-            throw new InvalidOperationException($"🙅 {_caller} - {span.SpanName()} length {span.Length} is shorter than the required {length}!");
+            throw new InvalidOperationException($"🙅 {_caller} - {SpanName(span)} length {span.Length} is shorter than the required {length}!");
         }
 
         return span;
@@ -46,11 +46,11 @@ public static partial class Spanq {
         T2                         expected,
         [CallerMemberName] string? _caller = default
     ) {
-        return new InvalidOperationException($"🙅 {_caller} - there were no entries in the {span.SpanName()} satisfying {_selector} == {expected}!");
+        return new InvalidOperationException($"🙅 {_caller} - there were no entries in the {SpanName(span)} satisfying {_selector} == {expected}!");
     }
 
     private static InvalidOperationException WasEmpty<T>(ReadOnlySpan<T> span, [CallerMemberName] string? _caller = default) {
-        return new InvalidOperationException($"🙅 {_caller} - the {span.SpanName()} was empty!");
+        return new InvalidOperationException($"🙅 {_caller} - the {SpanName(span)} was empty!");
     }
 
     #endregion
