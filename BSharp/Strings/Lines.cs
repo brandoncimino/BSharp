@@ -1,8 +1,6 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Linq;
 using System.Text;
 
 using FowlFever.BSharp.Collections;
@@ -29,6 +27,9 @@ public readonly record struct Lines : IImmutableList<OneLine>, IHas<string>, IEq
     /// </summary>
     public (int width, int height) Dimensions => (Width, Height);
 
+    /// <inheritdoc cref="ICollection{T}.Count"/>
+    public int Count => _lines.Length;
+
     internal Lines(IEnumerable<OneLine>? lines) => _lines = lines?.ToImmutableArray() ?? ImmutableArray<OneLine>.Empty;
 
     internal Lines(SpanLineEnumerator lineEnumerator) {
@@ -41,10 +42,11 @@ public readonly record struct Lines : IImmutableList<OneLine>, IHas<string>, IEq
     }
 
     internal Lines(OneLine line) => _lines = _lines.Add(line);
-    private IEnumerable<OneLine> LineEnumerable() => _lines;
-    public  IEnumerator<OneLine> GetEnumerator()  => LineEnumerable().GetEnumerator();
-    IEnumerator IEnumerable.     GetEnumerator()  => GetEnumerator();
-    string IHas<string>.         Value            => ToString();
+    public  ImmutableArray<OneLine>.Enumerator GetEnumerator()  => _lines.GetEnumerator();
+    private IEnumerable<OneLine>               LineEnumerable() => _lines;
+    IEnumerator<OneLine> IEnumerable<OneLine>. GetEnumerator()  => LineEnumerable().GetEnumerator();
+    IEnumerator IEnumerable.                   GetEnumerator()  => LineEnumerable().GetEnumerator();
+    string IHas<string>.                       Value            => ToString();
 
     private static readonly string[] LineBreakSplitters = {
         "\r\n", "\r", "\n"
