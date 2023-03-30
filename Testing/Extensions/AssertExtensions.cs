@@ -67,7 +67,7 @@ public static class AssertExtensions {
         [CallerArgumentExpression("expected")] string? _expected = default
     ) {
         comparer ??= EqualityComparer<T>.Default;
-        Assert.That(actual, Is.EqualTo(expected).Using(comparer));
+        Assert.That(actual, Is.EqualTo(expected).Using(comparer), $"{_actual} == {_expected}");
         return actual;
     }
 
