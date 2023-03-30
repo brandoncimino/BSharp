@@ -70,7 +70,7 @@ public class SaveFileNameTests {
             () => Assert.That(sfn.Rendered,      Is.EqualTo(expectation.RenderedName)),
             () => Assert.That(sfn.Nickname,      Is.EqualTo(expectation.Nickname)),
             () => Assert.That(sfn.TimeStamp,     Is.EqualTo(expectation.TimeStamp)),
-            () => Assert.That(sfn.FullExtension, Is.EqualTo(expectation.Extension.PrefixIfMissing(".")))
+            () => Assert.That(sfn.FullExtension, Is.EqualTo(expectation.Extension.PrependIfMissing(".")))
         );
     }
 }
