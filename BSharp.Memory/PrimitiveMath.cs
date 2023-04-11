@@ -108,7 +108,7 @@ public static partial class PrimitiveMath {
     [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool IsPrimitiveNumeric<T>() where T : unmanaged {
 #if NET7_0_OR_GREATER
-        return Vector<T>.IsSupported;
+        return System.Numerics.Vector<T>.IsSupported;
 #else
         return Scalar<T>.IsSupported;
 #endif
