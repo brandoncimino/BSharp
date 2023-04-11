@@ -36,7 +36,7 @@ public static partial class Spanq {
 
                 sliceVector = operation.Apply(sliceVector, vectorValue);
 
-                PrimitiveMath.CopyTo(sliceVector, spanSlice);
+                VectorMath.CopyTo(sliceVector, spanSlice);
             }
         }
 
@@ -102,7 +102,7 @@ public static partial class Spanq {
             index += Vector<T>.Count;
             var sliceVector = new Vector<T>(spanSlice);
             sliceVector = operation.Apply(sliceVector, pattern);
-            PrimitiveMath.CopyTo(sliceVector, spanSlice);
+            VectorMath.CopyTo(sliceVector, spanSlice);
         }
 
         for (; index < span.Length; index++) {
@@ -115,7 +115,7 @@ public static partial class Spanq {
         if (pattern == Vector<T>.Zero) {
             return;
         }
-        
+
         span.FastOperatePattern(pattern, PrimitiveMath.ArithmeticOperation.Addition);
     }
 
@@ -131,7 +131,7 @@ public static partial class Spanq {
         if (pattern == Vector<T>.One) {
             return;
         }
-        
+
         span.FastOperatePattern(pattern, PrimitiveMath.ArithmeticOperation.Multiplication);
     }
 
@@ -144,7 +144,7 @@ public static partial class Spanq {
     }
 
     #endregion
-    
+
     #region Arithmetic - Each
 
     internal static void FastZip<T>(this Span<T> span, ReadOnlySpan<T> other, PrimitiveMath.ArithmeticOperation operation) where T : unmanaged {
@@ -159,10 +159,10 @@ public static partial class Spanq {
             var otherSlice = other[index..];
 
             var spanVec  = new Vector<T>(spanSlice);
-            var otherVec = PrimitiveMath.CreateVector(otherSlice);
+            var otherVec = VectorMath.CreateVector(otherSlice);
 
             var newVec = operation.Apply(spanVec, otherVec);
-            PrimitiveMath.CopyTo(newVec, spanSlice);
+            VectorMath.CopyTo(newVec, spanSlice);
         }
 
         for (; index < minLen; index++) {

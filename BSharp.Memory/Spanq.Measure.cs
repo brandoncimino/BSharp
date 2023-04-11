@@ -22,11 +22,11 @@ public static partial class Spanq {
         T   sum   = default;
         int index = 0;
         if (Vector.IsHardwareAccelerated && span.Length >= Vector<T>.Count * 2) {
-            var sums = PrimitiveMath.CreateVector(span);
+            var sums = VectorMath.CreateVector(span);
             index = Vector<T>.Count;
 
             while (index + Vector<T>.Count <= span.Length) {
-                var nextSlice = PrimitiveMath.CreateVector(span[index..]);
+                var nextSlice = VectorMath.CreateVector(span[index..]);
                 sums  += nextSlice;
                 index += Vector<T>.Count;
             }
@@ -60,11 +60,11 @@ public static partial class Spanq {
         int index = 0;
 
         if (Vector.IsHardwareAccelerated && span.Length >= Vector<T>.Count * 2) {
-            var maxes = PrimitiveMath.CreateVector(span);
+            var maxes = VectorMath.CreateVector(span);
             index = Vector<T>.Count;
 
             while (index + Vector<T>.Count <= span.Length) {
-                var nextSlice = PrimitiveMath.CreateVector(span[index..]);
+                var nextSlice = VectorMath.CreateVector(span[index..]);
                 index += Vector<T>.Count;
                 maxes =  Vector.Max(maxes, nextSlice);
             }
@@ -98,11 +98,11 @@ public static partial class Spanq {
         int index = 0;
 
         if (Vector.IsHardwareAccelerated && span.Length >= Vector<T>.Count * 2) {
-            var mins = PrimitiveMath.CreateVector(span);
+            var mins = VectorMath.CreateVector(span);
             index = Vector<T>.Count;
 
             while (index + Vector<T>.Count <= span.Length) {
-                var nextSlice = PrimitiveMath.CreateVector(span[index..]);
+                var nextSlice = VectorMath.CreateVector(span[index..]);
                 index += Vector<T>.Count;
                 mins  =  Vector.Min(mins, nextSlice);
             }
@@ -137,12 +137,12 @@ public static partial class Spanq {
         int index = 0;
 
         if (Vector.IsHardwareAccelerated && span.Length >= Vector<T>.Count * 2) {
-            var mins  = PrimitiveMath.CreateVector(span);
+            var mins  = VectorMath.CreateVector(span);
             var maxes = mins;
             index = Vector<T>.Count;
 
             while (index + Vector<T>.Count <= span.Length) {
-                var nextSlice = PrimitiveMath.CreateVector(span[index..]);
+                var nextSlice = VectorMath.CreateVector(span[index..]);
                 index += Vector<T>.Count;
                 mins  =  Vector.Min(mins, nextSlice);
                 maxes =  Vector.Max(maxes, nextSlice);
@@ -183,13 +183,13 @@ public static partial class Spanq {
         int index = 0;
 
         if (Vector.IsHardwareAccelerated && span.Length >= Vector<T>.Count * 2) {
-            var mins  = PrimitiveMath.CreateVector(span);
+            var mins  = VectorMath.CreateVector(span);
             var maxes = mins;
             var sums  = mins;
             index = Vector<T>.Count;
 
             while (index + Vector<T>.Count <= span.Length) {
-                var nextSlice = PrimitiveMath.CreateVector(span);
+                var nextSlice = VectorMath.CreateVector(span);
                 index += Vector<T>.Count;
 
                 mins  =  Vector.Min(mins, nextSlice);

@@ -31,7 +31,7 @@ public static partial class Spanq {
 
             while (index + Vector<T>.Count <= span.Length) {
                 var spanSlice   = span[index..];
-                var vectorSlice = PrimitiveMath.CreateVector(spanSlice);
+                var vectorSlice = VectorMath.CreateVector(spanSlice);
                 index += Vector<T>.Count;
 
                 if (Vector.EqualsAny(vectorSlice, eqVector)) {
