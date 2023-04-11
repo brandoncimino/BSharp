@@ -40,36 +40,55 @@ public partial class SpanExtensionTests {
 
     #region Spliterate
 
-    [Test]
-    [TestCase("a-b-c",        '-', StringSplitOptions.None,                                                "a",  "b",  "c")]
-    [TestCase("aa--bb--cc",   '-', StringSplitOptions.None,                                                "aa", "",   "bb", "", "cc")]
-    [TestCase("aa--bb--cc",   '-', StringSplitOptions.RemoveEmptyEntries,                                  "aa", "bb", "cc")]
-    [TestCase(" x- - y --z ", '-', StringSplitOptions.None,                                                " x", " ",  " y ", "", "z ")]
-    [TestCase(" x- - y --z ", '-', StringSplitOptions.RemoveEmptyEntries,                                  " x", " ",  " y ", "z ")]
-    [TestCase(" x- - y --z ", '-', StringSplitOptions.TrimEntries,                                         "x",  "",   "y",   "", "z")]
-    [TestCase(" x- - y --z ", '-', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries, "x",  "y",  "z")]
-    public void SpliterateString_Simple(string source, char splitter, StringSplitOptions options, params string[] expectedParts) {
-        var span        = source.AsSpan();
-        var spliterator = span.Spliterate(stackalloc[] { splitter }) with { Options = options };
-        var parts       = spliterator.ToStringList().ToArray();
+    [TestCase("",             '-')]
+    [TestCase("a",            'a', "",   "")]
+    [TestCase("a-b-c",        '-', "a",  "b", "c")]
+    [TestCase("aa--bb--cc",   '-', "aa", "",  "bb",  "", "cc")]
+    [TestCase(" x- - y --z ", '-', " x", " ", " y ", "", "z ")]
+    public void SpliterateString_SingleSplitter(string source, char splitter, params string[] expectedParts) {
+        var parts = source.AsSpan()
+                          .Spliterate(splitter)
+                          .ToStringList();
+
         Assert.That(parts, Is.EquivalentTo(expectedParts));
     }
 
-    [Test]
-    [TestCase("a-b!c-d*e", "-!", "a", "b", "c", "d*e")]
+    [TestCase("a-b-c-d", '-', -1, "a-b-c-d")]
+    [TestCase("a-b-c-d", '-', 0,  "a-b-c-d")]
+    [TestCase("a-b-c-d", '-', 1,  "a-b-c-d")]
+    [TestCase("a-b-c-d", '-', 2,  "a", "b-c-d")]
+    [TestCase("a-b-c-d", '-', 3,  "a", "b", "c-d")]
+    [TestCase("a-b-c-d", '-', 4,  "a", "b", "c", "d")]
+    [TestCase("a-b-c-d", '-', 5,  "a", "b", "c", "d")]
+    public void SpliterateString_PartitionLimit(string source, char splitter, int limit, params string[] expectedParts) {
+        var parts = source.AsSpan()
+                          .Spliterate(splitter, limit)
+                          .ToStringList();
+
+        Assert.That(parts, Is.EquivalentTo(expectedParts));
+    }
+
+    [TestCase("",          "abc")]
+    [TestCase("abc",       "z",  "abc")]
+    [TestCase("abcd",      "c",  "ab", "d")]
+    [TestCase("a-b!c-d*e", "-!", "a",  "b", "c", "d*e")]
     public void SpliterateString_Any(string source, string splitters, params string[] expectedParts) {
-        var span        = source.AsSpan();
-        var spliterator = span.Spliterate(splitters.AsSpan()) with { MatchStyle = SplitterMatchStyle.AnyEntry };
-        var parts       = spliterator.ToStringList().ToArray();
+        var parts = source.AsSpan()
+                          .SpliterateAny(splitters.AsSpan())
+                          .ToStringList();
+
         Assert.That(parts, Is.EquivalentTo(expectedParts));
     }
 
-    [Test]
+    [TestCase("",             "abc")]
+    [TestCase("abc",          "bc", "a",   "")]
+    [TestCase("a",            "a",  "",    "")]
     [TestCase("a1b12c21d12e", "12", "a1b", "c21d", "e")]
     public void SpliterateString_SubSeq(string source, string splitSeq, params string[] expectedParts) {
-        var span        = source.AsSpan();
-        var spliterator = span.Spliterate(splitSeq) with { MatchStyle = SplitterMatchStyle.SubSequence };
-        var parts       = spliterator.ToStringList().ToArray();
+        var parts = source.AsSpan()
+                          .Spliterate(splitSeq)
+                          .ToStringList();
+
         Assert.That(parts, Is.EquivalentTo(expectedParts));
     }
 
