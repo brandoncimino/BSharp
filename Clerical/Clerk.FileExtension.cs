@@ -1,53 +1,51 @@
-using System.Collections.Immutable;
 using System.Diagnostics.Contracts;
-
-using FowlFever.BSharp;
 
 namespace FowlFever.Clerical;
 
 public static partial class Clerk {
     /// <summary>
-    /// Extracts each <b>individual</b> <see cref="FileExtension"/> from a path.
+    /// Gets <i>all</i> of the extension in a <see cref="Path"/>, i.e. <c>.sav.json</c> in <c>game.sav.json</c>.
     /// </summary>
-    /// <param name="path">a path or file name</param>
-    /// <returns><b>all</b> of the extensions at the end of the <paramref name="path"/></returns>
+    /// <example>
+    /// <code><![CDATA[
+    /// a.txt       => .txt 
+    /// a.sav.json  => .sav.json
+    /// .txt        => .txt
+    /// txt         => 
+    /// ]]></code>
+    /// </example>
+    /// <param name="path">a <see cref="Path"/> string</param>
+    /// <returns>everything after the first period in the <see cref="GetFileName(System.ReadOnlySpan{char})"/></returns>
     [Pure]
-    public static ValueArray<FileExtension> GetExtensions(ReadOnlySpan<char> path) {
-        return GetExtensions(path, out _);
-    }
-
-    internal static ValueArray<FileExtension> GetExtensions(ReadOnlySpan<char> path, out ReadOnlySpan<char> remaining) {
-        remaining = path;
-
-        // most files have 0 or 1 extension, so we check for that scenario first
-        if (!FileExtension.TryGetLastExtension(remaining, out remaining, out var first)) {
-            // The input didn't have any extensions
+    public static ReadOnlySpan<char> GetFullExtension(ReadOnlySpan<char> path) {
+        var fileName    = GetFileName(path);
+        var firstPeriod = fileName.IndexOf('.');
+        if (firstPeriod < 0 || firstPeriod == path.Length - 1) {
             return default;
         }
 
-        if (!FileExtension.TryGetLastExtension(remaining, out remaining, out var second)) {
-            // The input didn't have a *second* extension, so we just return the first
-            return first;
-        }
-
-        // At this point, we have at least 2 extensions, so let's allocate a new ImmutableArray builder and start looping
-
-        var extensions = ImmutableArray.CreateBuilder<FileExtension>();
-        extensions.Add(first);
-        extensions.Add(second);
-
-        while (FileExtension.TryGetLastExtension(remaining, out remaining, out var ext)) {
-            extensions.Add(ext);
-        }
-
-        extensions.Capacity = extensions.Count;
-        return extensions.MoveToImmutable();
+        return fileName[firstPeriod..];
     }
 
+    /// <inheritdoc cref="Path.GetExtension(System.ReadOnlySpan{char})"/>
+    /// <remarks>
+    /// This is similar to the built-in <see cref="Path"/>.<see cref="Path.GetExtension(System.ReadOnlySpan{char})"/>, but uses <see cref="System.MemoryExtensions.LastIndexOf(System.ReadOnlySpan{char})"/> for almost equal performance in best-case scenarios <i>(the extension is less than 3 characters long)</i> and <i>much</i> better performance in the worst-case scenarios <i>(the input doesn't contain an extension at all)</i>
+    /// </remarks>
     [Pure]
-    public static ReadOnlySpan<char> GetFullExtension(ReadOnlySpan<char> path) {
-        var fileName    = Path.GetFileName(path);
-        var firstPeriod = fileName.IndexOf('.');
-        return firstPeriod < 0 || firstPeriod >= (fileName.Length - 1) ? ReadOnlySpan<char>.Empty : fileName[firstPeriod..];
+    public static ReadOnlySpan<char> GetExtension(ReadOnlySpan<char> path) {
+        var lastPeriodOrSlash = path.LastIndexOfAny('\\', '/', '.');
+        if (lastPeriodOrSlash < 0) {
+            return default;
+        }
+
+        if (lastPeriodOrSlash == path.Length - 1) {
+            return default;
+        }
+
+        if (path[lastPeriodOrSlash] != '.') {
+            return default;
+        }
+
+        return path[lastPeriodOrSlash..];
     }
 }

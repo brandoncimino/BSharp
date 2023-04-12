@@ -21,7 +21,7 @@ public static partial class Clerk {
         return path.IsEmpty ? default(ValueArray<PathPart>) : EnumeratePathParts(path).ToImmutableArray(static str => PathPart.Of(str));
     }
 
-    [Pure] internal static SpanSpliterator<char> EnumeratePathParts(ReadOnlySpan<char> path) => new(path, DirectorySeparatorChars.AsSpan(), SplitterMatchStyle.AnyEntry, StringSplitOptions.RemoveEmptyEntries | (StringSplitOptions)2);
+    [Pure] internal static SpanSpliterator<char> EnumeratePathParts(ReadOnlySpan<char> path) => path.SpliterateAny(DirectorySeparatorChars.AsSpan());
 
     /// <summary>
     /// <inheritdoc cref="Path.GetTempPath"/>

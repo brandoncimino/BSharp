@@ -1,9 +1,6 @@
-using System;
-using System.IO;
-
 using FowlFever.BSharp.Enums;
 
-namespace FowlFever.BSharp.Clerical;
+namespace FowlFever.Clerical;
 
 /// <summary>
 /// Enumerates the <i>reasonable</i> <a href="https://en.wikipedia.org/wiki/Path_(computing)#Representations_of_paths_by_operating_system_and_shell">path directory separators</a>.

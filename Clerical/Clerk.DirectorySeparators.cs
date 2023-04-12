@@ -1,7 +1,6 @@
 using System.Diagnostics.Contracts;
 using System.Runtime.CompilerServices;
 
-using FowlFever.BSharp.Clerical;
 using FowlFever.BSharp.Memory;
 using FowlFever.BSharp.Strings;
 
@@ -53,7 +52,7 @@ public static partial class Clerk {
                                                .ToString();
     }
 
-    /// <inheritdoc cref="EnsureEndingDirectorySeparator(System.ReadOnlySpan{char},FowlFever.BSharp.Clerical.DirectorySeparator)"/>
+    /// <inheritdoc cref="EnsureEndingDirectorySeparator(System.ReadOnlySpan{char},DirectorySeparator)"/>
     [Pure]
     public static string EnsureEndingDirectorySeparator(string? path, DirectorySeparator separator = DirectorySeparator.Universal) {
         if (string.IsNullOrWhiteSpace(path)) {
