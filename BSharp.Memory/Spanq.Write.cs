@@ -9,6 +9,24 @@ public static partial class Spanq {
     #region Writing
 
     /// <summary>
+    /// Conditionally <see cref="Span{T}.Clear"/>s this <see cref="Span{T}"/> if it has a <see cref="Span{T}.Length"/> of at least <paramref name="requiredSpace"/>.
+    /// </summary>
+    /// <param name="span">this <see cref="Span{T}"/></param>
+    /// <param name="requiredSpace">the minimum required <see cref="Span{T}.Length"/></param>
+    /// <param name="_span">see <see cref="CallerArgumentExpressionAttribute"/></param>
+    /// <typeparam name="T">the span element type</typeparam>
+    /// <returns>this <see cref="Span{T}"/>, now <see cref="Span{T}.Clear"/>ed</returns>
+    /// <exception cref="ArgumentOutOfRangeException">if this <see cref="Span{T}.Length"/> is less than <paramref name="requiredSpace"/></exception>
+    public static Span<T> ClearSpace<T>(this Span<T> span, int requiredSpace, [CallerArgumentExpression("span")] string? _span = default) {
+        if (span.Length < requiredSpace) {
+            throw new ArgumentOutOfRangeException(_span, $"🙅‍♀️ The destination span {_span} has a {nameof(span.Length)} of {span.Length}, which is less than {requiredSpace}!");
+        }
+
+        span.Clear();
+        return span;
+    }
+
+    /// <summary>
     /// Throws an error if this <see cref="Span{T}"/>, starting at <paramref name="cursor"/>, cannot have <paramref name="amountToWrite"/> entries written to it.
     /// </summary>
     /// <param name="span">this <see cref="Span{T}"/></param>
