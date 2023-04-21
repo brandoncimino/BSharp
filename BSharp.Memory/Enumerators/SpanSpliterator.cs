@@ -1,7 +1,7 @@
 using System;
 using System.ComponentModel;
 
-namespace FowlFever.BSharp.Memory;
+namespace FowlFever.BSharp.Memory.Enumerators;
 
 /// <summary>
 /// Determines how <see cref="SpanSpliterator{T}._splitters"/> should be matched against a <see cref="ReadOnlySpan{T}"/>'s entries.
