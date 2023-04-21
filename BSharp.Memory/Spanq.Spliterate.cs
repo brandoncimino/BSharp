@@ -1,5 +1,7 @@
 using System;
 
+using FowlFever.BSharp.Memory.Enumerators;
+
 namespace FowlFever.BSharp.Memory;
 
 public static partial class Spanq {
@@ -27,6 +29,12 @@ public static partial class Spanq {
         return new SpanSpliterator<T>(span, splitter, partitionLimit);
     }
 
+    /// <inheritdoc cref="Spliterate{T}(System.ReadOnlySpan{T},T,int)"/>
+    [Pure]
+    public static SpanSpliterator<T> Spliterate<T>(this Span<T> span, T splitter, int partitionLimit = int.MaxValue) where T : IEquatable<T> {
+        return Spliterate((ReadOnlySpan<T>)span, splitter, partitionLimit);
+    }
+
     /// <summary>
     /// Splits this span by a "sub-sequence," similar to <see cref="MemoryExtensions.IndexOf{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     /// </summary>
@@ -35,11 +43,17 @@ public static partial class Spanq {
     /// </remarks>
     /// <param name="span">this <see cref="ReadOnlySpan{T}"/></param>
     /// <param name="splitSequence">the sequence of <typeparamref name="T"/> values that will be used as the splitter</param>
+    /// <param name="partitionLimit">the maximum number of sub-spans that this will produce</param>
     /// <typeparam name="T">the span element type</typeparam>
     /// <returns>a new <see cref="SpanSpliterator{T}"/></returns>
     [Pure]
-    public static SpanSpliterator<T> Spliterate<T>(this ReadOnlySpan<T> span, ReadOnlySpan<T> splitSequence) where T : IEquatable<T> {
-        return new SpanSpliterator<T>(span, splitSequence);
+    public static SpanSpliterator<T> Spliterate<T>(this ReadOnlySpan<T> span, ReadOnlySpan<T> splitSequence, int partitionLimit = int.MaxValue) where T : IEquatable<T> {
+        return new SpanSpliterator<T>(span, splitSequence, SplitterMatchStyle.SubSequence, partitionLimit);
+    }
+
+    /// <inheritdoc cref="Spliterate{T}(System.ReadOnlySpan{T},T,int)"/>
+    public static SpanSpliterator<T> Spliterate<T>(this Span<T> span, ReadOnlySpan<T> splitSequence, int partitionLimit = int.MaxValue) where T : IEquatable<T> {
+        return Spliterate((ReadOnlySpan<T>)span, splitSequence, partitionLimit);
     }
 
     /// <summary>
@@ -47,11 +61,18 @@ public static partial class Spanq {
     /// </summary>
     /// <param name="span">this <see cref="ReadOnlySpan{T}"/></param>
     /// <param name="possibleSplitters"><b>any</b> of these <typeparam name="T"> values can be used to split the span</typeparam></param>
+    /// <param name="partitionLimit">the maximum number of sub-spans that this will produce</param>
     /// <typeparam name="T">the span element type</typeparam>
     /// <returns>a new <see cref="SpanSpliterator{T}"/></returns>
     [Pure]
-    public static SpanSpliterator<T> SpliterateAny<T>(this ReadOnlySpan<T> span, ReadOnlySpan<T> possibleSplitters) where T : IEquatable<T> {
-        return new SpanSpliterator<T>(span, possibleSplitters, SplitterMatchStyle.AnyEntry);
+    public static SpanSpliterator<T> SpliterateAny<T>(this ReadOnlySpan<T> span, ReadOnlySpan<T> possibleSplitters, int partitionLimit = int.MaxValue) where T : IEquatable<T> {
+        return new SpanSpliterator<T>(span, possibleSplitters, SplitterMatchStyle.AnyEntry, partitionLimit);
+    }
+
+    /// <inheritdoc cref="SpliterateAny{T}(System.ReadOnlySpan{T},System.ReadOnlySpan{T},int)"/>
+    [Pure]
+    public static SpanSpliterator<T> SpliterateAny<T>(this Span<T> span, ReadOnlySpan<T> possibleSplitters, int partitionLimit = int.MaxValue) where T : IEquatable<T> {
+        return Spliterate((ReadOnlySpan<T>)span, possibleSplitters, partitionLimit);
     }
 
     #endregion
