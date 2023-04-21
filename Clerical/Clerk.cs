@@ -2,8 +2,8 @@ using System.Diagnostics.Contracts;
 
 using FowlFever.BSharp;
 using FowlFever.BSharp.Collections;
-using FowlFever.BSharp.Exceptions;
 using FowlFever.BSharp.Memory;
+using FowlFever.BSharp.Memory.Enumerators;
 
 namespace FowlFever.Clerical;
 
@@ -11,14 +11,13 @@ namespace FowlFever.Clerical;
 /// Contains factory methods for <see cref="Validated"/> objects like <see cref="PathPart"/> and <see cref="FileExtension"/>.
 /// </summary>
 public static partial class Clerk {
-    /// <summary>
-    /// Splits apart each <see cref="PathPart"/> from the given <paramref name="path"/>.
-    /// </summary>
-    /// <param name="path">the original string</param>
-    /// <returns>a <see cref="ValueArray{T}"/> containing each <see cref="PathPart"/> in the input <paramref name="path"/></returns>
     [Pure]
-    public static ValueArray<PathPart> SplitPath(ReadOnlySpan<char> path) {
-        return path.IsEmpty ? default(ValueArray<PathPart>) : EnumeratePathParts(path).ToImmutableArray(static str => PathPart.Of(str));
+    public static ValueArray<PathPart> SplitPath(string? path) {
+        static PathPart CreatePathPart(ReadOnlySpan<char> span, string path) {
+            return new PathPart(Substring.CreateFromSpan(span, path));
+        }
+
+        return path is not { Length: > 0 } ? ValueArray<PathPart>.Empty : EnumeratePathParts(path).ToImmutableArray(path, CreatePathPart);
     }
 
     [Pure] internal static SpanSpliterator<char> EnumeratePathParts(ReadOnlySpan<char> path) => path.SpliterateAny(DirectorySeparatorChars.AsSpan());
@@ -48,7 +47,9 @@ public static partial class Clerk {
     /// </summary>
     /// <returns>a sequence of <see cref="PathPart"/>s equivalent to <see cref="Path.GetRandomFileName"/></returns>
     [Pure]
-    public static PathPart GetRandomFileName() => FindFileName(Path.GetRandomFileName()).MustNotBeNull();
+    public static FileName GetRandomFileName() {
+        return FileName.Parse(Path.GetRandomFileName());
+    }
 
     /// <param name="path">a file path</param>
     /// <returns><c>true</c> if the <paramref name="path"/> <see cref="EndsInDirectorySeparator(System.ReadOnlySpan{char})"/> or is a <see cref="SpecialPathPart"/></returns>
