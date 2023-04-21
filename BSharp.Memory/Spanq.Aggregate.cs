@@ -2,6 +2,8 @@ using System;
 using System.Buffers;
 using System.Collections.Generic;
 
+using FowlFever.BSharp.Memory.Enumerators;
+
 using JetBrains.Annotations;
 
 namespace FowlFever.BSharp.Memory;
@@ -147,7 +149,7 @@ public static partial class Spanq {
         return arg;
     }
 
-    /// <inheritdoc cref="ForEach{TSpan,TArg}(FowlFever.BSharp.Memory.SpanSpliterator{TSpan},TArg,System.Buffers.ReadOnlySpanAction{TSpan,TArg})"/>
+    /// <inheritdoc cref="ForEach{TSpan,TArg}(SpanSpliterator{TSpan},TArg,System.Buffers.ReadOnlySpanAction{TSpan,TArg})"/>
     [Pure]
     public static TArg ForEach<TSpan, TArg>(this RoMultiSpan<TSpan> spans, TArg arg, [RequireStaticDelegate] ReadOnlySpanAction<TSpan, TArg> aggregator) {
         foreach (var span in spans) {
