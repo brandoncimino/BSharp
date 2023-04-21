@@ -1,53 +1,54 @@
-using FowlFever.BSharp;
-using FowlFever.BSharp.Memory;
-
 namespace FowlFever.Clerical;
 
 /// <summary>
-/// Represents a <see cref="FileSystemInfo"/>'s <see cref="FileSystemInfo.Name"/>, which consists of a <see cref="BaseName"/> + any number of <see cref="Extensions"/>.
+/// Represents a <see cref="FileSystemInfo"/>'s <see cref="FileSystemInfo.Name"/>, which consists of a <see cref="BaseName"/> + <see cref="Extension"/>.
 /// </summary>
-/// <param name="BaseName">The file name without <i>any</i> <see cref="Extensions"/>, e.g. <c>"yolo"</c> in <c>"yolo.swag.txt"</c></param>
-/// <param name="Extensions"><i>All</i> of the <see cref="FileSystemInfo.Extension"/>s, e.g. <c>["swag","txt"]</c> in <c>"yolo.swag.txt"</c></param>
-public readonly record struct FileName(PathPart BaseName, ValueArray<FileExtension> Extensions) {
+/// <param name="BaseName">The file name without <i>any</i> <see cref="Extension"/>, e.g. <c>"yolo"</c> in <c>"yolo.swag"</c></param>
+/// <param name="Extension"><i>All</i> of the <see cref="FileSystemInfo.Extension"/>s, e.g. <c>["swag","txt"]</c> in <c>"yolo.swag.txt"</c></param>
+public readonly record struct FileName(PathPart BaseName, FileExtension Extension) {
     /// <summary>
     /// The full length of the equivalent <see cref="FileSystemInfo.Name"/>, including periods.
     /// </summary>
-    public int Length => BaseName.Length + Extensions.Sum(static it => it.Length) + 1;
+    public int Length => BaseName.Length + Extension.Length;
 
     #region Construction & factories
 
-    public FileName(PathPart baseName, FileExtension extension) : this(baseName, ValueArray.Of(extension)) { }
-    public FileName(PathPart baseName, FileExtension first, FileExtension second) : this(baseName, ValueArray.Of(first,                      second)) { }
-    public FileName(PathPart baseName, FileExtension first, FileExtension second, FileExtension third) : this(baseName, ValueArray.Of(first, second, third)) { }
+    public static bool TryParse(string fileName, out FileName result) {
+        if (fileName.AsSpan().IndexOfAny(Clerk.DirectorySeparatorChars) >= 0) {
+            result = default;
+            return false;
+        }
 
-    /// <summary>
-    /// Extracts a <see cref="FileName"/> from a <see cref="FileSystemInfo.FullPath"/> <i>(which may or may not contain parent directories, etc.)</i>
-    /// </summary>
-    /// <param name="path"></param>
-    /// <returns></returns>
-    public static FileName GetFromPath(ReadOnlySpan<char> path) {
-        var extensions = Clerk.GetExtensions(path, out var withoutExtensions);
-        var baseName   = Path.GetFileName(withoutExtensions);
-        return new FileName(baseName, extensions);
+        var periodIndex = fileName.AsSpan().LastIndexOf('.');
+        result = periodIndex switch {
+            < 0 => new FileName(fileName, default),
+            _ => new FileName(
+                new PathPart(new Substring(fileName,      0, periodIndex)),
+                new FileExtension(new Substring(fileName, periodIndex))
+            )
+        };
+
+        return true;
+    }
+
+    public static FileName Parse(string fileName) {
+        if (TryParse(fileName, out var result)) {
+            return result;
+        }
+
+        throw new FormatException();
     }
 
     #endregion
 
     public override string ToString() {
-        Span<char> span = stackalloc char[Length];
-
-        span.Start(BaseName, out var pos);
-
-        foreach (var ext in Extensions) {
-            span.WriteJoin(ext, '.', ref pos);
-        }
-
-        return span.Finish(in pos);
-    }
-
-    public static FileName operator +(FileName name, FileExtension extension) {
-        return name with {
-            Extensions = name.Extensions + extension
-        };
+        return string.Create(
+            Length,
+            this,
+            (span, fn) => {
+                fn.BaseName.AsSpan().CopyTo(span);
+                fn.Extension.AsSpan().CopyTo(span[fn.BaseName.Length..]);
+            }
+        );
     }
 }
