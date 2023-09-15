@@ -1,6 +1,8 @@
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
 using FowlFever.BSharp.Enums;
+using FowlFever.BSharp.Optional;
 
 using Spectre.Console;
 
@@ -12,7 +14,7 @@ namespace FowlFever.BSharp.Strings.Spectral;
 /// <li>Is a <c>record</c> type, enabling <c>with</c> expressions</li>
 /// <li>Is a <c>struct</c>, enabling the <c>default</c> keyword instead of <see cref="Style.Plain"/></li>
 /// <li>Has <see cref="System.Nullable{T}"/> members, avoiding ambiguous <see cref="Style.Combine"/> behavior with <see cref="Color.Default"/> and <see cref="Spectre.Console.Decoration.None"/></li>
-/// <li>Can be implicitly cast from <see cref="Spectre.Console.Color"/> and <see cref="Spectre.Console.Decoration"/></li> 
+/// <li>Can be implicitly cast from <see cref="Spectre.Console.Color"/>, <see cref="Spectre.Console.Decoration"/>, and <see cref="ConsoleColor"/></li> 
 /// </ul>
 /// </summary>
 /// <param name="Foreground">the foreground <see cref="Color"/></param>
@@ -39,10 +41,16 @@ public readonly record struct Stylist(Color? Foreground = default, Color? Backgr
 
     public Style ToStyle() => new(Foreground, Background, Decoration);
 
-    public static implicit operator Stylist(Color      color)      => new(color);
-    public static implicit operator Stylist(Decoration decoration) => new(decoration);
-    public static implicit operator Stylist(Style?     style)      => new(style);
-    public static implicit operator Style(Stylist      stylist)    => stylist.ToStyle();
+    public static implicit operator Stylist(Color                color)      => new(color);
+    public static implicit operator Stylist(Decoration           decoration) => new(decoration);
+    public static implicit operator Stylist(Style?               style)      => new(style);
+    public static implicit operator Stylist(ConsoleColor         color)      => new(color);
+    public static implicit operator Stylist(System.Drawing.Color color)      => new(FromSystemDrawingColor(color));
+    public static implicit operator Style(Stylist                stylist)    => stylist.ToStyle();
+
+    private static Color FromSystemDrawingColor(System.Drawing.Color color) {
+        return new Color(color.R, color.G, color.B);
+    }
 
     #endregion
 
@@ -57,6 +65,44 @@ public readonly record struct Stylist(Color? Foreground = default, Color? Backgr
 
     #endregion
 
+    #region Ansi Strings
+
+    private bool IsEmpty => IsDefault || (Foreground.HasValue == false && Background.HasValue == false && Decoration.HasValue == false);
+
+    private IEnumerable<byte> EnumerateForeground(bool on) {
+        return on
+                   ? Foreground.SelectMany(static it => it.Enumerate_Foreground_On())
+                   : Foreground.SelectMany(static it => it.Enumerate_Foreground_Off());
+    }
+
+    private IEnumerable<byte> EnumerateBackground(bool on) {
+        return on
+                   ? Background.SelectMany(static it => it.Enumerate_Background_On())
+                   : Background.SelectMany(static it => it.Enumerate_Background_Off());
+    }
+
+    private IEnumerable<byte> EnumerateDecoration(bool on) {
+        return on
+                   ? Decoration.SelectMany(static it => it.EnumerateBytes_On())
+                   : Decoration.SelectMany(static it => it.EnumerateBytes_Off());
+    }
+
+    private IEnumerable<byte> EnumerateBytes(bool on) {
+        return EnumerateForeground(on)
+               .Concat(EnumerateBackground(on))
+               .Concat(EnumerateDecoration(on));
+    }
+
+    public string AnsiString(bool on) => IsEmpty ? "" : Ansi.RenderSequence(EnumerateBytes(on));
+    public string AnsiOn()            => AnsiString(true);
+    public string AnsiOff()           => AnsiString(false);
+
+    public string ApplyAnsi(string str) {
+        return $"{AnsiOn()}{str}{AnsiOff()}";
+    }
+
+    #endregion
+
     #region Merging
 
     public enum CombinePreference { Self, Other }
@@ -64,9 +110,9 @@ public readonly record struct Stylist(Color? Foreground = default, Color? Backgr
     /// <summary>
     /// Combines <c>this</c> with <paramref name="other"/>, choosing which one takes precedence.
     /// </summary>
-    /// <param name="other"></param>
-    /// <param name="preference"></param>
-    /// <returns></returns>
+    /// <param name="other">a different <see cref="Stylist"/></param>
+    /// <param name="preference">which <see cref="Stylist"/> we prefer when they both have a value set</param>
+    /// <returns>a <see cref="Stylist"/> combining the non-<c>default</c> values from this and <paramref name="other"/></returns>
     public Stylist Merge(Stylist other, CombinePreference preference) {
         if (this == default) {
             return other;

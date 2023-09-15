@@ -1,5 +1,3 @@
-using System.Linq;
-
 using Spectre.Console;
 
 namespace FowlFever.BSharp.Strings.Spectral;
@@ -8,6 +6,8 @@ namespace FowlFever.BSharp.Strings.Spectral;
 /// A set of <see cref="Style"/>s.
 /// </summary>
 public readonly record struct Palette {
+    public Stylist LastResort { get; init; }
+
     public Stylist Numbers    { get; init; }
     public Stylist Strings    { get; init; }
     public Stylist Methods    { get; init; }
@@ -20,7 +20,16 @@ public readonly record struct Palette {
     public PathPalette      PathPalette      { get; init; }
     public ExceptionPalette ExceptionPalette { get; init; }
 
-    public readonly record struct SeverityPalette(Stylist Good = default, Stylist Bad = default);
+    public LogPalette LogPalette { get; init; }
+
+    public readonly record struct SeverityPalette(
+        Stylist Good        = default,
+        Stylist Bad         = default,
+        Stylist Warning     = default,
+        Stylist Unimportant = default,
+        Stylist Emergency   = default
+    );
+
     public SeverityPalette Severity { get; init; }
 
     /// <summary>
@@ -31,13 +40,17 @@ public readonly record struct Palette {
         Strings    = new Stylist(Color.SkyBlue1, Decoration.Italic),
         Hyperlinks = new Stylist(Color.Blue,     Decoration.Underline),
         Severity = new SeverityPalette {
-            Good = Color.Green,
-            Bad  = Color.Red,
+            Good        = Color.Green,
+            Bad         = Color.Red,
+            Warning     = new Stylist(Color.DarkGoldenrod),
+            Emergency   = new Stylist(Color.DarkRed,        Decoration.Bold | Decoration.Underline | Decoration.Italic),
+            Unimportant = new Stylist(Color.DarkSlateGray1, Decoration.Italic)
         },
         Titles           = new Style(decoration: Decoration.Bold),
         Delimiters       = Color.Default,
         Borders          = Color.Orange1,
         ExceptionPalette = new ExceptionPalette(),
+        LogPalette       = LogPalette.Hardcoded,
     };
 
     /// <summary>
