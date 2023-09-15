@@ -1,7 +1,5 @@
-using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 
 using FowlFever.BSharp.Clerical;
 using FowlFever.BSharp.Collections;
@@ -32,8 +30,8 @@ namespace FowlFever.BSharp.Strings.Prettifiers {
 
         private static string GetIcon(FileSystemInfo item) {
             return item switch {
-                FileInfo _      => BPath.FileIcon,
-                DirectoryInfo _ => BPath.ClosedFolderIcon,
+                FileInfo _      => "📄",
+                DirectoryInfo _ => "📁",
                 _               => throw new ArgumentException(nameof(item))
             };
         }
@@ -55,7 +53,7 @@ namespace FowlFever.BSharp.Strings.Prettifiers {
             var                 itemName = currentDepth == 0 ? item.ToUri().ToString() : item.Name;
 
             if (item is DirectoryInfo dir) {
-                var directoryName = itemName.Prefix(BPath.ClosedFolderIcon, " ");
+                var directoryName = itemName.Prefix("📁", " ");
                 var children      = currentDepth >= depthLimit ? SummarizeChildren(dir) : EnumerateChildren(dir, settings, depthLimit, currentDepth);
                 lines = children.Prepend(directoryName);
             }
