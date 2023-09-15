@@ -1,11 +1,10 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
 namespace FowlFever.BSharp.Optional;
 
-public record FailableFunc<TValue> : Failable, IFailableFunc<TValue>, IEquatable<IOptional<TValue>>, IEquatable<TValue> {
+public sealed record FailableFunc<TValue> : Failable, IFailableFunc<TValue>, IEquatable<IOptional<TValue>>, IEquatable<TValue> {
     private readonly Optional<TValue> _value;
     int IReadOnlyCollection<TValue>.  Count         => ((IReadOnlyCollection<TValue>)_value).Count;
     public bool                       HasValue      => _value.HasValue;
@@ -44,4 +43,8 @@ public record FailableFunc<TValue> : Failable, IFailableFunc<TValue>, IEquatable
     public override string ToString() {
         return $"{Description} => {this.GetIcon()} [{ValueOrExcuse}]";
     }
+
+    /// <inheritdoc cref="IFailable.Passed"/>
+    public bool Passed => this.AsFailable().Passed;
+    public bool Failed => this.AsFailable().Failed;
 }
