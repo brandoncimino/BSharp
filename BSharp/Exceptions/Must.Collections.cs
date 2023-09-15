@@ -1,7 +1,5 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.CompilerServices;
 
 using FowlFever.BSharp.Attributes;
@@ -56,6 +54,20 @@ public static partial class Must {
 
     #region Contain (Range)
 
+    private static bool IsOutOfRange(int _length, int start, int length) {
+#if TARGET_64BIT
+            // Since start and length are both 32-bit, their sum can be computed across a 64-bit domain
+            // without loss of fidelity. The cast to uint before the cast to ulong ensures that the
+            // extension from 32- to 64-bit is zero-extending rather than sign-extending. The end result
+            // of this is that if either input is negative or if the input sum overflows past Int32.MaxValue,
+            // that information is captured correctly in the comparison against the backing _length field.
+            // We don't use this same mechanism in a 32-bit process due to the overhead of 64-bit arithmetic.
+            return (ulong)(uint)start + (ulong)(uint)length > (ulong)(uint)_length)
+#else
+        return (uint)start > (uint)_length || (uint)length > (uint)(_length - start);
+#endif
+    }
+
     public static int ContainRange(
         int                                          collectionLength,
         int                                          offset,
@@ -65,18 +77,18 @@ public static partial class Must {
         [CallerArgumentExpression("length")] string? _length = default,
         [CallerMemberName]                   string? _caller = default
     ) {
-        var endPoint = offset + length;
-        if (offset < 0 || offset >= collectionLength || endPoint < 0 || endPoint >= collectionLength || length < 0) {
-            throw new RejectionException(
-                offset..endPoint,
-                details: details,
-                rejectedBy: _caller,
-                _actualValue: $"{_offset}..{endPoint}",
-                reason: $"The given range is out-of-bounds for a collection of length {collectionLength}"
-            );
+        if (!IsOutOfRange(collectionLength, offset, length)) {
+            return collectionLength;
         }
 
-        return collectionLength;
+        var endPoint = offset + length;
+        throw new RejectionException(
+            offset..endPoint,
+            details: details,
+            rejectedBy: _caller,
+            _actualValue: $"{_offset}..{endPoint}",
+            reason: $"The given range is out-of-bounds for a collection of length {collectionLength}"
+        );
     }
 
     public static T ContainRange<T>(
