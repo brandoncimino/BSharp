@@ -23,7 +23,7 @@ public static class VectorMath {
             throw new IndexOutOfRangeException($"Input span didn't contain at least {Vector<T>.Count} elements!");
         }
 
-        return Unsafe.ReadUnaligned<Vector<T>>(ref Unsafe.As<T, byte>(ref System.Runtime.InteropServices.MemoryMarshal.GetReference(span)));
+        return System.Runtime.CompilerServices.Unsafe.ReadUnaligned<Vector<T>>(ref System.Runtime.CompilerServices.Unsafe.As<T, byte>(ref System.Runtime.InteropServices.MemoryMarshal.GetReference(span)));
 #endif
     }
 
@@ -71,7 +71,7 @@ public static class VectorMath {
             throw new ArgumentException($"Destination span of length {destination.Length} can't fit a full {nameof(Vector<T>)}<{typeof(T).Name}>'s {Vector<T>.Count} elements!", nameof(destination));
         }
 
-        Unsafe.WriteUnaligned<Vector<T>>(ref Unsafe.As<T, byte>(ref System.Runtime.InteropServices.MemoryMarshal.GetReference(destination)), source);
+        System.Runtime.CompilerServices.Unsafe.WriteUnaligned<Vector<T>>(ref System.Runtime.CompilerServices.Unsafe.As<T, byte>(ref System.Runtime.InteropServices.MemoryMarshal.GetReference(destination)), source);
 #endif
     }
 
