@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFrameworks>netstandard2.1;net5.0;net6.0</TargetFrameworks>
+        <TargetFrameworks>netstandard2.1;net5.0;net6.0;net7.0</TargetFrameworks>
         <Nullable>enable</Nullable>
         <AssemblyName>FowlFever.BSharp.Memory</AssemblyName>
         <RootNamespace>FowlFever.BSharp.Memory</RootNamespace>
@@ -15,6 +15,11 @@
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <PackageReference Include="JetBrains.Annotations" Version="2022.1.0"/>
+        <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="7.0.0">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="System.Collections.Immutable" Version="7.0.0"/>
     </ItemGroup>
 
     <ItemGroup>
@@ -52,6 +57,7 @@
         <Compile Update="RoMultiSpan.Constructors.cs">
             <DependentUpon>RoMultiSpan.cs</DependentUpon>
         </Compile>
+        <Compile Remove="IndexOfAnyEnumerator.cs"/>
     </ItemGroup>
 
     <ItemGroup>

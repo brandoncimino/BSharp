@@ -1,10 +1,12 @@
 using System;
 using System.Numerics;
-using System.Runtime.CompilerServices;
 
 namespace FowlFever.BSharp.Memory;
 
-internal static class VectorMath {
+/// <summary>
+/// Various utilities for working with <see cref="Vector"/>s and <see cref="Type.IsPrimitive"/> types.
+/// </summary>
+public static class VectorMath {
     /// <summary>
     /// Provides backwards-compatible support to create a <see cref="Vector{T}"/> from a <see cref="ReadOnlySpan{T}"/>, which wasn't added until .NET 5.
     /// </summary>
