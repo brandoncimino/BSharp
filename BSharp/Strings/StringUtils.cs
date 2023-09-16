@@ -1,9 +1,11 @@
-using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
+using System.IO;
+using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 
+using FowlFever.BSharp.Attributes;
 using FowlFever.BSharp.Collections;
 using FowlFever.BSharp.Enums;
 using FowlFever.BSharp.Exceptions;
@@ -112,13 +114,14 @@ public static partial class StringUtils {
         };
     }
 
+    [Experimental("Not sure what this method was supposed to do")]
     public static IEnumerable<string> IndentAbsolute(
         IEnumerable<string?>   toIndent,
         [NonNegativeValue] int indentCount  = 1,
         string                 indentString = DefaultIndentString
     ) {
-        Must.Be(indentCount, Mathb.IsStrictlyPositive);
-        Must.BePositive(indentCount, nameof(indentCount), nameof(IndentAbsolute));
+        Must.Be(indentCount, static it => it.IsStrictlyPositive());
+        Must.BePositive(indentCount);
         return toIndent.SplitLines().Select(it => it.ForceStartingString(indentString, indentCount));
     }
 
@@ -133,7 +136,7 @@ public static partial class StringUtils {
     /// <returns><paramref name="toRepeat"/>, joined with itself, <paramref name="repetitions"/> times</returns>
     /// <exception cref="ArgumentOutOfRangeException">if <paramref name="repetitions"/> is negative</exception>
     public static string Repeat(this string toRepeat, [NonNegativeValue] int repetitions, string? separator = "") {
-        Must.BePositive(repetitions, nameof(repetitions), nameof(Repeat));
+        Must.BePositive(repetitions);
         return string.Join(separator, Enumerable.Repeat(toRepeat, repetitions));
     }
 
@@ -273,22 +276,8 @@ public static partial class StringUtils {
         return substrings.Any(str.Contains);
     }
 
-    /**
-         * <inheritdoc cref="ContainsAny(string,System.Collections.Generic.IEnumerable{string})"/>
-         */
+    /// <inheritdoc cref="ContainsAny(string,System.Collections.Generic.IEnumerable{string})"/>
     public static bool ContainsAny(this string str, params string[] substrings) => ContainsAny(str, substrings.AsEnumerable());
-
-    /// <summary>
-    /// Returns <c>true</c> if this <see cref="string"/> contains any of the given <see cref="char"/>s.
-    /// </summary>
-    /// <remarks>
-    /// Similar to <see cref="CollectionUtils.ContainsAny{T}(System.Collections.Generic.IEnumerable{T},System.Collections.Generic.IEnumerable{T})"/>, except that this uses <see cref="Regex"/> matching which appears to be slightly faster while also not causing any allocations.
-    /// TODO: ...Except that when I saw no allocations, I believe I had manually cached the regex...I should run that benchmark again...
-    /// </remarks>
-    /// <param name="str"></param>
-    /// <param name="chars"></param>
-    /// <returns></returns>
-    public static bool ContainsAny(this string str, IEnumerable<char> chars) => RegexPatterns.InclusiveSet(chars).IsMatch(str);
 
     #endregion
 
@@ -405,22 +394,6 @@ public static partial class StringUtils {
 
     #endregion
 
-    #region LineCount
-
-    [Pure]
-    [NonNegativeValue]
-    public static int LineCount(this string str) {
-        return str.SplitLines().Length;
-    }
-
-    [Pure]
-    [NonNegativeValue]
-    public static int LineCount([InstantHandle] this IEnumerable<string?> strings) {
-        return strings.SplitLines().Count();
-    }
-
-    #endregion
-
     [Pure]
     public static IEnumerable<string> IndentWithLabel(
         [InstantHandle] this IEnumerable<string?> lines,
@@ -517,6 +490,7 @@ public static partial class StringUtils {
     /// <param name="obj"></param>
     /// <param name="nullPlaceholder"></param>
     /// <returns></returns>
+    [Obsolete("inefficient due to object boxing")]
     public static IEnumerable<string?> ToStringLines(this object? obj, string? nullPlaceholder = "") {
         return obj?
                .ToString()
@@ -530,43 +504,21 @@ public static partial class StringUtils {
 
     #region "Default" Strings
 
-    /// <summary>
-    /// A variation on <see cref="object.ToString"/> that returns the specified <paramref name="nullPlaceholder"/> if the original <paramref name="obj"/> is <c>null</c>.
-    /// </summary>
-    /// <param name="obj">the original <see cref="object"/></param>
-    /// <param name="nullPlaceholder">the <see cref="string"/> returned when <paramref name="obj"/> is <c>null</c></param>
-    /// <returns>the <see cref="object.ToString"/> representation of <paramref name="obj"/>, or <c>null</c></returns>
-    public static string ToString(this object? obj, string nullPlaceholder) {
-        if (nullPlaceholder == null) {
-            throw new ArgumentNullException(nameof(nullPlaceholder), $"Providing a null value as a {nameof(nullPlaceholder)} is redundant!");
-        }
-
-        return obj?.ToString() ?? nullPlaceholder;
-    }
-
-    /// <summary>
-    /// Returns <paramref name="emptyPlaceholder"/> if this <see cref="string"/> <see cref="IsEmpty"/>; otherwise, returns this <see cref="string"/>.
-    /// </summary>
-    /// <param name="str">this <see cref="string"/></param>
-    /// <param name="emptyPlaceholder">the fallback string if <paramref name="str"/> <see cref="IsEmpty"/>. Defaults to <c>""</c></param>
-    /// <returns>this <see cref="string"/> or <paramref name="emptyPlaceholder"/></returns>
-    [return: NotNullIfNotNull("emptyPlaceholder")]
-    public static string? IfEmpty(this string? str, string? emptyPlaceholder) {
-        return str.IsEmpty() ? emptyPlaceholder : str;
-    }
-
     /// <param name="obj">this <see cref="object"/></param>
     /// <param name="nullPlaceholder">the output if this <see cref="Object"/> is <c>null</c>. Defaults to <see cref="Prettification.DefaultNullPlaceholder"/></param>
     /// <returns><see cref="object.ToString"/> if this <see cref="Object"/> isn't <c>null</c>; otherwise, <paramref name="nullPlaceholder"/></returns>
+    [Pure]
     public static string OrNullPlaceholder<T>(this T? obj, string? nullPlaceholder) {
         nullPlaceholder ??= Prettification.DefaultNullPlaceholder;
         return obj?.ToString() ?? nullPlaceholder;
     }
 
     /// <inheritdoc cref="OrNullPlaceholder{T}(T?,string?)"/>
+    [Pure]
     public static string OrNullPlaceholder<T>(this T? obj) => OrNullPlaceholder(obj, default(PrettificationSettings));
 
     /// <inheritdoc cref="OrNullPlaceholder{T}(T?,string?)"/>
+    [Pure]
     public static string OrNullPlaceholder<T>(this T? obj, PrettificationSettings? settings) {
         return OrNullPlaceholder(obj, settings.Resolve().NullPlaceholder);
     }
@@ -607,6 +559,8 @@ public static partial class StringUtils {
     /// </summary>
     /// <param name="str">this <see cref="string"/></param>
     /// <returns><see cref="string.IsNullOrEmpty"/></returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure]
     public static bool IsEmpty([NotNullWhen(false)] this string? str) => string.IsNullOrEmpty(str);
 
     /// <summary>
@@ -614,6 +568,8 @@ public static partial class StringUtils {
     /// </summary>
     /// <param name="str">this <see cref="string"/></param>
     /// <returns>!<see cref="IsEmpty(string?)"/></returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure]
     public static bool IsNotEmpty([NotNullWhen(true)] this string? str) => !string.IsNullOrEmpty(str);
 
     /// <summary>
@@ -621,6 +577,8 @@ public static partial class StringUtils {
     /// </summary>
     /// <param name="str">this <see cref="string"/></param>
     /// <returns><see cref="string.IsNullOrWhiteSpace"/></returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure]
     public static bool IsBlank([NotNullWhen(false)] this string? str) => string.IsNullOrWhiteSpace(str);
 
     /// <summary>
@@ -628,119 +586,71 @@ public static partial class StringUtils {
     /// </summary>
     /// <param name="str">this <see cref="string"/></param>
     /// <returns><b>NOT</b> <see cref="string.IsNullOrWhiteSpace"/></returns>
-    public static bool IsNotBlank([NotNullWhen(true)] this string? str) => !str.IsBlank();
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure]
+    public static bool IsNotBlank([NotNullWhen(true)] this string? str) => !string.IsNullOrWhiteSpace(str);
 
     #endregion
 
     #region {x}IfMissing
 
-    public static string PrependIfMissing(this string str, string prefix) => PrefixIfMissing(str, prefix);
-    public static string PrefixIfMissing(this  string str, string prefix) => str.StartsWith(prefix) ? str : str.Prefix(prefix);
-    public static string AppendIfMissing(this  string str, string suffix) => SuffixIfMissing(str, suffix);
-    public static string SuffixIfMissing(this  string str, string suffix) => str.EndsWith(suffix) ? str : str.Suffix(suffix);
+    [Pure] public static string PrependIfMissing(this string str, char               prefix)                                                             => str.StartsWith(prefix) ? str : prefix + str;
+    [Pure] public static string PrependIfMissing(this string str, ReadOnlySpan<char> prefix, StringComparison comparisonType = StringComparison.Ordinal) => str.AsSpan().StartsWith(prefix, comparisonType) ? str : str.Prefix(prefix);
+    [Pure] public static string AppendIfMissing(this  string str, char               suffix)                                                             => str.EndsWith(suffix) ? str : str + suffix;
+    [Pure] public static string AppendIfMissing(this  string str, ReadOnlySpan<char> suffix, StringComparison comparisonType = StringComparison.Ordinal) => str.AsSpan().EndsWith(suffix, comparisonType) ? str : str.Suffix(suffix);
 
     #endregion
 
     #region Substrings
 
+    /// <summary>
+    /// <ul>
+    /// <li>Trimming operations on <see cref="string"/>s should return a <see cref="ReadOnlySpan{T}"/> representing a sub-string of the input.</li>
+    /// <li>When we want to go back to a <see cref="string"/>, we must call <see cref="ReadOnlySpan{T}.ToString"/> - unfortunately, this will allocate a new <see cref="string"/> even if the <see cref="ReadOnlySpan{T}"/> is identical to the <see cref="string"/>.</li>
+    /// <li>To prevent this allocation in the event that we didn't actually trim the original <see cref="string"/>, we re-use that <see cref="string"/> <i>(<paramref name="og"/>)</i> if the <see cref="string.Length"/> matches <paramref name="neu"/>'s <see cref="ReadOnlySpan{T}.Length"/>.</li>
+    /// <li>This is the same strategy used by <see cref="Path.GetFileNameWithoutExtension(string)"/>, etc.</li>
+    /// </ul>
+    /// </summary>
+    /// <param name="neu">the new, possibly truncated <see cref="ReadOnlySpan{T}"/>, which we <b><i>assume</i></b> is derived from <paramref name="og"/></param>
+    /// <param name="og">the original <see cref="string"/></param>
+    /// <returns>the <see cref="string"/> representation of <paramref name="neu"/> - re-using <paramref name="og"/> if possible</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
-    public static string SubstringBefore(this string str, string splitter, StringComparison stringComparison = StringComparison.Ordinal) {
-        var first = str.IndexOf(splitter, stringComparison);
-        return first > 0 ? str[..first] : "";
+    private static string IfLengthChanged(this ReadOnlySpan<char> neu, string og) {
+        // Make sure that `neu` actually contains characters of `og` (if it isn't empty)
+        // 📎 We _assume_ this condition outside of `Debug` mode!
+        Debug.Assert(neu.IsEmpty || neu.Overlaps(og));
+
+        return og.Length == neu.Length ? og : neu.ToString();
     }
 
-    [Pure]
-    public static string SubstringBeforeAny(this string str, char[] anyOf) {
-        var first = str.IndexOfAny(anyOf);
-        return first > 0 ? str[..first] : "";
-    }
-
-    [Pure]
-    public static string SubstringAfter(this string str, string splitter) {
-        var last = str.LastIndexOf(splitter, StringComparison.Ordinal) + splitter.Length;
-        return last.IsBetween(0, str.Length, Clusivity.Exclusive) ? str.Substring(last, str.Length - last) : "";
-    }
-
-    [Pure]
-    public static string SubstringAfterAny(this string str, char[] anyOf) {
-        var last = str.LastIndexOfAny(anyOf);
-        return last > 0 ? str[(last + 1)..] : "";
-    }
-
-    [Pure]
-    public static string SubstringBefore(this string str, Regex pattern) {
-        var match = pattern.Match(str);
-        return match.Success ? str[..match.Index] : "";
-    }
-
-    [Pure]
-    public static string SubstringAfter(this string str, Regex pattern) {
-        var rightToLeftPattern = new Regex(pattern.ToString(), pattern.Options | RegexOptions.RightToLeft);
-        var match              = rightToLeftPattern.Match(str);
-        return match.Success ? str[(match.Index + match.Length)..] : "";
-    }
+    [Pure] public static string SubstringBefore(this    string str, ReadOnlySpan<char> splitter, StringComparison comparisonType = StringComparison.Ordinal) => str.AsSpan().BeforeFirst(splitter, comparisonType).IfLengthChanged(str);
+    [Pure] public static string SubstringBeforeAny(this string str, ReadOnlySpan<char> anyOf)    => str.AsSpan().BeforeFirstAny(anyOf).IfLengthChanged(str);
+    [Pure] public static string SubstringAfter(this     string str, ReadOnlySpan<char> splitter) => str.AsSpan().AfterLast(splitter).IfLengthChanged(str);
+    [Pure] public static string SubstringAfterAny(this  string str, ReadOnlySpan<char> anyOf)    => str.AsSpan().AfterLastAny(anyOf).IfLengthChanged(str);
 
     /// <summary>
-    /// TODO: "Bisect" usually means "cut into two <b>equal</b> parts. I need a better name for <see cref="Bisect"/> and <see cref="BisectLast"/>.
-    ///
     /// Splits <paramref name="str"/> by the <b>first</b> occurrence of <paramref name="splitter"/>.
-    ///
+    /// <p/>
     /// If <paramref name="splitter"/> isn't found, then <c>(<paramref name="str"/>, <see cref="string.Empty"/>)</c>
     /// </summary>
     /// <param name="str">the original <see cref="string"/></param>
     /// <param name="splitter">the <see cref="string"/> being used to split <paramref name="str"/> (📎 will <b>not</b> be included in the output)</param>
     /// <returns>the split <paramref name="str"/> if <paramref name="splitter"/> was found; otherwise, (<paramref name="str"/>, <see cref="string.Empty">""</see>)</returns>
-    public static (string before, string after) Bisect(this string str, string splitter) {
-        var matchStart = str.IndexOf(splitter, StringComparison.Ordinal);
-        if (matchStart < 0) {
-            return (str, "");
-        }
-
-        var matchEnd = matchStart + splitter.Length;
-        var before   = str[..matchStart];
-        var after    = str[matchEnd..];
-        return (before, after);
+    [Pure]
+    public static (string before, string after) Partition(this string str, string splitter) {
+        return str.AsSpan().TryPartition(splitter, out var before, out var after) ? (before.ToString(), after.ToString()) : (str, "");
     }
 
     /// <summary>
-    /// Similar to <see cref="Bisect"/>, except this splits by the <b>last</b> occurrence of <paramref name="splitter"/>.
+    /// Similar to <see cref="Partition"/>, except this splits by the <b>last</b> occurrence of <paramref name="splitter"/>.
     /// </summary>
     /// <param name="str">the original <see cref="string"/></param>
     /// <param name="splitter">the <see cref="string"/> being used to split <paramref name="str"/> (📎 will <b>not</b> be included in the output)</param>
     /// <returns>the split <paramref name="str"/> if <paramref name="splitter"/> was found; otherwise, (<see cref="string.Empty">""</see>, <paramref name="str"/>)</returns>
-    public static (string former, string latter) BisectLast(this string str, string splitter) {
-        var matchStart = str.LastIndexOf(splitter, StringComparison.Ordinal);
-
-        if (matchStart < 0) {
-            return ("", str);
-        }
-
-        var matchEnd = matchStart + splitter.Length;
-        var before   = str[..matchStart];
-        var after    = str[matchEnd..];
-        return (before, after);
-    }
-
-    /// <summary>
-    /// Removes the <b>single latter-most</b> instance of <paramref name="toRemove"/>.
-    /// </summary>
-    /// <param name="str">the original <see cref="string"/></param>
-    /// <param name="toRemove">the <see cref="string"/> to be removed</param>
-    /// <returns>the original <see cref="string"/> with the <b>single latter-most</b> instance of <paramref name="toRemove"/> removed</returns>
     [Pure]
-    public static string RemoveLast(this string str, string toRemove) {
-        return str.EndsWith(toRemove) ? str.Remove(str.Length - toRemove.Length) : str;
-    }
-
-    /// <summary>
-    /// Removes the <b>single first</b> instance of <paramref name="toRemove"/>.
-    /// </summary>
-    /// <param name="str">the original <see cref="string"/></param>
-    /// <param name="toRemove">the <see cref="string"/>to be removed</param>
-    /// <returns>the original <see cref="string"/> with the <b>single first</b> instance of <paramref name="toRemove"/> removed</returns>
-    [Pure]
-    public static string RemoveFirst(this string str, string toRemove) {
-        return str.StartsWith(toRemove) ? str.Remove(0, toRemove.Length) : str;
+    public static (string before, string after) PartitionLast(this string str, string splitter) {
+        return str.AsSpan().TryPartitionLast(splitter, out var before, out var after) ? (before.ToString(), after.ToString()) : ("", str);
     }
 
     #endregion
