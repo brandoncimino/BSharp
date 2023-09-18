@@ -264,7 +264,7 @@ public class OptionalTests {
     public void ToOptional_Empty() {
         var ls = Array.Empty<int>();
         Asserter.Against(ls.ToOptional)
-                .IsEmpty()
+                .And(it => it.IsEmpty)
                 .Invoke();
     }
 
