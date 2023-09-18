@@ -5,7 +5,6 @@ using System.Linq;
 using FowlFever.BSharp;
 using FowlFever.BSharp.Collections;
 using FowlFever.BSharp.Randomization;
-using FowlFever.Testing;
 
 using JetBrains.Annotations;
 
@@ -29,7 +28,7 @@ public class BrandomTests {
         var groups                = picks.Group();
         var expectedHitsPerChoice = (double)numberOfPicks / numberOfChoices;
 
-        Assert.That(groups, Has.All.Values().Approximately(expectedHitsPerChoice, expectedHitsPerChoice / 2));
+        Assert.That(groups.Values, Has.All.EqualTo(expectedHitsPerChoice).Within(expectedHitsPerChoice / 2));
     }
 
     private static IEnumerable<(string choice, int weight)> BuildWeighted(params int[] weights) {
@@ -73,7 +72,7 @@ public class BrandomTests {
             );
 
         foreach (var g in groups) {
-            Assert.That(g, Has.Property(nameof(KeyValuePair<int, int>.Value)).Approximately(expectedHits[g.Key], picks.Count / 10f));
+            Assert.That(g, Has.Property(nameof(KeyValuePair<int, int>.Value)).EqualTo(expectedHits[g.Key]).Within(picks.Count / 10f));
         }
     }
 
