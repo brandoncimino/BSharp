@@ -9,6 +9,7 @@ namespace FowlFever.BSharp.Collections.Apportion;
 /// <summary>
 /// Methods that chop up collections of discrete items into smaller pieces.
 /// </summary>
+[Obsolete("This class was way over-designed", true)]
 public static partial class Apportion {
     public static int[] Weighted<TWeights>(int amount, TWeights weights) where TWeights : IEnumerable<float> {
         scoped Span<float> normalWeights;
@@ -36,9 +37,11 @@ public static partial class Apportion {
             var distributedVector = Vector<int>.Zero;
 
             while (index + Vector<float>.Count <= weights.Length) {
-                var weightVector  = weights.NextVector(ref index);
+                var nextSpanSlice = weights[index..];
+                var weightVector  = VectorMath.CreateVector(weights);
+                index += Vector<float>.Count;
                 var portionVector = Vector.ConvertToInt32(weightVector / sumVector * amount);
-                PrimitiveMath.CopyTo(portionVector, output[index..]);
+                VectorMath.CopyTo(portionVector, output[index..]);
                 distributedVector += portionVector;
             }
 
