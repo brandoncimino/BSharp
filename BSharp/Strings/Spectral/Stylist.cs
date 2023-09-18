@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
 using FowlFever.BSharp.Enums;
-using FowlFever.BSharp.Optional;
 
 using Spectre.Console;
 
@@ -69,22 +68,40 @@ public readonly record struct Stylist(Color? Foreground = default, Color? Backgr
 
     private bool IsEmpty => IsDefault || (Foreground.HasValue == false && Background.HasValue == false && Decoration.HasValue == false);
 
+    /// <summary>
+    /// Invokes the <paramref name="selector"/> against this <see cref="Nullable{T}"/> if it <see cref="Nullable{T}.HasValue"/>.
+    /// </summary>
+    /// <param name="nullable">this <see cref="Nullable{T}"/></param>
+    /// <param name="selector">a <see cref="Func{T,TResult}"/> that produces an <see cref="IEnumerable{T}"/> from a non-null <typeparamref name="T"/></param>
+    /// <typeparam name="T">the <see cref="Nullable{T}"/> value type</typeparam>
+    /// <typeparam name="T2">the <paramref name="selector"/> output element type</typeparam>
+    /// <returns>an <see cref="IEnumerable{T}"/> of <typeparamref name="T2"/> entries</returns>
+    public static IEnumerable<T2> SelectMany<T, T2>(T? nullable, Func<T, IEnumerable<T2>> selector) where T : struct {
+        return nullable.HasValue == false ? Enumerable.Empty<T2>() : selector(nullable.Value);
+    }
+
     private IEnumerable<byte> EnumerateForeground(bool on) {
-        return on
-                   ? Foreground.SelectMany(static it => it.Enumerate_Foreground_On())
-                   : Foreground.SelectMany(static it => it.Enumerate_Foreground_Off());
+        return (on
+                    ? Foreground?.Enumerate_Foreground_On()
+                    : Foreground?.Enumerate_Foreground_Off()
+               )
+               ?? Enumerable.Empty<byte>();
     }
 
     private IEnumerable<byte> EnumerateBackground(bool on) {
-        return on
-                   ? Background.SelectMany(static it => it.Enumerate_Background_On())
-                   : Background.SelectMany(static it => it.Enumerate_Background_Off());
+        return (on
+                    ? Background?.Enumerate_Background_On()
+                    : Background?.Enumerate_Background_Off()
+               )
+               ?? Enumerable.Empty<byte>();
     }
 
     private IEnumerable<byte> EnumerateDecoration(bool on) {
-        return on
-                   ? Decoration.SelectMany(static it => it.EnumerateBytes_On())
-                   : Decoration.SelectMany(static it => it.EnumerateBytes_Off());
+        return (on
+                    ? Decoration?.EnumerateBytes_On()
+                    : Decoration?.EnumerateBytes_Off()
+               )
+               ?? Enumerable.Empty<byte>();
     }
 
     private IEnumerable<byte> EnumerateBytes(bool on) {

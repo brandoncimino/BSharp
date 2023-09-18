@@ -46,9 +46,9 @@ public class LambdaExpressionStringTests {
             Brandon.Print(exp.Parameters);
             Brandon.Print(exp.Body);
             Asserter.WithHeading(_Expression)
-                    .And(exp.Body.ToString(),       Is.Match(Body))
-                    .And(exp.Modifier.ToString(),   Is.Match(Modifier))
-                    .And(exp.Parameters.ToString(), Is.Match(Parameters))
+                    .And(exp.Body.ToString(),       Does.Match(Body))
+                    .And(exp.Modifier.ToString(),   Does.Match(Modifier))
+                    .And(exp.Parameters.ToString(), Does.Match(Parameters))
                     .Invoke();
         }
     }
@@ -94,7 +94,7 @@ if (string.IsNullOrEmpty(s)) {
 ".Trim()
             ),
             new LambdaExpressionExpectation<Func<string, string, string>>(
-                static string(a, b) => a + b,
+                static string (a, b) => a + b,
                 "static",
                 new Regex(@"string\s*\(a, b\)"),
                 "a + b"

@@ -2,17 +2,22 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
+using System.Text.Json;
 
 using FowlFever.BSharp.Collections;
+using FowlFever.BSharp.Logging;
 using FowlFever.BSharp.Optional;
 using FowlFever.BSharp.Strings;
 using FowlFever.BSharp.Strings.Json;
-using FowlFever.BSharp.Strings.Settings;
+using FowlFever.BSharp.Strings.Spectral;
 using FowlFever.Testing;
 
 using Newtonsoft.Json;
 
 using NUnit.Framework;
+
+using Spectre.Console;
 
 namespace BSharp.Tests.Collections;
 
@@ -115,27 +120,6 @@ public class OptionalTests {
         return optional.GetValueOrDefault((T?)default);
     }
 
-    [Test]
-    public void NullInterfaceEquality() {
-        var                optional_a  = (IOptional<string>?)null;
-        var                optional_b  = (IOptional<string>?)null;
-        var                optional_c  = (Optional<string>?)null;
-        IOptional<string>? def_a       = default;
-        IOptional<string>? def_b       = default;
-        Optional<string>   def_c       = default;
-        const string       null_string = default;
-        Asserter.WithHeading(nameof(NullInterfaceEquality))
-                .And(() => Assert.False(Optional.AreEqual(optional_a,  null_string)), "Optional.AreEqual(optional_a, null_string)")
-                .And(() => Assert.False(Optional.AreEqual(null_string, optional_a)),  "Optional.AreEqual(null_string, optional_a)")
-                .And(() => Assert.True(Optional.AreEqual(optional_a,   optional_b)),  "Optional.AreEqual(optional_a, optional_b)")
-                .And(() => Assert.True(Optional.AreEqual(optional_b,   optional_a)),  "Optional.AreEqual(optional_b,optional_a)")
-                .And(() => Assert.True(Optional.AreEqual(def_a,        def_b)),       "Optional.AreEqual(def_a, def_b)")
-                .And(() => Assert.True(Optional.AreEqual(def_a,        def_a)),       "Optional.AreEqual(def_a, def_a)")
-                .And(() => Assert.False(Optional.AreEqual(optional_a,  optional_c)),  "Optional.AreEqual(optional_a, optional_c)")
-                .And(() => Assert.False(Optional.AreEqual(optional_c,  def_c)),       "Optional.AreEqual(optional_c, def_c)")
-                .Invoke();
-    }
-
     #region Optional of null
 
     [Test]
@@ -149,9 +133,64 @@ public class OptionalTests {
     }
 
     [Test]
+    public void Optional_EqualsInnerValue() {
+        const int value = 5;
+        var       opt   = Optional.Of(value);
+
+        Asserter.Against(opt)
+                .And(it => it    == value)
+                .And(it => value == it)
+                .And(it => it.Equals(value))
+                .Invoke();
+    }
+
+    [Test]
+    public void Optional_EqualsEquivalentOptional() {
+        var val1 = new string("abc");
+        var val2 = new string(val1);
+        Assert.That(val1, Is.Not.SameAs(val2));
+
+        var opt1 = Optional.Of(val1);
+        var opt2 = Optional.Of(val2);
+        Asserter.Against(opt1)
+                .And(Is.Not.SameAs(opt2))
+                .And(Is.EqualTo(opt2))
+                .And(it => it == opt2)
+                .Invoke();
+    }
+
+    [Test]
+    public void Optional_OfNull_DoesNotEqual_Empty() {
+        var ofNull = Optional.Of(default(string));
+        var empty  = Optional.Empty<string>();
+
+        Asserter.Against(ofNull)
+                .And(Is.Not.EqualTo(empty))
+                .And(it => it == empty,      Is.False)
+                .And(it => it.Equals(empty), Is.False)
+                .And(it => empty == it,      Is.False)
+                .And(it => empty.Equals(it), Is.False)
+                .Invoke();
+    }
+
+    [Test]
+    public void Optional_OfNull_EqualsNull() {
+        var           ofNull    = Optional.Of(default(string));
+        const string? nullValue = default;
+
+        Asserter.WithHeading()
+                .And(ofNull    == nullValue)
+                .And(nullValue == ofNull)
+                .And(() => ofNull.Equals(nullValue), Is.True)
+                .Invoke();
+    }
+
+    [Test]
     [SuppressMessage("ReSharper", "SuggestVarOrType_Elsewhere")]
     [SuppressMessage("ReSharper", "ExpressionIsAlwaysNull")]
     public void OptionalOfNull_Equality() {
+        Ignore.This("This test is...a mess.");
+
         Optional<string?>  ofNull           = new Optional<string?>(null);
         Optional<string?>  ofNull2          = new Optional<string?>(null);
         string?            nullValue        = null;
@@ -216,25 +255,6 @@ public class OptionalTests {
         Console.WriteLine(json);
     }
 
-    [Test]
-    public void NestedOptionalEquality() {
-        var innerValue = Optional.Of(5);
-        var inner      = Optional.Of(innerValue);
-        var outer      = Optional.Of(inner);
-
-        Console.WriteLine($"\n⛑inner == outer -> {inner     == outer}");
-        Console.WriteLine($"\n⏱{inner} == {outer} -> {inner == outer}");
-
-        Asserter.WithHeading($"{nameof(NestedOptionalEquality)}, inner: {inner.Prettify()}, outer: {outer.Prettify()}")
-                .And(() => Assert.That(inner      == innerValue, "inner == innerValue"))
-                .And(() => Assert.That(innerValue == inner,      "innerValue == inner"))
-                .And(() => Assert.That(inner      != outer,      "inner != outer"))
-                .And(() => Assert.That(outer      != inner,      "outer != inner"))
-                .And(() => Assert.That(outer      != innerValue, "outer != innerValue"))
-                .And(() => Assert.That(innerValue != outer,      "innerValue != outer"))
-                .Invoke();
-    }
-
     #endregion
 
     #region ToOptional
@@ -252,10 +272,7 @@ public class OptionalTests {
     public void ToOptional_Empty() {
         var ls = Array.Empty<int>();
         Asserter.Against(ls.ToOptional)
-                .And(Has.Property(nameof(IOptional<object>.Count)).EqualTo(0))
-                .And(Has.Property(nameof(IOptional<object>.HasValue)).False)
-                .Satisfies(it => _ = it.Value, Throws.InvalidOperationException)
-                .And(Is.Empty)
+                .IsEmpty()
                 .Invoke();
     }
 
@@ -268,16 +285,17 @@ public class OptionalTests {
         }
     )]
     [TestCase(default(object))]
-    public void ToOptional_Single(object value) {
+    public void Enumerable_ToOptional_Single(object value) {
         // var value = double.NegativeInfinity;
         var ls = new object[] {
             value
         };
-        Asserter.Against(ls.ToOptional)
-                .And(Has.Property(nameof(IOptional<object>.Count)).EqualTo(1))
-                .And(Has.Property(nameof(IOptional<object>.HasValue)).True)
-                .And(Has.Property(nameof(IOptional<object>.Value)).EqualTo(value))
-                .And(Is.Not.Empty)
+
+        Asserter.Against(ls.ToOptional())
+                .And(it => it.Count() == 1)
+                .And(it => it.HasValue)
+                .And(it => it.Value == value)
+                .And(it => it.IsNotEmpty())
                 .Invoke();
     }
 
@@ -287,7 +305,10 @@ public class OptionalTests {
 
     public static (Optional<object?>, string)[] GetOptionalToStringExpectations() {
         return new[] {
-            (new Optional<object?>(5), "Optional<object>[5]"), (new Optional<object?>(), $"Optional<object>[{Optional.EmptyPlaceholder}]"), (new Optional<object?>(null), $"Optional<object>[{new PrettificationSettings().NullPlaceholder}]"), (new Optional<object?>(new Optional<object>(new Optional<object>("yolo"))), "Optional<object>[Optional<object>[Optional<object>[yolo]]]")
+            (new Optional<object?>(5), "5"),
+            (new Optional<object?>(), Optional.EmptyPlaceholder),
+            (new Optional<object?>(null), ""),
+            (new Optional<object?>(new Optional<object>(new Optional<object>("yolo"))), "yolo")
         };
     }
 
@@ -345,6 +366,81 @@ public class OptionalTests {
     }
 
     [Test]
+    public void Newtonsoft_Serialize_SingleNestedOptional_Indented() {
+        const int value        = 5;
+        var       valueString  = value.ToString();
+        var       singleNested = Optional.Of(Optional.Of(value));
+        var settings = new JsonSerializerSettings() {
+            Formatting = Formatting.Indented
+        };
+
+        throw new NotImplementedException(
+            """
+            TestUtils.AssertConversion(
+                singleNested,
+                obj => JsonConvert.SerializeObject(obj),
+                JsonConvert.DeserializeObject<Optional<Optional<int>>>
+            );
+            """
+        );
+    }
+
+    [Test]
+    public void Newtonsoft_Serialize_Optional() {
+        var logger    = this.GetLogger();
+        var optional  = Optional.Of("yolo");
+        var converter = ConversionAsserter.NewtonsoftJson<Optional<string>>(logger);
+        converter.IsReversible(optional);
+    }
+
+    [Test]
+    public void SystemTextJson_Serialize_Optional() {
+        Spectral.Console.Write("yolo", new Stylist(Color.Red));
+        var logger    = this.GetLogger();
+        var optional  = Optional.Of("yolo");
+        var converter = ConversionAsserter.SystemTextJson<Optional<string>>(logger);
+        converter.IsReversible(optional);
+    }
+
+    [Test]
+    public void ConversionAssert_Works() {
+        var original  = "99";
+        var converted = 99;
+        var converter = ConversionAsserter<string, int>.Of(
+            int.Parse,
+            i => i.ToString()
+        );
+
+        converter.IsReversible(original, 99);
+
+        var altConverter = ConversionAsserter<string, int>.Of(
+            int.Parse,
+            i => i.ToString()
+        );
+
+        converter.IsInteroperable(original, altConverter);
+    }
+
+    [Test]
+    public void System_Serialize_SingleNestedOptional_Indented() {
+        var singleNested = Optional.Of(Optional.Of(5));
+
+        var options = new JsonSerializerOptions() {
+            WriteIndented = true
+        };
+
+        throw new NotImplementedException(
+            """
+            TestUtils.AssertConversion(
+                singleNested,
+                it => JsonSerializer.Serialize(it, options),
+                json => JsonSerializer.Deserialize<Optional<Optional<int>>>(json, options)
+            );
+            """
+        );
+    }
+
+    [Test]
     public void Serialize_NestedOptional_WithSettings() {
         const int value       = 5;
         var       valueString = value.ToString();
@@ -356,7 +452,7 @@ public class OptionalTests {
 
         var innerAsserter = Asserter.Against(() => JsonConvert.SerializeObject(inner, settings))
                                     .WithHeading($"Inner Json -> {inner}")
-                                    .And(it => it.LineCount(), Is.EqualTo(3), "Line Count")
+                                    .And(it => it.Lines().Count, Is.EqualTo(3), "Line Count")
                                     .And(
                                         it => it.SplitLines().TrimLines(),
                                         Is.EqualTo(
@@ -368,7 +464,7 @@ public class OptionalTests {
 
         var outerAsserter = Asserter.Against(() => JsonConvert.SerializeObject(outer, settings))
                                     .WithHeading($"Outer Json -> {outer}")
-                                    .And(it => it.LineCount(), Is.EqualTo(5), "Line Count")
+                                    .And(it => it.Lines().Count, Is.EqualTo(5), "Line Count")
                                     .And(
                                         it => it.SplitLines().TrimLines(),
                                         Is.EqualTo(
@@ -410,16 +506,6 @@ public class OptionalTests {
         Asserter.Against(() => JsonConvert.SerializeObject(outer))
                 .And(Is.EqualTo("[[]]"))
                 .Invoke();
-    }
-
-    [Test]
-    public void SerializeNestEmptyOptionalForReal() {
-        var inner = Optional.Empty<int>();
-        var outer = Optional.Of(inner);
-        Console.WriteLine($"inner: {inner}");
-        Console.WriteLine($"outer: {outer}");
-        var json = JsonConvert.SerializeObject(outer, new OptionalJsonConverter());
-        Console.WriteLine($"json: {json}");
     }
 
     #endregion

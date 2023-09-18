@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 
 using FowlFever.Clerical;
-using FowlFever.Clerical.Validated.Atomic;
 using FowlFever.Testing;
 
 using NUnit.Framework;
@@ -15,25 +14,25 @@ public class PathPartTests : BaseClericalTest {
 
     [Test]
     public void PathPart_InvalidChar_AtStart([ValueSource(nameof(GetInvalidPathPartChars))] char badChar) {
-        Ignore.If(badChar, Is.In(Clerk.DirectorySeparatorChars));
-        Assert.That(() => new PathPart($"{badChar}abc"), Throws.Exception);
+        Ignore.If(badChar, Is.AnyOf(Clerk.DirectorySeparatorChars));
+        Assert.That(() => PathPart.Of($"{badChar}abc"), Throws.Exception);
     }
 
     [Test]
     public void PathPart_InvalidChar_AtEnd([ValueSource(nameof(GetInvalidPathPartChars))] char badChar) {
-        Ignore.If(badChar, Is.In(Clerk.DirectorySeparatorChars));
-        Assert.That(() => new PathPart($"abc{badChar}"), Throws.Exception);
+        Ignore.If(badChar, Is.AnyOf(Clerk.DirectorySeparatorChars));
+        Assert.That(() => PathPart.Of($"abc{badChar}"), Throws.Exception);
     }
 
     [Test]
     public void PathPart_InvalidChar_Inside([ValueSource(nameof(GetInvalidPathPartChars))] char badChar) {
-        Assert.That(() => new PathPart($"ab{badChar}cd"), Throws.Exception);
+        Assert.That(() => PathPart.Of($"ab{badChar}cd"), Throws.Exception);
     }
 
     [Test]
     public static void PathPart_OfSpecialPathPart([Values] SpecialPathPart specialPathPart) {
-        var str      = specialPathPart.PathString();
-        var pathPart = new PathPart(str);
+        var str      = specialPathPart.ToPathString();
+        var pathPart = PathPart.Of(str);
         Assert.That(pathPart, Is.EqualTo(str));
     }
 }
