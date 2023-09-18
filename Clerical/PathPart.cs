@@ -11,10 +11,10 @@ namespace FowlFever.Clerical;
 /// </summary>
 public readonly record struct PathPart
 #if NET7_0_OR_GREATER
-: IAdditionOperators<PathPart, PathPart, DirectoryPath>,
-  IAdditionOperators<PathPart, FileName, FilePath>,
-  IAdditionOperators<PathPart, DirectoryPath, DirectoryPath>,
-  IAdditionOperators<PathPart, FileExtension, FileName>
+    : System.Numerics.IAdditionOperators<PathPart, PathPart, DirectoryPath>,
+      System.Numerics.IAdditionOperators<PathPart, FileName, FilePath>,
+      System.Numerics.IAdditionOperators<PathPart, DirectoryPath, DirectoryPath>,
+      System.Numerics.IAdditionOperators<PathPart, FileExtension, FileName>
 #endif
 {
     private readonly Substring _value;

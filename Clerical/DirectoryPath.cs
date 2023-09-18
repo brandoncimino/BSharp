@@ -6,11 +6,11 @@ namespace FowlFever.Clerical;
 
 public readonly record struct DirectoryPath(ImmutableArray<PathPart> Parts, DirectorySeparator DirectorySeparator = DirectorySeparator.Universal)
 #if NET7_0_OR_GREATER
-    : IAdditionOperators<DirectoryPath, DirectoryPath, DirectoryPath>, 
-      IAdditionOperators<DirectoryPath, PathPart, DirectoryPath>, 
-      IAdditionOperators<DirectoryPath, FileName, FilePath>,
-      IAdditionOperators<DirectoryPath, FilePath, FilePath>,
-      IDecrementOperators<DirectoryPath>
+    : System.Numerics.IAdditionOperators<DirectoryPath, DirectoryPath, DirectoryPath>,
+      System.Numerics.IAdditionOperators<DirectoryPath, PathPart, DirectoryPath>,
+      System.Numerics.IAdditionOperators<DirectoryPath, FileName, FilePath>,
+      System.Numerics.IAdditionOperators<DirectoryPath, FilePath, FilePath>,
+      System.Numerics.IDecrementOperators<DirectoryPath>
 #endif
 {
     public bool IsEmpty => Parts.IsDefaultOrEmpty;
