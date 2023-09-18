@@ -1,7 +1,3 @@
-using System;
-
-using FowlFever.BSharp.Chronic;
-
 namespace FowlFever.BSharp;
 
 public static partial class Mathb {
@@ -40,10 +36,6 @@ public static partial class Mathb {
             _                                                  => (final - initial) / initial
         };
     }
-
-    /// <inheritdoc cref="DeltaRatio(double,double)"/>
-    [Pure]
-    public static double DeltaRatio(Rate initial, Rate final) => DeltaRatio(initial.Hertz, final.Hertz);
 
     /// <inheritdoc cref="DeltaRatio(double,double)"/>
     [Pure]

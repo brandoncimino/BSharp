@@ -1,11 +1,7 @@
-using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 
 using FowlFever.BSharp.Enums;
-
-using JetBrains.Annotations;
 
 namespace FowlFever.BSharp.Chronic {
     /// <summary>
@@ -13,7 +9,6 @@ namespace FowlFever.BSharp.Chronic {
     ///
     /// TODO: Figure out if I want "{X}Extensions" or "{X}Utils"..."{X}Extensions" seems to be the standard practice, but that feels arbitrary - after all, it makes sense to call methods with the syntax TimeUtils.Min(a,b) or TimeUtils.Divide(n), but also maybe a.Min(b)...
     /// </summary>
-    [PublicAPI]
     public static class TimeUtils {
         /// <summary>
         /// Creates a <see cref="TimeSpan"/> of some amount of the given <see cref="TimeUnit"/>.
@@ -45,7 +40,6 @@ namespace FowlFever.BSharp.Chronic {
         #region Division
 
 #if !NETSTANDARD2_1_OR_GREATER && !NET5_0_OR_GREATER
-
         /// <summary>
         /// A verbatim copy of the <c>/</c> operator in <a href="https://github.com/dotnet/runtime/blob/70652798a59474c2df73d7772f67e3fdb61b85a4/src/libraries/System.Private.CoreLib/src/System/TimeSpan.cs#L489-L493">newer versions of dotnet/runtime</a>.
         /// </summary>
@@ -361,11 +355,6 @@ namespace FowlFever.BSharp.Chronic {
         [Pure]
         public static TimeSpan TimeSpanOf(object value) {
             return TimeSpanFromObject(value) ?? throw new InvalidCastException($"Could not convert {nameof(value)} [{value?.GetType().Name}]{value} to a {nameof(TimeSpan)}!");
-        }
-
-        [Obsolete("Please call " + nameof(MethodTimer) + "." + nameof(MethodTimer.MeasureExecution) + " directly", true)]
-        public static AggregateExecutionTime AverageExecutionTime(Action action, int iterations = 1) {
-            return MethodTimer.MeasureExecution(action, iterations);
         }
     }
 }

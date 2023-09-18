@@ -42,8 +42,9 @@ public readonly partial struct FileExtension : IEquatable<FileExtension> {
 
     [Pure] public override string ToString() => _value.ToString();
 
-    [Pure] public                          ReadOnlySpan<char> AsSpan()            => _value;
-    [Pure] public static implicit operator ReadOnlySpan<char>(FileExtension self) => self.AsSpan();
+    [Pure] public                          ReadOnlySpan<char> AsSpan()                 => _value;
+    [Pure] public static implicit operator ReadOnlySpan<char>(FileExtension self)      => self.AsSpan();
+    [Pure] public static implicit operator FileExtension(string             extension) => Parse(extension);
 
     [Pure] public static FileName operator +(PathPart baseName, FileExtension extension) => new(baseName, extension);
 }

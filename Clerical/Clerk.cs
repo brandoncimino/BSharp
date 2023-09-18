@@ -50,13 +50,4 @@ public static partial class Clerk {
     public static FileName GetRandomFileName() {
         return FileName.Parse(Path.GetRandomFileName());
     }
-
-    /// <param name="path">a file path</param>
-    /// <returns><c>true</c> if the <paramref name="path"/> <see cref="EndsInDirectorySeparator(System.ReadOnlySpan{char})"/> or is a <see cref="SpecialPathPart"/></returns>
-    [Pure]
-    public static bool IsDirectory(string path) => EndsInDirectorySeparator(path) || PathPart.IsSpecialPathPart(path);
-
-    /// <inheritdoc cref="IsDirectory(string)"/>
-    [Pure]
-    public static bool IsDirectory(ReadOnlySpan<char> path) => EndsInDirectorySeparator(path) || PathPart.IsSpecialPathPart(path);
 }

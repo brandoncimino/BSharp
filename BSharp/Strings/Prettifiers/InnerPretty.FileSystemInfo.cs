@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.IO;
 
-using FowlFever.BSharp.Clerical;
 using FowlFever.BSharp.Collections;
 using FowlFever.BSharp.Strings.Settings;
 using FowlFever.Conjugal.Affixing;
@@ -37,7 +36,7 @@ namespace FowlFever.BSharp.Strings.Prettifiers {
         }
 
         private static string PrettifySingleItem(FileSystemInfo item, PrettificationSettings settings, int currentDepth = 0) {
-            var itemName = currentDepth == 0 ? item.ToUri().ToString() : item.Name;
+            var itemName = currentDepth == 0 ? item.FullName : item.Name;
             return itemName.Prefix(GetIcon(item), " ");
         }
 
@@ -50,7 +49,7 @@ namespace FowlFever.BSharp.Strings.Prettifiers {
              *   …(5 children)
              */
             IEnumerable<string> lines;
-            var                 itemName = currentDepth == 0 ? item.ToUri().ToString() : item.Name;
+            var                 itemName = currentDepth == 0 ? item.FullName : item.Name;
 
             if (item is DirectoryInfo dir) {
                 var directoryName = itemName.Prefix("📁", " ");

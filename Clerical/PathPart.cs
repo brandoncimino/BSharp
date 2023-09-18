@@ -1,4 +1,5 @@
-using FowlFever.BSharp;
+using System.Collections.Immutable;
+
 using FowlFever.BSharp.Exceptions;
 using FowlFever.BSharp.Strings;
 using FowlFever.Clerical.Validated;
@@ -8,7 +9,14 @@ namespace FowlFever.Clerical;
 /// <summary>
 /// Represents a <b>single section</b> <i>(i.e., without any <see cref="Clerk.DirectorySeparatorChars"/>)</i> of a <see cref="FileSystemInfo.FullPath"/>, such as a <see cref="FileSystemInfo.Name"/>.
 /// </summary>
-public readonly record struct PathPart {
+public readonly record struct PathPart
+#if NET7_0_OR_GREATER
+: IAdditionOperators<PathPart, PathPart, DirectoryPath>,
+  IAdditionOperators<PathPart, FileName, FilePath>,
+  IAdditionOperators<PathPart, DirectoryPath, DirectoryPath>,
+  IAdditionOperators<PathPart, FileExtension, FileName>
+#endif
+{
     private readonly Substring _value;
     public           int       Length => _value.Length;
 
@@ -65,9 +73,6 @@ public readonly record struct PathPart {
 
     #endregion
 
-    public static ValueArray<PathPart> operator +(PathPart a,        PathPart      b)         => ValueArray.Of(a, b);
-    public static FileName operator +(PathPart             baseName, FileExtension extension) => new(baseName, extension);
-
     /// <summary>
     /// Constructs a new <see cref="PathPart"/>.
     /// </summary>
@@ -112,4 +117,24 @@ public readonly record struct PathPart {
                BadCharException.TryAssert(pathPart, Clerk.InvalidPathPartChars.AsSpan())
             ;
     }
+
+    #region Operators
+
+    public static DirectoryPath operator +(PathPart left, PathPart right) {
+        return new DirectoryPath(ImmutableArray.Create(left, right));
+    }
+
+    public static FilePath operator +(PathPart left, FileName right) {
+        return new FilePath(new DirectoryPath(ImmutableArray.Create(left)), right);
+    }
+
+    public static DirectoryPath operator +(PathPart left, DirectoryPath right) {
+        return new DirectoryPath(right.Parts.Insert(0, left));
+    }
+
+    public static FileName operator +(PathPart left, FileExtension right) {
+        return new FileName(left, right);
+    }
+
+    #endregion
 }

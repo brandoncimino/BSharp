@@ -1,8 +1,6 @@
 using System.IO;
 using System.Runtime.CompilerServices;
 
-using FowlFever.BSharp.Clerical;
-
 namespace FowlFever.BSharp.Exceptions;
 
 /// <remarks>
@@ -24,13 +22,12 @@ public static partial class Must {
         [NotNull] T fileSystemInfo,
         [CallerArgumentExpression("fileSystemInfo")]
         string? parameterName = default,
-        [CallerMemberName]
-        string? methodName = default
+        [CallerMemberName] string? methodName = default
     )
         where T : FileSystemInfo {
         return Be(
             fileSystemInfo,
-            it => it?.Refreshed().Exists == true,
+            it => it?.Exists == true,
             parameterName,
             methodName,
             "must exist"
@@ -43,12 +40,11 @@ public static partial class Must {
         FileInfo? actualValue,
         [CallerArgumentExpression("actualValue")]
         string? parameterName = default,
-        [CallerMemberName]
-        string? methodName = default
+        [CallerMemberName] string? methodName = default
     ) {
         return Be(
             actualValue,
-            it => it?.ExistsWithContent() == true,
+            it => it is { Exists: true, Length: > 0 },
             parameterName,
             methodName,
             "must exist AND have content"
@@ -65,8 +61,7 @@ public static partial class Must {
         FileInfo? actualValue,
         [CallerArgumentExpression("actualValue")]
         string? parameterName = default,
-        [CallerMemberName]
-        string? methodName = default
+        [CallerMemberName] string? methodName = default
     ) {
         return ExistWithContent(actualValue, parameterName, methodName);
     }
@@ -75,12 +70,11 @@ public static partial class Must {
         DirectoryInfo? actualValue,
         [CallerArgumentExpression("actualValue")]
         string? parameterName = default,
-        [CallerMemberName]
-        string? methodName = default
+        [CallerMemberName] string? methodName = default
     ) {
         return Be(
             actualValue,
-            it => it?.IsNotEmpty() == true,
+            it => (it != null ? it.Exists && it.EnumerateFileSystemInfos().Any() : null) == true,
             parameterName,
             methodName
         );
@@ -94,12 +88,11 @@ public static partial class Must {
         FileInfo actualValue,
         [CallerArgumentExpression("actualValue")]
         string? parameterName = default,
-        [CallerMemberName]
-        string? methodName = default
+        [CallerMemberName] string? methodName = default
     ) {
         return Be(
             actualValue,
-            FileInfoExtensions.IsEmptyOrMissing,
+            info => info is not { Exists: true, Length: > 0 },
             parameterName,
             methodName
         );
@@ -109,10 +102,9 @@ public static partial class Must {
         DirectoryInfo actualValue,
         [CallerArgumentExpression("actualValue")]
         string? parameterName = default,
-        [CallerMemberName]
-        string? methodName = default
+        [CallerMemberName] string? methodName = default
     ) {
-        return Be(actualValue, DirectoryInfoExtensions.IsEmptyOrMissing, parameterName, methodName);
+        return Be(actualValue, info => !(info.Exists && info.EnumerateFileSystemInfos().Any()), parameterName, methodName);
     }
 
     #endregion
@@ -123,8 +115,7 @@ public static partial class Must {
         T fileSystemInfo,
         [CallerArgumentExpression("fileSystemInfo")]
         string? parameterName = default,
-        [CallerMemberName]
-        string? methodName = default
+        [CallerMemberName] string? methodName = default
     )
         where T : FileSystemInfo {
         return Be(

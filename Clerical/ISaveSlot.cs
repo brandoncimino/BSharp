@@ -1,3 +1,5 @@
+using FowlFever.BSharp;
+
 using JetBrains.Annotations;
 
 namespace FowlFever.Clerical;
@@ -7,17 +9,15 @@ namespace FowlFever.Clerical;
 /// <br/>
 /// <b>🕹 To a user:</b> A choice of what to load.
 /// <br/>
-/// <b>🤖 To the code:</b> A logically grouped, isolated set of <see cref="ISaveFile{TData}"/>s.
+/// <b>🤖 To the code:</b> A logically grouped, isolated set of...who knows
 /// </summary>
-/// <typeparam name="TData">the <see cref="ISaveData"/> that this <see cref="ISaveSlot{TData}"/> manages</typeparam>
-public interface ISaveSlot<TData> where TData : ISaveData {
-    public FileName      Nickname   { get; }
-    public ISaveFolder SaveFolder { get; }
+public interface ISaveSlot {
+    public PathPart             Nickname   { get; }
+    public ValueArray<PathPart> SaveFolder { get; }
 
-    public string[] RelativePath { get; }
+    public ValueArray<PathPart> RelativePath { get; }
 
-    [NonNegativeValue]
-    public int SaveFileCount { get; }
+    [NonNegativeValue] public int SaveFileCount { get; }
 
     public string SaveFileSearchPattern { get; }
 
