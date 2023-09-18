@@ -15,6 +15,7 @@ namespace FowlFever.BSharp.Optional;
 /// 📝 NOTE: As can be seen in <a href="https://referencesource.microsoft.com/#mscorlib/system/collections/generic/equalitycomparer.cs,140">the actual .NET source code</a>,
 /// <see cref="IEqualityComparer{T}.GetHashCode(T)"/> is absolutely null safe. Plus, it definitely was yesterday. I don't know whats gotten into Rider.
 /// </remarks>
+[Obsolete(Optional.ObsoleteMessage, Optional.ObsoleteError)]
 public class OptionalEqualityComparer<T> : EqualityComparer<T?>, IEqualityComparer<IOptional<T?>?> {
     private IEqualityComparer<T?> CanonComparer { get; }
 

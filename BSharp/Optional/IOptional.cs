@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 
 using FowlFever.Implementors;
@@ -37,6 +36,7 @@ namespace FowlFever.BSharp.Optional {
     /// </ul>
     /// </remarks>
     /// <typeparam name="T">the type of the <see cref="IHas{T}.Value"/> that <i>might</i> be there.</typeparam>
+    [Obsolete(Optional.ObsoleteMessage, Optional.ObsoleteError)]
     public interface IOptional<out T> : IHas<T>, IReadOnlyCollection<T> {
         /// <summary>
         /// Whether or not a <see cref="IHas{T}.Value"/> is present.

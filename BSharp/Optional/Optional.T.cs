@@ -3,12 +3,9 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
 using FowlFever.BSharp.Strings;
+using FowlFever.BSharp.Strings.Prettifiers;
 using FowlFever.BSharp.Strings.Settings;
 using FowlFever.Implementors;
-
-using JetBrains.Annotations;
-
-using Newtonsoft.Json;
 
 namespace FowlFever.BSharp.Optional {
     /// <inheritdoc cref="IOptional{T}"/>
@@ -16,9 +13,7 @@ namespace FowlFever.BSharp.Optional {
     /// An <see cref="Optional{T}"/> can be considered a <see cref="IReadOnlyCollection{T}"/> with a max capacity of 1.
     /// This gives access to the full suite of <see cref="System.Linq"/> extension methods.
     /// </remarks>
-    [PublicAPI]
-    [JsonConverter(typeof(OptionalJsonConverter.Newtonsoft))]
-    [System.Text.Json.Serialization.JsonConverter(typeof(OptionalJsonConverter.SystemTextFactory))]
+    [Obsolete(Optional.ObsoleteMessage, Optional.ObsoleteError)]
     public readonly struct Optional<T> : IOptional<T>,
                                          IEquatable<T>,
                                          IEquatable<IHas<T>>,
@@ -43,7 +38,7 @@ namespace FowlFever.BSharp.Optional {
         /// </summary>
         public bool IsEmpty => !HasValue;
 
-        public T Value => HasValue ? _value : throw OptionalException.IsEmptyException(this);
+        public T Value => HasValue ? _value : throw new InvalidOperationException($"Unable to retrieve the {nameof(IOptional<T>.Value)} from the {this.GetType().PrettifyType(default)} because it is empty!");
 
         public Optional(T value) {
             _value   = value;

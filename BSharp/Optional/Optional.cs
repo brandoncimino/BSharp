@@ -1,7 +1,5 @@
-using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 
 using FowlFever.BSharp.Collections;
 using FowlFever.BSharp.Exceptions;
@@ -14,10 +12,17 @@ namespace FowlFever.BSharp.Optional {
     /// <summary>
     /// Utility and extension methods for <see cref="Optional{T}"/>.
     /// </summary>
-    [PublicAPI]
+    [Obsolete("See Optional<T> for details")]
     public static class Optional {
         internal const string NullPlaceholder  = "⛔";
         internal const string EmptyPlaceholder = "🈳";
+        internal const string ObsoleteMessage = """
+                                                This had lots of problems, which became very apparent when I tried serializing it. Chief among them was:
+                                                  - Using the `IOptional` interface - interfaces and `struct`s just don't play nice.
+                                                  - Trying to define equality to "similar" types, like `IEquatable<T>` and `IHas<T>`, instead of relying on conversions (i.e. `string` is not equatable to `ReadOnlySpan<char>`; rather, it gets _converted_ to `ReadOnlySpan<char>`)
+                                                  - Properties that throw exceptions on `get` (e.g. `Value`)
+                                                """;
+        internal const bool ObsoleteError = false;
 
         /// <summary>
         /// Creates an <see cref="Optional{T}"/> without ugly type parameters.
@@ -189,34 +194,6 @@ namespace FowlFever.BSharp.Optional {
         ) {
             return optional.AsEnumerable().Select(selector).Single();
         }
-
-        /// <summary>
-        /// Converts an <see cref="Optional{T}"/> containing <c>null</c> into an empty <see cref="Optional{T}"/>.
-        /// </summary>
-        /// <param name="optional">this <see cref="Optional{T}"/></param>
-        /// <typeparam name="T">the type of the actual <see cref="Optional{T}"/> value</typeparam>
-        /// <returns>an <see cref="Optional{T}"/> with a non-null <typeparamref name="T"/> type</returns>
-        [Pure]
-        public static Optional<T> NonNull<T>(this Optional<T?> optional) => optional.Where(it => it != null)!;
-
-        /// <inheritdoc cref="NonNull{T}(FowlFever.BSharp.Optional.Optional{T?})"/>
-        /// <remarks>
-        /// This method will convert <see cref="Nullable{T}"/> <typeparamref name="T"/>? parameters into their non-null <see cref="ValueType"/> form.
-        /// </remarks>
-        [Pure]
-        public static Optional<T> NonNull<T>(this Optional<T?> optional)
-            where T : struct => optional.Select(it => it.ToOptional()).Flatten();
-
-        /// <summary>
-        /// <see cref="Optional{T}.Select{TNew}"/>s this <see cref="Optional{T}"/>, filtering out <c>null</c> values.
-        /// </summary>
-        /// <param name="optional">this <see cref="Optional{T}"/></param>
-        /// <param name="selector">the transforming <see cref="Func{T,TResult}"/>, which will <b>only</b> run if this <see cref="Optional{T}.Value"/> is non-<c>null</c></param>
-        /// <typeparam name="TIn">the original <see cref="Type"/></typeparam>
-        /// <typeparam name="TOut">the transformed <see cref="Type"/></typeparam>
-        /// <returns>a new <see cref="Optional{T}"/></returns>
-        public static Optional<TOut> SelectNullable<TIn, TOut>(this Optional<TIn?> optional, Func<TIn, TOut?> selector)
-            => optional.NonNull().Select(selector).NonNull();
 
         #endregion
 
