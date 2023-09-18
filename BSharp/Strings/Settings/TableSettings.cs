@@ -4,6 +4,7 @@ using FowlFever.BSharp.Collections.Apportion;
 
 namespace FowlFever.BSharp.Strings.Settings;
 
+[Obsolete("All of the Prettification stuff is pretty ugly")]
 public record TableSettings : Settings {
     /// <summary>
     /// Used as the "default" number of columns so unrelated <see cref="Prettification.Prettify{T}(T?)"/> calls can line up.
