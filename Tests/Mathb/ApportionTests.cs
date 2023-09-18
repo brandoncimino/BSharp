@@ -11,6 +11,7 @@ using NUnit.Framework;
 
 namespace BSharp.Tests.Mathb;
 
+[Obsolete]
 public class ApportionTests {
     public readonly record struct RangeApportionExpectation(int Amount, double[] Weights, Range[] ExpectedRanges) {
         public int[] ExpectedSizes => ExpectedRanges.Select(it => (it.End.Value - it.Start.Value)).ToArray();

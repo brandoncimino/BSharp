@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 
 using FowlFever.BSharp.Collections.Apportion;
@@ -6,6 +7,7 @@ using NUnit.Framework;
 
 namespace BSharp.Tests.Mathb;
 
+[Obsolete]
 public class DistributeRemainderTests {
     [TestCase(1, Apportion.DistributionStrategy.FromLeft,       new[] { 1, 0, 0, 0, 0 })]
     [TestCase(2, Apportion.DistributionStrategy.FromLeft,       new[] { 1, 1, 0, 0, 0 })]
