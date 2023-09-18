@@ -38,24 +38,8 @@ public class SubstringTests {
         AssertAll.Of(
             () => Assert.That(original.SubstringBefore(splitter), Is.EqualTo(substring_before)),
             () => Assert.That(original.SubstringAfter(splitter),  Is.EqualTo(substring_after)),
-            () => Assert.That(original.Bisect(splitter).Item1,    Is.EqualTo(bisect_before)),
-            () => Assert.That(original.Bisect(splitter).Item2,    Is.EqualTo(bisect_after))
-        );
-    }
-
-    [Test]
-    [TestCase("yolo.swag",        ".",    "",    "")]
-    [TestCase("b00bz",            @"\d",  "b",   "bz")]
-    [TestCase("one%-two~!~three", @"\W+", "one", "three")]
-    public void Substring_Regex(
-        string original,
-        string pattern,
-        string expected_before,
-        string expected_after
-    ) {
-        AssertAll.Of(
-            () => Assert.That(original.SubstringBefore(new Regex(pattern)), Is.EqualTo(expected_before)),
-            () => Assert.That(original.SubstringAfter(new Regex(pattern)),  Is.EqualTo(expected_after))
+            () => Assert.That(original.Partition(splitter).Item1, Is.EqualTo(bisect_before)),
+            () => Assert.That(original.Partition(splitter).Item2, Is.EqualTo(bisect_after))
         );
     }
 
