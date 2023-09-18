@@ -6,8 +6,6 @@ using FowlFever.Testing;
 
 using NUnit.Framework;
 
-using Spectre.Console;
-
 namespace BSharp.Tests.Memory;
 
 [SuppressMessage("ReSharper", "AccessToStaticMemberViaDerivedType", Justification = "NUnit static extensions")]
@@ -44,17 +42,13 @@ public class SpanBuilderTests {
         SpanBuilder<char> builder = new(stackalloc char[0]);
         var               span    = source.AsSpan();
 
-        AnsiConsole.Write(builder.Describe());
         Assert.That(builder.State, Is.EqualTo(SpanBuilderState.Unallocated));
 
         builder.TryAdd(span[0]);
-        AnsiConsole.Write(builder.Describe());
 
         builder.Allocate(stackalloc char[source.Length]);
 
         for (int i = 0; i < span.Length; i++) {
-            AnsiConsole.Write(builder.Describe());
-
             var added = builder.TryAdd(span[i]);
             Assert.That(added, Is.True);
             Assert.That(builder.Span.SequenceEqual(span[..(i + 1)]));
