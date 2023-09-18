@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-using FowlFever.BSharp;
 using FowlFever.BSharp.Collections;
 using FowlFever.BSharp.Optional;
 using FowlFever.BSharp.Strings;
@@ -55,7 +54,11 @@ namespace FowlFever.Testing {
 
         private static Affixation GetHeader(IFailable assertable, string passIcon = PassIcon, string failIcon = FailIcon) {
             var icon = assertable.Failed ? failIcon : passIcon;
-            return Affixation.Prefixation((assertable.Description?.Supplied().TryGet()).OrElse(assertable.GetType().Name), icon, " ");
+            return Affixation.Prefixation(
+                assertable.Description.TryGet().OrElse(assertable.GetType().Name),
+                icon,
+                " "
+            );
         }
     }
 }

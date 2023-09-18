@@ -80,7 +80,7 @@ namespace FowlFever.Testing {
             }
 
             var mParts = new[] {
-                messageProvider?.Try().OrDefault(), result.Description
+                messageProvider?.Try().OrElse(default), result.Description
             };
 
             Assert.Ignore(mParts.NonNull().JoinLines());
