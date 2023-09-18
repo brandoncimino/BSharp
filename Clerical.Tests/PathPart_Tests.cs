@@ -1,3 +1,5 @@
+using System.Collections.Immutable;
+
 using FowlFever.Clerical;
 
 namespace Clerical.Tests;
@@ -20,5 +22,17 @@ public class PathPart_Tests {
                 Assert.That(part.ToString(), Is.EqualTo(expected));
             }
         );
+    }
+
+    [TestCase("a",  "b",  "a/b")]
+    [TestCase("a/", "/b", "a/b")]
+    [TestCase("a/", "b/", "a/b/")]
+    public void PathPart_Addition(string a, string b, string expected) {
+        var aPart = PathPart.Of(a);
+        var bPart = PathPart.Of(b);
+
+        var added        = aPart + bPart;
+        var expectedPath = new DirectoryPath(ImmutableArray.Create(aPart, bPart));
+        Assert.That(added, Is.EqualTo(expectedPath));
     }
 }
