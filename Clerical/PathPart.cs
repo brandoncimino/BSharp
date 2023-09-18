@@ -1,9 +1,5 @@
 using System.Collections.Immutable;
 
-using FowlFever.BSharp.Exceptions;
-using FowlFever.BSharp.Strings;
-using FowlFever.Clerical.Validated;
-
 namespace FowlFever.Clerical;
 
 /// <summary>
@@ -81,7 +77,7 @@ public readonly record struct PathPart
     public static PathPart Of(string partString) {
         var str = TrimDirectorySeparators(partString);
 
-        BadCharException.Assert(str, Clerk.DirectorySeparatorChars);
+        BadCharException.Validate(str, Clerk.DirectorySeparatorChars);
 
         return str.AsSpan() switch {
             "."  => CurrentDirectory,
@@ -89,33 +85,6 @@ public readonly record struct PathPart
             ".." => ParentDirectory,
             _    => new PathPart(str)
         };
-    }
-
-    /// <summary>
-    /// Exhaustively validates that the given <see cref="ReadOnlySpan{T}"/> is a valid <see cref="PathPart"/> string.
-    /// </summary>
-    /// <param name="partString"></param>
-    /// <exception cref="Exception"></exception>
-    internal static void Validate(ReadOnlySpan<char> partString) {
-        var exc = _tryValidate(partString);
-        if (exc != null) {
-            throw exc;
-        }
-    }
-
-    private static Exception? _tryValidate(ReadOnlySpan<char> pathPart) {
-        if (GetSpecialPathPart(pathPart).HasValue) {
-            return default;
-        }
-
-        return Must.Try(pathPart.IsEmpty, false, "cannot be empty") ??
-               Must.Try(pathPart[0].IsWhitespace(), false, "cannot start with whitespace") ??
-               Must.Try(pathPart[^1].IsWhitespace(), false, "cannot end with whitespace") ??
-               Must.Try(pathPart[^1] != '.', true, $"cannot end in a period (unless the entire {nameof(PathPart)} is '.' or '..')") ??
-               Must.Try(pathPart is ":", false, "cannot be a single colon (colons are special thingies for drive indicators)") ??
-               Must.Try(pathPart.IndexOf("..") < 0, true, details: $"cannot contain double-periods ('..') (unless the entire {nameof(PathPart)} is '..')") ??
-               BadCharException.TryAssert(pathPart, Clerk.InvalidPathPartChars.AsSpan())
-            ;
     }
 
     #region Operators
