@@ -129,6 +129,8 @@ public static class Giff {
         }
     }
 
+    public enum LayoutDirection { Vertical, Horizontal, }
+
     public record GiffRenderer<T>(GiffResult<T> Result) : IRenderable {
         public LayoutDirection         Direction { get; init; } = LayoutDirection.Vertical;
         public RenderableGiffPair<T>[] Pairs     => Result.GetResultPairs().ToArray();
