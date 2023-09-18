@@ -42,12 +42,6 @@
         <ProjectReference Include="..\CSharp10\CSharp10.csproj">
             <PrivateAssets>all</PrivateAssets>
         </ProjectReference>
-        <ProjectReference Include="..\Ratification\Ratification.csproj"/>
-    </ItemGroup>
-
-    <ItemGroup>
-        <Folder Include="Ratification"/>
-        <Folder Include="Spanic"/>
     </ItemGroup>
 
     <ItemGroup>
