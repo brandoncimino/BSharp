@@ -62,11 +62,7 @@
 
     <ItemGroup>
         <Compile Remove="Program.cs"/>
-        <Compile Remove="HighWaterMarkTests.cs"/>
     </ItemGroup>
 
-    <ItemGroup>
-        <Folder Include="Clerical2\ClerkTests"/>
-    </ItemGroup>
 
 </Project>
