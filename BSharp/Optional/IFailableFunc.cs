@@ -1,4 +1,4 @@
-using System;
+using System.Collections.Generic;
 
 using JetBrains.Annotations;
 
@@ -10,7 +10,7 @@ namespace FowlFever.BSharp.Optional {
     /// </summary>
     /// <remarks>
     /// <ul>
-    /// <li>This interface combines <see cref="IOptional{T}"/> with <see cref="IFailable"/>.</li>
+    /// <li>This interface combines an "optional" <typeparamref name="TValue"/> with an <see cref="IFailable.Excuse"/>.</li>
     /// <li>An <see cref="IFailableFunc{TValue}"/> should generally be used when there is a meaningful return value (i.e. a <see cref="Func{TResult}"/>).
     ///     When the failable code does not have a return value, i.e. <see cref="Action"/>, <see cref="IFailable"/> should be used instead.</li>
     /// </ul>
@@ -25,7 +25,10 @@ namespace FowlFever.BSharp.Optional {
     /// </remarks>
     /// <typeparam name="TValue">the <see cref="IOptional{T}.Value"/>, if this succeeded</typeparam>
     [PublicAPI]
-    public interface IFailableFunc<out TValue> : IOptional<TValue>, IFailable {
+    public interface IFailableFunc<out TValue> : IFailable, IReadOnlyCollection<TValue> {
+        public TValue  Value         { get; }
         public object? ValueOrExcuse { get; }
+
+        public T2 Handle<T2>(Func<TValue, T2> ifSuccess, Func<Exception, T2> ifFailure);
     }
 }

@@ -1,7 +1,3 @@
-using System;
-
-using FowlFever.Implementors;
-
 namespace FowlFever.BSharp.Optional;
 
 public static partial class Failables {
@@ -38,19 +34,7 @@ public static partial class Failables {
     /// <returns>this <see cref="IFailable"/> <i>(for reals)</i></returns>
     public static IFailable AsFailable(this IFailable failable) => failable;
 
-    /// <summary>
-    /// "Converts" an <see cref="IFailable"/> into an <see cref="IFailableFunc{TValue}"/> by providing it with an output <see cref="IHas{T}.Value"/>.
-    /// </summary>
-    /// <param name="failableAction"></param>
-    /// <param name="outputValue"></param>
-    /// <typeparam name="T"></typeparam>
-    /// <returns></returns>
-    public static IFailableFunc<T> WithOutput<T>(this IFailable failableAction, Optional<T> outputValue) {
-        return new FailableFunc<T>(failableAction, outputValue);
-    }
-
-    /// <inheritdoc cref="WithOutput{T}(FowlFever.BSharp.Optional.IFailable,FowlFever.BSharp.Optional.Optional{T})"/>
-    public static IFailableFunc<T> WithOutput<T>(this IFailable failableAction, T outputValue) {
-        return new FailableFunc<T>(failableAction, outputValue);
+    public static T OrElse<T>(this IFailableFunc<T> failable, T fallback) {
+        return failable.Passed ? failable.Value : fallback;
     }
 }

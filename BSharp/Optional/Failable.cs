@@ -1,7 +1,6 @@
-using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Linq;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
 using FowlFever.BSharp.Collections;
@@ -21,6 +20,11 @@ namespace FowlFever.BSharp.Optional {
         public ImmutableArray<Type> IgnoredExceptionTypes { get; }
         public Exception?           IgnoredException      { get; }
         public Supplied<string?>    Description           { get; }
+
+        [MemberNotNullWhen(false, nameof(Excuse))]
+        public bool Passed => ((IFailable)this).Passed;
+        [MemberNotNullWhen(true, nameof(Excuse))]
+        public bool Failed => ((IFailable)this).Failed;
 
         internal Failable(
             Exception?         excuse,

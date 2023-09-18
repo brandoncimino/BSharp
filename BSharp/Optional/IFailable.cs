@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 
@@ -34,6 +33,7 @@ public interface IFailable {
     /// <summary>
     /// The inverse of <see cref="Failed"/>.
     /// </summary>
+    [MemberNotNullWhen(false, nameof(Excuse))]
     public sealed bool Passed => !Failed;
 
     /// <summary>

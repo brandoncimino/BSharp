@@ -1,6 +1,4 @@
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.CompilerServices;
 
 using JetBrains.Annotations;
@@ -16,11 +14,10 @@ public partial class Failables {
     /// </summary>
     /// <param name="failableAction">the <see cref="Action"/> being executed</param>
     /// <param name="description">see <see cref="CallerArgumentExpressionAttribute"/></param>
-    /// <param name="ignoredExceptionTypes"><see cref="Exception"/> types that won't be considered a <see cref="Failable.Failed"/> execution</param>
+    /// <param name="ignoredExceptionTypes"><see cref="Exception"/> types that won't be considered a <see cref="IFailable.Failed"/> execution</param>
     /// <returns>a <see cref="Failable"/> containing information about execution of the <paramref name="failableAction"/></returns>
     public static Failable Try(
-        [InstantHandle]
-        this Action failableAction,
+        [InstantHandle] this Action failableAction,
         [CallerArgumentExpression("failableAction")]
         string? description = default,
         params Type[] ignoredExceptionTypes
@@ -30,9 +27,8 @@ public partial class Failables {
 
     /// <inheritdoc cref="Try(System.Action,string?,System.Type[])"/>
     public static Failable Try<T>(
-        [InstantHandle]
-        this Action<T> failableAction,
-        T arg,
+        [InstantHandle] this Action<T> failableAction,
+        T                              arg,
         [CallerArgumentExpression("failableAction")]
         string? description = default,
         params Type[] ignoredExceptionTypes
@@ -55,11 +51,10 @@ public partial class Failables {
 
     /// <inheritdoc cref="Try(System.Action,string?,System.Type[])"/>
     public static Failable Try<A, B, C>(
-        [InstantHandle]
-        this Action<A, B, C> failableAction,
-        A a,
-        B b,
-        C c,
+        [InstantHandle] this Action<A, B, C> failableAction,
+        A                                    a,
+        B                                    b,
+        C                                    c,
         [CallerArgumentExpression("failableAction")]
         string? description = default,
         params Type[] ignoredExceptionTypes
@@ -69,12 +64,11 @@ public partial class Failables {
 
     /// <inheritdoc cref="Try(System.Action,string?,System.Type[])"/>
     public static Failable Try<A, B, C, D>(
-        [InstantHandle]
-        this Action<A, B, C, D> failableAction,
-        A a,
-        B b,
-        C c,
-        D e,
+        [InstantHandle] this Action<A, B, C, D> failableAction,
+        A                                       a,
+        B                                       b,
+        C                                       c,
+        D                                       e,
         [CallerArgumentExpression("failableAction")]
         string? expression = default,
         params Type[] ignoredExceptionTypes
