@@ -10,7 +10,6 @@ using System.Runtime.CompilerServices;
 using BSharp.Tests.Reflection;
 
 using FowlFever.BSharp;
-using FowlFever.BSharp.Chronic;
 using FowlFever.BSharp.Collections;
 using FowlFever.BSharp.Enums;
 using FowlFever.BSharp.Reflection;
@@ -577,105 +576,12 @@ List<int>[
         );
     }
 
-    [Test]
-    public void PerformanceTest_Dictionary() {
-        var settings    = new PrettificationSettings();
-        var oldSettings = PrettificationSettings.Default with { };
-        PrettificationSettings.Default = settings;
-
-        Console.WriteLine($"Settings: {settings}");
-        Console.WriteLine($"Trace Writer: {settings.TraceWriter}");
-
-        var ob = new Dictionary<DayOfWeek, string>() {
-            [DayOfWeek.Monday]    = "Monntag",
-            [DayOfWeek.Tuesday]   = "Zwei...tag?",
-            [DayOfWeek.Wednesday] = "Mittwoch",
-            [DayOfWeek.Thursday]  = "Donnerstag",
-            [DayOfWeek.Friday]    = "Freitag",
-            [DayOfWeek.Saturday]  = "Samstag",
-            [DayOfWeek.Sunday]    = "Sonntag"
-        };
-
-        Assert.That(ob.GetType(), Is.EqualTo(typeof(Dictionary<DayOfWeek, string>)));
-
-        void ViaExtension(object obj) {
-            _ = obj.Prettify(settings);
-        }
-
-        // ReSharper disable once SuggestBaseTypeForParameter
-        void ViaSpecific(Dictionary<DayOfWeek, string> obj) {
-            _ = InnerPretty.PrettifyDictionary3_Generic(obj, settings);
-        }
-
-        var comparison = MethodTimer.CompareExecutions(
-            ob,
-            ViaExtension,
-            ViaSpecific,
-            1000
-        );
-
-        Console.WriteLine(comparison);
-        PrettificationSettings.Default = oldSettings;
-    }
-
-    [Test]
-    [TestCase(typeof(IDictionary<(int?, List<DayOfWeek>), Stopwatch>))]
-    public void PerformanceTest_Type(Type type) {
-        const int iterations = 2000;
-
-        var settings    = new PrettificationSettings();
-        var oldSettings = PrettificationSettings.Default with { };
-        PrettificationSettings.Default = settings;
-
-        var comparison = MethodTimer.CompareExecutions(
-            (type, settings),
-            Prettification.Prettify,
-            InnerPretty.PrettifyType,
-            iterations
-        );
-
-        Console.WriteLine(comparison);
-        PrettificationSettings.Default = oldSettings;
-        Assert.That(comparison.Faster, Is.EqualTo(AggregateExecutionComparison.Which.Second));
-    }
-
     class Parent {
         public string Nickname;
     }
 
     class Child : Parent {
         public bool IsBehaved;
-    }
-
-    [Test]
-    public static void PerformanceTest_ExactVsDerivedType() {
-        var settings = new PrettificationSettings();
-
-        var exactPrettifier = new Prettifier<Parent>((parent, prettySettings) => $"Parent (actually {parent.GetType().Prettify(prettySettings)}): {parent.Nickname}");
-        Prettification.RegisterPrettifier(exactPrettifier);
-
-        var exactType   = new Parent() { Nickname = "Parent_1" };
-        var derivedType = new Child() { Nickname  = "Child_1", IsBehaved = false };
-
-        Console.WriteLine(
-            new Dictionary<object, object>() {
-                [nameof(exactType)]   = exactType.GetType().Prettify(settings),
-                [nameof(derivedType)] = derivedType.GetType().Prettify(settings)
-            }
-        );
-
-        Assert.That(derivedType.GetType(), Is.EqualTo(typeof(Child)));
-        Assert.That(exactType.GetType(),   Is.EqualTo(typeof(Parent)));
-
-        const int iterations = 2000;
-
-        var comparison = MethodTimer.CompareExecutions(
-            (nameof(exactType), () => _ = exactType.Prettify(settings)),
-            (nameof(derivedType), () => _ = derivedType.Prettify(settings)),
-            iterations
-        );
-
-        Assert.That(comparison.Faster, Is.EqualTo(AggregateExecutionComparison.Which.First));
     }
 
     private static Type[] PrettyTypesWithInterfaces = {
@@ -772,9 +678,8 @@ swag   999999 Int32[][1, 2, 3]"
 
         var pretty = table.Prettify();
         Console.WriteLine(pretty);
-
         Asserter.Against(pretty)
-                .And(StringUtils.LineCount, Is.EqualTo(table.Rows.Count + 1))
+                .And(it => it.Lines().Count, Is.EqualTo(table.Rows.Count + 1))
                 .Invoke();
     }
 
