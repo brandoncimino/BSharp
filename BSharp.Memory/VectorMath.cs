@@ -130,4 +130,54 @@ public static class VectorMath {
         return sum;
 #endif
     }
+
+    #region "Bool"-like interpretations
+
+    /// <returns>the <see cref="bool"/> equivalent of a value returned by a boolean-like <see cref="Vector"/>, such as <see cref="Vector.GreaterThan(System.Numerics.Vector{double},System.Numerics.Vector{double})"/></returns>
+    /// <remarks>For some insane reason, when you do <see cref="Vector"/> operations like <see cref="Vector.GreaterThan(System.Numerics.Vector{double},System.Numerics.Vector{double})"/>, the result is returned as <typeparamref name="T"/> values where 0 means "false" and -1 means "true".</remarks>
+    [Pure]
+    private static bool ToBool<T>(T vectorValue) where T : unmanaged {
+        return PrimitiveMath.IsZero(vectorValue) == false;
+    }
+
+    /// <returns>the first index of this <see cref="Vector{T}"/> that has the desired <see cref="ToBool{T}"/>, if found; otherwise, -1</returns>
+    [Pure]
+    internal static int FirstBool<T>(this Vector<T> vector, bool desired) where T : unmanaged {
+        // There's definitely a fancy way to do this like they do in `SpanHelpers.ComputeFirstIndex<>()`, but that's scary
+        for (int i = 0; i < Vector<T>.Count; i++) {
+            var v = vector[i];
+            if (ToBool(v) == desired) {
+                return i;
+            }
+        }
+
+        return -1;
+    }
+
+    /// <returns>the first index that has the desired <see cref="ToBool{T}"/> in <b>both</b> of the given <see cref="Vector{T}"/>s, if found; otherwise, -1</returns>
+    [Pure]
+    internal static int FirstBoolInBoth<T>(Vector<T> a, Vector<T> b, bool desired) where T : unmanaged {
+        for (int i = 0; i < Vector<T>.Count; i++) {
+            if (ToBool(a[i]) == desired && ToBool(b[i]) == desired) {
+                return i;
+            }
+        }
+
+        return -1;
+    }
+
+    /// <returns><see cref="FirstBool{T}"/>, but from the end</returns>
+    [Pure]
+    internal static int LastBool<T>(this Vector<T> vector, bool desired) where T : unmanaged {
+        for (int i = Vector<T>.Count - 1; i >= 0; i--) {
+            var v = vector[i];
+            if (ToBool(v) == desired) {
+                return i;
+            }
+        }
+
+        return -1;
+    }
+
+    #endregion
 }
