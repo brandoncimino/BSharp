@@ -1,33 +1,23 @@
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
-using System.Diagnostics.Contracts;
+
+using Microsoft.Extensions.Primitives;
 
 namespace FowlFever.Clerical;
 
-public readonly partial struct FileExtension {
-    internal const string IllegalChars = ". \n\\/";
+public readonly partial struct FileExtension
+#if NET7_0_OR_GREATER
+    : System.ISpanParsable<FileExtension>,
+      System.Numerics.IEqualityOperators<FileExtension, FileExtension, bool>
+#endif
+{
+    internal const string ExtensionSeparatorChars = @". \/";
 
-    /// <summary>
-    /// The maximum <see cref="ReadOnlySpan{T}.Length"/> of a file extension's <see cref="_value"/>.
-    ///
-    /// If you want to create a <see cref="FileExtension"/>
-    /// </summary>
-    /// <remarks>
-    /// The only file extension I've ever seen longer than 6 characters is <c>.DotSettings</c>.
-    /// <br/>
-    /// I've never seen a (reasonable) extension longer than 6 characters <i>(<c>.csproj</c>, <c>.asmdef</c>)</i>.
-    /// The value of <see cref="MaxExtensionLengthIncludingPeriod"/> was chosen to give some extra space and because computers like powers of 2.
-    /// </remarks>
-    internal const int MaxExtensionLengthIncludingPeriod = 16;
-
-    private static ReadOnlySpan<char> GetWithoutPeriod(ReadOnlySpan<char> goodSizedString) {
-        Debug.Assert(goodSizedString.Length <= MaxExtensionLengthIncludingPeriod);
-
-        var lastBadChar = goodSizedString.LastIndexOfAny(IllegalChars);
-        return lastBadChar switch {
-            < 0 => goodSizedString,
-            0   => goodSizedString[0] == '.' ? goodSizedString[1..] : default,
-            > 0 => default
+    private static ReadOnlySpan<char> GetWithoutPeriod(ReadOnlySpan<char> rawInput) {
+        var lastSeparatorIndex = rawInput.LastIndexOfAny(ExtensionSeparatorChars);
+        return lastSeparatorIndex switch {
+            < 0 => rawInput,
+            > 0 => default,
+            _   => rawInput is ['.', _] ? rawInput[1..] : default
         };
     }
 
@@ -39,48 +29,56 @@ public readonly partial struct FileExtension {
     /// <param name="lowercaseExtensionWithPeriod">the file extension, in all-lowercase, with a period</param>
     /// <returns>a new <see cref="FileExtension"/></returns>
     [Pure]
-    public static FileExtension CreateUnsafe(string lowercaseExtensionWithPeriod) {
+    public static FileExtension CreateUnsafe(StringSegment lowercaseExtensionWithPeriod) {
         return new FileExtension(lowercaseExtensionWithPeriod);
     }
 
-    public static bool TryParse(ReadOnlySpan<char> s, out FileExtension result) {
-        if (s.Length > MaxExtensionLengthIncludingPeriod) {
-            result = default;
-            return false;
-        }
-
+    /// <inheritdoc cref="TryParse(System.ReadOnlySpan{char}, IFormatProvider, out FowlFever.Clerical.FileExtension)"/>
+    /// <remarks>
+    /// In the <b>vast majority of cases</b>, <paramref name="s"/> will be one of the <see cref="TryGetCommonExtensionString"/>s.
+    /// However, it might come with OR without a leading period, and it might come with goofy casing.
+    /// <p/>
+    /// If we're trying to create a <see cref="FileExtension"/> from a <see cref="string"/>, then it's most likely a hard-coded literal.
+    /// </remarks>
+    [Pure]
+    public static bool TryParse(ReadOnlySpan<char> s, IFormatProvider? provider, out FileExtension result) {
         var withoutPeriod = GetWithoutPeriod(s);
-        if (withoutPeriod.IsEmpty || withoutPeriod.Length == MaxExtensionLengthIncludingPeriod) {
+
+        if (withoutPeriod.IsEmpty) {
             result = default;
             return false;
         }
 
-        Debug.Assert(withoutPeriod.Length is > 0 and < MaxExtensionLengthIncludingPeriod);
-        //🙋‍♀️ Would it be better to first check if the input isn't actually in the right case?
         Span<char> buffer = stackalloc char[withoutPeriod.Length + 1];
         buffer[0] = '.';
         var loweredChars = withoutPeriod.ToLowerInvariant(buffer[1..]);
-        Debug.Assert(loweredChars == withoutPeriod.Length);
 
-        result = new FileExtension(FinalizeExtensionString(buffer));
+        Debug.Assert(loweredChars == s.Length, "Didn't allocate a properly sized buffer!");
+
+        var extensionString = GetOrCreateExtensionString(buffer);
+        result = CreateUnsafe(extensionString);
         return true;
     }
 
-    public static bool TryParse([NotNullWhen(true)] string? s, out FileExtension result) {
-        return TryParse(s.AsSpan(), out result);
+    private static bool IsPerfectExtension(ReadOnlySpan<char> s) => s is [] or ['.', not '.', ..] && CharHelpers.ContainsAsciiLetterUpper(s) == false;
+
+    [Pure]
+    public static FileExtension Parse(ReadOnlySpan<char> s, IFormatProvider? provider = default) {
+        return TryParse(s, null, out var result) ? result : throw new FormatException();
     }
 
-    public static FileExtension Parse(ReadOnlySpan<char> s) {
-        return TryParse(s, out var result) ? result : throw new FormatException();
+    [Pure]
+    public static FileExtension Parse(string s, IFormatProvider? provider = default) {
+        return TryParse(s, provider, out var result) ? result : throw new FormatException();
     }
 
-    /// <summary>
-    /// Creates a new <see cref="FileExtension"/>.
-    /// </summary>
-    /// <param name="s">the input string, which can be <see cref="WithPeriod"/> or <see cref="WithoutPeriod"/></param>
-    /// <returns>a new <see cref="FileExtension"/></returns>
-    /// <exception cref="FormatException">if the <see cref="string"/> wasn't a valid <see cref="FileExtension"/></exception>
-    public static FileExtension Parse(string s) {
-        return TryParse(s, out var result) ? result : throw new FormatException();
+    [Pure]
+    public static bool TryParse(string? s, IFormatProvider? provider, out FileExtension result) {
+        if (s != null && IsPerfectExtension(s)) {
+            result = CreateUnsafe(s);
+            return true;
+        }
+
+        return TryParse(s.AsSpan(), provider, out result);
     }
 }
