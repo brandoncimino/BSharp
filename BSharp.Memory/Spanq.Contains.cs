@@ -39,10 +39,10 @@ public static partial class Spanq {
                 }
             }
 
-            // TODO: 🙋‍♀️ Since it doesn't matter it we check a span element twice, would it actually be faster to make a span from the end for the last check?
+            // TODO: 🙋‍♀️ Since it doesn't matter if we check a span element twice, would it actually be faster to make a span from the end for the last check?
             // var lastSpanSlice   = span[^Vector<T>.Count..];
             // var lastVectorSlice = PrimitiveMath.CreateVector(lastSpanSlice);
-            // return Vector.EqualsAll(lastVectorSlice, eqVector);
+            // return Vector.EqualsAny(lastVectorSlice, eqVector);
         }
 
         for (; index < span.Length; index++) {
