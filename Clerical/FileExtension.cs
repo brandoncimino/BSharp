@@ -10,10 +10,11 @@ namespace FowlFever.Clerical;
 /// Represents a <a href="https://en.wikipedia.org/wiki/Filename_extension">file extension</a>, which always starts with a period <i>(a la <see cref="Path.GetExtension(System.ReadOnlySpan{char})"/>)</i>.
 /// </summary>
 public readonly partial struct FileExtension :
-    IEquatable<FileExtension> {
+    IEquatable<FileExtension>,
+    IEquatable<string?> {
     #region Actual string value
 
-    private readonly StringSegment _valueWithPeriod;
+    internal readonly StringSegment _valueWithPeriod;
 
     [Pure] public int LengthWithPeriod => _valueWithPeriod.Length;
 
@@ -54,7 +55,7 @@ public readonly partial struct FileExtension :
 
     #region Equality
 
-    [Pure] public bool Equals(FileExtension other) => _valueWithPeriod == other._valueWithPeriod;
+    [Pure] public bool Equals(FileExtension other) => AsSpan().Equals(other.AsSpan(), StringComparison.Ordinal);
 
     /// <inheritdoc/>
     /// <remarks>
@@ -69,18 +70,32 @@ public readonly partial struct FileExtension :
     [Pure]
     public override bool Equals(object? other) => other is FileExtension ext && Equals(ext);
 
-    [Pure] public static bool operator ==(FileExtension a, FileExtension b) => a._valueWithPeriod == b._valueWithPeriod;
-    [Pure] public static bool operator !=(FileExtension a, FileExtension b) => !(a == b);
+    [Pure] public bool Equals(string? other) => IsEquivalentTo(other);
+
+    [Pure] public static                   bool operator ==(FileExtension a, FileExtension b) => a._valueWithPeriod == b._valueWithPeriod;
+    [Pure] public static                   bool operator !=(FileExtension a, FileExtension b) => !(a == b);
+    [Pure] public static implicit operator FileExtension(string           s) => Parse(s);
 
     [Pure] public override int GetHashCode() => _valueWithPeriod.GetHashCode();
+
+    private bool IsEquivalentTo(ReadOnlySpan<char> other) {
+        if (_valueWithPeriod.Length == 0) {
+            return other.IsEmpty;
+        }
+
+        return other switch {
+            []        => _valueWithPeriod.Length == 0,
+            ['.']     => false /* a lone period can never be a valid extension! */,
+            ['.', ..] => _valueWithPeriod.AsSpan().Equals(other, StringComparison.OrdinalIgnoreCase),
+            _         => _valueWithPeriod.AsSpan(1).Equals(other, StringComparison.OrdinalIgnoreCase)
+        };
+    }
 
     #endregion
 
     [Pure] public override string ToString() => _valueWithPeriod.ToString();
 
-    [Pure] public ReadOnlySpan<char> AsSpan() => _valueWithPeriod;
-    // [Pure] public static implicit operator ReadOnlySpan<char>(FileExtension self)      => self.AsSpan();
-    // [Pure] public static implicit operator FileExtension(string             extension) => Parse(extension);
+    [Pure] public ReadOnlySpan<char> AsSpan() => _valueWithPeriod.AsSpan();
 
     [Pure] public static FileName operator +(PathPart baseName, FileExtension extension) => new(baseName, extension);
 }

@@ -57,6 +57,7 @@ public readonly partial struct FileExtension {
     /// My guess is it's going by "files that people interact with directly" in some way, which is why it includes all of these proprietary formats like <c>.doc</c>,
     /// and excludes serialized formats like <c>.json</c> and <c>.xml</c>.
     /// </remarks>
+    /// TODO: This is currently the LAST step when parsing, when it should probably be the FIRST step.
     private static bool TryGetCommonExtensionString(ReadOnlySpan<char> perfectExtensionSpan, [NotNullWhen(true)] out string? result) {
         Debug.Assert(IsPerfectExtension(perfectExtensionSpan));
 
