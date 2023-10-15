@@ -1,6 +1,6 @@
 namespace FowlFever.Clerical;
 
-public readonly partial record struct PathPart
+public readonly partial struct PathPart
 #if NET7_0_OR_GREATER
     : ISpanParsable<PathPart>
 #endif

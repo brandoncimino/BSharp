@@ -7,13 +7,15 @@ namespace FowlFever.Clerical;
 /// <summary>
 /// Represents a <b>single section</b> <i>(i.e., without any <see cref="Clerk.DirectorySeparatorChars"/>)</i> of a <see cref="FileSystemInfo.FullPath"/>, such as a <see cref="FileSystemInfo.Name"/>.
 /// </summary>
-public readonly partial record struct PathPart
+public readonly partial struct PathPart :
+    IEquatable<PathPart>
 #if NET7_0_OR_GREATER
-    :
-        System.Numerics.IAdditionOperators<PathPart, PathPart, DirectoryPath>,
-        System.Numerics.IAdditionOperators<PathPart, FileName, FilePath>,
-        System.Numerics.IAdditionOperators<PathPart, DirectoryPath, DirectoryPath>,
-        System.Numerics.IAdditionOperators<PathPart, FileExtension, FileName>
+    ,
+    IEqualityOperators<PathPart, PathPart, bool>,
+    IAdditionOperators<PathPart, PathPart, DirectoryPath>,
+    IAdditionOperators<PathPart, FileName, FilePath>,
+    IAdditionOperators<PathPart, DirectoryPath, DirectoryPath>,
+    IAdditionOperators<PathPart, FileExtension, FileName>
 #endif
 {
     private readonly StringSegment _value;
@@ -38,15 +40,6 @@ public readonly partial record struct PathPart
         return new PathPart(pathPart);
     }
 
-    /// <summary>
-    /// Constructs a new <see cref="PathPart"/>.
-    /// </summary>
-    /// <param name="partString">the <see cref="string"/> of the new <see cref="PathPart"/></param>
-    /// <returns>the new <see cref="PathPart"/></returns>
-    public static PathPart Of(string partString) {
-        return Parse(partString);
-    }
-
     #endregion
 
     public override string ToString() => _value.ToString();
@@ -64,6 +57,25 @@ public readonly partial record struct PathPart
     #region Conversions
 
     public ReadOnlySpan<char> AsSpan() => _value.AsSpan();
+
+    #endregion
+
+    #region Equality
+
+    public bool Equals(PathPart other) {
+        return AsSpan().SequenceEqual(other.AsSpan());
+    }
+
+    public override bool Equals(object? obj) {
+        return obj is PathPart other && Equals(other);
+    }
+
+    public override int GetHashCode() {
+        return _value.GetHashCode();
+    }
+
+    public static bool operator ==(PathPart left, PathPart right) => left.Equals(right);
+    public static bool operator !=(PathPart left, PathPart right) => !(left == right);
 
     #endregion
 

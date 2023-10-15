@@ -2,12 +2,19 @@ using System.Diagnostics;
 
 namespace FowlFever.Clerical;
 
-public readonly partial record struct PathPart {
+public readonly partial struct PathPart {
     #region Parsing
 
     private static bool TryParse_Private(SpanOrSegment s, bool strict, bool throwOnFailure, out PathPart result) {
         if (strict == false) {
             s = s.Trim();
+            if (s is ['/' or '\\', .. var afterSeparator]) {
+                s = afterSeparator;
+            }
+
+            if (s is [.. var beforeSeparator, '/' or '\\']) {
+                s = beforeSeparator;
+            }
         }
 
         if (s.Length == 0) {

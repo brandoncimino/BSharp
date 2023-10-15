@@ -1,5 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 
+using Microsoft.Extensions.Primitives;
+
 namespace FowlFever.Clerical;
 
 public readonly struct PathInfo {
@@ -14,7 +16,7 @@ public readonly struct PathInfo {
             }
 
             var extStartsAt = _source.Length - _extensionLength;
-            return new FileExtension(new Substring(_source, extStartsAt));
+            return FileExtension.CreateUnsafe(new StringSegment(_source, extStartsAt, _source.Length - extStartsAt));
         }
     }
 
@@ -25,7 +27,7 @@ public readonly struct PathInfo {
             }
 
             var fileNameStartsAt = _source.Length - _extensionLength - _baseNameLength;
-            return new PathPart(new Substring(_source, fileNameStartsAt, _baseNameLength));
+            return PathPart.CreateUnsafe(new StringSegment(_source, fileNameStartsAt, _baseNameLength));
         }
     }
 
