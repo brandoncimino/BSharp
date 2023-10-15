@@ -6,7 +6,8 @@ namespace FowlFever.Clerical;
 
 public readonly record struct DirectoryPath(ImmutableArray<PathPart> Parts, DirectorySeparator DirectorySeparator = DirectorySeparator.Universal)
 #if NET7_0_OR_GREATER
-    : System.Numerics.IAdditionOperators<DirectoryPath, DirectoryPath, DirectoryPath>,
+    : System.Numerics.IEqualityOperators<DirectoryPath, DirectoryPath, bool>,
+      System.Numerics.IAdditionOperators<DirectoryPath, DirectoryPath, DirectoryPath>,
       System.Numerics.IAdditionOperators<DirectoryPath, PathPart, DirectoryPath>,
       System.Numerics.IAdditionOperators<DirectoryPath, FileName, FilePath>,
       System.Numerics.IAdditionOperators<DirectoryPath, FilePath, FilePath>,
@@ -60,14 +61,7 @@ public readonly record struct DirectoryPath(ImmutableArray<PathPart> Parts, Dire
         }
     }
 
-    public static void Validate(DirectoryPath path) {
-        // TODO: validate
-    }
-
-    public void Validate() => Validate(this);
-
     public override string ToString() {
-        Validate(this);
         return string.Create(
             Length,
             this,
@@ -78,7 +72,7 @@ public readonly record struct DirectoryPath(ImmutableArray<PathPart> Parts, Dire
                         span.Write(path.DirectorySeparator.ToChar(), ref pos);
                     }
 
-                    span.Write(path.Parts[i], ref pos);
+                    span.Write(path.Parts[i].AsSpan(), ref pos);
                 }
             }
         );
