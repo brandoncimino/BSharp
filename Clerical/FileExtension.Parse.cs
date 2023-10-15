@@ -78,7 +78,8 @@ public readonly partial struct FileExtension {
     /// <returns>the newly created <see cref="FileExtension"/></returns>
     /// <exception cref="FormatException">The input wasn't a valid <see cref="FileExtension"/></exception>
     private static FileExtension Parse_Forgiving(SpanOrSegment s) {
-        TryParse_Internal(s, false, true, out var result);
+        var success = TryParse_Internal(s, false, true, out var result);
+        Debug.Assert(success);
         return result;
     }
 
@@ -107,7 +108,8 @@ public readonly partial struct FileExtension {
     /// <exception cref="FormatException">If the input wasn't a valid <see cref="FileExtension"/></exception>
     /// <remarks>Prefer "strict" parsing <i>(<see cref="ParseExact(string)"/>, etc.)</i> in performance-sensitive contexts, as it should be faster and cause fewer allocations than "forgiving" parsing <i>(<see cref="Parse(System.ReadOnlySpan{char})"/>, etc.)</i>.</remarks>
     private static FileExtension Parse_Strict(SpanOrSegment s) {
-        TryParse_Internal(s, true, true, out var result);
+        var success = TryParse_Internal(s, true, true, out var result);
+        Debug.Assert(success);
         return result;
     }
 
@@ -144,7 +146,8 @@ public readonly partial struct FileExtension {
         };
     }
 
-    internal static bool TryParse_Internal(SpanOrSegment span, bool strict, bool throwOnFailure, out FileExtension result) {
+    [Pure]
+    private static bool TryParse_Internal(SpanOrSegment span, bool strict, bool throwOnFailure, out FileExtension result) {
         if (strict is false) {
             span = span.Trim();
         }

@@ -156,13 +156,6 @@ public class FileExtension_Tests {
         Assert_Parses(validFileExtension, FileExtension.CreateUnsafe(expected), ParseStyle.Forgiving);
     }
 
-    [Test]
-    public void TestParsInternal() {
-        var yes = FileExtension.TryParse_Internal(".json", true, false, out var result);
-        Console.WriteLine($"success: {yes}");
-        Console.WriteLine(result);
-    }
-
     [TestCase("",      "", Description = "Empty (i.e. no extension)")]
     [TestCase(".json", ".json")]
     public void FileExtension_ParseExact_AcceptsValidInput(string validFileExtension, string expected) {
