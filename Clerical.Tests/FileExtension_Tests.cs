@@ -1,70 +1,10 @@
-using System.Runtime.CompilerServices;
-
 using FowlFever.Clerical;
-
-using NUnit.Framework.Constraints;
 
 namespace Clerical.Tests;
 
 [TestOf(nameof(FileExtension))]
 public class FileExtension_Tests {
     public enum ParseStyle { Strict, Forgiving }
-
-    private static void AssertCommutative<ACTUAL, EXPECTED>(
-        ACTUAL                         a,
-        ACTUAL                         b,
-        Func<ACTUAL, ACTUAL, EXPECTED> commutativeFunction,
-        EXPECTED                       expected,
-        [CallerArgumentExpression("commutativeFunction")]
-        string? _commutativeFunction = default
-    ) {
-        var ab = commutativeFunction(a, b);
-        var ba = commutativeFunction(b, a);
-
-        Assert.That(
-            new { ab, ba },
-            Is.EqualTo(new { ab = expected, ba = expected }),
-            $"""
-             {
-                 _commutativeFunction
-             } is commutative:
-                a: {
-                    a
-                }
-                b: {
-                    b
-                }
-                
-                Expected: {
-                    expected
-                }
-                  (a, b): {
-                      ab
-                  }
-                  (b, a): {
-                      ba
-                  }
-             """
-        );
-    }
-
-    private static void Assert_Equality(FileExtension a, FileExtension b, bool expectedEquality) {
-        AssertCommutative(a, b, static (x, y) => x.Equals(y),         expectedEquality);
-        AssertCommutative(a, b, static (x, y) => x.Equals((object)y), expectedEquality);
-        AssertCommutative(a, b, static (x, y) => Equals(x, y),        expectedEquality);
-        AssertCommutative(a, b, static (x, y) => x == y,              expectedEquality);
-        AssertCommutative(a, b, static (x, y) => x != y,              !expectedEquality);
-        AssertCommutative(a, b, EqualityComparer<FileExtension>.Default.Equals,                      expectedEquality);
-        AssertCommutative(a, b, (Func<object, object, bool>)EqualityComparer<object>.Default.Equals, expectedEquality);
-        AssertCommutative(a, b, static (x, y) => EqualityComparer<object>.Default.Equals(x, y),      expectedEquality);
-
-        AssertThat(a.ToString().Equals(b.ToString(), StringComparison.Ordinal), Is.EqualTo(expectedEquality));
-        AssertThat(a.AsSpan().SequenceEqual(b.AsSpan()),                        Is.EqualTo(expectedEquality));
-    }
-
-    private static void AssertThat<T>(T actual, IResolveConstraint constraint, [CallerArgumentExpression("actual")] string? _actual = default) {
-        Assert.That(actual, constraint, _actual);
-    }
 
     private static void Assert_Parses(string input, FileExtension expected, ParseStyle parseStyle) {
         switch (parseStyle) {
