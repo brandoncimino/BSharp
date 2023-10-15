@@ -33,10 +33,10 @@ public static partial class Spanq {
 
     #region Skip
 
-    /// <param name="span">this span></param>
-    /// <param name="toSkip">the number of entries to skip</param>
+    /// <param name="span">this span</param>
+    /// <param name="toSkip">the number of entries to skip <i>(📎 if negative, the original span will be returned)</i></param>
     /// <typeparam name="T">the span entry type</typeparam>
-    /// <returns>all of the entries after the first <paramref name="toSkip"/></returns>
+    /// <returns>all of the entries after the first <paramref name="toSkip"/> <i>(or the full span if <paramref name="toSkip"/> is negative)</i></returns>
     [Pure]
     public static ReadOnlySpan<T> Skip<T>(this ReadOnlySpan<T> span, int toSkip) {
         var startAt = Math.Clamp(toSkip, 0, span.Length);
