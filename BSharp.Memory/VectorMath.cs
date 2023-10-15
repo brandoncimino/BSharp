@@ -1,5 +1,6 @@
 using System;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 
 namespace FowlFever.BSharp.Memory;
 
@@ -177,6 +178,102 @@ public static class VectorMath {
         }
 
         return -1;
+    }
+
+    #endregion
+
+    /// <summary>
+    /// If possible, create a <see cref="Vector{T}(ReadOnlySpan{T})"/> from and <see cref="ReadOnlySpan{T}.Slice(int)"/>s this <paramref name="span"/>. 
+    /// </summary>
+    /// <param name="span">this <see cref="ReadOnlySpan{T}"/></param>
+    /// <param name="slice">the newly-created <see cref="Vector{T}"/></param>
+    /// <typeparam name="T">the span element type</typeparam>
+    /// <returns>true if we created a new <see cref="Vector{T}"/></returns>
+    /// <example>
+    /// This method simplifies the code needed to looping through each <see cref="Vector{T}"/> of a <see cref="ReadOnlySpan{T}"/>, reducing the amount of code and the number of local variables to manage.
+    /// <p/>
+    /// <b>Traditional "inline" version:</b> 
+    /// <code><![CDATA[
+    ///     int index;
+    ///     while(index + Vector<T>.Count < span.Length){
+    ///         var slice = new Vector<T>(span[index..]);
+    ///         index += Vector<T>.Count;
+    ///     
+    ///         // Process the Vector<T> here
+    ///     }
+    ///
+    ///     for(; index < span.Length; index++){
+    ///         // Process the remaining items
+    ///     }
+    /// ]]></code>
+    /// <p/>
+    /// <b>Using <see cref="TryTakeNextVector{T}"/>:</b>
+    /// <code><![CDATA[
+    ///     while(span.TryTakeNextVector()){
+    ///         // Process the Vector<T> here
+    ///     }
+    ///
+    ///     foreach(var it in span){
+    ///         // Process the remaining items
+    ///     }
+    /// ]]></code>
+    ///
+    /// <p/>
+    /// In terms of performance, using <see cref="TryTakeNextVector{T}"/> is just as efficient as the "inline" version - or possibly faster:
+    ///
+    /// | Method                       | NumberOfVectors | Mean        | Error      | StdDev     | Median      | Ratio | RatioSD | Allocated | Alloc Ratio |
+    /// |----------------------------- |---------------- |------------:|-----------:|-----------:|------------:|------:|--------:|----------:|------------:|
+    /// | 'Linq's Enumerable.Sum(T[])' | 10              |    47.98 ns |   1.871 ns |   5.457 ns |    45.97 ns |  1.00 |    0.00 |         - |          NA |
+    /// | FastSum_Inline               | 10              |    17.73 ns |   0.385 ns |   0.564 ns |    17.52 ns |  0.40 |    0.02 |         - |          NA |
+    /// | FastSum_TryTakeNextVector    | 10              |    14.34 ns |   0.299 ns |   0.603 ns |    14.24 ns |  0.32 |    0.02 |         - |          NA |
+    /// |                              |                 |             |            |            |             |       |         |           |             |
+    /// | 'Linq's Enumerable.Sum(T[])' | 100             |   379.32 ns |   8.385 ns |  23.512 ns |   377.86 ns |  1.00 |    0.00 |         - |          NA |
+    /// | FastSum_Inline               | 100             |   178.77 ns |   4.005 ns |  11.229 ns |   176.38 ns |  0.47 |    0.04 |         - |          NA |
+    /// | FastSum_TryTakeNextVector    | 100             |   104.08 ns |   2.080 ns |   5.695 ns |   102.44 ns |  0.28 |    0.02 |         - |          NA |
+    /// |                              |                 |             |            |            |             |       |         |           |             |
+    /// | 'Linq's Enumerable.Sum(T[])' | 1000            | 3,322.92 ns |  65.558 ns |  94.021 ns | 3,324.55 ns |  1.00 |    0.00 |         - |          NA |
+    /// | FastSum_Inline               | 1000            | 1,538.78 ns |  29.752 ns |  31.834 ns | 1,544.83 ns |  0.46 |    0.01 |         - |          NA |
+    /// | FastSum_TryTakeNextVector    | 1000            |   901.71 ns |  14.751 ns |  13.798 ns |   902.75 ns |  0.27 |    0.01 |         - |          NA |
+    ///  
+    /// </example>
+    public static bool TryTakeNextVector<T>(ref this ReadOnlySpan<T> span, out Vector<T> slice) where T : unmanaged {
+        Unsafe.SkipInit(out slice);
+        if (span.Length < Vector<T>.Count) {
+            return false;
+        }
+
+        slice = CreateVector(span);
+        span  = span[Vector<T>.Count..];
+        return true;
+    }
+
+    #region Contains
+
+    public static bool Contains<T>(Vector<T> vector, T a) where T : unmanaged {
+        return Vector.EqualsAny(vector, new Vector<T>(a));
+    }
+
+    /// <summary>
+    /// Uses 🧙‍♀️ to check if the given <see cref="Vector{T}"/> contains any of multiple <typeparamref name="T"/> values.
+    /// </summary>
+    /// <remarks>
+    /// This One Weird Trick was stolen from <a href="https://github.com/dotnet/runtime/blob/3870c07accf4c31d6c473ce24893b97dcde81a6c/src/libraries/System.Private.CoreLib/src/System/SpanHelpers.T.cs#L1680">SpanHelpers.IndexOfAnyValueType</a>.
+    /// The trick also words for 3 sough-after values, etc.
+    /// </remarks>
+    public static bool ContainsAny<T>(Vector<T> vector, T a, T b) where T : unmanaged {
+        var aVec   = new Vector<T>(a);
+        var bVec   = new Vector<T>(b);
+        var equals = Vector.Equals(vector, aVec) | Vector.Equals(vector, bVec);
+        return equals != default;
+    }
+
+    /// <inheritdoc cref="ContainsAny{T}(System.Numerics.Vector{T},T,T)"/>
+    public static bool ContainsAny<T>(Vector<T> vector, T a, T b, T c) where T : unmanaged {
+        var aVec   = new Vector<T>(a);
+        var bVec   = new Vector<T>(b);
+        var cVec   = new Vector<T>(c);
+        var equals = Vector.Equals(vector, aVec) | Vector.Equals(vector, bVec) | Vector.Equals(vector, cVec);
+        return equals != default;
     }
 
     #endregion
