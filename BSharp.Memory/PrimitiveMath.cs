@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Numerics;
 using System.Runtime.CompilerServices;
 
 using JetBrains.Annotations;
@@ -11,8 +12,9 @@ namespace FowlFever.BSharp.Memory;
 /// </summary>
 /// <remarks>
 /// The type parameters in this class use the <a href="https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/generics/constraints-on-type-parameters#unmanaged-constraint"><c>unmanaged</c> type constraint</a>.
-/// However, they also must be <see cref="Type.IsPrimitive"/>, which unfortunately does not have a corresponding type constraint.
+/// However, they also must be <see cref="Type.IsPrimitive"/>, but that does not have a corresponding type constraint.
 /// In practice, this excludes types such as <see cref="decimal"/>, <see cref="Enum"/>, and custom <see cref="ValueType"/>s.
+/// They also specifically exclude <see cref="char"/>, even though it definitely is a primitive, numeric type, because <see cref="Vector{T}"/>s don't support them.
 /// <p/>
 /// This bulk of this class was stolen from <a href="https://github.com/dotnet/runtime/blob/main/src/libraries/System.Private.CoreLib/src/System/Runtime/Intrinsics/Scalar.cs">Scalar.cs</a> from <c>System.Private.CoreLib</c>.
 /// <p/>
