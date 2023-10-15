@@ -1,17 +1,26 @@
 using System.Diagnostics;
-using System.Runtime.CompilerServices;
+
+using CommunityToolkit.HighPerformance.Buffers;
 
 using Microsoft.Extensions.Primitives;
 
 namespace FowlFever.Clerical;
 
-public readonly partial struct FileExtension
-#if NET7_0_OR_GREATER
-    : ISpanParsable<FileExtension>,
-      IEqualityOperators<FileExtension, FileExtension, bool>
-#endif
-{
+// This file contains the meat and potatoes of parsing FileExtensions 
+public readonly partial struct FileExtension {
     internal const string ExtensionSeparatorChars = @". \/";
+
+    private static readonly StringPool ExtensionPool = new();
+
+    /// <summary>
+    /// This method handles "uncommon" extension strings - i.e. ones that aren't covered by <see cref="TryGetCommonExtensionString(System.ReadOnlySpan{char})"/>.
+    /// </summary>
+    private static string GetUncommonExtensionString(ReadOnlySpan<char> perfectExtensionSpan) {
+        DebugAssert_PerfectExtension(perfectExtensionSpan);
+        Debug.Assert(TryGetCommonExtensionString(perfectExtensionSpan, out var common) is false, $"Common extensions like `{common}` should have already been handled!");
+
+        return ExtensionPool.GetOrAdd(perfectExtensionSpan);
+    }
 
     /// <summary>
     /// Wraps a <see cref="string"/> as a new <see cref="FileExtension"/>, without performing <i>any</i> validation or normalization of the input.
@@ -21,160 +30,236 @@ public readonly partial struct FileExtension
     /// <param name="lowercaseExtensionWithPeriod">the file extension, in all-lowercase, with a period</param>
     /// <returns>a new <see cref="FileExtension"/></returns>
     [Pure]
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static FileExtension CreateUnsafe(StringSegment lowercaseExtensionWithPeriod) {
         return new FileExtension(lowercaseExtensionWithPeriod);
     }
 
-    private static FileExtension CreateFromParsed(SpanOrSegment parsedInput) {
-        return TryGetCommonExtensionString(parsedInput, out var str)
-                   ? new FileExtension(str)
-                   : new FileExtension(parsedInput.ToStringSegment());
+    /// <summary>
+    /// Creates a <see cref="FileExtension"/> out of a "perfect" result - i.e. one whose contents are exactly as we'd like to store them, and therefore,
+    /// we might be able to save allocations by re-using the input.
+    /// </summary>
+    private static FileExtension CreateFromPerfect(SpanOrSegment perfectExtensionSpan) {
+        DebugAssert_PerfectExtension(perfectExtensionSpan);
+
+        var segment = TryGetCommonExtensionString(perfectExtensionSpan[1..])
+                      ?? perfectExtensionSpan.Segment
+                      ?? GetUncommonExtensionString(perfectExtensionSpan);
+
+        return new FileExtension(segment);
     }
 
-    private static FileExtension CreateFromImperfect(ReadOnlySpan<char> inputWithoutPeriod) {
-        Debug.Assert(inputWithoutPeriod.LastIndexOfAny(ExtensionSeparatorChars) < 0, $"Expected an extension string without a leading period or any of: `{ExtensionSeparatorChars}` (actual: {inputWithoutPeriod.ToString()})");
+    /// <summary>
+    /// Creates a <see cref="FileExtension"/> out of an "imperfect" result - i.e. one that we know will need a new <see cref="string"/> to be created.
+    /// </summary>
+    private static FileExtension CreateFromImperfect(SpanOrSegment inputWithoutPeriod) {
+        Debug.Assert(inputWithoutPeriod.AsSpan().LastIndexOfAny(ExtensionSeparatorChars) < 0, $"Expected an extension string without a leading period or any of: `{ExtensionSeparatorChars}` (actual: {inputWithoutPeriod.AsSpan().ToString()})");
 
         Span<char> buffer = stackalloc char[inputWithoutPeriod.Length + 1];
         buffer[0] = '.';
-        var loweredCharacters = inputWithoutPeriod.ToLowerInvariant(buffer[1..]);
+        var loweredCharacters = inputWithoutPeriod.AsSpan().ToLowerInvariant(buffer[1..]);
         Debug.Assert(loweredCharacters == inputWithoutPeriod.Length, "Didn't allocate a big enough buffer!");
 
-        var str = GetOrCreateExtensionString(buffer);
-        return CreateUnsafe(str);
+        return CreateFromPerfect(new SpanOrSegment(buffer));
     }
 
-    private static FileExtension Parse_Forgiving(ReadOnlySpan<char> s) {
-        return TryParse_Forgiving(s, out var result) ? result : throw new FormatException();
+    /// <summary>
+    /// Creates a <see cref="FileExtension"/> using "forgiving" parsing:
+    /// <ul>
+    /// <li>✅ A leading period is optional <i>(i.e. <c>".json"</c> and <c>"json"</c> are both OK)</i></li>
+    /// <li>✅ The input will be <see cref="string.Trim()"/>med</li>
+    /// <li>✅ The input will be converted <see cref="string.ToLowerInvariant"/></li>
+    /// <li>❌ Non-leading periods are rejected</li>
+    /// <li>❌ <see cref="Clerk.DirectorySeparatorChars"/> are rejected</li>
+    /// <li>❌ Inner <see cref="char.IsWhiteSpace(char)"/> is rejected</li>
+    /// <li>❌ <see cref="char.IsControl(char)"/> characters are rejected</li>
+    /// </ul>
+    /// </summary>
+    /// <param name="s">the potential <see cref="FileExtension"/></param>
+    /// <returns>the newly created <see cref="FileExtension"/></returns>
+    /// <exception cref="FormatException">The input wasn't a valid <see cref="FileExtension"/></exception>
+    private static FileExtension Parse_Forgiving(SpanOrSegment s) {
+        TryParse_Internal(s, false, true, out var result);
+        return result;
     }
 
-    private static bool TryParse_Forgiving(ReadOnlySpan<char> s, out FileExtension result) {
-        s = s.Trim();
+    /// <summary><inheritdoc cref="Parse_Forgiving"/></summary>
+    /// <param name="s">the potential <see cref="FileExtension"/></param>
+    /// <param name="result">the newly created <see cref="FileExtension"/> <i>(if we succeeded)</i></param>
+    /// <returns><c>true</c> if the input was a valid <see cref="FileExtension"/></returns>
+    private static bool TryParse_Forgiving(SpanOrSegment s, out FileExtension result) {
+        return TryParse_Internal(s, false, false, out result);
+    }
 
-        if (s.Length == 0) {
+    /// <summary>
+    /// Creates a <see cref="FileExtension"/> using "strict" parsing.
+    /// <p/>
+    /// The input must either be empty or a period followed by 1 or more:
+    /// <ul>
+    /// <li>Non-periods</li>
+    /// <li>Non-<see cref="Clerk.DirectorySeparatorChars"/></li>
+    /// <li>Non-<see cref="char.IsUpper(char)"/></li>
+    /// <li>Non-<see cref="char.IsWhiteSpace(char)"/></li>
+    /// <li>Non-<see cref="char.IsControl(char)"/></li>
+    /// </ul>
+    /// </summary>
+    /// <param name="s">the potential <see cref="FileExtension"/></param>
+    /// <returns>the new <see cref="FileExtension"/></returns>
+    /// <exception cref="FormatException">If the input wasn't a valid <see cref="FileExtension"/></exception>
+    /// <remarks>Prefer "strict" parsing <i>(<see cref="ParseExact(string)"/>, etc.)</i> in performance-sensitive contexts, as it should be faster and cause fewer allocations than "forgiving" parsing <i>(<see cref="Parse(System.ReadOnlySpan{char})"/>, etc.)</i>.</remarks>
+    private static FileExtension Parse_Strict(SpanOrSegment s) {
+        TryParse_Internal(s, true, true, out var result);
+        return result;
+    }
+
+    /// <summary>
+    /// <inheritdoc cref="Parse_Strict"/>
+    /// </summary>
+    /// <param name="s">the potential <see cref="FileExtension"/></param>
+    /// <param name="result">the newly created <see cref="FileExtension"/> <i>(if we succeeded)</i></param>
+    /// <returns><c>true</c> if the input was a valid <see cref="FileExtension"/></returns>
+    private static bool TryParse_Strict(SpanOrSegment s, out FileExtension result) {
+        return TryParse_Internal(s, true, false, out result);
+    }
+
+    private enum ValidationResult {
+        Perfect,
+        Uppercase,
+        WhiteSpace,
+        Control,
+        ExtraPeriod,
+        DirectorySeparator,
+    }
+
+    private static string GetValidationErrorMessage(ValidationResult singleFlag) {
+        Debug.Assert(singleFlag != ValidationResult.Perfect);
+
+        return singleFlag switch {
+            ValidationResult.Uppercase          => "Cannot contain uppercase characters!",
+            ValidationResult.WhiteSpace         => "Cannot contain whitespace!",
+            ValidationResult.Control            => "Cannot contain control characters!",
+            ValidationResult.ExtraPeriod        => "Cannot contain non-leading periods!",
+            ValidationResult.DirectorySeparator => "Cannot contain directory separators!",
+            ValidationResult.Perfect            => throw new ArgumentOutOfRangeException(nameof(singleFlag), singleFlag, null),
+            _                                   => throw new ArgumentOutOfRangeException(nameof(singleFlag), singleFlag, null)
+        };
+    }
+
+    internal static bool TryParse_Internal(SpanOrSegment span, bool strict, bool throwOnFailure, out FileExtension result) {
+        if (strict is false) {
+            span = span.Trim();
+        }
+
+        if (span.Length == 0) {
             result = default;
             return true;
         }
 
-        if (s is ".") {
-            result = default;
-            return false;
+        bool isImperfect   = false;
+        var  withoutPeriod = span;
+        if (span[0] == '.') {
+            if (span.Length == 1) {
+                result = default;
+                return throwOnFailure switch {
+                    true  => throw new FormatException("Cannot be a single period!"),
+                    false => false
+                };
+            }
+
+            withoutPeriod = span[1..];
+        }
+        else {
+            if (strict) {
+                result = default;
+                return throwOnFailure switch {
+                    true  => throw new FormatException("Must start with a period!"),
+                    false => false
+                };
+            }
+
+            isImperfect = true;
         }
 
-        var lastSeparatorIndex = s.LastIndexOfAny(ExtensionSeparatorChars);
-        var withoutPeriod = lastSeparatorIndex switch {
-            < 0 => s,
-            > 0 => default,
-            _   => s[0] is '.' ? s[1..] : default
+        // TODO: This is a potential spot for `TryGetCommonExtension`, or something similar
+
+        foreach (var c in withoutPeriod.AsSpan()) {
+            var charValidationResult = ValidateChar(c);
+
+            switch (charValidationResult) {
+                case ValidationResult.Perfect:
+                    continue;
+                case ValidationResult.Uppercase when strict is false:
+                    isImperfect = true;
+                    continue;
+                case ValidationResult.Uppercase:
+                case ValidationResult.WhiteSpace:
+                case ValidationResult.Control:
+                case ValidationResult.ExtraPeriod:
+                case ValidationResult.DirectorySeparator:
+                default:
+                    result = default;
+                    return throwOnFailure switch {
+                        true  => throw new FormatException(GetValidationErrorMessage(charValidationResult)),
+                        false => false
+                    };
+            }
+        }
+
+        Debug.Assert((strict, isImperfect) is not (true, true), $"'strict' validation should never result in an 'imperfect' result!");
+
+        result = isImperfect switch {
+            true  => CreateFromImperfect(withoutPeriod),
+            false => CreateFromPerfect(span),
         };
 
-        if (withoutPeriod.IsEmpty) {
-            result = default;
-            return false;
-        }
-
-        result = CreateFromImperfect(withoutPeriod);
         return true;
     }
 
-    internal static bool TryParse_Strict(SpanOrSegment s, out FileExtension result) {
-        if (s.Length == 0) {
-            result = default;
-            return true;
+    private static ValidationResult ValidateChar(char c) {
+        // If `c` is ASCII, which it almost always will be, then we can use simpler numeric checks
+        // 📎 Check copied from .NET 7+ `char.IsAscii`
+        // 🤔 I have no idea why they have the explicit cast to `(uint)`; it seems completely redundant to me.
+        if ((uint)c <= '\x007f') {
+            return c switch {
+                >= 'a' and <= 'z' => ValidationResult.Perfect,
+                '.'               => ValidationResult.ExtraPeriod,
+                '/' or '\\'       => ValidationResult.DirectorySeparator,
+                ' '               => ValidationResult.WhiteSpace,
+                >= 'A' and <= 'Z' => ValidationResult.Uppercase,
+                < ' '             => ValidationResult.Control,
+                _                 => ValidationResult.Perfect
+            };
         }
 
-        if (ValidateExtensionSpan(s) is not null) {
-            result = default;
-            return false;
+        // The following checks handle all Unicode `char`s.
+        if (char.IsUpper(c)) {
+            return ValidationResult.Uppercase;
         }
 
-        result = CreateFromParsed(s);
-        return true;
+        // TODO: 🙋‍♀️ Should we allow the zero-width joiner?
+        if (char.IsWhiteSpace(c)) {
+            return ValidationResult.WhiteSpace;
+        }
+
+        if (char.IsControl(c)) {
+            return ValidationResult.Control;
+        }
+
+        return ValidationResult.Perfect;
     }
 
-    internal static FileExtension Parse_Strict(SpanOrSegment s) {
-        if (s.Length == 0) {
-            return default;
+    [Conditional("DEBUG")]
+    private static void DebugAssert_PerfectExtension(ReadOnlySpan<char> s) {
+        if (s.IsEmpty) {
+            return;
         }
 
-        if (ValidateExtensionSpan(s) is { } msg) {
-            throw new FormatException(msg);
+        if (s is not ['.', .. var afterPeriod]) {
+            Debug.Fail($"Must be empty or a period followed by 1+ non-periods! (Actual: {s.ToString()})");
+            return;
         }
 
-        return CreateFromParsed(s);
-    }
-
-    /// <returns>If the input is <b>valid</b>: <c>null</c>
-    /// <br/>If the input is <b>invalid</b>: the reason why</returns>
-    /// <remarks>No noticeable difference (to my layman's eye) between returning <see cref="string"/> and returning <see cref="bool"/></remarks>
-    private static string? ValidateExtensionSpan(ReadOnlySpan<char> span) {
-        if (span.IsEmpty) {
-            return null;
-        }
-
-        if (span is not ['.', not '.', ..]) {
-            return "Must either be empty OR a period + 1-or-more non-periods!";
-        }
-
-        for (int i = 1; i < span.Length; i++) {
-            if (ValidateChar(span[i]) is { } msg) {
-                return msg;
-            }
-        }
-
-        return null;
-
-        static string? ValidateChar(char c) {
-            // The optimistic fast-path: the vast majority of characters we'll be checking will be ASCII lowercase letters or digits.
-            if ((uint)(c - 'a') <= (uint)('z' - 'a') || (uint)(c - '0') <= (uint)('9' - '0')) {
-                return null;
-            }
-
-            if (char.IsUpper(c)) {
-                return "Cannot contain uppercase characters!";
-            }
-
-            if (char.IsControl(c)) {
-                return "Cannot contain control characters!";
-            }
-
-            if (char.IsWhiteSpace(c)) {
-                return "Cannot contain white space!";
-            }
-
-            if (c is '.' or '/' or '\\') {
-                return "Cannot contain extra periods or any directory separators!";
-            }
-
-            return null;
+        foreach (var c in afterPeriod) {
+            Debug.Assert(ValidateChar(c) is ValidationResult.Perfect, $"Bad char: {c}");
         }
     }
-
-    /// <remarks>
-    /// On a 64-bit machine, a <see cref="Vector{T}"/> of <see cref="char"/>s <i>(i.e. <see cref="ushort"/>s)</i> has 16 values -
-    /// the likelihood of a <i>real</i> file extension being that long is nonexistent, so in preference of simplicity and correctness,
-    /// this method relies on a "naive" for-each loop and <see cref="char"/> predicates.
-    /// </remarks>
-    private static bool IsPerfectExtension(ReadOnlySpan<char> s) {
-        return ValidateExtensionSpan(s) == null;
-    }
-
-#if NET7_0_OR_GREATER
-    [Pure] static FileExtension ISpanParsable<FileExtension>.Parse(ReadOnlySpan<char>    s, IFormatProvider? provider)                           => Parse(s);
-    [Pure] static FileExtension IParsable<FileExtension>.    Parse(string                s, IFormatProvider? provider)                           => Parse(s);
-    [Pure] static bool ISpanParsable<FileExtension>.         TryParse(ReadOnlySpan<char> s, IFormatProvider? provider, out FileExtension result) => TryParse(s, out result);
-    [Pure] static bool IParsable<FileExtension>.             TryParse(string?            s, IFormatProvider? provider, out FileExtension result) => TryParse(s, out result);
-#endif
-
-    [Pure] public static FileExtension Parse(ReadOnlySpan<char>      s) => Parse_Forgiving(s);
-    [Pure] public static FileExtension ParseExact(ReadOnlySpan<char> s) => Parse_Strict(s);
-
-    [Pure] public static FileExtension Parse(string      s) => Parse_Forgiving(s);
-    [Pure] public static FileExtension ParseExact(string s) => Parse_Strict(s);
-
-    [Pure] public static bool TryParse(ReadOnlySpan<char>      s, out FileExtension result) => TryParse_Forgiving(s, out result);
-    [Pure] public static bool TryParseExact(ReadOnlySpan<char> s, out FileExtension result) => TryParse_Strict(s, out result);
-
-    [Pure] public static bool TryParse(string?      s, out FileExtension result) => TryParse_Forgiving(s, out result);
-    [Pure] public static bool TryParseExact(string? s, out FileExtension result) => TryParse_Strict(s, out result);
 }

@@ -1,17 +1,14 @@
-using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
-
 namespace FowlFever.Clerical;
 
 public readonly partial struct FileExtension {
     #region Common File Extensions
 
-    public const string Json = ".json";
-    public const string Csv  = ".csv";
-    public const string Yaml = ".yaml";
-    public const string Xml  = ".xml";
-    public const string Txt  = ".txt";
-    public const string Html = ".html";
+    public static readonly FileExtension Json = CreateUnsafe(".json");
+    public static readonly FileExtension Csv  = CreateUnsafe(".csv");
+    public static readonly FileExtension Yaml = CreateUnsafe(".yaml");
+    public static readonly FileExtension Xml  = CreateUnsafe(".xml");
+    public static readonly FileExtension Txt  = CreateUnsafe(".txt");
+    public static readonly FileExtension Html = CreateUnsafe(".html");
     /// <summary>
     /// See: <a href="https://en.wikipedia.org/wiki/JPEG">JPEG</a>
     /// </summary>
@@ -23,22 +20,21 @@ public readonly partial struct FileExtension {
     /// <li>Only "jpeg" has a corresponding <a href="https://www.iso.org/standard/18902.html">ISO standard</a></li>
     /// </ul>
     /// </remarks>
-    public const string Jpeg = ".jpeg";
-    public const string Bmp = ".bmp";
-    public const string Png = ".png";
+    public static readonly FileExtension Jpeg = CreateUnsafe(".jpeg");
+    public static readonly FileExtension Bmp = CreateUnsafe(".bmp");
+    public static readonly FileExtension Png = CreateUnsafe(".png");
     /// <summary>
     /// See <a href="https://en.wikipedia.org/wiki/MPEG-1">MPEG-1</a>.
     /// </summary>
     /// <remarks>See <see cref="Jpeg"/> for the justification of using ".mpeg" over ".mpg".</remarks>
-    public const string Mpeg = ".mpeg";
-    public const string Mp3 = ".mp3";
-    public const string Mp4 = ".mp4";
+    public static readonly FileExtension Mpeg = CreateUnsafe(".mpeg");
+    public static readonly FileExtension Mp3 = CreateUnsafe(".mp3");
+    public static readonly FileExtension Mp4 = CreateUnsafe(".mp4");
 
     #endregion
 
-    /// <param name="perfectExtensionSpan">the input, which must be an <see cref="IsPerfectExtension"/></param>
-    /// <param name="result">the cached extension string</param>
-    /// <returns>true if the input corresponded to a known, common file extension</returns>
+    /// <param name="perfectExtensionSpan">the input, which must be an <see cref="DebugAssert_PerfectExtension"/></param>
+    /// <returns>a known, common file extension, if found; otherwise, <c>null</c></returns>
     /// <remarks>
     /// The 10 most common file extensions according to <a href="https://chat.openai.com/">ChatGPT</a> are:
     /// <code>
@@ -58,26 +54,27 @@ public readonly partial struct FileExtension {
     /// and excludes serialized formats like <c>.json</c> and <c>.xml</c>.
     /// </remarks>
     /// TODO: This is currently the LAST step when parsing, when it should probably be the FIRST step.
-    private static bool TryGetCommonExtensionString(ReadOnlySpan<char> perfectExtensionSpan, [NotNullWhen(true)] out string? result) {
-        Debug.Assert(IsPerfectExtension(perfectExtensionSpan));
-
-        result = perfectExtensionSpan switch {
-            ""                => "", // 📎 You cannot have an "empty" extension; hence this being "" instead of `"."` 
-            ".json"           => Json,
-            ".csv"            => Csv,
-            ".yaml"           => Yaml,
-            ".xml"            => Xml,
-            ".txt"            => Txt,
-            ".html"           => Html,
-            ".jpg" or ".jpeg" => Jpeg,
-            ".bmp"            => Bmp,
-            ".png"            => Png,
-            ".mpg" or ".mpeg" => Mpeg,
-            ".mp3"            => Mp3,
-            ".mp4"            => Mp4,
-            _                 => null
+    private static string? TryGetCommonExtensionString(ReadOnlySpan<char> perfectExtensionSpan) {
+        return perfectExtensionSpan switch {
+            ""              => "", // 📎 You cannot have an "empty" extension; hence this being "" instead of `"."` 
+            "json"          => ".json",
+            "csv"           => ".csv",
+            "yaml"          => ".yaml",
+            "xml"           => ".xml",
+            "txt"           => ".txt",
+            "html"          => ".html",
+            "jpg" or "jpeg" => ".jpeg",
+            "bmp"           => ".bmp",
+            "png"           => ".png",
+            "mpg" or "mpeg" => ".mpeg",
+            "mp3"           => ".mp3",
+            "mp4"           => ".mp4",
+            _               => null
         };
+    }
 
-        return result is not null;
+    internal static bool TryGetCommonExtensionString(ReadOnlySpan<char> perfectExtensionSpan, out string? result) {
+        result = TryGetCommonExtensionString(perfectExtensionSpan);
+        return result != null;
     }
 }

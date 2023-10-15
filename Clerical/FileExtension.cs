@@ -1,7 +1,5 @@
 using System.Diagnostics;
 
-using CommunityToolkit.HighPerformance.Buffers;
-
 using Microsoft.Extensions.Primitives;
 
 namespace FowlFever.Clerical;
@@ -14,7 +12,7 @@ public readonly partial struct FileExtension :
     IEquatable<string?> {
     #region Actual string value
 
-    internal readonly StringSegment _valueWithPeriod;
+    private readonly StringSegment _valueWithPeriod;
 
     [Pure] public int LengthWithPeriod => _valueWithPeriod.Length;
 
@@ -28,27 +26,9 @@ public readonly partial struct FileExtension :
     /// Actual instantiation should be done via factory methods such as <see cref="Parse(System.ReadOnlySpan{char},System.IFormatProvider?)"/>.
     /// </summary>
     /// <param name="value"><see cref="_valueWithPeriod"/>, which <i>should</i> be <see cref="string.ToLowerInvariant"/></param>
-    internal FileExtension(StringSegment value) {
-        Debug.Assert(IsPerfectExtension(value));
+    private FileExtension(StringSegment value) {
+        DebugAssert_PerfectExtension(value);
         _valueWithPeriod = value;
-    }
-
-    internal static string GetOrCreateExtensionString(ReadOnlySpan<char> perfectExtensionSpan) {
-        Debug.Assert(IsPerfectExtension(perfectExtensionSpan));
-        return TryGetCommonExtensionString(perfectExtensionSpan, out var result) ? result : GetUncommonExtensionString(perfectExtensionSpan);
-    }
-
-    private static readonly StringPool ExtensionPool = new();
-
-    /// <summary>
-    /// This method handles "uncommon" extension strings - i.e. ones that aren't covered by <see cref="TryGetCommonExtensionString"/>.
-    /// </summary>
-    /// <param name="perfectExtensionSpan"></param>
-    /// <returns></returns>
-    private static string GetUncommonExtensionString(ReadOnlySpan<char> perfectExtensionSpan) {
-        Debug.Assert(IsPerfectExtension(perfectExtensionSpan));
-        Debug.Assert(TryGetCommonExtensionString(perfectExtensionSpan, out var result) == false, $"Common extensions like `{result}` should have already been handled!");
-        return ExtensionPool.GetOrAdd(perfectExtensionSpan);
     }
 
     #endregion
@@ -70,17 +50,51 @@ public readonly partial struct FileExtension :
     [Pure]
     public override bool Equals(object? other) => other is FileExtension ext && Equals(ext);
 
-    [Pure] public bool Equals(string? other) => IsEquivalentTo(other);
+    /// <inheritdoc cref="IsEquivalentTo"/>
+    [Pure]
+    public bool Equals(string? other) => IsEquivalentTo(other);
 
-    [Pure] public static                   bool operator ==(FileExtension a, FileExtension b) => a._valueWithPeriod == b._valueWithPeriod;
-    [Pure] public static                   bool operator !=(FileExtension a, FileExtension b) => !(a == b);
-    [Pure] public static implicit operator FileExtension(string           s) => Parse(s);
+    [Pure] public static bool operator ==(FileExtension a, FileExtension b) => a._valueWithPeriod.AsSpan().SequenceEqual(b._valueWithPeriod);
+    [Pure] public static bool operator !=(FileExtension a, FileExtension b) => !(a == b);
+
+    // TODO: Should I include explicit == operator overloads to use the more efficient `Equals(string)`?
+    //  ➕ Avoids any potential allocations
+    //  ➕ Avoids needing to validate the `string` 
+    //  ➕ It makes perfect sense to me
+    //  ➖ Nobody else in the world seems to do it
+    // TODO: Update from Brandon on 10/12/2023 - in preference of least-surprise > convenience, I'm preferring `IsEquivalentTo` for equality with unparsed stuff.
+    // [Pure] public static                   bool operator ==(FileExtension a, string        b) => a.Equals(b);
+    // public static                          bool operator !=(FileExtension a, string        b) => !(a == b);
+    // [Pure] public static                   bool operator ==(string        a, FileExtension b) => b.Equals(a);
+    // public static                          bool operator !=(string        a, FileExtension b) => !(a == b);
 
     [Pure] public override int GetHashCode() => _valueWithPeriod.GetHashCode();
 
-    private bool IsEquivalentTo(ReadOnlySpan<char> other) {
+    /// <summary>
+    /// Determines if the given <see cref="string"/> is equivalent to this <see cref="FileExtension"/>, ignoring case and at most one leading period.
+    /// </summary>
+    /// <param name="other">some <see cref="string"/></param>
+    /// <returns><c>true</c> if the given string is equivalent to this <see cref="FileExtension"/></returns>
+    /// <example>
+    /// <code><![CDATA[
+    /// var json = FileExtension.Parse(".json");
+    /// json.Equals(".json");   // => true
+    /// json.Equals("json");    // => true
+    /// json.Equals("JSON");    // => true
+    ///
+    /// // "aliases" are also handled:
+    /// var jpeg = FileExtension.Parse(".jpeg");
+    /// jpeg.Equals("JPG");     // => true
+    /// ]]></code>
+    /// </example>
+    public bool IsEquivalentTo(ReadOnlySpan<char> other) {
         if (_valueWithPeriod.Length == 0) {
             return other.IsEmpty;
+        }
+
+        if (TryGetCommonExtensionString(other, out var result)) {
+            // "common" extension strings are ALWAYS lowercase, so we can speed things up by using `StringComparison.Ordinal`
+            return _valueWithPeriod.AsSpan().Equals(result, StringComparison.Ordinal);
         }
 
         return other switch {

@@ -49,14 +49,17 @@ public class FileExtension_Tests {
     }
 
     private static void Assert_Equality(FileExtension a, FileExtension b, bool expectedEquality) {
-        AssertCommutative(a, b, static (x, y) => x.Equals(y),                                                 expectedEquality);
-        AssertCommutative(a, b, static (x, y) => x.Equals((object)y),                                         expectedEquality);
-        AssertCommutative(a, b, static (x, y) => Equals(x, y),                                                expectedEquality);
-        AssertCommutative(a, b, static (x, y) => x == y,                                                      expectedEquality);
-        AssertCommutative(a, b, static (x, y) => x != y,                                                      !expectedEquality);
-        AssertCommutative(a, b, static (x, y) => x.ToString().Equals(y.ToString(), StringComparison.Ordinal), expectedEquality);
-        AssertCommutative(a, b, EqualityComparer<FileExtension>.Default.Equals,                 expectedEquality);
-        AssertCommutative(a, b, static (x, y) => EqualityComparer<object>.Default.Equals(x, y), expectedEquality);
+        AssertCommutative(a, b, static (x, y) => x.Equals(y),         expectedEquality);
+        AssertCommutative(a, b, static (x, y) => x.Equals((object)y), expectedEquality);
+        AssertCommutative(a, b, static (x, y) => Equals(x, y),        expectedEquality);
+        AssertCommutative(a, b, static (x, y) => x == y,              expectedEquality);
+        AssertCommutative(a, b, static (x, y) => x != y,              !expectedEquality);
+        AssertCommutative(a, b, EqualityComparer<FileExtension>.Default.Equals,                      expectedEquality);
+        AssertCommutative(a, b, (Func<object, object, bool>)EqualityComparer<object>.Default.Equals, expectedEquality);
+        AssertCommutative(a, b, static (x, y) => EqualityComparer<object>.Default.Equals(x, y),      expectedEquality);
+
+        AssertThat(a.ToString().Equals(b.ToString(), StringComparison.Ordinal), Is.EqualTo(expectedEquality));
+        AssertThat(a.AsSpan().SequenceEqual(b.AsSpan()),                        Is.EqualTo(expectedEquality));
     }
 
     private static void AssertThat<T>(T actual, IResolveConstraint constraint, [CallerArgumentExpression("actual")] string? _actual = default) {
@@ -70,14 +73,14 @@ public class FileExtension_Tests {
                     () => {
                         // string
                         AssertThat(FileExtension.TryParseExact(input, out var stringy), Is.True);
-                        AssertThat(stringy,                                             Is.EqualTo(expected));
-                        AssertThat(FileExtension.ParseExact(input),                     Is.EqualTo(expected));
-                        AssertThat((FileExtension)input,                                Is.EqualTo(expected));
+                        Assert_Equality(stringy, expected, true);
+                        AssertThat(stringy, Is.EqualTo(expected));
+                        Assert_Equality(FileExtension.ParseExact(input), expected, true);
 
                         // span
                         AssertThat(FileExtension.TryParseExact(input.AsSpan(), out var spanny), Is.True);
-                        AssertThat(spanny,                                                      Is.EqualTo(expected));
-                        AssertThat(FileExtension.ParseExact(input.AsSpan()),                    Is.EqualTo(expected));
+                        Assert_Equality(spanny,                                   expected, true);
+                        Assert_Equality(FileExtension.ParseExact(input.AsSpan()), expected, true);
                     }
                 );
                 break;
@@ -86,12 +89,13 @@ public class FileExtension_Tests {
                     () => {
                         // string
                         AssertThat(FileExtension.TryParse(input, out var stringy), Is.True);
-                        AssertThat(stringy,                                        Is.EqualTo(expected));
-                        AssertThat(FileExtension.Parse(input),                     Is.EqualTo(expected));
+                        Assert_Equality(stringy,                    expected, true);
+                        Assert_Equality(FileExtension.Parse(input), expected, true);
+
                         // span
                         AssertThat(FileExtension.TryParse(input.AsSpan(), out var spanny), Is.True);
-                        AssertThat(spanny,                                                 Is.EqualTo(expected));
-                        AssertThat(FileExtension.Parse(input.AsSpan()),                    Is.EqualTo(expected));
+                        Assert_Equality(spanny,                              expected, true);
+                        Assert_Equality(FileExtension.Parse(input.AsSpan()), expected, true);
                     }
                 );
                 break;
@@ -105,11 +109,13 @@ public class FileExtension_Tests {
             case ParseStyle.Strict:
                 Assert.Multiple(
                     () => {
-                        Assert.That(FileExtension.TryParseExact(input, out _), Is.False);
-                        Assert.That(() => FileExtension.ParseExact(input),     Throws.InstanceOf<FormatException>());
+                        // string
+                        AssertThat(FileExtension.TryParseExact(input, out _), Is.False);
+                        AssertThat(() => FileExtension.ParseExact(input),     Throws.InstanceOf<FormatException>());
 
-                        Assert.That(FileExtension.TryParseExact(input.AsSpan(), out _), Is.False);
-                        Assert.That(() => FileExtension.ParseExact(input),              Throws.InstanceOf<FormatException>());
+                        // span
+                        AssertThat(FileExtension.TryParseExact(input.AsSpan(), out _), Is.False);
+                        AssertThat(() => FileExtension.ParseExact(input),              Throws.InstanceOf<FormatException>());
                     }
                 );
                 break;
@@ -117,12 +123,12 @@ public class FileExtension_Tests {
                 Assert.Multiple(
                     () => {
                         // string
-                        Assert.That(FileExtension.TryParse(input, out _), Is.False,                             $"TryParse(\"{input}\")");
-                        Assert.That(() => FileExtension.Parse(input),     Throws.InstanceOf<FormatException>(), $"Parse(\"{input}\")");
+                        AssertThat(FileExtension.TryParse(input, out _), Is.False);
+                        AssertThat(() => FileExtension.Parse(input),     Throws.InstanceOf<FormatException>());
 
                         // span
-                        Assert.That(FileExtension.TryParse(input.AsSpan(), out _), Is.False,                             $"TryParse(Span[{input}])");
-                        Assert.That(() => FileExtension.Parse(input.AsSpan()),     Throws.InstanceOf<FormatException>(), $"Parse(Span[{input}])");
+                        AssertThat(FileExtension.TryParse(input.AsSpan(), out _), Is.False);
+                        AssertThat(() => FileExtension.Parse(input.AsSpan()),     Throws.InstanceOf<FormatException>());
                     }
                 );
                 break;
@@ -148,6 +154,13 @@ public class FileExtension_Tests {
     [TestCase("\tJpG  \t\t\n", ".jpeg", Description = "Hot mess")]
     public void FileExtension_Parse_AcceptsValidInput(string validFileExtension, string expected) {
         Assert_Parses(validFileExtension, FileExtension.CreateUnsafe(expected), ParseStyle.Forgiving);
+    }
+
+    [Test]
+    public void TestParsInternal() {
+        var yes = FileExtension.TryParse_Internal(".json", true, false, out var result);
+        Console.WriteLine($"success: {yes}");
+        Console.WriteLine(result);
     }
 
     [TestCase("",      "", Description = "Empty (i.e. no extension)")]
@@ -189,17 +202,17 @@ public class FileExtension_Tests {
         Assert_NoParse(notFileExtension, ParseStyle.Strict);
     }
 
-    [TestCase("jpg",   FileExtension.Jpeg)]
-    [TestCase("JpG",   FileExtension.Jpeg)]
-    [TestCase("jpeg",  FileExtension.Jpeg)]
-    [TestCase(".jpeg", FileExtension.Jpeg)]
+    [TestCase("jpg",   ".jpeg")]
+    [TestCase("JpG",   ".jpeg")]
+    [TestCase("jpeg",  ".jpeg")]
+    [TestCase(".jpeg", ".jpeg")]
     public void FileExtension_Parse_UnifiesCommonAliases(string rawInput, string expectedAlias) {
         var expected = FileExtension.CreateUnsafe(expectedAlias);
         Assert_Parses(rawInput, expected, ParseStyle.Forgiving);
     }
 
-    [TestCase(".jpeg", FileExtension.Jpeg)]
-    [TestCase(".jpg",  FileExtension.Jpeg)]
+    [TestCase(".jpeg", ".jpeg")]
+    [TestCase(".jpg",  ".jpeg")]
     public void FileExtension_ParseExact_UnifiesCommonAliases(string rawInput, string expectedAlias) {
         var expected = FileExtension.CreateUnsafe(expectedAlias);
         Assert_Parses(rawInput, expected, ParseStyle.Strict);
@@ -214,6 +227,6 @@ public class FileExtension_Tests {
         other = new string(other);
         var ext = FileExtension.Parse(extensionString);
 
-        Assert.That(ext.Equals(other), Is.EqualTo(expectedEquality));
+        AssertThat(ext.Equals(other), Is.EqualTo(expectedEquality));
     }
 }
