@@ -9,7 +9,12 @@ namespace FowlFever.Clerical;
 /// </summary>
 public readonly partial struct FileExtension :
     IEquatable<FileExtension>,
-    IEquatable<string?> {
+    IEquatable<string?>
+#if NET7_0_OR_GREATER
+    ,
+    IEqualityOperators<FileExtension, FileExtension, bool>
+#endif
+{
     #region Actual string value
 
     private readonly StringSegment _valueWithPeriod;
