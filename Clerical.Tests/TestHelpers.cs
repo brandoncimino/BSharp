@@ -91,50 +91,64 @@ public static class TestHelpers {
     }
 
     public static void Assert_Equality<T>(T? a, T? b, bool expectedEquality) where T : IEquatable<T>, IEqualityOperators<T, T, bool> {
-        if (a == null || b == null) {
-            Assert.Fail($"Neither of the inputs should have been null! ({(a, b)})");
-            return;
-        }
+        Assert.Multiple(
+            () => {
+                if (a == null || b == null) {
+                    Assert.Fail($"Neither of the inputs should have been null! ({(a, b)})");
+                    return;
+                }
 
-        AssertCommutative(a, b, static (x, y) => x.Equals(y),         expectedEquality);
-        AssertCommutative(a, b, static (x, y) => x.Equals((object)y), expectedEquality);
-        AssertCommutative(a, b, static (x, y) => Equals(x, y),        expectedEquality);
-        AssertCommutative(a, b, static (x, y) => x == y,              expectedEquality);
-        AssertCommutative(a, b, static (x, y) => x != y,              !expectedEquality);
-        AssertCommutative(a, b, EqualityComparer<T>.Default.Equals,                                  expectedEquality);
-        AssertCommutative(a, b, (Func<object, object, bool>)EqualityComparer<object>.Default.Equals, expectedEquality);
-        AssertCommutative(a, b, static (x, y) => EqualityComparer<object>.Default.Equals(x, y),      expectedEquality);
+                AssertCommutative(a, b, static (x, y) => x.Equals(y),         expectedEquality);
+                AssertCommutative(a, b, static (x, y) => x.Equals((object)y), expectedEquality);
+                AssertCommutative(a, b, static (x, y) => Equals(x, y),        expectedEquality);
+                AssertCommutative(a, b, static (x, y) => x == y,              expectedEquality);
+                AssertCommutative(a, b, static (x, y) => x != y,              !expectedEquality);
+                AssertCommutative(a, b, EqualityComparer<T>.Default.Equals,                                  expectedEquality);
+                AssertCommutative(a, b, (Func<object, object, bool>)EqualityComparer<object>.Default.Equals, expectedEquality);
+                AssertCommutative(a, b, static (x, y) => EqualityComparer<object>.Default.Equals(x, y),      expectedEquality);
 
-        AssertThat(a.ToString()?.Equals(b.ToString(), StringComparison.Ordinal), Is.EqualTo(expectedEquality));
+                AssertThat(a.ToString()?.Equals(b.ToString(), StringComparison.Ordinal), Is.EqualTo(expectedEquality));
+            }
+        );
     }
 
     public static void Assert_Parses<T>(string input, T expected) where T : IParsable<T>, ISpanParsable<T>, IEquatable<T>, IEqualityOperators<T, T, bool> {
+        Assert.Multiple(
+            () => {
+                Stringy(input, expected);
+
+                // spanny
+                AssertThat(T.TryParse(input.AsSpan(), null, out var spanny), Is.True);
+                Assert_Equality(spanny,                        expected, true);
+                Assert_Equality(T.Parse(input.AsSpan(), null), expected, true);
+            }
+        );
+        return;
+
         static void Stringy<X>(string input, X expected) where X : IParsable<X>, IEquatable<X>, IEqualityOperators<X, X, bool> {
             // stringy
             AssertThat(X.TryParse(input, null, out var stringy), Is.True);
             Assert_Equality(stringy,              expected, true);
             Assert_Equality(X.Parse(input, null), expected, true);
         }
-
-        Stringy(input, expected);
-
-        // spanny
-        AssertThat(T.TryParse(input.AsSpan(), null, out var spanny), Is.True);
-        Assert_Equality(spanny,                        expected, true);
-        Assert_Equality(T.Parse(input.AsSpan(), null), expected, true);
     }
 
     public static void Assert_NoParse<T>(string input) where T : IParsable<T>, ISpanParsable<T>, IEquatable<T>, IEqualityOperators<T, T, bool> {
+        Assert.Multiple(
+            () => {
+                Stringy<T>(input);
+
+                AssertThat(T.TryParse(input.AsSpan(), null, out var spanny), Is.False);
+                Assert_Equality(spanny, default, true);
+                AssertThat(() => T.Parse(input.AsSpan(), null), Throws.InstanceOf<FormatException>());
+            }
+        );
+        return;
+
         static void Stringy<X>(string input) where X : IParsable<X>, IEquatable<X>, IEqualityOperators<X, X, bool> {
             AssertThat(X.TryParse(input, null, out var stringy), Is.False);
             Assert_Equality(stringy, default, true);
             AssertThat(() => X.Parse(input, null), Throws.InstanceOf<FormatException>());
         }
-
-        Stringy<T>(input);
-
-        AssertThat(T.TryParse(input.AsSpan(), null, out var spanny), Is.False);
-        Assert_Equality(spanny, default, true);
-        AssertThat(() => T.Parse(input.AsSpan(), null), Throws.InstanceOf<FormatException>());
     }
 }
