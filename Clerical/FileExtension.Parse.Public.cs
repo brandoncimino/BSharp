@@ -22,37 +22,37 @@ public readonly partial struct FileExtension
 
     #region Public "Parse" methods
 
-    /// <inheritdoc cref="Parse_Forgiving"/>
+    /// <inheritdoc cref="Parser.Parse_Forgiving"/>
     [Pure]
-    public static FileExtension Parse(ReadOnlySpan<char> s) => Parse_Forgiving(s);
+    public static FileExtension Parse(ReadOnlySpan<char> s) => Parser.Parse_Forgiving(s);
 
-    /// <inheritdoc cref="Parse_Strict"/>
+    /// <inheritdoc cref="Parser.Parse_Strict"/>
     [Pure]
-    public static FileExtension ParseExact(ReadOnlySpan<char> s) => Parse_Strict(s);
+    public static FileExtension ParseExact(ReadOnlySpan<char> s) => Parser.Parse_Strict(s);
 
-    /// <inheritdoc cref="Parse_Forgiving"/>
+    /// <inheritdoc cref="Parser.Parse_Forgiving"/>
     [Pure]
-    public static FileExtension Parse(string s) => Parse_Forgiving(s);
+    public static FileExtension Parse(string s) => Parser.Parse_Forgiving(s);
 
-    /// <inheritdoc cref="Parse_Strict"/>
+    /// <inheritdoc cref="Parser.Parse_Strict"/>
     [Pure]
-    public static FileExtension ParseExact(string s) => Parse_Strict(s);
+    public static FileExtension ParseExact(string s) => Parser.Parse_Strict(s);
 
-    /// <inheritdoc cref="Parse_Forgiving"/>
+    /// <inheritdoc cref="Parser.Parse_Forgiving"/>
     [Pure]
-    public static bool TryParse(ReadOnlySpan<char> s, out FileExtension result) => TryParse_Forgiving(s, out result);
+    public static bool TryParse(ReadOnlySpan<char> s, out FileExtension result) => Parser.TryParse_Internal(s, false, false, out result);
 
-    /// <inheritdoc cref="Parse_Strict"/>
+    /// <inheritdoc cref="Parser.Parse_Strict"/>
     [Pure]
-    public static bool TryParseExact(ReadOnlySpan<char> s, out FileExtension result) => TryParse_Strict(s, out result);
+    public static bool TryParseExact(ReadOnlySpan<char> s, out FileExtension result) => Parser.TryParse_Internal(s, true, false, out result);
 
-    /// <inheritdoc cref="Parse_Forgiving"/>
+    /// <inheritdoc cref="Parser.Parse_Forgiving"/>
     [Pure]
-    public static bool TryParse(string? s, out FileExtension result) => TryParse_Forgiving(s, out result);
+    public static bool TryParse(string? s, out FileExtension result) => Parser.TryParse_Internal(s, false, false, out result);
 
-    /// <inheritdoc cref="Parse_Strict"/>
+    /// <inheritdoc cref="Parser.Parse_Strict"/>
     [Pure]
-    public static bool TryParseExact(string? s, out FileExtension result) => TryParse_Strict(s, out result);
+    public static bool TryParseExact(string? s, out FileExtension result) => Parser.TryParse_Internal((SpanOrSegment)s, true, false, out result);
 
     #endregion
 }

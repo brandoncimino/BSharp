@@ -12,8 +12,8 @@ public readonly partial struct PathPart
     [Pure] static bool IParsable<PathPart>.        TryParse(string?            s, IFormatProvider? provider, out PathPart result) => TryParse(s, out result);
 #endif
 
-    [Pure] public static PathPart Parse(ReadOnlySpan<char>    s)                      => Parse_Internal(s);
-    [Pure] public static bool     TryParse(ReadOnlySpan<char> s, out PathPart result) => TryParse_Internal(s, out result);
+    [Pure] public static PathPart Parse(ReadOnlySpan<char>    s)                      => Parser.Parse_Internal(s, false);
+    [Pure] public static bool     TryParse(ReadOnlySpan<char> s, out PathPart result) => Parser.TryParse_Internal(s, false, false, out result);
 
     [Pure]
     public static PathPart Parse(string s) {
@@ -22,8 +22,8 @@ public readonly partial struct PathPart
             throw new ArgumentNullException(nameof(s));
         }
 
-        return Parse_Internal(s);
+        return Parser.Parse_Internal(s, false);
     }
 
-    [Pure] public static bool TryParse(string? s, out PathPart result) => TryParse_Internal(s, out result);
+    [Pure] public static bool TryParse(string? s, out PathPart result) => Parser.TryParse_Internal(s, false, false, out result);
 }

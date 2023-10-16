@@ -16,7 +16,7 @@ public readonly struct PathInfo {
             }
 
             var extStartsAt = _source.Length - _extensionLength;
-            return FileExtension.CreateUnsafe(new StringSegment(_source, extStartsAt, _source.Length - extStartsAt));
+            return FileExtension.Parser.CreateUnsafe(new StringSegment(_source, extStartsAt, _source.Length - extStartsAt));
         }
     }
 

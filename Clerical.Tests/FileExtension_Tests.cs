@@ -93,13 +93,13 @@ public class FileExtension_Tests {
     [TestCase(".json \n ",     ".json", Description = "Trailing whitespace")]
     [TestCase("\tJpG  \t\t\n", ".jpeg", Description = "Hot mess")]
     public void FileExtension_Parse_AcceptsValidInput(string validFileExtension, string expected) {
-        Assert_Parses(validFileExtension, FileExtension.CreateUnsafe(expected), ParseStyle.Forgiving);
+        Assert_Parses(validFileExtension, FileExtension.Parser.CreateUnsafe(expected), ParseStyle.Forgiving);
     }
 
     [TestCase("",      "", Description = "Empty (i.e. no extension)")]
     [TestCase(".json", ".json")]
     public void FileExtension_ParseExact_AcceptsValidInput(string validFileExtension, string expected) {
-        Assert_Parses(validFileExtension, FileExtension.CreateUnsafe(expected), ParseStyle.Strict);
+        Assert_Parses(validFileExtension, FileExtension.Parser.CreateUnsafe(expected), ParseStyle.Strict);
     }
 
     [TestCase("a.b",     Description = "File name with extension")]
@@ -140,14 +140,14 @@ public class FileExtension_Tests {
     [TestCase("jpeg",  ".jpeg")]
     [TestCase(".jpeg", ".jpeg")]
     public void FileExtension_Parse_UnifiesCommonAliases(string rawInput, string expectedAlias) {
-        var expected = FileExtension.CreateUnsafe(expectedAlias);
+        var expected = FileExtension.Parser.CreateUnsafe(expectedAlias);
         Assert_Parses(rawInput, expected, ParseStyle.Forgiving);
     }
 
     [TestCase(".jpeg", ".jpeg")]
     [TestCase(".jpg",  ".jpeg")]
     public void FileExtension_ParseExact_UnifiesCommonAliases(string rawInput, string expectedAlias) {
-        var expected = FileExtension.CreateUnsafe(expectedAlias);
+        var expected = FileExtension.Parser.CreateUnsafe(expectedAlias);
         Assert_Parses(rawInput, expected, ParseStyle.Strict);
     }
 

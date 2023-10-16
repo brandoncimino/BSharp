@@ -10,9 +10,9 @@ public class PathInfo_Tests {
         Assert.Multiple(
             () => {
                 var info = PathInfo.Parse(input);
-                Assert.That(info.BaseName,  Is.EqualTo(PathPart.Of(baseName)));
+                Assert.That(info.BaseName,  Is.EqualTo(PathPart.Parse(baseName)));
                 Assert.That(info.Extension, Is.EqualTo(FileExtension.Parse(extension)));
-                Assert.That(info.FileName,  Is.EqualTo(new FileName(baseName, extension)));
+                Assert.That(info.FileName,  Is.EqualTo(new FileName(PathPart.Parse(baseName), FileExtension.Parse(extension))));
             }
         );
     }
@@ -27,6 +27,12 @@ public class PathInfo_Tests {
 
         var c = "c";
         Path.TryJoin(b, c, buffer, out written);
+        Console.WriteLine(buffer[..written].ToString());
+
+        Path.TryJoin(b, b, buffer, out written);
+        Console.WriteLine(buffer[..written].ToString());
+
+        Path.TryJoin("w\\", @"\w2\", buffer, out written);
         Console.WriteLine(buffer[..written].ToString());
     }
 }

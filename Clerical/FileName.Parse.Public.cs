@@ -1,3 +1,5 @@
+using System.Diagnostics;
+
 namespace FowlFever.Clerical;
 
 // This file contains the public `{Try}Parse` methods, which delegate to the logic defined in `FileName.Parse`.
@@ -7,10 +9,10 @@ public readonly partial record struct FileName
 #endif
 {
 #if NET7_0_OR_GREATER
-    static FileName IParsable<FileName>.    Parse(string                s, IFormatProvider? provider)                      => Parse_Internal(s);
-    static bool IParsable<FileName>.        TryParse(string?            s, IFormatProvider? provider, out FileName result) => TryParse_Internal(s, out result);
-    static FileName ISpanParsable<FileName>.Parse(ReadOnlySpan<char>    s, IFormatProvider? provider)                      => Parse_Internal(s);
-    static bool ISpanParsable<FileName>.    TryParse(ReadOnlySpan<char> s, IFormatProvider? provider, out FileName result) => TryParse_Internal(s, out result);
+    static FileName IParsable<FileName>.    Parse(string                s, IFormatProvider? provider)                      => Parse(s);
+    static bool IParsable<FileName>.        TryParse(string?            s, IFormatProvider? provider, out FileName result) => TryParse(s, out result);
+    static FileName ISpanParsable<FileName>.Parse(ReadOnlySpan<char>    s, IFormatProvider? provider)                      => Parse(s);
+    static bool ISpanParsable<FileName>.    TryParse(ReadOnlySpan<char> s, IFormatProvider? provider, out FileName result) => TryParse(s, out result);
 #endif
 
     public static FileName Parse(string s) {
@@ -18,10 +20,19 @@ public readonly partial record struct FileName
             throw new ArgumentNullException(nameof(s));
         }
 
-        return Parse_Internal(s);
+        var success = Parser.TryParse_Internal(s, false, true, out var result);
+        Debug.Assert(success);
+        return result;
     }
 
-    public static bool     TryParse(string?            s, out FileName result) => TryParse_Internal(s, out result);
-    public static FileName Parse(ReadOnlySpan<char>    s)                      => Parse_Internal(s);
-    public static bool     TryParse(ReadOnlySpan<char> s, out FileName result) => TryParse_Internal(s, out result);
+    [Pure] public static bool TryParse(string? s, out FileName result) => Parser.TryParse_Internal(s, false, false, out result);
+
+    [Pure]
+    public static FileName Parse(ReadOnlySpan<char> s) {
+        var success = Parser.TryParse_Internal(s, false, true, out var result);
+        Debug.Assert(success);
+        return result;
+    }
+
+    [Pure] public static bool TryParse(ReadOnlySpan<char> s, out FileName result) => Parser.TryParse_Internal(s, false, false, out result);
 }

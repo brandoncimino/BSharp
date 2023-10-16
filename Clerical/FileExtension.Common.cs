@@ -3,33 +3,46 @@ namespace FowlFever.Clerical;
 public readonly partial struct FileExtension {
     #region Common File Extensions
 
-    public static readonly FileExtension Json = CreateUnsafe(".json");
-    public static readonly FileExtension Csv  = CreateUnsafe(".csv");
-    public static readonly FileExtension Yaml = CreateUnsafe(".yaml");
-    public static readonly FileExtension Xml  = CreateUnsafe(".xml");
-    public static readonly FileExtension Txt  = CreateUnsafe(".txt");
-    public static readonly FileExtension Html = CreateUnsafe(".html");
+    public static readonly FileExtension Json = Parser.CreateUnsafe(".json");
+    public static readonly FileExtension Csv  = Parser.CreateUnsafe(".csv");
+    /// <summary>
+    /// See: <a href="https://en.wikipedia.org/wiki/YAML">YAML</a>
+    /// </summary>
+    /// <remarks>
+    /// <c>.yaml</c> is <a href="https://yaml.org/faq.html">officially correct</a>. Don't use <c>.yml</c>.
+    /// </remarks>
+    public static readonly FileExtension Yaml = Parser.CreateUnsafe(".yaml");
+    public static readonly FileExtension Xml = Parser.CreateUnsafe(".xml");
+    public static readonly FileExtension Txt = Parser.CreateUnsafe(".txt");
+    /// <summary>
+    /// See: <a href="https://en.wikipedia.org/wiki/HTML">HTML</a>
+    /// </summary>
+    /// <remarks>
+    /// Word on the street is some places use <a href="https://en.wikipedia.org/wiki/HTML#Naming_conventions">.htm</a>.
+    /// Those places are wrong.
+    /// </remarks>
+    public static readonly FileExtension Html = Parser.CreateUnsafe(".html");
     /// <summary>
     /// See: <a href="https://en.wikipedia.org/wiki/JPEG">JPEG</a>
     /// </summary>
     /// <remarks>
-    /// Many places say to prefer ".jpg" over ".jpeg", however:
+    /// Many places say to prefer "<c>.jpg</c>" over "<c>.jpeg</c>", however:
     /// <ul>
-    /// <li>"jpg" is the incorrect way to abbreviate <a href="https://en.wikipedia.org/wiki/Joint_Photographic_Experts_Group">Join Photographic Experts Group</a></li>
-    /// <li>Only "jpeg" has a corresponding MIME type, <a href="https://stackoverflow.com/a/54488403/18494923">"image/jpeg"</a></li>
-    /// <li>Only "jpeg" has a corresponding <a href="https://www.iso.org/standard/18902.html">ISO standard</a></li>
+    /// <li>".jpg" is the incorrect way to abbreviate <a href="https://en.wikipedia.org/wiki/Joint_Photographic_Experts_Group">Join Photographic Experts Group</a></li>
+    /// <li>Only ".jpeg" has a corresponding MIME type, <a href="https://stackoverflow.com/a/54488403/18494923">"image/jpeg"</a></li>
+    /// <li>Only ".jpeg" has a corresponding <a href="https://www.iso.org/standard/18902.html">ISO standard</a></li>
     /// </ul>
     /// </remarks>
-    public static readonly FileExtension Jpeg = CreateUnsafe(".jpeg");
-    public static readonly FileExtension Bmp = CreateUnsafe(".bmp");
-    public static readonly FileExtension Png = CreateUnsafe(".png");
+    public static readonly FileExtension Jpeg = Parser.CreateUnsafe(".jpeg");
+    public static readonly FileExtension Bmp = Parser.CreateUnsafe(".bmp");
+    public static readonly FileExtension Png = Parser.CreateUnsafe(".png");
     /// <summary>
-    /// See <a href="https://en.wikipedia.org/wiki/MPEG-1">MPEG-1</a>.
+    /// See: <a href="https://en.wikipedia.org/wiki/MPEG-1">MPEG-1</a>.
     /// </summary>
     /// <remarks>See <see cref="Jpeg"/> for the justification of using ".mpeg" over ".mpg".</remarks>
-    public static readonly FileExtension Mpeg = CreateUnsafe(".mpeg");
-    public static readonly FileExtension Mp3 = CreateUnsafe(".mp3");
-    public static readonly FileExtension Mp4 = CreateUnsafe(".mp4");
+    public static readonly FileExtension Mpeg = Parser.CreateUnsafe(".mpeg");
+    public static readonly FileExtension Mp3 = Parser.CreateUnsafe(".mp3");
+    public static readonly FileExtension Mp4 = Parser.CreateUnsafe(".mp4");
 
     #endregion
 
@@ -56,10 +69,11 @@ public readonly partial struct FileExtension {
     /// TODO: This is currently the LAST step when parsing, when it should probably be the FIRST step.
     private static string? TryGetCommonExtensionString(ReadOnlySpan<char> perfectExtensionSpan) {
         return perfectExtensionSpan switch {
-            ""              => "", // 📎 You cannot have an "empty" extension; hence this being "" instead of `"."` 
-            "json"          => ".json",
-            "csv"           => ".csv",
-            "yaml"          => ".yaml",
+            ""     => "", // 📎 You cannot have an "empty" extension; hence this being "" instead of `"."` 
+            "json" => ".json",
+            "csv"  => ".csv",
+            // See: https://yaml.org/faq.html
+            "yaml" or "yml" => ".yaml",
             "xml"           => ".xml",
             "txt"           => ".txt",
             "html"          => ".html",
