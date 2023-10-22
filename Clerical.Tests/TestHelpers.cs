@@ -3,11 +3,13 @@ using System.Diagnostics.CodeAnalysis;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 
+using FowlFever.Clerical;
+
 using NUnit.Framework.Constraints;
 
 namespace Clerical.Tests;
 
-public static class TestHelpers {
+internal static class TestHelpers {
     private static (A? a, B? b) RequireMutuallyExclusive<A, B>(A? a, B? b) where A : notnull where B : notnull {
         if (a is null ^ b is null) {
             return (a, b);
@@ -112,15 +114,23 @@ public static class TestHelpers {
         );
     }
 
-    public static void Assert_Parses<T>(string input, T expected) where T : IParsable<T>, ISpanParsable<T>, IEquatable<T>, IEqualityOperators<T, T, bool> {
+    public static void Assert_Parses<T>(string input, T expected) where T : IClericalParsable<T>, IEquatable<T>, IEqualityOperators<T, T, bool> {
         Assert.Multiple(
             () => {
                 Stringy(input, expected);
+                // -> IClericalParsable<T>
+                AssertThat(T.TryParse(input, out var cStringy), Is.True);
+                Assert_Equality(cStringy,       expected, true);
+                Assert_Equality(T.Parse(input), expected, true);
 
                 // spanny
                 AssertThat(T.TryParse(input.AsSpan(), null, out var spanny), Is.True);
                 Assert_Equality(spanny,                        expected, true);
                 Assert_Equality(T.Parse(input.AsSpan(), null), expected, true);
+                // -> IClericalParsable<T>
+                AssertThat(T.TryParse(input.AsSpan(), out var cSpanny), Is.True);
+                Assert_Equality(cSpanny,                 expected, true);
+                Assert_Equality(T.Parse(input.AsSpan()), expected, true);
             }
         );
         return;
@@ -133,14 +143,22 @@ public static class TestHelpers {
         }
     }
 
-    public static void Assert_NoParse<T>(string input) where T : IParsable<T>, ISpanParsable<T>, IEquatable<T>, IEqualityOperators<T, T, bool> {
+    public static void Assert_NoParse<T>(string input) where T : IClericalParsable<T>, IEquatable<T>, IEqualityOperators<T, T, bool> {
         Assert.Multiple(
             () => {
                 Stringy<T>(input);
+                // -> IClericalParsable<T>
+                AssertThat(T.TryParse(input, out var cStringy), Is.False);
+                Assert_Equality(cStringy, default, true);
+                AssertThat(() => T.Parse(input), Throws.InstanceOf<FormatException>());
 
                 AssertThat(T.TryParse(input.AsSpan(), null, out var spanny), Is.False);
                 Assert_Equality(spanny, default, true);
                 AssertThat(() => T.Parse(input.AsSpan(), null), Throws.InstanceOf<FormatException>());
+                // -> IClericalParsable<T>
+                AssertThat(T.TryParse(input.AsSpan(), out var cSpanny), Is.False);
+                Assert_Equality(cSpanny, default, true);
+                AssertThat(() => T.Parse(input.AsSpan()), Throws.InstanceOf<FormatException>());
             }
         );
         return;
