@@ -21,7 +21,8 @@ internal readonly ref struct SpanOrSegment {
         Span    = span;
     }
 
-    public int Length => Segment?.Length ?? Span.Length;
+    public int  Length  => Segment?.Length ?? Span.Length;
+    public bool IsEmpty => Length == 0;
 
     public SpanOrSegment Slice(int start, int length) =>
         Segment switch {
@@ -29,7 +30,9 @@ internal readonly ref struct SpanOrSegment {
             _           => new SpanOrSegment(Span.Slice(start, length))
         };
 
-    public SpanOrSegment Trim() => Segment?.Trim() ?? Span.Trim();
+    public SpanOrSegment Trim()      => Segment?.Trim()      ?? Span.Trim();
+    public SpanOrSegment TrimStart() => Segment?.TrimStart() ?? Span.TrimStart();
+    public SpanOrSegment TrimEnd()   => Segment?.TrimEnd()   ?? Span.TrimEnd();
 
     public string? TryGetStringWithoutAllocating() {
         if (Segment == null) {
@@ -54,4 +57,6 @@ internal readonly ref struct SpanOrSegment {
     public static implicit operator SpanOrSegment(ReadOnlySpan<char> span)    => new(span);
     public static implicit operator SpanOrSegment(StringSegment      segment) => new(segment);
     public static implicit operator SpanOrSegment(string?            s)       => new(s);
+
+    public override string ToString() => Segment?.ToString() ?? Span.ToString();
 }
