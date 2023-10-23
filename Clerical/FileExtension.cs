@@ -115,6 +115,4 @@ public readonly partial struct FileExtension :
     [Pure] public override string ToString() => _valueWithPeriod.ToString();
 
     [Pure] public ReadOnlySpan<char> AsSpan() => _valueWithPeriod.AsSpan();
-
-    [Pure] public static FileName operator +(PathPart baseName, FileExtension extension) => new(baseName, extension);
 }
