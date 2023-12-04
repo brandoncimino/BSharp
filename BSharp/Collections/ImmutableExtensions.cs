@@ -1,7 +1,5 @@
-using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Linq;
 
 namespace FowlFever.BSharp.Collections;
 
@@ -244,22 +242,6 @@ public static partial class ImmutableExtensions {
     }
 
     #endregion
-
-    /// <summary>
-    /// Creates a <see cref="object.GetHashCode"/> value using each entry in this <see cref="ImmutableArray{T}"/>, <i>in order</i>.
-    /// </summary>
-    /// <param name="source">this <see cref="ImmutableArray{T}"/></param>
-    /// <typeparam name="T">the array entry type</typeparam>
-    /// <returns>an <see cref="int"/> value usable as a <see cref="object.GetHashCode"/></returns>
-    public static int GetSequenceHashCode<T>(this ImmutableArray<T> source) {
-        var hc = new HashCode();
-
-        foreach (var t in source) {
-            hc.Add(t);
-        }
-
-        return hc.ToHashCode();
-    }
 
     /// <summary>
     /// Modifies an existing <see cref="KeyValuePair{TKey,TValue}.value"/> in an <see cref="IImmutableDictionary{TKey,TValue}"/>.
