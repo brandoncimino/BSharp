@@ -1,7 +1,5 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 
 using FowlFever.BSharp.Collections;
 using FowlFever.Implementors;
@@ -20,7 +18,7 @@ namespace FowlFever.BSharp.Strings.Spectral;
 /// If there are more <see cref="_cells"/> than <see cref="AutoColumnCount"/>, they will still be evenly spaced, but fit to the <see cref="ConsoleWidth"/>.
 /// </remarks>
 public class AutoColumns : IHasList<IRenderable>, IHasRenderable {
-    public static  int       AutoColumnCount { get; set; } = 4;
+    public static  int       AutoColumnCount { get; set; } = 3;
     public static  Func<int> ConsoleWidth    { get; set; } = () => AnsiConsole.Console.Profile.Width;
     private static int       AutoColumnWidth => ConsoleWidth() / AutoColumnCount;
 
