@@ -1,9 +1,8 @@
-using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
@@ -361,11 +360,15 @@ public static partial class BEnum {
     /// <br/>
     /// <b>It repeats <see cref="Unsafe.SizeOf{T}"/> in each branch instead of evaluating it once and using a <c>switch</c> statement</b>
     /// <p>
+    /// <b>🆕 Oct. 19, 2023:</b> <see cref="Unsafe.SizeOf{T}"/> <i>might</i> be treated as a "constant" by the compiler, which lets it get super optimized, but I'm not entirely sure.
+    /// <p/>
     /// My best / only guess is that this also helps with <see cref="MethodImplAttributes.AggressiveInlining"/>.
     /// </p> 
     /// <br/>
     /// <b>It doesn't ensure that <typeparamref name="T"/> is a <see cref="FlagsAttribute"/> <see cref="Enum"/></b>
     /// <p>
+    /// <b>🆕 Oct. 19, 2023:</b> Since this is an <c>internal</c> method, this should be checked using a <see cref="Debug.Assert(bool)"/> call.
+    /// <p/>
     /// This is, theoretically, a limitation of the generic <see cref="Enum"/> type constraint.
     /// I could overcome this by validating the <see cref="IsEnumFlags"/> variable, but:
     /// <ul>
