@@ -1,7 +1,4 @@
-using System;
 using System.Collections.Immutable;
-
-using FowlFever.BSharp.Collections;
 
 namespace FowlFever.BSharp;
 
@@ -38,7 +35,15 @@ public readonly partial record struct ValueArray<T> :
 
     #region Hash Code
 
-    public override int GetHashCode() => AsImmutableArray.GetSequenceHashCode();
+    public override int GetHashCode() {
+        var hashCode = new HashCode();
+
+        foreach (var it in this) {
+            hashCode.Add(it);
+        }
+
+        return hashCode.GetHashCode();
+    }
 
     #endregion
 }
