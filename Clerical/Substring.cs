@@ -1,5 +1,4 @@
 using System.Diagnostics.CodeAnalysis;
-using System.Diagnostics.Contracts;
 
 using CommunityToolkit.HighPerformance;
 
@@ -14,7 +13,8 @@ namespace FowlFever.Clerical;
 /// <param name="Source">the original <see cref="string"/></param>
 /// <param name="Start">the index in the <paramref name="Source"/> where the substring starts</param>
 /// <param name="Length">the number of characters in the substring</param>
-public readonly record struct Substring([field: MaybeNull] string Source, int Start, int Length) {
+[Experimental("I like this class slightly more than Microsoft.Extensions.Primitives.StringSegment, but does that make it worth keeping? Probably not. On the other hand, is it worth taking on Microsoft.Extensions.Primitives as a dependency just for StringSegment? ...Probably.")]
+internal readonly record struct Substring([field: MaybeNull] string Source, int Start, int Length) {
     public Substring(string source, int start) : this(source, start, source.Length - start) { }
 
     /// <summary>
