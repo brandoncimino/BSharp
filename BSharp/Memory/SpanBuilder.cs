@@ -1,4 +1,3 @@
-using System;
 using System.Runtime.CompilerServices;
 
 using FowlFever.BSharp.Exceptions;
@@ -114,7 +113,7 @@ public ref struct SpanBuilder<T> {
                            .Append("[")
                            .Append(i.ToString(), new Style(Color.Orange1))
                            .Append("]")
-                           .Alignment(Justify.Right);
+                           .Justify(Justify.Right);
             table.AddRow(numLabel, RenderCell(i));
         }
 
