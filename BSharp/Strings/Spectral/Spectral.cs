@@ -158,18 +158,18 @@ public static class Spectral {
     /// <remarks>
     /// This is an extension method equivalent to <see cref="IRenderable.Measure"/>.
     /// </remarks>
-    public static Measurement GetMeasurement<T>(this T renderable, RenderContext renderContext, int maxWidth)
+    public static Measurement GetMeasurement<T>(this T renderable, RenderOptions RenderOptions, int maxWidth)
         where T : IRenderable {
-        return renderable.Measure(renderContext, maxWidth);
+        return renderable.Measure(RenderOptions, maxWidth);
     }
 
     /// <inheritdoc cref="IRenderable.Render"/>
     /// <remarks>
     /// This is an extension method equivalent to <see cref="IRenderable.Render"/>.
     /// </remarks>
-    public static IEnumerable<Segment> GetSegments<T>(this T renderable, RenderContext renderContext, int maxWidth)
+    public static IEnumerable<Segment> GetSegments<T>(this T renderable, RenderOptions RenderOptions, int maxWidth)
         where T : IRenderable {
-        return renderable.Render(renderContext, maxWidth);
+        return renderable.Render(RenderOptions, maxWidth);
     }
 
     #endregion

@@ -9,6 +9,6 @@ namespace FowlFever.BSharp.Strings.Spectral;
 /// </summary>
 public interface IHasRenderable : IRenderable {
     IRenderable                      GetRenderable();
-    Measurement IRenderable.         Measure(RenderContext context, int maxWidth) => GetRenderable().Measure(context, maxWidth);
-    IEnumerable<Segment> IRenderable.Render(RenderContext  context, int maxWidth) => GetRenderable().Render(context, maxWidth);
+    Measurement IRenderable.         Measure(RenderOptions context, int maxWidth) => GetRenderable().Measure(context, maxWidth);
+    IEnumerable<Segment> IRenderable.Render(RenderOptions  context, int maxWidth) => GetRenderable().Render(context, maxWidth);
 }

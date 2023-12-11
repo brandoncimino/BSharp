@@ -30,7 +30,7 @@ public class OneLineList : IRenderable {
         DelimiterStyle = palette.Delimiters;
     }
 
-    private SegmentLine GetSegmentLine(RenderContext context, int maxWidth) {
+    private SegmentLine GetSegmentLine(RenderOptions context, int maxWidth) {
         var line = new SegmentLine { PrefixSegment };
 
         var first = true;
@@ -50,11 +50,11 @@ public class OneLineList : IRenderable {
         return line;
     }
 
-    public Measurement Measure(RenderContext context, int maxWidth) {
+    public Measurement Measure(RenderOptions context, int maxWidth) {
         return new Measurement(maxWidth, maxWidth);
     }
 
-    public IEnumerable<Segment> Render(RenderContext context, int maxWidth) {
+    public IEnumerable<Segment> Render(RenderOptions context, int maxWidth) {
         return GetSegmentLine(context, maxWidth);
     }
 }

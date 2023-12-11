@@ -23,13 +23,13 @@ public sealed record HRule : IRenderable, IExpandable, IHasBoxBorder {
     public BoxBorder Border { get; set; } = BoxBorder.Square;
 
     private Rule GetRule() => new Rule {
-        Title     = Title,
-        Style     = Style,
-        Alignment = Alignment,
-        Border    = Border,
+        Title         = Title,
+        Style         = Style,
+        Justification = Alignment,
+        Border        = Border,
     };
 
-    public Measurement Measure(RenderContext context, int maxWidth) {
+    public Measurement Measure(RenderOptions context, int maxWidth) {
         var min = 0;
         if (Title.IsNotBlank()) {
             min = Title.Length + 2 + 4;
@@ -39,7 +39,7 @@ public sealed record HRule : IRenderable, IExpandable, IHasBoxBorder {
         return new Measurement(min, max);
     }
 
-    public IEnumerable<Segment> Render(RenderContext context, int maxWidth) {
+    public IEnumerable<Segment> Render(RenderOptions context, int maxWidth) {
         return GetRule().GetSegments(context, maxWidth);
     }
 }
