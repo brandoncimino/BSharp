@@ -23,7 +23,8 @@ internal static class SpanHelpers {
         [CallerArgumentExpression("index")]  string  _index  = "index",
         [CallerMemberName]                   string? _caller = default
     ) {
-        if (index < 0 || index >= length) {
+        Debug.Assert(length >= 0, "Expected a non-negative length!");
+        if ((uint)index >= (uint)length) {
             throw OutOfBounds(length, index, _length, _index, _caller);
         }
 
@@ -50,6 +51,7 @@ internal static class SpanHelpers {
         [CallerArgumentExpression("maximum")] string? _maximum = default,
         [CallerMemberName]                    string? _caller  = default
     ) {
+        // TODO: This can probably be optimized with `uint` nonsense
         if (amountToAdd == 1 && count >= maximum) {
             throw new ArgumentOutOfRangeException(_amountToAdd, amountToAdd, $"🙅‍♀️ {_caller}: {_count} {count} has already hit the {_maximum} limit of {maximum}!");
         }
@@ -59,7 +61,50 @@ internal static class SpanHelpers {
         }
     }
 
+    /// <inheritdoc cref="Span{T}.op_Implicit(System.Span{T})"/>
     internal static ReadOnlySpan<T> AsReadOnly<T>(this Span<T> span) => span;
+
+    #region Creating spans
+
+    /// <inheritdoc cref="Unsafe.AsRef{T}(System.Void*)"/>
+    /// <remarks>
+    /// This method is equivalent to <see cref="Unsafe.AsRef{T}(Void*)"/>, but uses an <see cref="nint"/> instead of a <a href="https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/unsafe-code#pointer-types">void*</a>.
+    /// </remarks>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static unsafe ref T AsRef<T>(nint pointer) {
+#if NET7_0_OR_GREATER
+        return ref Unsafe.AsRef<T>(pointer.ToPointer());
+#else
+        // TODO: Check if this actually works in .NET 6!
+        return ref Unsafe.AsRef<T>((void*)pointer);
+#endif
+    }
+
+    /// <summary>
+    /// Similar to <see cref="MemoryMarshal.CreateReadOnlySpan{T}"/>, but uses an <see cref="nint"/> to the start of the span instead of a <c>ref</c> <typeparamref name="T"/>.
+    /// </summary>
+    /// <param name="pointerToFirstElement">an <see cref="nint"/> that points to the <see cref="MemoryMarshal.GetReference{T}(System.ReadOnlySpan{T})"/></param>
+    /// <param name="elementCount">the desired <see cref="ReadOnlySpan{T}.Length"/></param>
+    /// <typeparam name="T">the element type</typeparam>
+    /// <returns>a new <see cref="ReadOnlySpan{T}"/></returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static ReadOnlySpan<T> CreateReadOnlySpan<T>(nint pointerToFirstElement, int elementCount) {
+        return MemoryMarshal.CreateReadOnlySpan(ref AsRef<T>(pointerToFirstElement), elementCount);
+    }
+
+    /// <summary>
+    /// Similar to <see cref="MemoryMarshal.CreateReadOnlySpan{T}"/>, but uses an <see cref="nint"/> to the start of the span instead of a <c>ref</c> <typeparamref name="T"/>.
+    /// </summary>
+    /// <param name="pointerToFirstElement">an <see cref="nint"/> that points to the <see cref="MemoryMarshal.GetReference{T}(System.ReadOnlySpan{T})"/></param>
+    /// <param name="elementCount">the desired <see cref="ReadOnlySpan{T}.Length"/></param>
+    /// <typeparam name="T">the element type</typeparam>
+    /// <returns>a new <see cref="ReadOnlySpan{T}"/></returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Span<T> CreateSpan<T>(nint pointerToFirstElement, int elementCount) {
+        return MemoryMarshal.CreateSpan(ref AsRef<T>(pointerToFirstElement), elementCount);
+    }
+
+    #endregion
 
     #region Lists
 
