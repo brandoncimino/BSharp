@@ -47,7 +47,17 @@ public static partial class Spanq {
 
     [Pure]
     public static ReadOnlySpan<T> AfterLast<T>(this ReadOnlySpan<T> span, T splitter)
-        where T : IEquatable<T> => span.Skip(span.LastIndexOf(splitter));
+        where T : IEquatable<T> {
+        // TODO: If the separator isn't found, then the full input is returned. This probably isn't intuitive...but it's very useful behavior, so it should probably be moved into a more appropriately-named method.
+        //  For example:
+        //      "abc".AfterLast('z') => "abc", when it should probably return "".
+        //  The useful case for this behavior:
+        //      "a/b.c".AfterLast('.') => 'c'
+        //      ".c".AfterLast('.') => 'c'
+        //      "c".AfterLast('.') => 'c'
+        //  So, maybe something like..."skip-to-last"?
+        return span.Skip(span.LastIndexOf(splitter));
+    }
 
     [Pure]
     public static ReadOnlySpan<T> AfterLastAny<T>(this ReadOnlySpan<T> span, ReadOnlySpan<T> splitters)
