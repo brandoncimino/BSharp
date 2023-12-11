@@ -223,7 +223,7 @@ public static partial class BEnum {
                   }
                   .Select(kvp => Kvp.Of(kvp.Key, kvp.Value.Prettify<object>()))
                   .Where(kvp => kvp.Value.IsNotBlank())
-                  .ToDictionary();
+                  .ToImmutableDictionary();
 
         var prettyDic = dic.Prettify(HeaderStyle.None);
 
