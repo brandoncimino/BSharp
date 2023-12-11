@@ -126,26 +126,11 @@ public static partial class Spanq {
     /// <typeparam name="T">the <see cref="Span{T}"/> type</typeparam>
     /// <returns>this <see cref="Span{T}"/>, for method chaining</returns>
     public static Span<T> Write<T>(this Span<T> span, ReadOnlySpan<T> toWrite, ref int cursor) {
-        return span.Write(toWrite, ref cursor, true);
-    }
-
-    private static Span<T> Write<T>(this Span<T> span, ReadOnlySpan<T> toWrite, ref int cursor, bool shouldValidatePosition) {
-        if (toWrite.IsEmpty) {
+        if (toWrite.TryCopyTo(span[cursor..])) {
             return span;
         }
 
-        if (shouldValidatePosition) {
-            if (cursor < 0 || cursor >= span.Length || (cursor + toWrite.Length) > span.Length) {
-                throw new ArgumentOutOfRangeException($"Can't write {toWrite.Length} entires to a span of size {span.Length} starting at position {cursor}!");
-            }
-        }
-
-        foreach (var c in toWrite) {
-            span[cursor] =  c;
-            cursor       += 1;
-        }
-
-        return span;
+        throw new ArgumentOutOfRangeException($"Can't write {toWrite.Length} entries to a span of size {span.Length} starting at position {cursor}!");
     }
 
     /// <summary>
@@ -197,10 +182,10 @@ public static partial class Spanq {
         }
 
         if (cursor > 0) {
-            span.Write(joiner, ref cursor, shouldValidatePosition);
+            span.Write(joiner, ref cursor);
         }
 
-        return span.Write(toWrite, ref cursor, shouldValidatePosition);
+        return span.Write(toWrite, ref cursor);
     }
 
     /// <summary>
