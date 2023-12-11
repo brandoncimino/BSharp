@@ -113,6 +113,9 @@ public static class AssertExtensions {
         return stringBuilder.Append(value);
     }
 
+    /// <summary>
+    /// Converts a <see cref="ReadOnlySpan{T}"/> to an <see cref="ImmutableArray{T}"/> so that you can use it inside of lambda expressions.
+    /// </summary>
     private static RoSpan<T> Wrap<T>(this ReadOnlySpan<T> span) => new(span.ToImmutableArray());
 
     private readonly record struct RoSpan<T>(ImmutableArray<T> AsArray) {
@@ -211,10 +214,10 @@ public static class AssertExtensions {
     }
 
     public static void AssertResult<IN, ARG, OUT>(
-        this ReadOnlySpan<IN>     input,
-        ARG                       arg,
-        RoSpanMixer<IN, ARG, OUT> transformation,
-        ReadOnlySpan<OUT>         expected,
+        this ReadOnlySpan<IN>           input,
+        ARG                             arg,
+        RoSpanTransformer<IN, ARG, OUT> transformation,
+        ReadOnlySpan<OUT>               expected,
         [CallerArgumentExpression("transformation")]
         string _transformation = ""
     ) {
