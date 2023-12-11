@@ -9,7 +9,6 @@ using DiffPlex.Chunkers;
 using DiffPlex.DiffBuilder;
 using DiffPlex.DiffBuilder.Model;
 
-using FowlFever.BSharp.Attributes;
 using FowlFever.BSharp.Collections;
 using FowlFever.BSharp.Enums;
 using FowlFever.BSharp.Exceptions;
@@ -171,8 +170,8 @@ public static class Giff {
             return grid;
         }
 
-        public Measurement          Measure(RenderContext context, int maxWidth) => GetRenderable().Measure(context, maxWidth);
-        public IEnumerable<Segment> Render(RenderContext  context, int maxWidth) => GetRenderable().Render(context, maxWidth);
+        public Measurement          Measure(RenderOptions context, int maxWidth) => GetRenderable().Measure(context, maxWidth);
+        public IEnumerable<Segment> Render(RenderOptions  context, int maxWidth) => GetRenderable().Render(context, maxWidth);
     }
 
     /// <summary>
