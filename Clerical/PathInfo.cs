@@ -27,7 +27,7 @@ public readonly struct PathInfo {
             }
 
             var fileNameStartsAt = _source.Length - _extensionLength - _baseNameLength;
-            return PathPart.CreateUnsafe(new StringSegment(_source, fileNameStartsAt, _baseNameLength));
+            return PathPart.Parser.CreateUnsafe(new StringSegment(_source, fileNameStartsAt, _baseNameLength));
         }
     }
 
@@ -45,7 +45,7 @@ public readonly struct PathInfo {
 
     public static PathInfo Parse(string path) {
         var span          = path.AsSpan();
-        var lastSeparator = span.LastIndexOfAny("\\/.");
+        var lastSeparator = span.LastIndexOfAny(FileExtension.Parser.ExtensionSeparatorChars);
         return lastSeparator switch {
             < 0 => default,
             '.' => WithNameAndExtension(path, span, lastSeparator),
