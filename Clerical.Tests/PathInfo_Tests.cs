@@ -4,8 +4,11 @@ using Assert = FowlFever.Testing.NUnitExtensionPoints.Assert;
 
 namespace Clerical.Tests;
 
+// [Ignore("Not sure there's value in the PathInfo type, and it has a stack overflow in it somewhere anyways.")]
 public class PathInfo_Tests {
-    [TestCase("a/b.c", "a", "b", "c")]
+    [TestCase("a/b.c",   "a",   "b", "c")]
+    [TestCase("a/b/c.d", "a/b", "c", "d")]
+    [TestCase("a/b/c",   "a/b", "c", "")]
     public void PathInfo_Parse_HappyPath(string input, string parent, string baseName, string extension) {
         Assert.Multiple(
             () => {
