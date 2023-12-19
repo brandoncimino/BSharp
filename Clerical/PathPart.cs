@@ -27,19 +27,6 @@ public readonly partial struct PathPart :
         _value = value;
     }
 
-    /// <summary>
-    /// Creates a <see cref="PathPart"/> <b>without any validation</b>.
-    /// </summary>
-    /// <remarks>
-    /// While this is sorta redundant with the basic constructor, it's included for clarity and explicitness.
-    /// Basically, it's easy to call a constructor willy-nilly, but the word "Unsafe" should make you pause.
-    /// <br/>
-    /// It also matches the corresponding methods in other classes, like <see cref="FileName"/>.<see cref="FileName.CreateUnsafe"/>, which aren't the same as their constructors.
-    /// </remarks>
-    internal static PathPart CreateUnsafe(StringSegment pathPart) {
-        return new PathPart(pathPart);
-    }
-
     #endregion
 
     public override string ToString() => _value.ToString();

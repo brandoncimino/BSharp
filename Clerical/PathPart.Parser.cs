@@ -6,48 +6,41 @@ namespace FowlFever.Clerical;
 
 public readonly partial struct PathPart {
     [UsedImplicitly]
-    internal class Parser : IClericalParser<PathPart, bool> {
-        public static bool TryParse_Internal(SpanOrSegment s, bool strict, bool throwOnFailure, out PathPart result) {
-            if (strict == false) {
-                s = s.Trim();
-                if (s is ['/' or '\\', .. var afterSeparator]) {
-                    s = afterSeparator;
-                }
-
-                if (s is [.. var beforeSeparator, '/' or '\\']) {
-                    s = beforeSeparator;
-                }
+    internal class Parser : IClericalParser<PathPart, ClericalStyles, string?> {
+        public static string? TryParse_Internal(SpanOrSegment s, ClericalStyles styles, out PathPart result) {
+            if (styles.TryConsumeBookendTrimming(ref s) is { } failMsg) {
+                result = default;
+                return failMsg.GetMessage();
             }
+
+            Debug.Assert((styles & (ClericalStyles.AllowBookendDirectorySeparators | ClericalStyles.AllowBookendWhiteSpace)) == 0, "Should have already handled bookend directory separators or white space!");
 
             if (s.Length == 0) {
                 result = default;
-                return true;
-            }
-
-            if (char.IsWhiteSpace(s[0]) || char.IsWhiteSpace(s[^1])) {
-                result = default;
-                return throwOnFailure switch {
-                    true  => throw new FormatException("Cannot start or end with whitespace!"),
-                    false => false
+                return (styles & ClericalStyles.AllowEmptyPathParts) switch {
+                    0 => "Cannot contain empty path parts!",
+                    _ => null
                 };
             }
 
-            if (s.AsSpan().IndexOfAny(Clerk.DirectorySeparatorChars) >= 0) {
+            if (s.AsSpan().IndexOfAny('/', '\\') >= 0) {
                 result = default;
-                return throwOnFailure switch {
-                    true  => throw new FormatException("Cannot contain directory separators!"),
-                    false => false
-                };
+                return "Cannot contain directory separators!";
             }
 
-            result = CreateUnsafe(s.ToStringSegment());
-            return true;
+            result = CreateUnsafe(s);
+            return null;
         }
 
-        public static PathPart Parse_Internal(SpanOrSegment s, bool strict) {
-            var success = TryParse_Internal(s, strict, true, out var result);
-            Debug.Assert(success);
-            return result;
+        public static PathPart Parse_Internal(SpanOrSegment s, ClericalStyles styles) {
+            return TryParse_Internal(s, styles, out var result) switch {
+                null    => result,
+                var msg => throw new FormatException(msg),
+            };
+        }
+
+        public static PathPart CreateUnsafe(SpanOrSegment input) {
+            return new PathPart(input.ToStringSegment());
         }
     }
 }
