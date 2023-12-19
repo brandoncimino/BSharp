@@ -1,3 +1,5 @@
+using JetBrains.Annotations;
+
 using Microsoft.Extensions.Primitives;
 
 namespace FowlFever.Clerical;
@@ -5,11 +7,14 @@ namespace FowlFever.Clerical;
 /// <summary>
 /// An internal contract to keep different "parser" implementations consistent, e.g. <see cref="FileExtension.Parser.TryParse_Internal"/>, <see cref="PathPart.Parser.TryParse_Internal"/>.
 /// </summary>
-/// <typeparam name="TSelf">the type that I create</typeparam>
+/// <typeparam name="TParsed">the type that I create</typeparam>
+/// <typeparam name="TStyle">controls how parsing should be done á la <see cref="System.Globalization.NumberStyles"/></typeparam>
 /// <typeparam name="TTryResult">the type that I return from <c>Try{x}</c> methods
 /// <br/>
-/// <i>(📎 As of October 16, 2023, this is always <see cref="bool"/>, but there's a good chance I'm going to change it to some fancy enum like <see cref="FileExtension.Parser.ValidationResult"/>. The benefit of that would be to provide specific exception messages in "molecular" types.)</i></typeparam>
-internal interface IClericalParser<TSelf, TTryResult> {
+/// <br/><i>(📎 As of October 16, 2023, this is always <see cref="bool"/>, but there's a good chance I'm going to change it to some fancy enum like <see cref="ParseHelpers.CharValidationResult"/>. The benefit of that would be to provide specific exception messages in "molecular" types.)</i>
+/// <br/><i>(📎 As of October 19, 2023, I've already changed them all to <see cref="string"/>?)</i>
+/// </typeparam>
+internal interface IClericalParser<TParsed, TStyle, TTryResult> {
 #if NET7_0_OR_GREATER
     /// <summary>
     /// This is the "workhorse" parsing method.
@@ -27,27 +32,34 @@ internal interface IClericalParser<TSelf, TTryResult> {
     /// <li>A <see cref="ReadOnlySpan{T}"/> from <see cref="ISpanParsable{TSelf}.Parse(System.ReadOnlySpan{char},System.IFormatProvider?)"/>, etc.</li>
     /// <li>A <see cref="StringSegment"/> from another <see cref="Clerical"/> parsing method</li>
     /// </ul></param>
-    /// <param name="strict">if <c>true</c>, parsing will be unforgiving - ideally so that a successful parsing operation produces 0 allocations
-    /// <p/>
-    /// TODO: Should this be called "exact" to match <see cref="DateTime.ParseExact(System.ReadOnlySpan{char},System.ReadOnlySpan{char},System.IFormatProvider?,System.Globalization.DateTimeStyles)"/>?
-    /// TODO: Should this be called "requireNoAllocations" to make it easier to hold accountable?
-    /// </param>
-    /// <param name="throwOnFailure">if <c>true</c>, instead of returning <c>false</c>, we'll throw a <see cref="FormatException"/></param>
+    /// <param name="style">controls how parsing should be done á la <see cref="System.Globalization.NumberStyles"/></param>
     /// <param name="result">the parsed value, if we were successful</param>
     /// <returns>whether the parsing operation succeeded or not</returns>
-    /// <exception cref="FormatException">if we would've returned <c>false</c> but <paramref name="throwOnFailure"/> was <c>true</c></exception>
     [Pure]
-    static abstract TTryResult TryParse_Internal(SpanOrSegment input, bool strict, bool throwOnFailure, out TSelf result);
+    [UsedImplicitly]
+    static abstract TTryResult TryParse_Internal(SpanOrSegment input, TStyle style, out TParsed result);
 
     /// <summary>
-    /// A convenience on <see cref="TryParse_Internal"/> that should always contain the following implementation:
-    /// <code><![CDATA[
-    /// var success = TResult.TryParseInternal(input, strict, true, out result);
-    /// Debug.Assert(success, "Failures should've already thrown an exception!");
-    /// return result;
-    /// ]]></code>
+    /// Similar to <see cref="TryParse_Internal"/>, but should throw a <see cref="FormatException"/> if the resulting <typeparamref name="TTryResult"/> is unsatisfactory.
     /// </summary>
     [Pure]
-    static abstract TSelf Parse_Internal(SpanOrSegment input, bool strict);
+    [UsedImplicitly]
+    static abstract TParsed Parse_Internal(SpanOrSegment input, TStyle style);
+
+    /// <summary>
+    /// Creates an instance of <typeparamref name="TParsed"/> <b><i>without any validation</i></b>.
+    /// </summary>
+    /// <remarks>
+    /// <ul>
+    /// <li>In the case of an "atomic" type, such as <see cref="PathPart"/> or <see cref="FileExtension"/>, this method should just wrap the input as-is.</li>
+    /// <li>In the case of a "molecular" type, such as <see cref="FileName"/> or <see cref="DirectoryPath"/>, it should perform as little work as possible to determine the individual "atoms", and then they should be <see cref="CreateUnsafe"/>d.</li>
+    /// </ul>
+    /// <p/>
+    /// While this is sorta redundant with the basic constructor, it's included for clarity and explicitness.
+    /// Basically, it's easy to call a constructor willy-nilly, but the word "Unsafe" should make you pause.
+    /// </remarks>
+    [Pure]
+    [UsedImplicitly]
+    static abstract TParsed CreateUnsafe(SpanOrSegment input);
 #endif
 }

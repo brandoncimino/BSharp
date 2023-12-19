@@ -27,9 +27,38 @@ internal interface IClericalParsable<TSelf>
     // static TSelf IParsable<TSelf>.Parse(string s, IFormatProvider? provider) => TSelf.Parse(s);
     // static bool IParsable<TSelf>.TryParse([NotNullWhen(true)] string? s, IFormatProvider? provider, [MaybeNullWhen(false)] out TSelf result) => TSelf.TryParse(s, out result);
 
-    public static abstract TSelf Parse(string                         s);
-    public static abstract TSelf Parse(ReadOnlySpan<char>             s);
-    public static abstract bool  TryParse([NotNullWhen(true)] string? s, [MaybeNullWhen(false)] out TSelf result);
-    public static abstract bool  TryParse(ReadOnlySpan<char>          s, [MaybeNullWhen(false)] out TSelf result);
+    /// <summary>
+    /// <inheritdoc cref="IParsable{TSelf}.Parse"/>
+    /// </summary>
+    /// <param name="s"><inheritdoc cref="IParsable{TSelf}.Parse"/></param>
+    /// <param name="styles">the <see cref="ClericalStyles"/> that control how parsing should happen</param>
+    /// <returns>The newly created <typeparamref name="TSelf"/>.</returns>
+    public static abstract TSelf Parse(string s, ClericalStyles styles = default);
+
+    /// <summary>
+    /// <inheritdoc cref="ISpanParsable{TSelf}.Parse(System.ReadOnlySpan{char},System.IFormatProvider?)"/>
+    /// </summary>
+    /// <param name="s"><inheritdoc cref="ISpanParsable{TSelf}.Parse(System.ReadOnlySpan{char},System.IFormatProvider?)"/></param>
+    /// <param name="styles">the <see cref="ClericalStyles"/> that control how parsing should happen</param>
+    /// <returns>The newly created <typeparamref name="TSelf"/>.</returns>
+    public static abstract TSelf Parse(ReadOnlySpan<char> s, ClericalStyles styles = default);
+
+    /// <summary>
+    /// <inheritdoc cref="IParsable{TSelf}.TryParse"/>
+    /// </summary>
+    /// <param name="s"><inheritdoc cref="IParsable{TSelf}.TryParse"/></param>
+    /// <param name="result">The newly created <typeparamref name="TSelf"/>.</param>
+    /// <param name="styles">The <see cref="ClericalStyles"/> that control how parsing should happen.</param>
+    /// <returns><inheritdoc cref="IParsable{TSelf}.TryParse"/></returns>
+    public static abstract bool TryParse([NotNullWhen(true)] string? s, [MaybeNullWhen(false)] out TSelf result, ClericalStyles styles = default);
+
+    /// <summary>
+    /// <inheritdoc cref="ISpanParsable{TSelf}.TryParse(System.ReadOnlySpan{char},System.IFormatProvider?,out TSelf)"/>
+    /// </summary>
+    /// <param name="s"><inheritdoc cref="ISpanParsable{TSelf}.TryParse(System.ReadOnlySpan{char},System.IFormatProvider?,out TSelf)"/></param>
+    /// <param name="result">The newly created <typeparamref name="TSelf"/>.</param>
+    /// <param name="styles">The <see cref="ClericalStyles"/> that control how parsing should happen.</param>
+    /// <returns><inheritdoc cref="ISpanParsable{TSelf}.TryParse(System.ReadOnlySpan{char},System.IFormatProvider?,out TSelf)"/></returns>
+    public static abstract bool TryParse(ReadOnlySpan<char> s, [MaybeNullWhen(false)] out TSelf result, ClericalStyles styles = default);
 #endif
 }
