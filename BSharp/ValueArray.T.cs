@@ -48,8 +48,9 @@ public readonly struct ValueArray<T>(ImmutableArray<T> asImmutableArray) :
     public static ValueArray<T> operator +(ValueArray<T> a, T             b) => a.Add(b);
     public static ValueArray<T> operator +(ValueArray<T> a, ValueArray<T> b) => a.AddRange(b);
 
-    public static implicit operator ValueArray<T>(ImmutableArray<T> parts) => new(parts);
-    public static implicit operator ReadOnlySpan<T>(ValueArray<T>   parts) => parts.AsSpan();
+    public static implicit operator ValueArray<T>(ImmutableArray<T> parts)       => new(parts);
+    public static implicit operator ReadOnlySpan<T>(ValueArray<T>   parts)       => parts.AsSpan();
+    public static implicit operator ValueArray<T>(T                 singleValue) => new(ImmutableArray.Create(singleValue));
 
     #endregion
 
