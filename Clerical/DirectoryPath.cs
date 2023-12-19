@@ -4,7 +4,7 @@ using FowlFever.BSharp.Memory;
 
 namespace FowlFever.Clerical;
 
-public readonly record struct DirectoryPath(ImmutableArray<PathPart> Parts, DirectorySeparator DirectorySeparator = DirectorySeparator.Universal)
+public readonly partial record struct DirectoryPath(ImmutableArray<PathPart> Parts, DirectorySeparator DirectorySeparator = DirectorySeparator.Universal)
 #if NET7_0_OR_GREATER
     : System.Numerics.IEqualityOperators<DirectoryPath, DirectoryPath, bool>,
       System.Numerics.IAdditionOperators<DirectoryPath, DirectoryPath, DirectoryPath>,
@@ -90,13 +90,47 @@ public readonly record struct DirectoryPath(ImmutableArray<PathPart> Parts, Dire
         }
     }
 
-    public static DirectoryPath operator --(DirectoryPath value) {
-        return value.Parent;
-    }
+    public static DirectoryPath operator --(DirectoryPath value) => value.Parent;
 
     public static FilePath operator +(DirectoryPath left, FilePath right) {
         return right with {
             Directory = left + right.Directory
         };
     }
+
+    #region Equality
+
+    public bool Equals(DirectoryPath other) {
+        return Parts.SequenceEqual(other.Parts);
+    }
+
+    public override int GetHashCode() {
+        return GetSequenceHashCode(Parts.AsSpan());
+    }
+
+    private static int GetSequenceHashCode<T>(ReadOnlySpan<T> source) {
+        return source switch {
+            [var a]                                                  => HashCode.Combine(a),
+            [var a, var b]                                           => HashCode.Combine(a, b),
+            [var a, var b, var c]                                    => HashCode.Combine(a, b, c),
+            [var a, var b, var c, var d]                             => HashCode.Combine(a, b, c, d),
+            [var a, var b, var c, var d, var e]                      => HashCode.Combine(a, b, c, d, e),
+            [var a, var b, var c, var d, var e, var f]               => HashCode.Combine(a, b, c, d, e, f),
+            [var a, var b, var c, var d, var e, var f, var g]        => HashCode.Combine(a, b, c, d, e, f, g),
+            [var a, var b, var c, var d, var e, var f, var g, var h] => HashCode.Combine(a, b, c, d, e, f, g, h),
+            _                                                        => SequenceHashCode(source)
+        };
+
+        static int SequenceHashCode(ReadOnlySpan<T> source) {
+            var hc = new HashCode();
+
+            foreach (var t in source) {
+                hc.Add(t);
+            }
+
+            return hc.ToHashCode();
+        }
+    }
+
+    #endregion
 }
