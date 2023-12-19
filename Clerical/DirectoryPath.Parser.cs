@@ -51,10 +51,6 @@ public readonly partial record struct DirectoryPath {
             return new DirectoryPath(partBuilder.MoveToImmutableSafely());
         }
 
-        public static ParseResult<DirectoryPath> TryParse_Fancy(SpanOrSegment input, ClericalStyles style) {
-            throw new NotImplementedException();
-        }
-
         // Strict: Rejects any empty parts (not counting the first)
         public static string? TryParse_Internal(SpanOrSegment input, ClericalStyles styles, out DirectoryPath result) {
             if (input.Length == 0) {
