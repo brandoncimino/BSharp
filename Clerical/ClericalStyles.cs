@@ -3,6 +3,8 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 
+using JetBrains.Annotations;
+
 namespace FowlFever.Clerical;
 
 [Flags]
@@ -52,9 +54,16 @@ public enum ClericalStyles {
 internal static class ClericalStylesExtensions {
     private const ClericalStyles BookendStyles = ClericalStyles.AllowBookendWhiteSpace | ClericalStyles.AllowBookendDirectorySeparators;
 
-    public static string? TryConsumeBookendTrimming(this ref ClericalStyles styles, ref SpanOrSegment s) {
-        s      = styles.ApplyBookendTrimming(s);
-        styles = styles & ~BookendStyles;
+    /// <summary>
+    /// <see cref="ApplyBookendTrimming"/> and removes the <see cref="BookendStyles"/> from this <see cref="ClericalStyles"/>.
+    /// </summary>
+    /// <param name="styles">this <see cref="ClericalStyles"/></param>
+    /// <param name="s"></param>
+    /// <returns></returns>
+    [MustUseReturnValue]
+    public static ClericalValidationMessage? TryConsumeBookendTrimming(this ref ClericalStyles styles, ref SpanOrSegment s) {
+        s      =  styles.ApplyBookendTrimming(s);
+        styles &= ~BookendStyles;
         return CheckForBookends(s);
     }
 
@@ -73,7 +82,7 @@ internal static class ClericalStylesExtensions {
     /// <param name="styles">these <see cref="ClericalStyles"/></param>
     /// <param name="s">the input being parsed</param>
     /// <returns>the input after all appropriate <see cref="ClericalStyles"/> have been applied</returns>
-    public static SpanOrSegment ApplyBookendTrimming(this ClericalStyles styles, SpanOrSegment s) {
+    private static SpanOrSegment ApplyBookendTrimming(this ClericalStyles styles, SpanOrSegment s) {
         // Optimize for the 2 most common use cases: "trim everything" and "trim nothing".
         return (styles & BookendStyles) switch {
             0             => s,
@@ -118,21 +127,21 @@ internal static class ClericalStylesExtensions {
     }
 
     [SuppressMessage("ReSharper", "ConvertIfStatementToReturnStatement")]
-    private static string? CheckForBookends(SpanOrSegment s) {
+    private static ClericalValidationMessage? CheckForBookends(SpanOrSegment s) {
         return s switch {
             []                        => null,
             [var c]                   => CheckChar(c),
             [var first, .., var last] => CheckChar(first) ?? CheckChar(last)
         };
 
-        static string? CheckChar(char c) {
+        static ClericalValidationMessage? CheckChar(char c) {
             if (c is '/' or '\\') {
                 // TODO: Add some indication that `ClericalStyles` have already been processed
-                return "Cannot start or end with a directory separator!";
+                return ClericalValidationMessage.BookendDirectorySeparator;
             }
 
             if (char.IsWhiteSpace(c)) {
-                return "Cannot start or end with whitespace!";
+                return ClericalValidationMessage.BookendWhiteSpace;
             }
 
             return null;
