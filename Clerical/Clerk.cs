@@ -1,9 +1,10 @@
-using System.Diagnostics.Contracts;
+using System.Collections.Immutable;
 
 using FowlFever.BSharp;
 using FowlFever.BSharp.Collections;
-using FowlFever.BSharp.Memory;
 using FowlFever.BSharp.Memory.Enumerators;
+
+using Microsoft.Extensions.Primitives;
 
 namespace FowlFever.Clerical;
 
@@ -13,14 +14,20 @@ namespace FowlFever.Clerical;
 public static partial class Clerk {
     [Pure]
     public static ValueArray<PathPart> SplitPath(string? path) {
-        static PathPart CreatePathPart(ReadOnlySpan<char> span, string path) {
-            return new PathPart(Substring.CreateFromSpan(span, path));
+        if (string.IsNullOrEmpty(path)) {
+            return ValueArray<PathPart>.Empty;
         }
 
-        return path is not { Length: > 0 } ? ValueArray<PathPart>.Empty : EnumeratePathParts(path).ToImmutableArray(path, CreatePathPart);
-    }
+        var erator       = new IndexOfAnyEnumerator<char>(path, DirectorySeparatorChars);
+        var arrayBuilder = ImmutableArray.CreateBuilder<PathPart>();
+        foreach (var index in erator) {
+            var segment = new StringSegment(path, index, path.Length - index);
+            var part    = PathPart.Parser.CreateUnsafe(segment);
+            arrayBuilder.Add(part);
+        }
 
-    [Pure] internal static SpanSpliterator<char> EnumeratePathParts(ReadOnlySpan<char> path) => path.SpliterateAny(DirectorySeparatorChars.AsSpan());
+        return arrayBuilder.MoveToImmutableSafely();
+    }
 
     /// <summary>
     /// <inheritdoc cref="Path.GetTempPath"/>
